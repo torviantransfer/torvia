@@ -1,0 +1,753 @@
+// Update existing regions with SEO data + Insert missing regions
+// Usage: SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node update-seo.js
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ximlobdcblinqtlizwrz.supabase.co';
+const API_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+if (!API_KEY) { console.error('Set SUPABASE_SERVICE_ROLE_KEY env var'); process.exit(1); }
+
+const headers = {
+  'apikey': API_KEY,
+  'Authorization': `Bearer ${API_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=minimal'
+};
+
+// SEO data for existing regions (UPDATE)
+const updates = [
+  {
+    slug: 'kundu-lara',
+    name_tr: 'Kundu - Lara', name_en: 'Kundu - Lara', name_de: 'Kundu - Lara', name_pl: 'Kundu - Lara', name_ru: 'Кунду - Лара',
+    description_tr: 'Antalya Havalimanı\'ndan Kundu ve Lara bölgesine VIP transfer hizmeti. Uçuş takibi, kapıdan kapıya hizmet ve sabit fiyat garantisi.',
+    description_en: 'VIP transfer service from Antalya Airport to Kundu and Lara area. Flight tracking, door-to-door service and fixed price guarantee.',
+    description_de: 'VIP-Transferservice vom Flughafen Antalya in die Region Kundu und Lara. Flugnachverfolgung, Tür-zu-Tür-Service und Festpreisgarantie.',
+    description_pl: 'Usługa transferu VIP z lotniska Antalya do regionu Kundu i Lara. Śledzenie lotów, usługa door-to-door i gwarancja stałej ceny.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в район Кунду и Лара. Отслеживание рейсов, от двери до двери и гарантия фиксированной цены.',
+    meta_title_tr: 'Antalya Havalimanı Kundu Lara VIP Transfer | 7/24 Özel Araç',
+    meta_title_en: 'VIP Transfer Antalya Airport to Kundu Lara | Fixed Price',
+    meta_title_de: 'Antalya Flughafen → Kundu Lara VIP Transfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kundu Lara | VIP prywatny',
+    meta_title_ru: 'ВИП Трансфер из Анталии в Кунду Лара | Фикс. цена',
+    meta_description_tr: 'Antalya Havalimanı\'ndan Kundu ve Lara\'ya VIP/özel transfer. Uçuş takibi, karşılama, sabit fiyat ve online rezervasyon.',
+    meta_description_en: 'Private VIP transfer from Antalya Airport to Kundu and Lara. Meet & greet, flight tracking, fixed pricing. Book online.',
+    meta_description_de: 'Privater VIP-Transfer nach Kundu und Lara. Abholung mit Namensschild, Flugtracking, Festpreis. Online buchen.',
+    meta_description_pl: 'Prywatny VIP transfer do Kundu i Lara. Stała cena, monitoring lotu, spotkanie po przylocie. Rezerwuj online.',
+    meta_description_ru: 'Частный VIP-трансфер в Кунду и Лара: встреча, отслеживание рейса, фиксированная цена. Онлайн-бронирование.',
+    distance_km: 12.0, duration_minutes: 15
+  },
+  {
+    slug: 'sehirici',
+    name_tr: 'Antalya Şehir Merkezi', name_en: 'Antalya City Center', name_de: 'Antalya Stadtzentrum', name_pl: 'Centrum Antalyi', name_ru: 'Центр Анталии',
+    description_tr: 'Antalya Havalimanı\'ndan şehir merkezine VIP transfer. Kaleiçi ve merkeze hızlı ve konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to city center. Fast and comfortable transport to Kaleiçi and downtown.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya ins Stadtzentrum. Schneller Transport nach Kaleiçi und Innenstadt.',
+    description_pl: 'Transfer VIP z lotniska Antalya do centrum miasta. Szybki transport do Kaleiçi i śródmieścia.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в центр города. Быстрый транспорт до Калеичи и центра.',
+    meta_title_tr: 'Antalya Havalimanı Şehir Merkezi VIP Transfer | Hızlı',
+    meta_title_en: 'Antalya City Center VIP Transfer | Kaleici Transport',
+    meta_title_de: 'Antalya Flughafen → Stadtzentrum Transfer | Schnell',
+    meta_title_pl: 'VIP Transfer do Centrum Antalyi (Kaleiçi)',
+    meta_title_ru: 'ВИП Трансфер в Центр Анталии (Калеичи)',
+    meta_description_tr: 'Şehir merkezine VIP transfer: hızlı varış, sabit fiyat, 7/24 destek. Online rezervasyon.',
+    meta_description_en: 'Quick private transfer to Antalya city center. Fixed price, meet & greet, 24/7 support.',
+    meta_description_de: 'Direkter Privattransfer in die Innenstadt und Altstadt (Kaleici) von Antalya. Pünktlich, sicher und komfortabel.',
+    meta_description_pl: 'Bezpośredni prywatny transfer do centrum miasta i na Stare Miasto (Kaleici). Punktualnie i bezpiecznie.',
+    meta_description_ru: 'Роскошный трансфер в центр города и Старый город. Быстро, стильно и невероятно удобно.',
+    distance_km: 15.0, duration_minutes: 18
+  },
+  {
+    slug: 'belek',
+    meta_title_tr: 'Antalya Havalimanı Belek VIP Transfer | Hızlı & Konforlu',
+    meta_title_en: 'Premium Belek Airport Transfers | VIP Golf Transport',
+    meta_title_de: 'Antalya Flughafen → Belek VIP Transfer | Komfort',
+    meta_title_pl: 'Transfer z lotniska Antalya → Belek | VIP',
+    meta_title_ru: 'ВИП Трансфер Аэропорт Анталия – Белек | Комфорт',
+    meta_description_tr: 'Belek\'e VIP transfer: kapıdan kapıya, 7/24 destek, güvenli sürüş. Online rezervasyonla yerinizi ayırın.',
+    meta_description_en: 'Book a VIP transfer to Belek resorts. Fixed price, meet & greet, family-friendly vehicles.',
+    meta_description_de: 'VIP-Transfer zu Belek Resorts. Festpreis, Meet & Greet, komfortable Fahrzeuge.',
+    meta_description_pl: 'VIP transfer do Belek. Spotkanie na lotnisku, monitoring lotu, komfortowe auta.',
+    meta_description_ru: 'Премиум трансфер в отели Белека. Быстро, безопасно и с максимальным комфортом. Забронируйте сейчас.',
+    description_tr: 'Antalya Havalimanı\'ndan Belek\'e VIP transfer. Golf tesisleri ve lüks otellere hızlı ve konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Belek. Fast and comfortable transport to golf resorts and luxury hotels.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Belek. Schneller und komfortabler Transport zu Golfresorts und Luxushotels.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Belek. Szybki i komfortowy transport do pól golfowych i luksusowych hoteli.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Белек. Быстрый и комфортабельный транспорт до гольф-курортов и роскошных отелей.',
+    distance_km: 33.0, duration_minutes: 30
+  },
+  {
+    slug: 'side',
+    meta_title_tr: 'Antalya Havalimanı Side VIP Transfer | Kapıdan Kapıya',
+    meta_title_en: 'Private Transfer Antalya to Side | Fast & Safe Ride',
+    meta_title_de: 'Antalya Flughafen → Side Privattransfer | Schnell',
+    meta_title_pl: 'Transfer z lotniska Antalya → Side | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер Анталия – Сиде',
+    meta_description_tr: 'Side bölgesine özel transfer: uçuş gecikmesi takibi, Meet & Greet, sabit ücret. Kolay rezervasyon.',
+    meta_description_en: 'Comfortable private transfer to Side. 24/7 support, flight monitoring, easy booking.',
+    meta_description_de: 'Privattransfer nach Side. Flugüberwachung, 24/7 Support, einfache Buchung.',
+    meta_description_pl: 'Prywatny transfer do Side. Stała cena, 24/7 wsparcie, szybka rezerwacja.',
+    meta_description_ru: 'Комфортный VIP трансфер в Сиде. Просторные минивэны Mercedes, кондиционер и вода в салоне.',
+    description_tr: 'Antalya Havalimanı\'ndan Side bölgesine VIP transfer. Antik kent ve sahil otellerine güvenli ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Side region. Safe transport to ancient city and beachfront hotels.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Side. Sicherer Transport zur antiken Stadt und zu Strandhotels.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Side. Bezpieczny transport do starożytnego miasta i hoteli nadmorskich.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в район Сиде. Безопасный транспорт до древнего города и пляжных отелей.',
+    distance_km: 65.0, duration_minutes: 55
+  },
+  {
+    slug: 'kemer',
+    meta_title_tr: 'Antalya Havalimanı Kemer VIP Transfer | 7/24 Rezervasyon',
+    meta_title_en: 'Kemer VIP Airport Transfer | Antalya to Kemer Taxi',
+    meta_title_de: 'Antalya Flughafen → Kemer VIP Transfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kemer | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Кемер | 24/7',
+    meta_description_tr: 'Kemer\'e VIP transfer: konforlu araçlar, profesyonel sürücüler, sabit fiyat. Hızlı teklif alın.',
+    meta_description_en: 'VIP transfer to Kemer hotels. Meet on arrival, fixed prices, professional service.',
+    meta_description_de: 'VIP-Transfer nach Kemer. Meet & Greet, Festpreis, professioneller Service.',
+    meta_description_pl: 'VIP transfer do Kemer. Meet & greet, monitoring lotu, pewna rezerwacja.',
+    meta_description_ru: 'В Кемер: встреча, отслеживание рейса, фиксированная стоимость. Онлайн-заказ.',
+    description_tr: 'Antalya Havalimanı\'ndan Kemer\'e VIP transfer. Doğa ile iç içe sahil otellerine konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Kemer. Comfortable transport to seaside hotels surrounded by nature.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kemer. Komfortabler Transport zu Strandhotels umgeben von Natur.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kemer. Komfortowy transport do nadmorskich hoteli otoczonych naturą.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кемер. Комфортабельный транспорт до морских отелей.',
+    distance_km: 43.0, duration_minutes: 45
+  },
+  {
+    slug: 'alanya',
+    meta_title_tr: 'Antalya Havalimanı Alanya VIP Transfer | Özel Araç',
+    meta_title_en: 'Antalya to Alanya Private VIP Transfer | Fixed Price',
+    meta_title_de: 'Antalya Flughafen → Alanya Privattransfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Alanya | Prywatny',
+    meta_title_ru: 'Трансфер из Аэропорта Анталии в Аланью',
+    meta_description_tr: 'Alanya\'ya VIP transfer: geniş bagaj, aile/grup araçları, uçuş takibi. Güvenle rezervasyon yapın.',
+    meta_description_en: 'Long-distance private transfer to Alanya. Spacious vehicles, flight tracking, secure booking.',
+    meta_description_de: 'Langer Strecke? Komfortabler Privattransfer nach Alanya. Viel Platz, sicher, fix buchen.',
+    meta_description_pl: 'Długi dystans do Alanyi? Wybierz prywatny transfer: stała cena, komfort i bezpieczeństwo.',
+    meta_description_ru: '2 часа в пути пролетят незаметно с нашим VIP трансфером в Аланию. Просторный салон, Wi-Fi и абсолютный комфорт.',
+    description_tr: 'Antalya Havalimanı\'ndan Alanya\'ya VIP transfer. Uzun mesafede lüks ve konforlu yolculuk deneyimi.',
+    description_en: 'VIP transfer from Antalya Airport to Alanya. Luxury and comfortable long-distance travel experience.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Alanya. Luxuriöse und komfortable Langstreckenreise.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Alanyi. Luksusowa i komfortowa podróż na długim dystansie.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Аланью. Роскошное и комфортабельное путешествие на дальние расстояния.',
+    distance_km: 132.0, duration_minutes: 120
+  },
+  {
+    slug: 'kas',
+    meta_title_tr: 'Antalya Havalimanı Kaş VIP Transfer | Lüks Ulaşım',
+    meta_title_en: 'VIP Transfer from Antalya Airport to Kaş | Private Car',
+    meta_title_de: 'Antalya Flughafen → Kas VIP Transfer | Privat',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kas | VIP',
+    meta_title_ru: 'ВИП Трансфер из Анталии в Каш | Частный',
+    meta_description_tr: 'Kaş\'a uzun mesafe VIP transfer: sabit fiyat, güvenli rota, konforlu yolculuk. Online rezervasyon.',
+    meta_description_en: 'Premium private transfer to Kaş. Fixed price, meet & greet, stress-free journey.',
+    meta_description_de: 'Premium Privattransfer nach Kas. Festpreis, Flugtracking, stressfreie Fahrt.',
+    meta_description_pl: 'VIP transfer do Kaş. Stała cena, monitoring lotu, wygodna podróż.',
+    meta_description_ru: 'VIP-трансфер в Каş: встреча, отслеживание рейса, прозрачная цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Kaş\'a VIP transfer. Uzun mesafe premium yolculuk, sabit fiyat garantisi.',
+    description_en: 'VIP transfer from Antalya Airport to Kaş. Long-distance premium journey with fixed price guarantee.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kaş. Langstrecken-Premiumfahrt mit Festpreisgarantie.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kaş. Długodystansowa podróż premium z gwarancją stałej ceny.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Каш. Премиум-поездка на дальние расстояния с гарантией фиксированной цены.',
+    distance_km: 187.0, duration_minutes: 195
+  },
+  {
+    slug: 'okurcalar',
+    meta_title_tr: 'Antalya Havalimanı Okurcalar VIP Transfer | Konforlu',
+    meta_title_en: 'Okurcalar Private Transfer | VIP Antalya Airport Ride',
+    meta_title_de: 'Antalya Flughafen → Okurcalar Privattransfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Okurcalar | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер в Окурджалар',
+    meta_description_tr: 'Okurcalar otellerine VIP transfer: uçuş takibi, kapıdan kapıya, sabit ücret.',
+    meta_description_en: 'Private transfer to Okurcalar hotels. Fixed price, flight monitoring, 24/7 support.',
+    meta_description_de: 'Privattransfer zu Okurcalar Hotels. Festpreis, 24/7 Support.',
+    meta_description_pl: 'Prywatny transfer do Okurcalar hoteli. Stała cena, 24/7 wsparcie.',
+    meta_description_ru: 'До отелей Окурджалара: фикс. стоимость, встреча, 24/7 поддержка.',
+    description_tr: 'Antalya Havalimanı\'ndan Okurcalar\'a VIP transfer. All-inclusive tatil beldelerine özel ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Okurcalar. Private transport to all-inclusive holiday resorts.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Okurcalar. Privater Transport zu All-Inclusive-Ferienresorts.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Okurcalar. Prywatny transport do kurortów all-inclusive.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Окурджалар. Частный транспорт до курортов all-inclusive.',
+    distance_km: 100.0, duration_minutes: 90
+  },
+  {
+    slug: 'turkler',
+    meta_title_tr: 'Antalya Havalimanı Türkler VIP Transfer | 7/24 Hizmet',
+    meta_title_en: 'Turkler VIP Transfer | Premium Antalya Airport Taxi',
+    meta_title_de: 'Antalya Flughafen → Türkler VIP Transfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Türkler | VIP',
+    meta_title_ru: 'ВИП Трансфер из Анталии в Тюрклер | Фикс.',
+    meta_description_tr: 'Türkler bölgesine VIP transfer: geniş araç seçimi, şeffaf fiyat, hızlı rezervasyon.',
+    meta_description_en: 'VIP private transfer to Türkler. Door-to-door, no hidden fees, easy booking.',
+    meta_description_de: 'VIP-Transfer nach Türkler. Tür-zu-Tür, ohne versteckte Kosten.',
+    meta_description_pl: 'VIP transfer do Türkler. Door-to-door, bez dodatkowych opłat.',
+    meta_description_ru: 'Начните отпуск правильно с нашим премиум трансфером в Тюрклер.',
+    description_tr: 'Antalya Havalimanı\'ndan Türkler bölgesine VIP transfer. Sahil otellerine konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Türkler. Comfortable transport to coastal hotels.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Türkler. Komfortabler Transport zu Küstenhotels.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Türkler. Komfortowy transport do nadmorskich hoteli.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Тюрклер. Комфортабельный транспорт до морских отелей.',
+    distance_km: 110.0, duration_minutes: 95
+  },
+  {
+    slug: 'mahmutlar',
+    meta_title_tr: 'Antalya Havalimanı Mahmutlar VIP Transfer | Lüks',
+    meta_title_en: 'Mahmutlar Private Transfer | VIP Ride from Antalya',
+    meta_title_de: 'Antalya Flughafen → Mahmutlar Privattransfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Mahmutlar | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер Анталия – Махмутлар',
+    meta_description_tr: 'Mahmutlar\'a VIP transfer: uzun mesafe konforu, aile/grup araçları, sabit fiyat.',
+    meta_description_en: 'Long-distance private transfer to Mahmutlar. Spacious vehicles and fixed pricing.',
+    meta_description_de: 'Langstrecken-Transfer nach Mahmutlar. Viel Platz, Fixpreis.',
+    meta_description_pl: 'Dłuższa trasa? Prywatny transfer do Mahmutlar: komfort i stała cena.',
+    meta_description_ru: 'Комфортабельный VIP трансфер на дальние расстояния в Махмутлар.',
+    description_tr: 'Antalya Havalimanı\'ndan Mahmutlar\'a VIP transfer. Alanya\'nın doğusundaki popüler sahil kasabası.',
+    description_en: 'VIP transfer from Antalya Airport to Mahmutlar. Popular coastal town east of Alanya.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Mahmutlar. Beliebte Küstenstadt östlich von Alanya.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Mahmutlar. Popularne nadmorskie miasteczko na wschód od Alanyi.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Махмутлар. Популярный прибрежный городок к востоку от Аланьи.',
+    distance_km: 140.0, duration_minutes: 130
+  },
+  {
+    slug: 'beldibi',
+    meta_title_tr: 'Antalya Havalimanı Beldibi VIP Transfer | Özel Transfer',
+    meta_title_en: 'Beldibi Private Airport Transfer | VIP Luxury Ride',
+    meta_title_de: 'Antalya Flughafen → Beldibi VIP Transfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Beldibi | VIP',
+    meta_title_ru: 'ВИП Трансфер Аэропорт Анталия – Бельдиби | Фикс.',
+    meta_description_tr: 'Beldibi otellerine VIP transfer: kapıdan kapıya, uçuş takibi ve şeffaf fiyat.',
+    meta_description_en: 'Private VIP transfer to Beldibi. Comfortable vehicles, flight tracking, 24/7 support.',
+    meta_description_de: 'VIP-Transfer nach Beldibi. Komfort, Flugtracking, transparente Preise.',
+    meta_description_pl: 'VIP transfer do Beldibi. Komfortowe auta, monitoring lotu, rezerwacja online.',
+    meta_description_ru: 'VIP-трансфер в Бельдиби: комфорт, отслеживание рейса, без доплат.',
+    description_tr: 'Antalya Havalimanı\'ndan Beldibi\'ye VIP transfer. Doğa ve deniz arasında konforlu tatil başlangıcı.',
+    description_en: 'VIP transfer from Antalya Airport to Beldibi. A comfortable holiday start between nature and sea.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Beldibi. Komfortabler Urlaubsstart zwischen Natur und Meer.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Beldibi. Komfortowy początek wakacji między naturą a morzem.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Бельдиби. Комфортное начало отдыха между природой и морем.',
+    distance_km: 35.0, duration_minutes: 35
+  },
+  {
+    slug: 'goynuk',
+    meta_title_tr: 'Antalya Havalimanı Göynük VIP Transfer | 7/24 Hizmet',
+    meta_title_en: 'VIP Transfer Antalya to Göynük | Family Friendly',
+    meta_title_de: 'Antalya Flughafen → Göynük Privattransfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Göynük | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер в Гёйнюк',
+    meta_description_tr: 'Göynük\'e özel transfer: Meet & Greet, sabit ücret, konforlu araçlar.',
+    meta_description_en: 'Reliable private transfer to Göynük hotels. Meet & greet and fixed pricing.',
+    meta_description_de: 'Privattransfer nach Göynük Hotels. Meet & Greet, zuverlässiger Service.',
+    meta_description_pl: 'Prywatny transfer do Göynük. Stała cena, bez stresu, łatwa rezerwacja.',
+    meta_description_ru: 'Идеальный выбор для семей. Просторный VIP трансфер в Гёйнюк.',
+    description_tr: 'Antalya Havalimanı\'ndan Göynük\'e VIP transfer. Aile dostu araçlar ve güvenli yolculuk.',
+    description_en: 'VIP transfer from Antalya Airport to Göynük. Family-friendly vehicles and safe journey.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Göynük. Familienfreundliche Fahrzeuge und sichere Fahrt.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Göynük. Pojazdy przyjazne rodzinom i bezpieczna podróż.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Гёйнюк. Семейные автомобили и безопасная поездка.',
+    distance_km: 38.0, duration_minutes: 38
+  },
+  {
+    slug: 'camyuva',
+    meta_title_tr: 'Antalya Havalimanı Çamyuva VIP Transfer | Sabit Fiyat',
+    meta_title_en: 'Camyuva Private Transfer | Antalya Airport VIP Ride',
+    meta_title_de: 'Antalya Flughafen → Çamyuva Privattransfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Çamyuva | Prywatny',
+    meta_title_ru: 'Трансфер Аэропорт Анталия – Чамьюва',
+    meta_description_tr: 'Çamyuva\'ya VIP transfer: uçuş gecikmesi takibi, karşılama, ekstra ücret yok.',
+    meta_description_en: 'Door-to-door private transfer to Çamyuva. Flight tracking, no hidden fees.',
+    meta_description_de: 'Tür-zu-Tür Transfer nach Çamyuva. Flugtracking, keine versteckten Gebühren.',
+    meta_description_pl: 'Transfer door-to-door do Çamyuva. Monitoring lotu, stała cena.',
+    meta_description_ru: 'Door-to-door в Чамьюва: фикс. цена, без скрытых платежей.',
+    description_tr: 'Antalya Havalimanı\'ndan Çamyuva\'ya VIP transfer. Doğal güzellikler arasında konforlu yolculuk.',
+    description_en: 'VIP transfer from Antalya Airport to Çamyuva. Comfortable journey among natural beauties.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Çamyuva. Komfortable Fahrt inmitten natürlicher Schönheit.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Çamyuva. Komfortowa podróż wśród naturalnych piękności.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Чамьюва. Комфортабельная поездка среди природных красот.',
+    distance_km: 50.0, duration_minutes: 48
+  },
+  {
+    slug: 'tekirova',
+    meta_title_tr: 'Antalya Havalimanı Tekirova VIP Transfer | Konforlu',
+    meta_title_en: 'Tekirova VIP Transfer | Premium Antalya Airport Taxi',
+    meta_title_de: 'Antalya Flughafen → Tekirova VIP Transfer | Komfort',
+    meta_title_pl: 'Transfer z lotniska Antalya → Tekirova | VIP',
+    meta_title_ru: 'ВИП Трансфер из Анталии в Текирова | Комфорт',
+    meta_description_tr: 'Tekirova\'ya VIP transfer: uzun rota konforu, özel hizmet. Online rezervasyon.',
+    meta_description_en: 'VIP transfer to Tekirova. Safe ride, professional drivers, online booking.',
+    meta_description_de: 'Reisen Sie First-Class nach Tekirova. Absolute Privatsphäre und exzellenter Service.',
+    meta_description_pl: 'Podróżuj pierwszą klasą do Tekirova. Absolutna prywatność i doskonała obsługa.',
+    meta_description_ru: 'Роскошный путь до Текирова на наших премиум минивэнах.',
+    description_tr: 'Antalya Havalimanı\'ndan Tekirova\'ya VIP transfer. Olympos dağları eteklerinde huzurlu bir başlangıç.',
+    description_en: 'VIP transfer from Antalya Airport to Tekirova. A peaceful start at the foothills of Olympos mountains.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Tekirova. Ein friedlicher Start am Fuße des Olympos-Gebirges.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Tekirova. Spokojny początek u podnóża gór Olympos.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Текирова. Спокойное начало у подножия гор Олимпос.',
+    distance_km: 55.0, duration_minutes: 50
+  },
+  {
+    slug: 'adrasan',
+    meta_title_tr: 'Antalya Havalimanı Adrasan VIP Transfer | 7/24 Rezervasyon',
+    meta_title_en: 'Private Transfer Antalya to Adrasan | VIP Service',
+    meta_title_de: 'Antalya Flughafen → Adrasan VIP Transfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Adrasan | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Адрасан | 24/7',
+    meta_description_tr: 'Adrasan\'a VIP transfer: konforlu araç, kapıdan kapıya hizmet, uçuş takibi.',
+    meta_description_en: 'VIP private transfer to Adrasan. Flight monitoring, fixed rates, easy reservation.',
+    meta_description_de: 'Exklusiver Transport nach Adrasan. Buchen Sie jetzt für eine sichere Anreise.',
+    meta_description_pl: 'Ekskluzywny transport do Adrasan. Zarezerwuj teraz dla bezpiecznej podróży.',
+    meta_description_ru: 'Премиум трансфер на дальнее расстояние в Адрасан.',
+    description_tr: 'Antalya Havalimanı\'ndan Adrasan\'a VIP transfer. Saklı cennet Adrasan\'a özel ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Adrasan. Private transport to the hidden paradise.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Adrasan. Privater Transport zum verborgenen Paradies.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Adrasan. Prywatny transport do ukrytego raju.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Адрасан. Частный транспорт в скрытый рай.',
+    distance_km: 90.0, duration_minutes: 85
+  },
+  // Regions with basic SEO (kadriye, bogazkent, evrenseki, kizilagac, kargicak, kiris, kalkan, fethiye, marmaris)
+  {
+    slug: 'kadriye',
+    name_tr: 'Kadriye', name_en: 'Kadriye', name_de: 'Kadriye', name_pl: 'Kadriye', name_ru: 'Кадрийе',
+    meta_title_tr: 'Antalya Havalimanı Kadriye VIP Transfer | Sabit Fiyat',
+    meta_title_en: 'VIP Transfer Antalya Airport to Kadriye | Fixed Price',
+    meta_title_de: 'Antalya Flughafen → Kadriye VIP Transfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kadriye | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Кадрийе | Фикс. цена',
+    meta_description_tr: 'Kadriye\'ye VIP transfer: karşılama, uçuş takibi, sabit fiyat. Online rezervasyon.',
+    meta_description_en: 'Private VIP transfer to Kadriye. Meet & greet, flight tracking, fixed pricing.',
+    meta_description_de: 'VIP-Transfer nach Kadriye. Meet & Greet, Flugtracking, Festpreis.',
+    meta_description_pl: 'VIP transfer do Kadriye. Spotkanie, monitoring lotu, stała cena.',
+    meta_description_ru: 'VIP-трансфер в Кадрийе: встреча, отслеживание рейса, фикс. цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Kadriye\'ye VIP transfer. Belek yakınlarında konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Kadriye. Comfortable transport near Belek.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kadriye. Komfortabler Transport nahe Belek.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kadriye. Komfortowy transport w pobliżu Belek.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кадрийе. Комфортабельный транспорт рядом с Белеком.',
+    distance_km: 30.0, duration_minutes: 28
+  },
+  {
+    slug: 'bogazkent',
+    name_tr: 'Boğazkent', name_en: 'Bogazkent', name_de: 'Bogazkent', name_pl: 'Bogazkent', name_ru: 'Богазкент',
+    meta_title_tr: 'Antalya Havalimanı Boğazkent VIP Transfer | Özel Araç',
+    meta_title_en: 'VIP Transfer Antalya Airport to Bogazkent | Book Now',
+    meta_title_de: 'Antalya Flughafen → Bogazkent VIP Transfer | Buchen',
+    meta_title_pl: 'Transfer z lotniska Antalya → Bogazkent | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Богазкент',
+    meta_description_tr: 'Boğazkent\'e VIP transfer: kapıdan kapıya, sabit ücret. Online rezervasyon.',
+    meta_description_en: 'Private transfer to Bogazkent. Fixed price, door-to-door service.',
+    meta_description_de: 'Privattransfer nach Bogazkent. Festpreis, Tür-zu-Tür-Service.',
+    meta_description_pl: 'Prywatny transfer do Bogazkent. Stała cena, usługa door-to-door.',
+    meta_description_ru: 'Частный трансфер в Богазкент: фиксированная цена, от двери до двери.',
+    description_tr: 'Antalya Havalimanı\'ndan Boğazkent\'e VIP transfer. Sahil otellerine özel ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Bogazkent. Private transport to beach hotels.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Bogazkent. Privater Transport zu Strandhotels.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Bogazkent. Prywatny transport do hoteli plażowych.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Богазкент. Частный транспорт до пляжных отелей.',
+    distance_km: 40.0, duration_minutes: 35
+  },
+  {
+    slug: 'evrenseki',
+    name_tr: 'Evrenseki', name_en: 'Evrenseki', name_de: 'Evrenseki', name_pl: 'Evrenseki', name_ru: 'Эвренсеки',
+    meta_title_tr: 'Antalya Havalimanı Evrenseki VIP Transfer | Sabit Fiyat',
+    meta_title_en: 'VIP Transfer to Evrenseki from Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Evrenseki Transfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Evrenseki | Prywatny',
+    meta_title_ru: 'Трансфер Анталия – Эвренсеки | Частный',
+    meta_description_tr: 'Evrenseki\'ye VIP transfer: Meet & Greet, sabit fiyat. Hemen rezervasyon.',
+    meta_description_en: 'Private transfer to Evrenseki. Fixed pricing, meet & greet at airport.',
+    meta_description_de: 'Privattransfer nach Evrenseki. Festpreis, Meet & Greet am Flughafen.',
+    meta_description_pl: 'Prywatny transfer do Evrenseki. Stała cena, spotkanie na lotnisku.',
+    meta_description_ru: 'Частный трансфер в Эвренсеки: фикс. цена, встреча в аэропорту.',
+    description_tr: 'Antalya Havalimanı\'ndan Evrenseki\'ye VIP transfer. Side yakınlarında konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Evrenseki. Comfortable transport near Side.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Evrenseki. Komfortabler Transport nahe Side.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Evrenseki. Komfortowy transport w pobliżu Side.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Эвренсеки. Комфортабельный транспорт рядом с Сиде.',
+    distance_km: 60.0, duration_minutes: 50
+  },
+  {
+    slug: 'kizilagac',
+    name_tr: 'Kızılağaç', name_en: 'Kizilagac', name_de: 'Kizilagac', name_pl: 'Kizilagac', name_ru: 'Кызылагач',
+    meta_title_tr: 'Antalya Havalimanı Kızılağaç VIP Transfer',
+    meta_title_en: 'VIP Transfer to Kizilagac from Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Kizilagac Transfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kizilagac',
+    meta_title_ru: 'Трансфер Анталия – Кызылагач',
+    meta_description_tr: 'Kızılağaç\'a VIP transfer: sabit fiyat, karşılama, online rezervasyon.',
+    meta_description_en: 'Private transfer to Kizilagac. Fixed price, meet & greet service.',
+    meta_description_de: 'Privattransfer nach Kizilagac. Festpreis, Abholung am Flughafen.',
+    meta_description_pl: 'Prywatny transfer do Kizilagac. Stała cena, spotkanie na lotnisku.',
+    meta_description_ru: 'Частный трансфер в Кызылагач: фикс. цена, встреча.',
+    description_tr: 'Antalya Havalimanı\'ndan Kızılağaç\'a VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Kizilagac.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kizilagac.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kizilagac.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кызылагач.',
+    distance_km: 80.0, duration_minutes: 70
+  },
+  {
+    slug: 'kargicak',
+    name_tr: 'Kargıcak', name_en: 'Kargicak', name_de: 'Kargicak', name_pl: 'Kargicak', name_ru: 'Каргыджак',
+    meta_title_tr: 'Antalya Havalimanı Kargıcak VIP Transfer',
+    meta_title_en: 'VIP Transfer to Kargicak from Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Kargicak Transfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kargicak',
+    meta_title_ru: 'Трансфер Анталия – Каргыджак',
+    meta_description_tr: 'Kargıcak\'a VIP transfer: sabit fiyat, uçuş takibi, online rezervasyon.',
+    meta_description_en: 'Private transfer to Kargicak. Fixed price, flight tracking.',
+    meta_description_de: 'Privattransfer nach Kargicak. Festpreis, Flugtracking.',
+    meta_description_pl: 'Prywatny transfer do Kargicak. Stała cena, monitoring lotu.',
+    meta_description_ru: 'Частный трансфер в Каргыджак: фикс. цена, отслеживание рейса.',
+    description_tr: 'Antalya Havalimanı\'ndan Kargıcak\'a VIP transfer. Alanya yakınında sakin bölge.',
+    description_en: 'VIP transfer from Antalya Airport to Kargicak. Quiet area near Alanya.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kargicak.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kargicak.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Каргыджак.',
+    distance_km: 125.0, duration_minutes: 110
+  },
+  {
+    slug: 'kiris',
+    name_tr: 'Kiriş', name_en: 'Kiris', name_de: 'Kiris', name_pl: 'Kiris', name_ru: 'Кириш',
+    meta_title_tr: 'Antalya Havalimanı Kiriş VIP Transfer',
+    meta_title_en: 'VIP Transfer to Kiris from Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Kiris Transfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kiris',
+    meta_title_ru: 'Трансфер Анталия – Кириш',
+    meta_description_tr: 'Kiriş\'e VIP transfer: Kemer yakınında, sabit fiyat ve konforlu araçlar.',
+    meta_description_en: 'Private transfer to Kiris near Kemer. Fixed price, comfortable vehicles.',
+    meta_description_de: 'Privattransfer nach Kiris nahe Kemer. Festpreis, komfortable Fahrzeuge.',
+    meta_description_pl: 'Prywatny transfer do Kiris w pobliżu Kemer. Stała cena.',
+    meta_description_ru: 'Частный трансфер в Кириш рядом с Кемером. Фикс. цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Kiriş\'e VIP transfer. Kemer yakınında huzurlu sahil.',
+    description_en: 'VIP transfer from Antalya Airport to Kiris. Peaceful coast near Kemer.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kiris.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kiris.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кириш.',
+    distance_km: 48.0, duration_minutes: 45
+  },
+  {
+    slug: 'kalkan',
+    name_tr: 'Kalkan', name_en: 'Kalkan', name_de: 'Kalkan', name_pl: 'Kalkan', name_ru: 'Калкан',
+    meta_title_tr: 'Antalya Havalimanı Kalkan VIP Transfer | Lüks',
+    meta_title_en: 'VIP Transfer Antalya Airport to Kalkan | Premium',
+    meta_title_de: 'Antalya Flughafen → Kalkan VIP Transfer | Luxus',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kalkan | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Калкан | Премиум',
+    meta_description_tr: 'Kalkan\'a VIP transfer: uzun mesafe konforu, sabit fiyat. Online rezervasyon.',
+    meta_description_en: 'Premium VIP transfer to Kalkan. Long-distance comfort, fixed pricing.',
+    meta_description_de: 'Premium VIP-Transfer nach Kalkan. Langstreckenkomfort, Festpreis.',
+    meta_description_pl: 'Premium VIP transfer do Kalkan. Komfort na długim dystansie.',
+    meta_description_ru: 'Премиум VIP-трансфер в Калкан. Дальний комфорт, фикс. цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Kalkan\'a VIP transfer. Akdeniz\'in incisi Kalkan\'a lüks ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Kalkan. Luxury transport to the pearl of Mediterranean.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kalkan. Luxustransport an die Perle des Mittelmeers.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kalkan. Luksusowy transport nad Morze Śródziemne.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Калкан. Роскошный транспорт к жемчужине Средиземноморья.',
+    distance_km: 210.0, duration_minutes: 210
+  },
+  {
+    slug: 'fethiye',
+    name_tr: 'Fethiye', name_en: 'Fethiye', name_de: 'Fethiye', name_pl: 'Fethiye', name_ru: 'Фетхие',
+    meta_title_tr: 'Antalya Havalimanı Fethiye VIP Transfer | Uzun Mesafe',
+    meta_title_en: 'VIP Transfer Antalya Airport to Fethiye | Private',
+    meta_title_de: 'Antalya Flughafen → Fethiye VIP Transfer | Langstrecke',
+    meta_title_pl: 'Transfer z lotniska Antalya → Fethiye | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Фетхие | Дальний',
+    meta_description_tr: 'Fethiye\'ye VIP transfer: uzun mesafe konforu, sabit fiyat. Online rezervasyon.',
+    meta_description_en: 'Long-distance VIP transfer to Fethiye. Comfort, fixed price, book online.',
+    meta_description_de: 'Langstrecken-VIP-Transfer nach Fethiye. Komfort und Festpreis.',
+    meta_description_pl: 'Daleki dystans VIP transfer do Fethiye. Komfort i stała cena.',
+    meta_description_ru: 'Дальний VIP-трансфер в Фетхие. Комфорт и фикс. цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Fethiye\'ye VIP transfer. Ölüdeniz ve Kelebek Vadisi\'ne lüks ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Fethiye. Luxury transport to Oludeniz and Butterfly Valley.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Fethiye. Luxustransport zum Ölüdeniz.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Fethiye. Luksusowy transport do Oludeniz.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Фетхие. Роскошный транспорт в Олюдениз.',
+    distance_km: 280.0, duration_minutes: 240
+  },
+  {
+    slug: 'marmaris',
+    name_tr: 'Marmaris', name_en: 'Marmaris', name_de: 'Marmaris', name_pl: 'Marmaris', name_ru: 'Мармарис',
+    meta_title_tr: 'Antalya Havalimanı Marmaris VIP Transfer | Özel',
+    meta_title_en: 'VIP Transfer Antalya Airport to Marmaris | Luxury',
+    meta_title_de: 'Antalya Flughafen → Marmaris VIP Transfer | Luxus',
+    meta_title_pl: 'Transfer z lotniska Antalya → Marmaris | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Мармарис | Люкс',
+    meta_description_tr: 'Marmaris\'e VIP transfer: uzun mesafe, lüks araçlar, sabit fiyat.',
+    meta_description_en: 'Long-distance VIP transfer to Marmaris. Luxury vehicles, fixed pricing.',
+    meta_description_de: 'Langstrecken-VIP-Transfer nach Marmaris. Luxusfahrzeuge, Festpreis.',
+    meta_description_pl: 'Daleki dystans VIP transfer do Marmaris. Luksusowe pojazdy, stała cena.',
+    meta_description_ru: 'Дальний VIP-трансфер в Мармарис. Люксовые авто, фикс. цена.',
+    description_tr: 'Antalya Havalimanı\'ndan Marmaris\'e VIP transfer. Ege\'nin incisi Marmaris\'e lüks yolculuk.',
+    description_en: 'VIP transfer from Antalya Airport to Marmaris. Luxury journey to the pearl of Aegean.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Marmaris. Luxusreise an die ägäische Küste.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Marmaris. Luksusowa podróż nad Morze Egejskie.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Мармарис. Роскошное путешествие к Эгейскому побережью.',
+    distance_km: 360.0, duration_minutes: 300
+  }
+];
+
+// New regions to INSERT
+const newRegions = [
+  {
+    slug: 'manavgat',
+    name_tr: 'Manavgat', name_en: 'Manavgat', name_de: 'Manavgat', name_pl: 'Manavgat', name_ru: 'Манавгат',
+    description_tr: 'Antalya Havalimanı\'ndan Manavgat\'a VIP transfer. Şelaleler ve sahil otellerine konforlu ulaşım.',
+    description_en: 'VIP transfer from Antalya Airport to Manavgat. Comfortable transport to waterfalls and coastal hotels.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Manavgat.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Manavgat.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Манавгат.',
+    meta_title_tr: 'Antalya Havalimanı Manavgat VIP Transfer | Sabit Ücret',
+    meta_title_en: 'Private VIP Transfer to Manavgat | Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Manavgat Privattransfer | 24/7',
+    meta_title_pl: 'Transfer z lotniska Antalya → Manavgat | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер Анталия – Манавгат',
+    meta_description_tr: 'Manavgat\'a özel transfer: karşılama, uçuş takibi, 7/24 destek.',
+    meta_description_en: 'Door-to-door private transfer to Manavgat. Flight tracking and transparent pricing.',
+    meta_description_de: 'Tür-zu-Tür Transfer nach Manavgat. Festpreis, Meet & Greet.',
+    meta_description_pl: 'Prywatny transfer do Manavgat. Spotkanie, stała cena.',
+    meta_description_ru: 'Надежный VIP трансфер в Манавгат.',
+    distance_km: 72.0, duration_minutes: 60, is_popular: false, is_active: true, sort_order: 25
+  },
+  {
+    slug: 'konyaalti',
+    name_tr: 'Konyaaltı', name_en: 'Konyaaltı', name_de: 'Konyaaltı', name_pl: 'Konyaaltı', name_ru: 'Коньяалты',
+    description_tr: 'Antalya Havalimanı\'ndan Konyaaltı\'na VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Konyaaltı.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Konyaaltı.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Konyaaltı.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Коньяалты.',
+    meta_title_tr: 'Antalya Havalimanı Konyaaltı VIP Transfer | Hızlı',
+    meta_title_en: 'Konyaalti Beach VIP Transfer | Private Antalya Taxi',
+    meta_title_de: 'Antalya Flughafen → Konyaaltı Transfer | Schnell',
+    meta_title_pl: 'Transfer z lotniska Antalya → Konyaaltı | Szybko',
+    meta_title_ru: 'Трансфер Аэропорт Анталия – Коньяалты | Быстро',
+    meta_description_tr: 'Konyaaltı\'na VIP transfer: kısa sürede varış, sabit fiyat.',
+    meta_description_en: 'Quick private transfer to Konyaaltı. Fixed price, meet & greet.',
+    meta_description_de: 'Schneller Privattransfer nach Konyaaltı.',
+    meta_description_pl: 'Szybki prywatny transfer do Konyaaltı.',
+    meta_description_ru: 'Прямой трансфер к пляжам Коньяалты.',
+    distance_km: 18.0, duration_minutes: 20, is_popular: false, is_active: true, sort_order: 26
+  },
+  {
+    slug: 'olympos',
+    name_tr: 'Olympos', name_en: 'Olympos', name_de: 'Olympos', name_pl: 'Olympos', name_ru: 'Олимпос',
+    description_tr: 'Antalya Havalimanı\'ndan Olympos\'a VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Olympos.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Olympos.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Olympos.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Олимпос.',
+    meta_title_tr: 'Antalya Havalimanı Olympos VIP Transfer | Özel Araç',
+    meta_title_en: 'VIP Transfer to Olympos | Private Ride from Antalya',
+    meta_title_de: 'Antalya Flughafen → Olympos Privattransfer | 24/7',
+    meta_title_pl: 'Transfer z lotniska Antalya → Olympos | Prywatny',
+    meta_title_ru: 'Индивидуальный Трансфер в Олимпос',
+    meta_description_tr: 'Olympos\'a VIP transfer: sabit fiyat, güvenli sürüş.',
+    meta_description_en: 'Private transfer to Olympos. Fixed price, meet & greet.',
+    meta_description_de: 'VIP-Transfer nach Olympos. Festpreis.',
+    meta_description_pl: 'VIP transfer do Olympos. Stała cena.',
+    meta_description_ru: 'Комфортная поездка в Олимпос на VIP авто.',
+    distance_km: 80.0, duration_minutes: 75, is_popular: false, is_active: true, sort_order: 27
+  },
+  {
+    slug: 'demre',
+    name_tr: 'Demre', name_en: 'Demre', name_de: 'Demre', name_pl: 'Demre', name_ru: 'Демре',
+    description_tr: 'Antalya Havalimanı\'ndan Demre\'ye VIP transfer. Noel Baba\'nın memleketi.',
+    description_en: 'VIP transfer from Antalya Airport to Demre. Homeland of St. Nicholas.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Demre.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Demre.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Демре.',
+    meta_title_tr: 'Antalya Havalimanı Demre VIP Transfer | Lüks',
+    meta_title_en: 'Demre VIP Airport Transfer | Long Distance Luxury',
+    meta_title_de: 'Antalya Flughafen → Demre Privattransfer | Festpreis',
+    meta_title_pl: 'Transfer z lotniska Antalya → Demre | Prywatny',
+    meta_title_ru: 'Трансфер из Анталии в Демре | ВИП',
+    meta_description_tr: 'Demre\'ye VIP transfer: güvenli rota, sabit ücret.',
+    meta_description_en: 'Long-distance private transfer to Demre. Safe route, transparent pricing.',
+    meta_description_de: 'Langstrecke nach Demre mit Privattransfer.',
+    meta_description_pl: 'Prywatny transfer do Demre. Bezpieczna trasa.',
+    meta_description_ru: 'Дальний трансфер в Демре: безопасно, комфортно.',
+    distance_km: 145.0, duration_minutes: 140, is_popular: false, is_active: true, sort_order: 28
+  },
+  {
+    slug: 'finike',
+    name_tr: 'Finike', name_en: 'Finike', name_de: 'Finike', name_pl: 'Finike', name_ru: 'Финике',
+    description_tr: 'Antalya Havalimanı\'ndan Finike\'ye VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Finike.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Finike.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Finike.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Финике.',
+    meta_title_tr: 'Antalya Havalimanı Finike VIP Transfer | Özel',
+    meta_title_en: 'Finike Private VIP Transfer | Reliable AYT Taxi',
+    meta_title_de: 'Antalya Flughafen → Finike VIP Transfer | Privat',
+    meta_title_pl: 'Transfer z lotniska Antalya → Finike | VIP',
+    meta_title_ru: 'ВИП Трансфер Анталия – Финике',
+    meta_description_tr: 'Finike\'ye VIP transfer: uzun mesafe konforu, uçuş takibi.',
+    meta_description_en: 'Book a VIP transfer to Finike. Meet & greet, flight tracking.',
+    meta_description_de: 'VIP-Transfer nach Finike. Meet & Greet, Flugtracking.',
+    meta_description_pl: 'VIP transfer do Finike. Spotkanie na lotnisku.',
+    meta_description_ru: 'VIP-трансфер в Финике: встреча, отслеживание рейса.',
+    distance_km: 160.0, duration_minutes: 155, is_popular: false, is_active: true, sort_order: 29
+  },
+  {
+    slug: 'kumluca',
+    name_tr: 'Kumluca', name_en: 'Kumluca', name_de: 'Kumluca', name_pl: 'Kumluca', name_ru: 'Кумлуджа',
+    description_tr: 'Antalya Havalimanı\'ndan Kumluca\'ya VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Kumluca.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kumluca.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kumluca.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кумлуджа.',
+    meta_title_tr: 'Antalya Havalimanı Kumluca VIP Transfer | Sabit Ücret',
+    meta_title_en: 'VIP Transfer Antalya to Kumluca | Private Minivans',
+    meta_title_de: 'Antalya Flughafen → Kumluca Privattransfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kumluca | Prywatny',
+    meta_title_ru: 'ВИП Трансфер в Кумлуджа',
+    meta_description_tr: 'Kumluca\'ya özel transfer: şeffaf fiyat, güvenli sürüş.',
+    meta_description_en: 'Door-to-door private transfer to Kumluca. Fixed price.',
+    meta_description_de: 'Tür-zu-Tür Transfer nach Kumluca. Fixpreis.',
+    meta_description_pl: 'Transfer do Kumluca: stała cena.',
+    meta_description_ru: 'Премиум такси в Кумлуджа.',
+    distance_km: 120.0, duration_minutes: 115, is_popular: false, is_active: true, sort_order: 30
+  },
+  {
+    slug: 'gazipasa',
+    name_tr: 'Gazipaşa', name_en: 'Gazipaşa', name_de: 'Gazipaşa', name_pl: 'Gazipaşa', name_ru: 'Газипаша',
+    description_tr: 'Antalya Havalimanı\'ndan Gazipaşa\'ya VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Gazipaşa.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Gazipaşa.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Gazipaşa.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Газипаша.',
+    meta_title_tr: 'Antalya Havalimanı Gazipaşa VIP Transfer | Özel Araç',
+    meta_title_en: 'Gazipasa VIP Transfer from Antalya Airport',
+    meta_title_de: 'Antalya Flughafen → Gazipaşa Privattransfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Gazipaşa',
+    meta_title_ru: 'Трансфер Анталия – Газипаша',
+    meta_description_tr: 'Gazipaşa\'ya VIP transfer: uzun rota, sabit fiyat.',
+    meta_description_en: 'Reliable transfer to Gazipasa. Luxury private minivans.',
+    meta_description_de: 'Privattransfer nach Gazipasa. Pünktlichkeit garantiert.',
+    meta_description_pl: 'Prywatny przejazd do Gazipasa.',
+    meta_description_ru: 'Трансфер в Газипаша: встреча, фикс. цена.',
+    distance_km: 175.0, duration_minutes: 165, is_popular: false, is_active: true, sort_order: 31
+  },
+  {
+    slug: 'avsallar',
+    name_tr: 'Avsallar', name_en: 'Avsallar', name_de: 'Avsallar', name_pl: 'Avsallar', name_ru: 'Авсаллар',
+    description_tr: 'Antalya Havalimanı\'ndan Avsallar\'a VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Avsallar.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Avsallar.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Avsallar.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Авсаллар.',
+    meta_title_tr: 'Antalya Havalimanı Avsallar VIP Transfer | Sabit Fiyat',
+    meta_title_en: 'Private Transfer AYT to Avsallar | VIP Service',
+    meta_title_de: 'Antalya Flughafen → Avsallar Privattransfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Avsallar',
+    meta_title_ru: 'Трансфер Анталия – Авсаллар',
+    meta_description_tr: 'Avsallar\'a VIP transfer: Meet & Greet, uçuş takibi.',
+    meta_description_en: 'Private transfer to Avsallar. Meet on arrival, fixed price.',
+    meta_description_de: 'Meet & Greet und Festpreis nach Avsallar.',
+    meta_description_pl: 'Transfer do Avsallar. Stała cena, meet & greet.',
+    meta_description_ru: 'В Авсаллар: meet & greet, фикс. цена.',
+    distance_km: 115.0, duration_minutes: 100, is_popular: false, is_active: true, sort_order: 32
+  },
+  {
+    slug: 'konakli',
+    name_tr: 'Konaklı', name_en: 'Konaklı', name_de: 'Konaklı', name_pl: 'Konaklı', name_ru: 'Конаклы',
+    description_tr: 'Antalya Havalimanı\'ndan Konaklı\'ya VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Konaklı.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Konaklı.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Konaklı.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Конаклы.',
+    meta_title_tr: 'Antalya Havalimanı Konaklı VIP Transfer | Özel',
+    meta_title_en: 'Konakli VIP Airport Transfer | Luxury Private Ride',
+    meta_title_de: 'Antalya Flughafen → Konaklı Privattransfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Konaklı',
+    meta_title_ru: 'ВИП Трансфер в Конаклы',
+    meta_description_tr: 'Konaklı\'ya özel transfer: konforlu araç, online rezervasyon.',
+    meta_description_en: 'Door-to-door private transfer to Konaklı. Flight tracking.',
+    meta_description_de: 'Tür-zu-Tür Transfer nach Konaklı.',
+    meta_description_pl: 'Prywatny transfer do Konaklı. Monitoring lotu.',
+    meta_description_ru: 'Частный трансфер в Конаклы: отслеживание рейса.',
+    distance_km: 120.0, duration_minutes: 105, is_popular: false, is_active: true, sort_order: 33
+  },
+  {
+    slug: 'kestel',
+    name_tr: 'Kestel', name_en: 'Kestel', name_de: 'Kestel', name_pl: 'Kestel', name_ru: 'Кестель',
+    description_tr: 'Antalya Havalimanı\'ndan Kestel\'e VIP transfer.',
+    description_en: 'VIP transfer from Antalya Airport to Kestel.',
+    description_de: 'VIP-Transfer vom Flughafen Antalya nach Kestel.',
+    description_pl: 'Transfer VIP z lotniska Antalya do Kestel.',
+    description_ru: 'VIP-трансфер из аэропорта Анталии в Кестель.',
+    meta_title_tr: 'Antalya Havalimanı Kestel VIP Transfer | Sabit Ücret',
+    meta_title_en: 'Kestel VIP Transfer | Private Antalya Airport Taxi',
+    meta_title_de: 'Antalya Flughafen → Kestel Privattransfer',
+    meta_title_pl: 'Transfer z lotniska Antalya → Kestel',
+    meta_title_ru: 'Трансфер Анталия – Кестель',
+    meta_description_tr: 'Kestel\'e VIP transfer: uçuş takibi, karşılama.',
+    meta_description_en: 'Private transfer to Kestel. Meet & greet, flight monitoring.',
+    meta_description_de: 'Privattransfer nach Kestel. Festpreis.',
+    meta_description_pl: 'Prywatny transfer do Kestel. Meet & greet.',
+    meta_description_ru: 'В Кестель: встреча, отслеживание рейса.',
+    distance_km: 128.0, duration_minutes: 115, is_popular: false, is_active: true, sort_order: 34
+  }
+];
+
+async function updateRegion(data) {
+  const { slug, ...fields } = data;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/regions?slug=eq.${slug}`, {
+    method: 'PATCH',
+    headers: { ...headers, 'Prefer': 'return=representation' },
+    body: JSON.stringify(fields)
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`UPDATE ${slug}: ${res.status} ${text}`);
+  return slug;
+}
+
+async function insertRegion(data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/regions`, {
+    method: 'POST',
+    headers: { ...headers, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`INSERT ${data.slug}: ${res.status} ${text}`);
+  }
+  return data.slug;
+}
+
+async function main() {
+  console.log('=== Updating existing regions with SEO data ===');
+  let ok = 0, fail = 0;
+  for (const u of updates) {
+    try {
+      await updateRegion(u);
+      process.stdout.write('.');
+      ok++;
+    } catch (e) {
+      console.error('\n' + e.message);
+      fail++;
+    }
+  }
+  console.log(`\nUpdated: ${ok}, Failed: ${fail}`);
+
+  console.log('\n=== Inserting new regions ===');
+  ok = 0; fail = 0;
+  for (const n of newRegions) {
+    try {
+      await insertRegion(n);
+      process.stdout.write('+');
+      ok++;
+    } catch (e) {
+      console.error('\n' + e.message);
+      fail++;
+    }
+  }
+  console.log(`\nInserted: ${ok}, Failed: ${fail}`);
+
+  // Verify
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/regions?select=slug,meta_title_en&order=sort_order`, {
+    headers: { 'apikey': API_KEY, 'Authorization': `Bearer ${API_KEY}` }
+  });
+  const all = await res.json();
+  const withMeta = all.filter(r => r.meta_title_en);
+  console.log(`\nTotal regions: ${all.length}, With SEO meta: ${withMeta.length}`);
+}
+
+main().catch(console.error);
