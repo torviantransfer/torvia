@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import crypto from "crypto";
+import { reservationSchema } from "@/lib/validations";
+import { rateLimit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +27,22 @@ function generateReservationCode(): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rl = rateLimit(`reservation:${ip}`, { maxRequests: 10, windowMs: 60_000 });
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const body = await request.json();
+    const parsed = reservationSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
     const {
       regionSlug,
       tripType,
@@ -49,21 +66,7 @@ export async function POST(request: NextRequest) {
       notes,
       couponCode,
       locale,
-    } = body;
-
-    // Validate required fields
-    if (!regionSlug || !pickupDate || !pickupTime || !firstName || !lastName || !email || !phone) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
-    }
+    } = parsed.data;
 
     // Fetch region
     const { data: region } = await supabase
@@ -251,7 +254,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (resErr || !reservation) {
-      console.error("Reservation creation error:", resErr);
+      console.error("Reservation creation error:", resErr?.message);
       return NextResponse.json(
         { error: "Failed to create reservation" },
         { status: 500 }
@@ -295,7 +298,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("Reservation API error:", err);
+    console.error("Reservation API error:", err instanceof Error ? err.message : "unknown");
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

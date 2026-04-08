@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
+import { assignDriverSchema } from "@/lib/validations";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,14 +15,16 @@ export async function POST(request: NextRequest) {
   if (authError) return authError;
 
   try {
-    const { reservationId, driverId, vehicleId } = await request.json();
-
-    if (!reservationId || !driverId || !vehicleId) {
+    const body = await request.json();
+    const parsed = assignDriverSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
+
+    const { reservationId, driverId, vehicleId } = parsed.data;
 
     // Verify reservation exists and is paid
     const { data: reservation } = await supabase
@@ -34,6 +37,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Reservation not found" },
         { status: 404 }
+      );
+    }
+
+    // Verify driver exists and is active
+    const { data: driverCheck } = await supabase
+      .from("drivers")
+      .select("id, is_active")
+      .eq("id", driverId)
+      .single();
+
+    if (!driverCheck) {
+      return NextResponse.json({ error: "Driver not found" }, { status: 404 });
+    }
+
+    // Verify vehicle exists
+    const { data: vehicleCheck } = await supabase
+      .from("vehicles")
+      .select("id")
+      .eq("id", vehicleId)
+      .single();
+
+    if (!vehicleCheck) {
+      return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
+    }
+
+    // Check for existing active assignment on this reservation
+    const { data: existingAssignment } = await supabase
+      .from("driver_assignments")
+      .select("id")
+      .eq("reservation_id", reservationId)
+      .in("status", ["assigned", "picked_up"])
+      .single();
+
+    if (existingAssignment) {
+      return NextResponse.json(
+        { error: "This reservation already has an active driver assignment" },
+        { status: 409 }
       );
     }
 
@@ -54,7 +94,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Assignment error:", error);
+      console.error("Assignment error:", error?.message);
       return NextResponse.json(
         { error: "Failed to assign driver" },
         { status: 500 }
@@ -110,7 +150,7 @@ export async function POST(request: NextRequest) {
       whatsappUrl,
     });
   } catch (err) {
-    console.error("Assign driver error:", err);
+    console.error("Assign driver error:", err instanceof Error ? err.message : "unknown");
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

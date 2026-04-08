@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+function esc(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -82,14 +92,14 @@ export async function GET(request: NextRequest) {
         <div class="detail-icon">🔄</div>
         <div>
           <div class="detail-label">Return</div>
-          <div class="detail-value">${retDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — ${retDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</div>
+          <div class="detail-value">${esc(retDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }))} — ${esc(retDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }))}</div>
         </div>
       </div>`;
   }
 
   const extras: string[] = [];
   if (res.child_seat) extras.push("🪑 Child Seat");
-  if (res.welcome_sign) extras.push(`📋 Welcome Sign: ${res.welcome_name || customer?.first_name || ""}`);
+  if (res.welcome_sign) extras.push(`📋 Welcome Sign: ${esc(String(res.welcome_name || customer?.first_name || ""))}`);
 
   const extrasHtml = extras.length > 0
     ? `<div class="detail-row">
@@ -102,7 +112,7 @@ export async function GET(request: NextRequest) {
     : "";
 
   const notesHtml = res.notes
-    ? `<div class="notes-box">📝 ${res.notes}</div>`
+    ? `<div class="notes-box">📝 ${esc(String(res.notes))}</div>`
     : "";
 
   const html = `<!DOCTYPE html>
@@ -370,13 +380,13 @@ export async function GET(request: NextRequest) {
     </div>
 
     <div class="code-bar">
-      <span class="code">${res.reservation_code}</span>
+      <span class="code">${esc(String(res.reservation_code))}</span>
       <span class="trip-type">${res.trip_type === "round_trip" ? "Round Trip" : "One Way"}</span>
     </div>
 
     <div class="route-banner">
       <div class="from-to">
-        ANTALYA AIRPORT (AYT) <span class="arrow">→</span> ${region?.name_en ?? "—"}
+        ANTALYA AIRPORT (AYT) <span class="arrow">→</span> ${esc(region?.name_en as string ?? "—")}
       </div>
       ${region?.distance_km ? `<div class="distance">~${region.distance_km} km • ${region.duration_minutes} min</div>` : ""}
     </div>
@@ -404,7 +414,7 @@ export async function GET(request: NextRequest) {
           <div class="detail-icon">✈️</div>
           <div>
             <div class="detail-label">Flight</div>
-            <div class="detail-value">${res.flight_code}</div>
+            <div class="detail-value">${esc(String(res.flight_code))}</div>
           </div>
         </div>` : ""}
         ${returnInfo}
@@ -434,9 +444,9 @@ export async function GET(request: NextRequest) {
       <div class="section">
         <div class="section-title">Customer</div>
         <div class="customer-card">
-          <div class="name">${customer?.first_name ?? ""} ${customer?.last_name ?? ""}</div>
+          <div class="name">${esc(customer?.first_name)} ${esc(customer?.last_name)}</div>
           <div class="contact">
-            📞 <a href="tel:${customer?.phone ?? ""}">${customer?.phone ?? "—"}</a>
+            📞 <a href="tel:${esc(customer?.phone)}">${esc(customer?.phone) || "—"}</a>
           </div>
         </div>
       </div>
@@ -449,8 +459,8 @@ export async function GET(request: NextRequest) {
           <div class="detail-icon">🏨</div>
           <div>
             <div class="detail-label">Hotel</div>
-            <div class="detail-value">${res.hotel_name}</div>
-            ${res.hotel_address ? `<div style="font-size:12px;color:#888;margin-top:2px">${res.hotel_address}</div>` : ""}
+            <div class="detail-value">${esc(String(res.hotel_name))}</div>
+            ${res.hotel_address ? `<div style="font-size:12px;color:#888;margin-top:2px">${esc(String(res.hotel_address))}</div>` : ""}
           </div>
         </div>
       </div>` : ""}
@@ -465,8 +475,8 @@ export async function GET(request: NextRequest) {
         <div class="vehicle-card">
           <div class="icon">🚗</div>
           <div class="info">
-            <div class="name">${vehicle?.brand ?? ""} ${vehicle?.model ?? ""}</div>
-            <div class="plate">${vehicle?.plate_number ?? "—"}</div>
+            <div class="name">${esc(vehicle?.brand)} ${esc(vehicle?.model)}</div>
+            <div class="plate">${esc(vehicle?.plate_number) || "—"}</div>
           </div>
         </div>
         ${driver ? `
@@ -474,8 +484,8 @@ export async function GET(request: NextRequest) {
           <div class="detail-icon">👤</div>
           <div>
             <div class="detail-label">Driver</div>
-            <div class="detail-value">${driver.full_name}</div>
-            <div style="font-size:12px;color:#888;margin-top:2px">${driver.phone}</div>
+            <div class="detail-value">${esc(driver.full_name)}</div>
+            <div style="font-size:12px;color:#888;margin-top:2px">${esc(driver.phone)}</div>
           </div>
         </div>` : ""}
       </div>

@@ -51,6 +51,20 @@ export default function AccountLoginPage() {
     setSuccess("");
     setShowAlreadyRegistered(false);
 
+    // Password strength check for registration
+    if (mode === "register") {
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        setLoading(false);
+        return;
+      }
+      if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+        setError("Password must contain uppercase, lowercase, and a number");
+        setLoading(false);
+        return;
+      }
+    }
+
     if (mode === "register") {
       const { error, data } = await supabase.auth.signUp({
         email,
@@ -181,7 +195,7 @@ export default function AccountLoginPage() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                minLength={6}
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t.password[locale] ?? t.password.en}

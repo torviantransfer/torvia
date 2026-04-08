@@ -1,7 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-const ADMIN_EMAILS = ["admin@velora.test"];
+function getAdminEmails(): string[] {
+  const envEmails = process.env.ADMIN_EMAILS;
+  if (!envEmails) return [];
+  return envEmails.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+}
 
 export async function verifyAdmin() {
   const supabase = await createClient();
@@ -9,7 +13,12 @@ export async function verifyAdmin() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) {
+  if (!user || !user.email) return null;
+
+  const adminEmails = getAdminEmails();
+  if (adminEmails.length === 0) return null;
+
+  if (!adminEmails.includes(user.email.toLowerCase())) {
     return null;
   }
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { trackReservationSchema } from "@/lib/validations";
+import { rateLimit } from "@/lib/rate-limit";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,18 +9,24 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { code, email } = body;
+  // Rate limit: 10 attempts per minute per IP
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rl = rateLimit(`track:${ip}`, { maxRequests: 10, windowMs: 60_000 });
+  if (!rl.success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
 
-  if (!code || !email) {
+  const body = await request.json();
+  const parsed = trackReservationSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Reservation code and email are required" },
+      { error: "Invalid input" },
       { status: 400 }
     );
   }
 
-  const trimmedCode = String(code).trim().toUpperCase();
-  const trimmedEmail = String(email).trim().toLowerCase();
+  const trimmedCode = parsed.data.code.toUpperCase();
+  const trimmedEmail = parsed.data.email;
 
   const { data: reservation } = await supabase
     .from("reservations")
