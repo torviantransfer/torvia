@@ -98,19 +98,19 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Earnings</span>
+                  <span className="text-gray-400">Kazanç</span>
                   <span className="text-green-600 font-medium">
                     +${b.earnings.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Paid</span>
+                  <span className="text-gray-400">Ödenen</span>
                   <span className="text-red-600 font-medium">
                     -${b.payments.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-gray-100">
-                  <span className="font-semibold text-gray-700">Balance</span>
+                  <span className="font-semibold text-gray-700">Bakiye</span>
                   <span
                     className={`font-bold text-lg ${b.balance >= 0 ? "text-green-700" : "text-red-700"}`}
                   >
@@ -125,13 +125,13 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
 
       {/* Add payment button */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="font-bold text-gray-900">Transaction History</h2>
+        <h2 className="font-bold text-gray-900">İşlem Geçmişi</h2>
         <button
           onClick={() => setShowForm(!showForm)}
           className="px-4 py-2 bg-slate-900 text-white text-sm rounded-lg flex items-center gap-2 hover:bg-slate-800"
         >
           <Plus size={14} />
-          Add Transaction
+          İşlem Ekle
         </button>
       </div>
 
@@ -150,7 +150,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
               required
               className="px-3 py-2.5 text-sm border border-gray-200 rounded-lg"
             >
-              <option value="">Select Driver</option>
+              <option value="">Şoför Seçin</option>
               {drivers.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.full_name}
@@ -167,16 +167,16 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
               }
               className="px-3 py-2.5 text-sm border border-gray-200 rounded-lg"
             >
-              <option value="earning">Earning</option>
-              <option value="payment">Payment to Driver</option>
-              <option value="adjustment">Adjustment</option>
+              <option value="earning">Kazanç</option>
+              <option value="payment">Şoföre Ödeme</option>
+              <option value="adjustment">Düzeltme</option>
             </select>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <input
               type="number"
               step="0.01"
-              placeholder="Amount ($)"
+              placeholder="Tutar ($)"
               value={formData.amount}
               onChange={(e) =>
                 setFormData({ ...formData, amount: e.target.value })
@@ -186,7 +186,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
             />
             <input
               type="text"
-              placeholder="Description"
+              placeholder="Açıklama"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -198,7 +198,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
             type="submit"
             className="px-6 py-2.5 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600"
           >
-            Save Transaction
+            İşlemi Kaydet
           </button>
         </form>
       )}
@@ -208,15 +208,15 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-left">
-              <th className="px-5 py-3 font-medium text-gray-500">Date</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Driver</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Type</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Tarih</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Şoför</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Tür</th>
               <th className="px-5 py-3 font-medium text-gray-500">Ref</th>
               <th className="px-5 py-3 font-medium text-gray-500">
-                Description
+                Açıklama
               </th>
               <th className="px-5 py-3 font-medium text-gray-500 text-right">
-                Amount
+                Tutar
               </th>
             </tr>
           </thead>
@@ -275,7 +275,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
                   colSpan={6}
                   className="px-5 py-8 text-center text-gray-400"
                 >
-                  No transactions found
+                  İşlem bulunamadı
                 </td>
               </tr>
             )}

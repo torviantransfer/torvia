@@ -80,7 +80,7 @@ export default function PricingManager({
   return (
     <div>
       <p className="text-sm text-gray-500 mb-4">
-        All prices in USD. {pricing.length} routes configured.
+        Tüm fiyatlar USD cinsindendir. {pricing.length} güzergah yapılandırıldı.
       </p>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -88,15 +88,15 @@ export default function PricingManager({
           <thead>
             <tr className="bg-gray-50 text-left">
               <th className="px-5 py-3 font-medium text-gray-500">#</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Region</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Category</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Bölge</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Kategori</th>
               <th className="px-5 py-3 font-medium text-gray-500 text-right">
-                One Way ($)
+                Tek Yön ($)
               </th>
               <th className="px-5 py-3 font-medium text-gray-500 text-right">
-                Round Trip ($)
+                Gidiş-Dönüş ($)
               </th>
-              <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -185,7 +185,7 @@ export default function PricingManager({
             {pricing.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-5 py-8 text-center text-gray-400">
-                  No pricing configured yet
+                  Henüz fiyatlandırma yapılmadı
                 </td>
               </tr>
             )}

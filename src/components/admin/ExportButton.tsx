@@ -31,14 +31,14 @@ export default function ExportButton() {
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             >
               <FileText size={15} className="text-green-600" />
-              Export CSV
+              CSV Aktar
             </button>
             <button
               onClick={() => doExport("excel")}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             >
               <FileSpreadsheet size={15} className="text-emerald-600" />
-              Export Excel
+              Excel Aktar
             </button>
           </div>
         </>

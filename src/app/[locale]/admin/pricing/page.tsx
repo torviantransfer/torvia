@@ -22,7 +22,7 @@ export default async function AdminPricingPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Pricing</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Fiyatlandırma</h1>
       <PricingManager
         initialPricing={pricing ?? []}
         regions={regions ?? []}

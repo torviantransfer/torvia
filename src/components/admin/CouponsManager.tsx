@@ -99,7 +99,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this coupon?")) return;
+    if (!confirm("Bu kuponu silmek istediğinize emin misiniz?")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -127,7 +127,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{coupons.length} coupons</p>
+        <p className="text-sm text-gray-500">{coupons.length} kupon</p>
         <button
           onClick={() => {
             resetForm();
@@ -136,7 +136,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Coupon
+          Kupon Ekle
         </button>
       </div>
 
@@ -146,12 +146,12 @@ export default function CouponsManager({ initialCoupons }: Props) {
           className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
         >
           <h3 className="font-bold text-gray-900">
-            {editingId ? "Edit Coupon" : "New Coupon"}
+            {editingId ? "Kupon Düzenle" : "Yeni Kupon"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Code *
+                Kod *
               </label>
               <input
                 required
@@ -159,13 +159,13 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, code: e.target.value.toUpperCase() })
                 }
-                placeholder="e.g. SUMMER20"
+                placeholder="örn. SUMMER20"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Type
+                Tür
               </label>
               <select
                 value={form.discount_type}
@@ -174,13 +174,13 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 }
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               >
-                <option value="percent">Percentage (%)</option>
-                <option value="fixed">Fixed ($)</option>
+                <option value="percent">Yüzde (%)</option>
+                <option value="fixed">Sabit ($)</option>
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Value
+                Değer
               </label>
               <input
                 type="number"
@@ -194,7 +194,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Min Order ($)
+                Min Sipariş ($)
               </label>
               <input
                 type="number"
@@ -208,7 +208,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Max Uses
+                Max Kullanım
               </label>
               <input
                 type="number"
@@ -221,7 +221,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Valid Until
+                Geçerlilik Tarihi
               </label>
               <input
                 type="date"
@@ -239,14 +239,14 @@ export default function CouponsManager({ initialCoupons }: Props) {
               disabled={loading}
               className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
             >
-              Cancel
+              İptal
             </button>
           </div>
         </form>
@@ -256,12 +256,12 @@ export default function CouponsManager({ initialCoupons }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-left">
-              <th className="px-5 py-3 font-medium text-gray-500">Code</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Discount</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Usage</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Valid Until</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Status</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Kod</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İndirim</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Kullanım</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Geçerlilik</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -281,13 +281,13 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 <td className="px-5 py-3 text-gray-600">
                   {c.valid_until
                     ? new Date(c.valid_until).toLocaleDateString()
-                    : "No expiry"}
+                    : "Süresi yok"}
                 </td>
                 <td className="px-5 py-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${c.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
-                    {c.is_active ? "Active" : "Inactive"}
+                    {c.is_active ? "Aktif" : "Pasif"}
                   </span>
                 </td>
                 <td className="px-5 py-3">
@@ -322,7 +322,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
             {coupons.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-5 py-8 text-center text-gray-400">
-                  No coupons yet
+                  Henüz kupon yok
                 </td>
               </tr>
             )}

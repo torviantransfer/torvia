@@ -104,7 +104,7 @@ export default function VehiclesManager({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this vehicle?")) return;
+    if (!confirm("Bu aracı silmek istediğinize emin misiniz?")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -132,7 +132,7 @@ export default function VehiclesManager({
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{vehicles.length} vehicles</p>
+        <p className="text-sm text-gray-500">{vehicles.length} araç</p>
         <button
           onClick={() => {
             resetForm();
@@ -141,7 +141,7 @@ export default function VehiclesManager({
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Vehicle
+          Araç Ekle
         </button>
       </div>
 
@@ -151,12 +151,12 @@ export default function VehiclesManager({
           className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
         >
           <h3 className="font-bold text-gray-900">
-            {editingId ? "Edit Vehicle" : "New Vehicle"}
+            {editingId ? "Araç Düzenle" : "Yeni Araç"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Category
+                Kategori
               </label>
               <select
                 value={form.category_id}
@@ -174,7 +174,7 @@ export default function VehiclesManager({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Plate Number
+                Plaka
               </label>
               <input
                 value={form.plate_number}
@@ -186,7 +186,7 @@ export default function VehiclesManager({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Brand *
+                Marka *
               </label>
               <input
                 required
@@ -208,7 +208,7 @@ export default function VehiclesManager({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Year
+                Yıl
               </label>
               <input
                 type="number"
@@ -221,7 +221,7 @@ export default function VehiclesManager({
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Color
+                Renk
               </label>
               <input
                 value={form.color}
@@ -236,14 +236,14 @@ export default function VehiclesManager({
               disabled={loading}
               className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
             >
-              Cancel
+              İptal
             </button>
           </div>
         </form>
@@ -253,12 +253,12 @@ export default function VehiclesManager({
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-left">
-              <th className="px-5 py-3 font-medium text-gray-500">Vehicle</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Plate</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Category</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Year</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Status</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Araç</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Plaka</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Kategori</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Yıl</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -283,7 +283,7 @@ export default function VehiclesManager({
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${v.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
-                    {v.is_active ? "Active" : "Inactive"}
+                    {v.is_active ? "Aktif" : "Pasif"}
                   </span>
                 </td>
                 <td className="px-5 py-3">
@@ -318,7 +318,7 @@ export default function VehiclesManager({
             {vehicles.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-5 py-8 text-center text-gray-400">
-                  No vehicles added yet
+                  Henüz araç eklenmedi
                 </td>
               </tr>
             )}

@@ -11,7 +11,7 @@ export default async function AdminReviewsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Değerlendirmeler</h1>
       <ReviewsManager initialReviews={reviews ?? []} />
     </div>
   );

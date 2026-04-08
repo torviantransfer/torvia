@@ -17,12 +17,20 @@ export async function POST(request: NextRequest) {
     // Find the driver assignment by link token
     const { data: assignment } = await supabase
       .from("driver_assignments")
-      .select("id, reservation_id, status")
+      .select("id, reservation_id, status, completed_at")
       .eq("link_token", token)
       .single();
 
     if (!assignment) {
       return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+    }
+
+    // Reject if link is expired (2h after completion)
+    if (assignment.status === "completed" && assignment.completed_at) {
+      const elapsed = Date.now() - new Date(assignment.completed_at).getTime();
+      if (elapsed > 2 * 60 * 60 * 1000) {
+        return NextResponse.json({ error: "This link has expired" }, { status: 403 });
+      }
     }
 
     // Extract QR token from the scanned value

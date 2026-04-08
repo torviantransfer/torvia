@@ -49,7 +49,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this review?")) return;
+    if (!confirm("Bu değerlendirmeyi silmek istediğinize emin misiniz?")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -75,10 +75,10 @@ export default function ReviewsManager({ initialReviews }: Props) {
             }`}
           >
             {f === "all"
-              ? `All (${reviews.length})`
+              ? `Tümü (${reviews.length})`
               : f === "pending"
-                ? `Pending (${reviews.filter((r) => !r.is_approved).length})`
-                : `Approved (${reviews.filter((r) => r.is_approved).length})`}
+                ? `Bekleyen (${reviews.filter((r) => !r.is_approved).length})`
+                : `Onaylı (${reviews.filter((r) => r.is_approved).length})`}
           </button>
         ))}
       </div>
@@ -116,7 +116,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
                         : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
-                    {review.is_approved ? "Approved" : "Pending"}
+                    {review.is_approved ? "Onaylı" : "Bekliyor"}
                   </span>
                 </div>
                 {review.comment && (
@@ -128,7 +128,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
                   <span>
                     {review.customers
                       ? `${review.customers.first_name} ${review.customers.last_name}`
-                      : "Anonymous"}
+                      : "Anonim"}
                   </span>
                   {review.reservations && (
                     <span className="font-mono">
@@ -148,7 +148,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
                       ? "hover:bg-yellow-50 text-yellow-600"
                       : "hover:bg-green-50 text-green-600"
                   }`}
-                  title={review.is_approved ? "Unapprove" : "Approve"}
+                  title={review.is_approved ? "Onayı Kaldır" : "Onayla"}
                 >
                   {review.is_approved ? (
                     <XCircle size={18} />
@@ -159,7 +159,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
                 <button
                   onClick={() => handleDelete(review.id)}
                   className="p-2 rounded-lg hover:bg-red-50 text-red-500"
-                  title="Delete"
+                  title="Sil"
                 >
                   <Trash2 size={18} />
                 </button>
@@ -169,7 +169,7 @@ export default function ReviewsManager({ initialReviews }: Props) {
         ))}
         {filtered.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            No reviews {filter !== "all" ? `(${filter})` : ""} yet
+            Henüz değerlendirme yok {filter !== "all" ? `(${filter === "pending" ? "bekleyen" : "onaylı"})` : ""}
           </div>
         )}
       </div>

@@ -46,8 +46,8 @@ export default function AdminLoginForm() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Lock size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">VELORA Admin</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to continue</p>
+          <h1 className="text-2xl font-bold text-gray-900">VELORA Yönetim</h1>
+          <p className="text-gray-500 text-sm mt-1">Devam etmek için giriş yapın</p>
         </div>
 
         <form
@@ -56,7 +56,7 @@ export default function AdminLoginForm() {
         >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
+              E-posta
             </label>
             <div className="relative">
               <Mail
@@ -76,7 +76,7 @@ export default function AdminLoginForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              Şifre
             </label>
             <div className="relative">
               <Lock
@@ -111,7 +111,7 @@ export default function AdminLoginForm() {
             ) : (
               <Lock size={16} />
             )}
-            Sign In
+            Giriş Yap
           </button>
         </form>
       </div>

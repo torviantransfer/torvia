@@ -131,7 +131,7 @@ export default function BlogManager({ initialPosts }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this blog post?")) return;
+    if (!confirm("Bu blog yazısını silmek istediğinize emin misiniz?")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ export default function BlogManager({ initialPosts }: Props) {
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-gray-500">{posts.length} posts</p>
+        <p className="text-sm text-gray-500">{posts.length} yazı</p>
         <button
           onClick={() => {
             resetForm();
@@ -179,7 +179,7 @@ export default function BlogManager({ initialPosts }: Props) {
           className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
         >
           <Plus size={16} />
-          New Post
+          Yeni Yazı
         </button>
       </div>
 
@@ -213,7 +213,7 @@ export default function BlogManager({ initialPosts }: Props) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL
+                Resim URL
               </label>
               <input
                 type="text"
@@ -246,19 +246,19 @@ export default function BlogManager({ initialPosts }: Props) {
           {/* Title & content for active language */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title ({LOCALE_LABELS[activeLang]})
+              Başlık ({LOCALE_LABELS[activeLang]})
             </label>
             <input
               type="text"
               value={form[`title_${activeLang}` as keyof typeof form]}
               onChange={(e) => updateField(`title_${activeLang}`, e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
-              placeholder={`Title in ${LOCALE_LABELS[activeLang]}`}
+              placeholder={`${LOCALE_LABELS[activeLang]} başlığı`}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Content ({LOCALE_LABELS[activeLang]})
+              İçerik ({LOCALE_LABELS[activeLang]})
             </label>
             <textarea
               value={form[`content_${activeLang}` as keyof typeof form]}
@@ -267,7 +267,7 @@ export default function BlogManager({ initialPosts }: Props) {
               }
               rows={10}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none resize-y"
-              placeholder={`Content in ${LOCALE_LABELS[activeLang]} (supports HTML)`}
+              placeholder={`${LOCALE_LABELS[activeLang]} içeriği (HTML destekler)`}
             />
           </div>
 
@@ -277,14 +277,14 @@ export default function BlogManager({ initialPosts }: Props) {
               disabled={loading}
               className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
             >
-              {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              İptal
             </button>
           </div>
         </form>
@@ -296,19 +296,19 @@ export default function BlogManager({ initialPosts }: Props) {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-left px-4 py-3 font-medium text-gray-700">
-                Title
+                Başlık
               </th>
               <th className="text-left px-4 py-3 font-medium text-gray-700">
                 Slug
               </th>
               <th className="text-center px-4 py-3 font-medium text-gray-700">
-                Status
+                Durum
               </th>
               <th className="text-center px-4 py-3 font-medium text-gray-700">
-                Date
+                Tarih
               </th>
               <th className="text-right px-4 py-3 font-medium text-gray-700">
-                Actions
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -319,7 +319,7 @@ export default function BlogManager({ initialPosts }: Props) {
                 className="border-b border-gray-100 hover:bg-gray-50"
               >
                 <td className="px-4 py-3 font-medium text-gray-900">
-                  {post.title_en || post.title_tr || "Untitled"}
+                  {post.title_en || post.title_tr || "Başlıksız"}
                 </td>
                 <td className="px-4 py-3 text-gray-500">{post.slug}</td>
                 <td className="px-4 py-3 text-center">
@@ -335,7 +335,7 @@ export default function BlogManager({ initialPosts }: Props) {
                     ) : (
                       <EyeOff size={12} />
                     )}
-                    {post.is_published ? "Published" : "Draft"}
+                    {post.is_published ? "Yayında" : "Taslak"}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center text-gray-500">
@@ -347,7 +347,7 @@ export default function BlogManager({ initialPosts }: Props) {
                       onClick={() => handleToggle(post.id)}
                       className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                       title={
-                        post.is_published ? "Unpublish" : "Publish"
+                        post.is_published ? "Yayından Kaldır" : "Yayınla"
                       }
                     >
                       <Power
@@ -381,7 +381,7 @@ export default function BlogManager({ initialPosts }: Props) {
                   colSpan={5}
                   className="px-4 py-8 text-center text-gray-400"
                 >
-                  No blog posts yet. Create your first post!
+                  Henüz blog yazısı yok. İlk yazınızı oluşturun!
                 </td>
               </tr>
             )}

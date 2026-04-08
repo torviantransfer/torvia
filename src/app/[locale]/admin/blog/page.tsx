@@ -11,7 +11,7 @@ export default async function AdminBlogPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Blog Posts</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Blog Yazıları</h1>
       <BlogManager initialPosts={posts ?? []} />
     </div>
   );

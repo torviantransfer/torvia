@@ -187,7 +187,7 @@ export default function ReservationList({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Driver Assigned!</h3>
+              <h3 className="text-lg font-bold text-gray-900">Şoför Atandı!</h3>
               <button
                 onClick={() => { setDriverLinkModal(null); window.location.reload(); }}
                 className="p-1 hover:bg-gray-100 rounded-lg"
@@ -196,7 +196,7 @@ export default function ReservationList({
               </button>
             </div>
             <p className="text-sm text-gray-600 mb-4">
-              Send the link below to <strong>{driverLinkModal.driverName}</strong> so they can view transfer details.
+              Aşağıdaki linki <strong>{driverLinkModal.driverName}</strong> adlı şoföre gönderin.
             </p>
             <div className="bg-gray-50 rounded-lg p-3 mb-4 flex items-center gap-2">
               <input
@@ -221,13 +221,13 @@ export default function ReservationList({
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-sm"
               >
                 <MessageCircle size={16} />
-                Send via WhatsApp
+                WhatsApp ile Gönder
               </a>
               <button
                 onClick={() => { setDriverLinkModal(null); window.location.reload(); }}
                 className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
               >
-                Close
+                Kapat
               </button>
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function ReservationList({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by code, name, or email..."
+            placeholder="Kod, isim veya e-posta ile ara..."
             className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
           />
         </div>
@@ -253,14 +253,14 @@ export default function ReservationList({
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
         >
-          <option value="all">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="paid">Paid</option>
-          <option value="driver_assigned">Driver Assigned</option>
-          <option value="passenger_picked_up">Picked Up</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="cancel_requested">Cancel Requested</option>
+          <option value="all">Tüm Durumlar</option>
+          <option value="pending">Beklemede</option>
+          <option value="paid">Ödendi</option>
+          <option value="driver_assigned">Şoför Atandı</option>
+          <option value="passenger_picked_up">Alındı</option>
+          <option value="completed">Tamamlandı</option>
+          <option value="cancelled">İptal Edildi</option>
+          <option value="cancel_requested">İptal Talep Edildi</option>
         </select>
       </div>
 
@@ -290,7 +290,7 @@ export default function ReservationList({
                   </span>
                   {r.trip_type === "round_trip" && (
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      Round Trip
+                      Gidiş-Dönüş
                     </span>
                   )}
                 </div>
@@ -323,7 +323,7 @@ export default function ReservationList({
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-xs font-medium text-gray-400 mb-1">
-                      Customer
+                      Müşteri
                     </p>
                     <p className="font-medium">
                       {r.customers?.first_name} {r.customers?.last_name}
@@ -335,34 +335,34 @@ export default function ReservationList({
                     <p className="text-xs font-medium text-gray-400 mb-1">
                       Transfer
                     </p>
-                    <p>Airport → {r.regions?.name_en}</p>
+                    <p>Havalimanı → {r.regions?.name_en}</p>
                     <p className="text-gray-500">
-                      Flight: {r.flight_code || "—"}
+                      Uçuş: {r.flight_code || "—"}
                     </p>
                     <p className="text-gray-500">
-                      {r.adults} adults, {r.children} children
+                      {r.adults} yetişkin, {r.children} çocuk
                     </p>
                     {r.child_seat && (
                       <p className="text-green-600 text-xs">
-                        Child seat requested
+                        Çocuk koltuğu istendi
                       </p>
                     )}
                     {r.welcome_sign && (
                       <p className="text-blue-600 text-xs">
-                        Welcome sign requested
+                        Karşılama tabelası istendi
                       </p>
                     )}
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-400 mb-1">
-                      Details
+                      Detaylar
                     </p>
-                    <p>Hotel: {r.hotel_name || "—"}</p>
+                    <p>Otel: {r.hotel_name || "—"}</p>
                     <p className="text-gray-500">
-                      Notes: {r.notes || "—"}
+                      Notlar: {r.notes || "—"}
                     </p>
                     <p className="text-gray-500">
-                      Booked:{" "}
+                      Rezervasyon:{" "}
                       {new Date(r.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -373,7 +373,7 @@ export default function ReservationList({
                   {/* Cancel request actions */}
                   {r.status === "cancel_requested" && (
                     <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm font-medium text-amber-800 mb-2">⚠️ Cancellation Requested</p>
+                      <p className="text-sm font-medium text-amber-800 mb-2">⚠️ İptal Talebi</p>
                       {r.notes && <p className="text-xs text-amber-700 mb-3">{r.notes}</p>}
                       <div className="flex items-center gap-2">
                         <button
@@ -387,7 +387,7 @@ export default function ReservationList({
                           }}
                           className="px-4 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium"
                         >
-                          Approve Cancel
+                          İptali Onayla
                         </button>
                         <button
                           onClick={async () => {
@@ -400,7 +400,7 @@ export default function ReservationList({
                           }}
                           className="px-4 py-2 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
                         >
-                          Reject (Keep Active)
+                          Reddet (Aktif Tut)
                         </button>
                       </div>
                     </div>
@@ -409,7 +409,7 @@ export default function ReservationList({
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-xs font-medium text-gray-400">
-                          Driver:
+                          Şoför:
                         </span>
                         <span className="font-medium text-sm">
                           {r.driver_assignments[0].drivers?.full_name}
@@ -437,14 +437,14 @@ export default function ReservationList({
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-medium"
                           >
                             <MessageCircle size={13} />
-                            Send via WhatsApp
+                            WhatsApp ile Gönder
                           </a>
                           <button
                             onClick={() => copyToClipboard(`${window.location.origin}/driver/${r.driver_assignments[0].link_token}`)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
                           >
                             {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
-                            {copiedLink ? "Copied!" : "Copy Link"}
+                            {copiedLink ? "Kopyalandı!" : "Linki Kopyala"}
                           </button>
                           <a
                             href={`/driver/${r.driver_assignments[0].link_token}`}
@@ -453,7 +453,7 @@ export default function ReservationList({
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
                           >
                             <ExternalLink size={13} />
-                            Open Driver Page
+                            Şoför Sayfası
                           </a>
                         </div>
                       )}
@@ -467,7 +467,7 @@ export default function ReservationList({
                           onChange={(e) => setSelectedDriver(e.target.value)}
                           className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
                         >
-                          <option value="">Select Driver</option>
+                          <option value="">Şoför Seçin</option>
                           {drivers.map((d) => (
                             <option key={d.id} value={d.id}>
                               {d.full_name}
@@ -479,7 +479,7 @@ export default function ReservationList({
                           onChange={(e) => setSelectedVehicle(e.target.value)}
                           className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
                         >
-                          <option value="">Select Vehicle</option>
+                          <option value="">Araç Seçin</option>
                           {vehicles.map((v) => (
                             <option key={v.id} value={v.id}>
                               {v.plate_number} — {v.brand} {v.model}
@@ -492,13 +492,13 @@ export default function ReservationList({
                           className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-40 flex items-center gap-1"
                         >
                           <Send size={14} />
-                          {checkingConflicts ? "Checking..." : "Assign & Send Link"}
+                          {checkingConflicts ? "Kontrol ediliyor..." : "Ata ve Link Gönder"}
                         </button>
                         <button
                           onClick={() => { setAssigningId(null); setConflicts([]); setForceAssign(false); }}
                           className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
                         >
-                          Cancel
+                          İptal
                         </button>
                       </div>
                       {/* Conflict warning */}
@@ -506,7 +506,7 @@ export default function ReservationList({
                         <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <AlertTriangle size={14} className="text-amber-600" />
-                            <p className="text-xs font-semibold text-amber-800">Scheduling Conflict Detected</p>
+                            <p className="text-xs font-semibold text-amber-800">Zamanlama Çakışması Tespit Edildi</p>
                           </div>
                           <div className="space-y-1 mb-3">
                             {conflicts.map((c) => (
@@ -521,7 +521,7 @@ export default function ReservationList({
                             onClick={() => { setForceAssign(true); setTimeout(() => assignDriver(r.id), 50); }}
                             className="px-3 py-1.5 text-xs bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
                           >
-                            Assign Anyway
+                            Yine de Ata
                           </button>
                         </div>
                       )}
@@ -538,7 +538,7 @@ export default function ReservationList({
                         className="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
                       >
                         <UserPlus size={14} />
-                        Assign Driver
+                        Şoför Ata
                       </button>
                     )
                   ) : null}
@@ -550,7 +550,7 @@ export default function ReservationList({
 
         {filtered.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            No reservations found
+            Rezervasyon bulunamadı
           </div>
         )}
       </div>

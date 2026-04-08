@@ -16,7 +16,7 @@ export default async function AdminDriversPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Drivers</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Şoförler</h1>
       <DriversManager
         initialDrivers={drivers ?? []}
         vehicles={vehicles ?? []}

@@ -16,7 +16,7 @@ export default async function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Ayarlar</h1>
       <SettingsManager
         initialSettings={settings ?? []}
         exchangeRates={rates ?? []}

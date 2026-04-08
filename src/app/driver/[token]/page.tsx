@@ -37,6 +37,32 @@ export default async function DriverPage({
     notFound();
   }
 
+  // Expire link 2 hours after transfer completion
+  if (assignment.status === "completed" && assignment.completed_at) {
+    const completedAt = new Date(assignment.completed_at).getTime();
+    const now = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000;
+    if (now - completedAt > twoHours) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="max-w-md w-full text-center">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <div className="text-5xl mb-4">🔒</div>
+              <h1 className="text-2xl font-bold text-slate-900 mb-2">Link Expired</h1>
+              <p className="text-gray-500 text-sm mb-6">
+                This driver link has expired. Transfer links are automatically
+                deactivated 2 hours after the transfer is completed.
+              </p>
+              <div className="text-xs text-gray-400">
+                VELORA VIP Transfer
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto px-4 py-6">

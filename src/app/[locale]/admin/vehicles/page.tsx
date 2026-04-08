@@ -16,7 +16,7 @@ export default async function AdminVehiclesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Vehicles</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Araçlar</h1>
       <VehiclesManager
         initialVehicles={vehicles ?? []}
         categories={categories ?? []}

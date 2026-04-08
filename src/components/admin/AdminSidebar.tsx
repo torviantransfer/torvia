@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
 import {
   LayoutDashboard,
   CalendarCheck,
@@ -20,22 +21,23 @@ import {
 } from "lucide-react";
 
 const navDefs = [
-  { path: "", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/reservations", label: "Reservations", icon: CalendarCheck },
-  { path: "/calendar", label: "Calendar", icon: Calendar },
-  { path: "/drivers", label: "Drivers", icon: Users },
-  { path: "/vehicles", label: "Vehicles", icon: Car },
-  { path: "/pricing", label: "Pricing", icon: DollarSign },
-  { path: "/regions", label: "Regions", icon: MapPin },
-  { path: "/blog", label: "Blog Posts", icon: FileText },
-  { path: "/coupons", label: "Coupons", icon: Ticket },
-  { path: "/reviews", label: "Reviews", icon: Star },
-  { path: "/driver-payments", label: "Driver Payments", icon: Wallet },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "", label: "Kontrol Paneli", icon: LayoutDashboard },
+  { path: "/reservations", label: "Rezervasyonlar", icon: CalendarCheck },
+  { path: "/calendar", label: "Takvim", icon: Calendar },
+  { path: "/drivers", label: "Şoförler", icon: Users },
+  { path: "/vehicles", label: "Araçlar", icon: Car },
+  { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },
+  { path: "/regions", label: "Bölgeler", icon: MapPin },
+  { path: "/blog", label: "Blog Yazıları", icon: FileText },
+  { path: "/coupons", label: "Kuponlar", icon: Ticket },
+  { path: "/reviews", label: "Değerlendirmeler", icon: Star },
+  { path: "/driver-payments", label: "Şoför Ödemeleri", icon: Wallet },
+  { path: "/settings", label: "Ayarlar", icon: Settings },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   // Extract locale from pathname (e.g. /en/admin/... → en)
   const locale = pathname.split("/")[1] || "en";
   const base = `/${locale}/admin`;
@@ -75,7 +77,7 @@ export default function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-          Menu
+          Menü
         </p>
         <div className="space-y-1">
           {navItems.map((item) => {
@@ -121,20 +123,27 @@ export default function AdminSidebar() {
       <div className="px-3 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">A</span>
+            <span className="text-white text-xs font-bold">{(userEmail?.[0] ?? "A").toUpperCase()}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">Admin</p>
-            <p className="text-[11px] text-slate-500 truncate">admin@velora.com</p>
+            <p className="text-sm font-medium text-slate-200 truncate">Yönetici</p>
+            <p className="text-[11px] text-slate-500 truncate">{userEmail}</p>
           </div>
         </div>
-        <Link
-          href={`/${locale}`}
-          className="flex items-center gap-3 px-3 py-2 mt-1 rounded-lg text-[13px] text-slate-500 hover:text-red-400 transition-all"
+        <button
+          onClick={async () => {
+            const supabase = createBrowserClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+            );
+            await supabase.auth.signOut();
+            router.push(`/${locale}`);
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2 mt-1 rounded-lg text-[13px] text-slate-500 hover:text-red-400 transition-all cursor-pointer"
         >
           <LogOut size={16} />
-          <span>Exit Admin</span>
-        </Link>
+          <span>Çıkış Yap</span>
+        </button>
       </div>
     </aside>
   );

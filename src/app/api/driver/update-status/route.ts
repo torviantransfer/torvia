@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Find assignment by token with driver & vehicle info
     const { data: assignment } = await supabase
       .from("driver_assignments")
-      .select("id, reservation_id, status, drivers(full_name), vehicles(brand, model, plate_number)")
+      .select("id, reservation_id, status, completed_at, drivers(full_name), vehicles(brand, model, plate_number)")
       .eq("link_token", token)
       .single();
 
@@ -38,6 +38,14 @@ export async function POST(request: NextRequest) {
         { error: "Assignment not found" },
         { status: 404 }
       );
+    }
+
+    // Reject if link is expired (2h after completion)
+    if (assignment.status === "completed" && assignment.completed_at) {
+      const elapsed = Date.now() - new Date(assignment.completed_at as string).getTime();
+      if (elapsed > 2 * 60 * 60 * 1000) {
+        return NextResponse.json({ error: "This link has expired" }, { status: 403 });
+      }
     }
 
     // Update assignment status + timestamps

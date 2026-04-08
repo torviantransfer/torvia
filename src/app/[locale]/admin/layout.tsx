@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { verifyAdmin } from "@/lib/admin-auth";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
 
@@ -7,10 +7,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await verifyAdmin();
 
   if (!user) {
     return <AdminLoginForm />;
@@ -19,7 +16,7 @@ export default async function AdminLayout({
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F1F5F9", color: "#0F172A", colorScheme: "light" }}>
       <div className="flex">
-        <AdminSidebar />
+        <AdminSidebar userEmail={user.email ?? ""} />
         <main className="flex-1 ml-64 min-h-screen">
           <div className="p-6 lg:p-8 max-w-7xl">{children}</div>
         </main>

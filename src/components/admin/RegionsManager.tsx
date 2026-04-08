@@ -117,7 +117,7 @@ export default function RegionsManager({ initialRegions }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this region? This will also delete its pricing.")) return;
+    if (!confirm("Bu bölgeyi silmek istediğinize emin misiniz? Fiyatlandırması da silinecektir.")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -148,7 +148,7 @@ export default function RegionsManager({ initialRegions }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{regions.length} regions</p>
+        <p className="text-sm text-gray-500">{regions.length} bölge</p>
         <button
           onClick={() => {
             resetForm();
@@ -157,7 +157,7 @@ export default function RegionsManager({ initialRegions }: Props) {
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Region
+          Bölge Ekle
         </button>
       </div>
 
@@ -167,7 +167,7 @@ export default function RegionsManager({ initialRegions }: Props) {
           className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
         >
           <h3 className="font-bold text-gray-900">
-            {editingId ? "Edit Region" : "New Region"}
+            {editingId ? "Bölge Düzenle" : "Yeni Bölge"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
@@ -184,7 +184,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Name (TR) *
+                Ad (TR) *
               </label>
               <input
                 required
@@ -195,7 +195,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Name (EN) *
+                Ad (EN) *
               </label>
               <input
                 required
@@ -206,7 +206,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Name (DE)
+                Ad (DE)
               </label>
               <input
                 value={form.name_de}
@@ -216,7 +216,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Name (PL)
+                Ad (PL)
               </label>
               <input
                 value={form.name_pl}
@@ -226,7 +226,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Name (RU)
+                Ad (RU)
               </label>
               <input
                 value={form.name_ru}
@@ -236,7 +236,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Distance (km)
+                Mesafe (km)
               </label>
               <input
                 type="number"
@@ -250,7 +250,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Duration (min)
+                Süre (dk)
               </label>
               <input
                 type="number"
@@ -263,7 +263,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Sort Order
+                Sıralama
               </label>
               <input
                 type="number"
@@ -281,14 +281,14 @@ export default function RegionsManager({ initialRegions }: Props) {
               disabled={loading}
               className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
             >
-              Cancel
+              İptal
             </button>
           </div>
         </form>
@@ -299,13 +299,13 @@ export default function RegionsManager({ initialRegions }: Props) {
           <thead>
             <tr className="bg-gray-50 text-left">
               <th className="px-5 py-3 font-medium text-gray-500">#</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Region</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Bölge</th>
               <th className="px-5 py-3 font-medium text-gray-500">Slug</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Distance</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Duration</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Popular</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Status</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Mesafe</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Süre</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Popüler</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -321,21 +321,21 @@ export default function RegionsManager({ initialRegions }: Props) {
                   {r.distance_km ? `${r.distance_km} km` : "—"}
                 </td>
                 <td className="px-5 py-3 text-gray-600">
-                  {r.duration_minutes ? `${r.duration_minutes} min` : "—"}
+                  {r.duration_minutes ? `${r.duration_minutes} dk` : "—"}
                 </td>
                 <td className="px-5 py-3">
                   <button
                     onClick={() => handleToggle(r.id, "is_popular")}
                     className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_popular ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-400"}`}
                   >
-                    {r.is_popular ? "Popular" : "Normal"}
+                    {r.is_popular ? "Popüler" : "Normal"}
                   </button>
                 </td>
                 <td className="px-5 py-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
-                    {r.is_active ? "Active" : "Inactive"}
+                    {r.is_active ? "Aktif" : "Pasif"}
                   </span>
                 </td>
                 <td className="px-5 py-3">

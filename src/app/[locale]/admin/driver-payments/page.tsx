@@ -44,7 +44,7 @@ export default async function AdminDriverPaymentsPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Driver Payments (Cari Hesap)
+        Şoför Ödemeleri (Cari Hesap)
       </h1>
       <DriverPayments
         drivers={drivers ?? []}

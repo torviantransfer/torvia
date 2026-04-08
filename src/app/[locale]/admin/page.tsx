@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts";
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const supabase = createAdminClient();
 
   const [resCount, driverCount, vehicleCount, reviewCount] = await Promise.all(
@@ -53,7 +58,7 @@ export default async function AdminDashboard() {
 
   const stats = [
     {
-      label: "Total Reservations",
+      label: "Toplam Rezervasyon",
       value: resCount.count ?? 0,
       icon: CalendarCheck,
       gradient: "from-blue-500 to-indigo-600",
@@ -61,7 +66,7 @@ export default async function AdminDashboard() {
       text: "text-blue-600",
     },
     {
-      label: "Revenue",
+      label: "Gelir",
       value: `$${totalRevenue.toFixed(2)}`,
       icon: DollarSign,
       gradient: "from-emerald-500 to-teal-600",
@@ -69,7 +74,7 @@ export default async function AdminDashboard() {
       text: "text-emerald-600",
     },
     {
-      label: "Active Drivers",
+      label: "Aktif Şoförler",
       value: driverCount.count ?? 0,
       icon: Users,
       gradient: "from-violet-500 to-purple-600",
@@ -77,7 +82,7 @@ export default async function AdminDashboard() {
       text: "text-violet-600",
     },
     {
-      label: "Vehicles",
+      label: "Araçlar",
       value: vehicleCount.count ?? 0,
       icon: Car,
       gradient: "from-orange-500 to-amber-600",
@@ -105,9 +110,9 @@ export default async function AdminDashboard() {
     <div>
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Kontrol Paneli</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Welcome back. Here&apos;s an overview of your business.
+          Hoş geldiniz. İşletmenizin genel görünümü.
         </p>
       </div>
 
@@ -130,7 +135,7 @@ export default async function AdminDashboard() {
                 className={`flex items-center gap-1 ${s.text} text-xs font-medium`}
               >
                 <TrendingUp size={12} />
-                <span>Active</span>
+                <span>Aktif</span>
               </div>
             </div>
             <p className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -152,16 +157,16 @@ export default async function AdminDashboard() {
             </div>
             <div>
               <h2 className="font-semibold text-slate-900 text-sm">
-                Recent Reservations
+                Son Rezervasyonlar
               </h2>
-              <p className="text-xs text-slate-400">Last 10 bookings</p>
+              <p className="text-xs text-slate-400">Son 10 kayıt</p>
             </div>
           </div>
           <a
-            href="/en/admin/reservations"
+            href={`/${locale}/admin/reservations`}
             className="inline-flex items-center gap-1 text-xs font-medium text-orange-500 hover:text-orange-600 transition-colors"
           >
-            View All
+            Tümünü Gör
             <ArrowUpRight size={12} />
           </a>
         </div>
@@ -170,22 +175,22 @@ export default async function AdminDashboard() {
             <thead>
               <tr className="border-b border-slate-50">
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Code
+                  Kod
                 </th>
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Customer
+                  Müşteri
                 </th>
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Region
+                  Bölge
                 </th>
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Date
+                  Tarih
                 </th>
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Price
+                  Fiyat
                 </th>
                 <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Status
+                  Durum
                 </th>
               </tr>
             </thead>
@@ -201,12 +206,9 @@ export default async function AdminDashboard() {
                     className="hover:bg-slate-50 transition-colors"
                   >
                     <td className="px-6 py-3.5">
-                      <a
-                        href={`/en/admin/reservations/${r.id}`}
-                        className="font-mono text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-                      >
+                      <span className="font-mono text-xs font-semibold text-indigo-600">
                         {r.reservation_code as string}
-                      </a>
+                      </span>
                     </td>
                     <td className="px-6 py-3.5">
                       <p className="font-medium text-slate-800 text-[13px]">
@@ -252,7 +254,7 @@ export default async function AdminDashboard() {
                         className="text-slate-300"
                         strokeWidth={1}
                       />
-                      <p>No reservations yet</p>
+                      <p>Henüz rezervasyon yok</p>
                     </div>
                   </td>
                 </tr>

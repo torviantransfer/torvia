@@ -88,30 +88,30 @@ export default function AdminDashboardCharts() {
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         <SummaryCard
           icon={CalendarCheck}
-          label="This Month"
+          label="Bu Ay"
           value={summary.thisMonthCount}
-          sub="reservations"
+          sub="rezervasyon"
           gradient="from-blue-500 to-indigo-600"
         />
         <SummaryCard
           icon={DollarSign}
-          label="This Month Revenue"
+          label="Bu Ay Gelir"
           value={`$${summary.thisMonthRevenue.toLocaleString()}`}
-          sub="earned"
+          sub="kazanılan"
           gradient="from-emerald-500 to-teal-600"
         />
         <SummaryCard
           icon={TrendingUp}
-          label="Total Revenue"
+          label="Toplam Gelir"
           value={`$${summary.totalRevenue.toLocaleString()}`}
-          sub="all time"
+          sub="tüm zamanlar"
           gradient="from-violet-500 to-purple-600"
         />
         <SummaryCard
           icon={AlertTriangle}
-          label="Cancel Requests"
+          label="İptal Talepleri"
           value={summary.cancelRequested}
-          sub="pending review"
+          sub="inceleme bekliyor"
           gradient="from-amber-500 to-orange-600"
         />
       </div>
@@ -119,7 +119,7 @@ export default function AdminDashboardCharts() {
       {/* Charts grid */}
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Monthly Revenue Chart */}
-        <ChartCard icon={BarChart3} title="Monthly Revenue" subtitle="Last 12 months">
+        <ChartCard icon={BarChart3} title="Aylık Gelir" subtitle="Son 12 ay">
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={monthlyRevenue}>
               <defs>
@@ -133,7 +133,7 @@ export default function AdminDashboardCharts() {
               <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
               <Tooltip
                 contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
-                formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]}
+                formatter={(value) => [`$${Number(value).toLocaleString()}`, "Gelir"]}
               />
               <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fill="url(#revenueGrad)" />
             </AreaChart>
@@ -141,20 +141,20 @@ export default function AdminDashboardCharts() {
         </ChartCard>
 
         {/* Daily Bookings */}
-        <ChartCard icon={Activity} title="Daily Bookings" subtitle="Last 30 days">
+        <ChartCard icon={Activity} title="Günlük Rezervasyonlar" subtitle="Son 30 gün">
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={dailyBookings}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={4} />
               <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
-              <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Bookings" />
+              <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Rezervasyon" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
         {/* Status Distribution */}
-        <ChartCard icon={PieIcon} title="Status Distribution" subtitle="All reservations">
+        <ChartCard icon={PieIcon} title="Durum Dağılımı" subtitle="Tüm rezervasyonlar">
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie
@@ -184,7 +184,7 @@ export default function AdminDashboardCharts() {
         </ChartCard>
 
         {/* Top Regions */}
-        <ChartCard icon={MapPin} title="Top Regions" subtitle="By reservation count">
+        <ChartCard icon={MapPin} title="Popüler Bölgeler" subtitle="Rezervasyon sayısına göre">
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={topRegions} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
@@ -200,8 +200,8 @@ export default function AdminDashboardCharts() {
               <Tooltip
                 contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }}
                 formatter={(value, name) => {
-                  if (name === "count") return [Number(value), "Reservations"];
-                  return [`$${Number(value).toLocaleString()}`, "Revenue"];
+                  if (name === "count") return [Number(value), "Rezervasyon"];
+                  return [`$${Number(value).toLocaleString()}`, "Gelir"];
                 }}
               />
               <Bar dataKey="count" fill="#f97316" radius={[0, 4, 4, 0]} name="count" />
@@ -213,7 +213,7 @@ export default function AdminDashboardCharts() {
       {/* Trip type + Monthly bookings count */}
       <div className="grid lg:grid-cols-3 gap-4">
         {/* Trip type pie */}
-        <ChartCard icon={PieIcon} title="Trip Types" subtitle="One-way vs Round trip">
+        <ChartCard icon={PieIcon} title="Transfer Türleri" subtitle="Tek yön vs Gidiş-dönüş">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={tripTypes} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
@@ -228,14 +228,14 @@ export default function AdminDashboardCharts() {
 
         {/* Monthly booking count */}
         <div className="lg:col-span-2">
-          <ChartCard icon={CalendarCheck} title="Monthly Bookings" subtitle="Reservation count per month">
+          <ChartCard icon={CalendarCheck} title="Aylık Rezervasyonlar" subtitle="Aylara göre rezervasyon sayısı">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={monthlyRevenue}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
-                <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Bookings" />
+                <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Rezervasyon" />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>

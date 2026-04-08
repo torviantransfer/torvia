@@ -36,6 +36,26 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Assignment not found", { status: 404 });
   }
 
+  // Expire voucher 2 hours after transfer completion
+  if (assignment.status === "completed" && assignment.completed_at) {
+    const completedAt = new Date(assignment.completed_at).getTime();
+    const now = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000;
+    if (now - completedAt > twoHours) {
+      return new NextResponse(
+        `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Link Expired</title></head><body style="font-family:system-ui;background:#f5f5f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+        <div style="background:#fff;border-radius:20px;padding:40px;text-align:center;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
+        <div style="font-size:48px;margin-bottom:16px">🔒</div>
+        <h1 style="font-size:24px;margin:0 0 8px;color:#1d1d1f">Link Expired</h1>
+        <p style="color:#888;font-size:14px">This voucher link has expired. Transfer links are deactivated 2 hours after completion.</p>
+        <p style="color:#ccc;font-size:11px;margin-top:24px;letter-spacing:2px">VELORA VIP TRANSFER</p>
+        </div></body></html>`,
+        { headers: { "Content-Type": "text/html; charset=utf-8" } }
+      );
+    }
+  }
+
   const res = assignment.reservations as Record<string, unknown>;
   const customer = res.customers as Record<string, string> | null;
   const region = res.regions as Record<string, unknown> | null;

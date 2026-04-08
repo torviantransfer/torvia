@@ -23,13 +23,13 @@ interface Props {
 }
 
 const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" }> = {
-  night_surcharge_percent: { label: "Night Surcharge (%)", type: "number" },
-  child_seat_fee: { label: "Child Seat Fee (USD)", type: "number" },
-  welcome_sign_fee: { label: "Welcome Sign Fee (USD)", type: "number" },
-  cancellation_free_hours: { label: "Free Cancellation (hours before)", type: "number" },
-  company_name: { label: "Company Name", type: "text" },
-  contact_email: { label: "Contact Email", type: "text" },
-  whatsapp_number: { label: "WhatsApp Number", type: "text" },
+  night_surcharge_percent: { label: "Gece Ek Ücreti (%)", type: "number" },
+  child_seat_fee: { label: "Çocuk Koltuğu Ücreti (USD)", type: "number" },
+  welcome_sign_fee: { label: "Karşılama Tabelası Ücreti (USD)", type: "number" },
+  cancellation_free_hours: { label: "Ücretsiz İptal Süresi (saat önce)", type: "number" },
+  company_name: { label: "Şirket Adı", type: "text" },
+  contact_email: { label: "İletişim E-postası", type: "text" },
+  whatsapp_number: { label: "WhatsApp Numarası", type: "text" },
 };
 
 export default function SettingsManager({
@@ -94,7 +94,7 @@ export default function SettingsManager({
     <div className="space-y-6">
       {/* Settings */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 className="font-bold text-gray-900 mb-4">App Settings</h2>
+        <h2 className="font-bold text-gray-900 mb-4">Uygulama Ayarları</h2>
         <div className="space-y-4">
           {settings.map((setting) => {
             const meta = SETTING_LABELS[setting.key] ?? {
@@ -124,7 +124,7 @@ export default function SettingsManager({
                   className="px-3 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
                 >
                   <Save size={14} />
-                  {saving === setting.key ? "Saving..." : "Save"}
+                  {saving === setting.key ? "Kaydediliyor..." : "Kaydet"}
                 </button>
               </div>
             );
@@ -135,14 +135,14 @@ export default function SettingsManager({
       {/* Exchange Rates */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">Exchange Rates (USD base)</h2>
+          <h2 className="font-bold text-gray-900">Döviz Kurları (USD baz)</h2>
           <button
             onClick={handleRefreshRates}
             disabled={refreshing}
             className="px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
           >
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-            Refresh from API
+            API'den Güncelle
           </button>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -156,7 +156,7 @@ export default function SettingsManager({
                   1 USD = {rate.rate} {rate.target_currency}
                 </p>
                 <p className="text-xs text-gray-400">
-                  Updated:{" "}
+                  Güncelleme:{" "}
                   {new Date(rate.last_updated).toLocaleString()}
                 </p>
               </div>

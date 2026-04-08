@@ -41,10 +41,10 @@ const STATUS_COLOR: Record<string, { bg: string; dot: string; text: string }> = 
   cancel_requested: { bg: "bg-orange-50", dot: "bg-orange-400", text: "text-orange-700" },
 };
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+  "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık",
 ];
 
 export default function CalendarView() {
@@ -126,7 +126,7 @@ export default function CalendarView() {
               {MONTH_NAMES[month - 1]} {year}
             </h2>
             <span className="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-medium">
-              {events.length} transfers
+              {events.length} transfer
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -134,7 +134,7 @@ export default function CalendarView() {
               onClick={goToday}
               className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
             >
-              Today
+              Bugün
             </button>
             <button onClick={prevMonth} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
               <ChevronLeft size={18} className="text-slate-500" />
@@ -207,7 +207,7 @@ export default function CalendarView() {
                       );
                     })}
                     {dayEv.length > 3 && (
-                      <p className="text-[10px] text-slate-400 pl-1">+{dayEv.length - 3} more</p>
+                      <p className="text-[10px] text-slate-400 pl-1">+{dayEv.length - 3} daha</p>
                     )}
                   </div>
                 </div>
@@ -229,11 +229,11 @@ export default function CalendarView() {
         <div className="bg-white rounded-2xl border border-slate-100 p-5 sticky top-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           <h3 className="font-semibold text-slate-800 text-sm mb-3">
             {selectedDay
-              ? `${MONTH_NAMES[month - 1]} ${selectedDay}, ${year}`
-              : "Select a day"}
+              ? `${selectedDay} ${MONTH_NAMES[month - 1]} ${year}`
+              : "Bir gün seçin"}
           </h3>
           {selectedDay && dayEvents.length === 0 && (
-            <p className="text-xs text-slate-400">No transfers this day</p>
+            <p className="text-xs text-slate-400">Bu gün transfer yok</p>
           )}
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {dayEvents.map((ev) => {
@@ -288,21 +288,21 @@ export default function CalendarView() {
             </div>
 
             <div className="space-y-3 text-sm">
-              <Row icon={Clock} label="Pickup" value={new Date(selectedEvent.pickup).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} />
+              <Row icon={Clock} label="Alış" value={new Date(selectedEvent.pickup).toLocaleString("tr-TR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} />
               {selectedEvent.returnDate && (
-                <Row icon={Clock} label="Return" value={new Date(selectedEvent.returnDate).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} />
+                <Row icon={Clock} label="Dönüş" value={new Date(selectedEvent.returnDate).toLocaleString("tr-TR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })} />
               )}
-              <Row icon={MapPin} label="Route" value={`Airport → ${selectedEvent.region}`} />
-              <Row icon={User} label="Customer" value={selectedEvent.customer} />
-              {selectedEvent.phone && <Row icon={Phone} label="Phone" value={selectedEvent.phone} />}
-              <Row icon={Users} label="Passengers" value={`${selectedEvent.adults} adults${selectedEvent.children > 0 ? ` + ${selectedEvent.children} children` : ""}`} />
-              {selectedEvent.vehicle && <Row icon={Car} label="Vehicle" value={selectedEvent.vehicle} />}
-              {selectedEvent.driver && <Row icon={User} label="Driver" value={selectedEvent.driver} />}
-              {selectedEvent.hotel && <Row icon={MapPin} label="Hotel" value={selectedEvent.hotel} />}
+              <Row icon={MapPin} label="Güzergah" value={`Havalimanı → ${selectedEvent.region}`} />
+              <Row icon={User} label="Müşteri" value={selectedEvent.customer} />
+              {selectedEvent.phone && <Row icon={Phone} label="Telefon" value={selectedEvent.phone} />}
+              <Row icon={Users} label="Yolcular" value={`${selectedEvent.adults} yetişkin${selectedEvent.children > 0 ? ` + ${selectedEvent.children} çocuk` : ""}`} />
+              {selectedEvent.vehicle && <Row icon={Car} label="Araç" value={selectedEvent.vehicle} />}
+              {selectedEvent.driver && <Row icon={User} label="Şoför" value={selectedEvent.driver} />}
+              {selectedEvent.hotel && <Row icon={MapPin} label="Otel" value={selectedEvent.hotel} />}
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-xs text-slate-400">
-                  {selectedEvent.tripType === "round_trip" ? "Round Trip" : "One Way"}
+                  {selectedEvent.tripType === "round_trip" ? "Gidiş-Dönüş" : "Tek Yön"}
                 </span>
                 <span className="font-bold text-slate-900">${selectedEvent.price.toFixed(2)}</span>
               </div>

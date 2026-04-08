@@ -88,7 +88,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this driver?")) return;
+    if (!confirm("Bu şoförü silmek istediğinize emin misiniz?")) return;
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -113,7 +113,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{drivers.length} drivers</p>
+        <p className="text-sm text-gray-500">{drivers.length} şoför</p>
         <button
           onClick={() => {
             resetForm();
@@ -122,7 +122,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
           className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
         >
           <Plus size={16} />
-          Add Driver
+          Şoför Ekle
         </button>
       </div>
 
@@ -132,12 +132,12 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
           className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
         >
           <h3 className="font-bold text-gray-900">
-            {editingId ? "Edit Driver" : "New Driver"}
+            {editingId ? "Şoför Düzenle" : "Yeni Şoför"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Full Name *
+                Ad Soyad *
               </label>
               <input
                 required
@@ -150,7 +150,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Phone
+                Telefon
               </label>
               <input
                 value={form.phone}
@@ -161,7 +161,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                Email
+                E-posta
               </label>
               <input
                 type="email"
@@ -177,14 +177,14 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
               disabled={loading}
               className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
             >
-              {loading ? "Saving..." : editingId ? "Update" : "Create"}
+              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
               className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
             >
-              Cancel
+              İptal
             </button>
           </div>
         </form>
@@ -194,11 +194,11 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 text-left">
-              <th className="px-5 py-3 font-medium text-gray-500">Name</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Phone</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Email</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Status</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Actions</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Ad</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Telefon</th>
+              <th className="px-5 py-3 font-medium text-gray-500">E-posta</th>
+              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
+              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -217,7 +217,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${driver.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                   >
-                    {driver.is_active ? "Active" : "Inactive"}
+                    {driver.is_active ? "Aktif" : "Pasif"}
                   </span>
                 </td>
                 <td className="px-5 py-3">
