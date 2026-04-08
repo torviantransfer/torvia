@@ -102,7 +102,7 @@ export default function BookingWizard(props: Props) {
 
   // Step 1:  Transfer details
   const [tripType, setTripType] = useState((saved?.tripType as string as "one_way" | "round_trip") ?? props.initialTrip ?? "one_way");
-  const [regionSlug, setRegionSlug] = useState((saved?.regionSlug as string) ?? props.initialRegion ?? "");
+  const [regionSlug, setRegionSlug] = useState(props.initialRegion || (saved?.regionSlug as string) || "");
   const [pickupDate, setPickupDate] = useState((saved?.pickupDate as string) ?? props.initialDate ?? defaults.date);
   const [pickupTime, setPickupTime] = useState((saved?.pickupTime as string) ?? props.initialTime ?? defaults.time);
   const [returnDate, setReturnDate] = useState((saved?.returnDate as string) ?? props.initialReturnDate ?? "");

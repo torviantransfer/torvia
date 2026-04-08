@@ -207,6 +207,8 @@ export default async function RegionPage({
     } : {}),
   };
 
+  const price = pricing?.one_way_price ?? 0;
+
   return (
     <>
       <Header />
@@ -451,6 +453,10 @@ export default async function RegionPage({
                 { q: t("faqQ2", { name }), a: t("faqA2") },
                 { q: t("faqQ3", { name }), a: t("faqA3") },
                 { q: t("faqQ4"), a: t("faqA4") },
+                { q: t("faqQ5", { name }), a: t("faqA5", { price }) },
+                { q: t("faqQ6", { name }), a: t("faqA6") },
+                { q: t("faqQ7", { name }), a: t("faqA7") },
+                { q: t("faqQ8", { name }), a: t("faqA8") },
               ].map(({ q, a }) => (
                 <details key={q} className="rounded-xl overflow-hidden group" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
                   <summary className="px-5 py-4 cursor-pointer font-medium text-white text-sm flex items-center justify-between">
@@ -469,6 +475,12 @@ export default async function RegionPage({
               mainEntity: [
                 { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) } },
                 { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
+                { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
+                { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
+                { "@type": "Question", name: t("faqQ5", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA5", { price }) } },
+                { "@type": "Question", name: t("faqQ6", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA6") } },
+                { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
+                { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
               ],
             }) }} />
           </div>
