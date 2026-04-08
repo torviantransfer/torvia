@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
@@ -27,6 +28,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Props {
   initialRegion?: string;
@@ -57,6 +59,7 @@ type Locale = "tr" | "en" | "de" | "pl" | "ru";
 export default function BookingWizard(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
+  const { format: fmt, otherCurrencies } = useCurrency();
 
   // ─── Restore persisted state from sessionStorage (survives locale/currency change) ───
   const STORAGE_KEY = "velora_booking_state";
@@ -170,6 +173,15 @@ export default function BookingWizard(props: Props) {
     exchangeRates: Record<string, number>;
     region: { duration_minutes: number; distance_km: number };
     couponId: string | null;
+    vehicle?: {
+      name: string;
+      slug: string;
+      description: string | null;
+      image_url: string | null;
+      max_passengers: number;
+      max_luggage: number;
+      features: string[];
+    };
   } | null>(null);
 
   const fetchPrice = useCallback(async () => {
@@ -582,28 +594,77 @@ export default function BookingWizard(props: Props) {
                   {t("step2")}
                 </h2>
 
-                {/* Vehicle card (only VIP for now) */}
-                <div className="border-2 border-orange-500 rounded-xl p-5" style={{ backgroundColor: "rgba(249,115,22,0.06)" }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
-                        VIP
-                      </span>
-                      <h3 className="text-lg font-bold text-white">
-                        Mercedes Vito
-                      </h3>
-                    </div>
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                      <Check size={16} className="text-white" />
-                    </div>
+                {/* Vehicle card */}
+                <div className="border-2 border-orange-500 rounded-xl overflow-hidden" style={{ backgroundColor: "rgba(249,115,22,0.06)" }}>
+                  {/* Vehicle image */}
+                  <div className="relative w-full h-48 bg-gradient-to-b from-[#1a1a1a] to-[#111]">
+                    <Image
+                      src={priceData?.vehicle?.image_url || "/images/vehicles/mercedes-vito-vip.png"}
+                      alt={priceData?.vehicle?.name || "VIP Transfer"}
+                      fill
+                      className="object-contain p-4"
+                      sizes="(max-width: 768px) 100vw, 500px"
+                    />
                   </div>
-                  <div className="flex gap-4 text-sm text-[#86868b]">
-                    <span className="flex items-center gap-1">
-                      <Users size={14} /> 7 {t("passengers")}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Luggage size={14} /> 7 {t("luggageCapacity")}
-                    </span>
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
+                          {priceData?.vehicle?.name || "VIP"}
+                        </span>
+                        <h3 className="text-lg font-bold text-white">
+                          Mercedes-Benz Vito Tourer
+                        </h3>
+                        {priceData?.vehicle?.description && (
+                          <p className="text-xs text-[#86868b] mt-1">{priceData.vehicle.description}</p>
+                        )}
+                      </div>
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shrink-0">
+                        <Check size={16} className="text-white" />
+                      </div>
+                    </div>
+                    <div className="flex gap-4 text-sm text-[#86868b] mb-4">
+                      <span className="flex items-center gap-1">
+                        <Users size={14} /> {priceData?.vehicle?.max_passengers ?? 7} {t("passengers")}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Luggage size={14} /> {priceData?.vehicle?.max_luggage ?? 7} {t("luggageCapacity")}
+                      </span>
+                    </div>
+                    {/* Features */}
+                    {(priceData?.vehicle?.features?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {priceData!.vehicle!.features.map((f) => {
+                          const label: Record<string, string> = {
+                            ac: "A/C",
+                            wifi: "Wi-Fi",
+                            water: "Water",
+                            leather: "Leather",
+                            usb: "USB",
+                            tv: "TV",
+                            minibar: "Minibar",
+                          };
+                          const icons: Record<string, string> = {
+                            ac: "❄️",
+                            wifi: "📶",
+                            water: "💧",
+                            leather: "🪑",
+                            usb: "🔌",
+                            tv: "📺",
+                            minibar: "🥤",
+                          };
+                          return (
+                            <span
+                              key={f}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-white"
+                              style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+                            >
+                              {icons[f] || "✓"} {label[f] || f}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -657,7 +718,7 @@ export default function BookingWizard(props: Props) {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-semibold text-[#86868b]">
-                        $5
+                        {priceData ? fmt(5, priceData.exchangeRates) : "$5"}
                       </span>
                       <input
                         type="checkbox"
@@ -706,7 +767,7 @@ export default function BookingWizard(props: Props) {
                   {couponApplied && priceData && !priceLoading && (
                     priceData.calculation.couponDiscount > 0 ? (
                       <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-                        <Check size={12} /> {t("couponAppliedSuccess")} (-${priceData.calculation.couponDiscount.toFixed(2)})
+                        <Check size={12} /> {t("couponAppliedSuccess")} (-{fmt(priceData.calculation.couponDiscount, priceData.exchangeRates)})
                       </p>
                     ) : (
                       <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
@@ -932,7 +993,7 @@ export default function BookingWizard(props: Props) {
                     {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
                   </span>
                   <span className="font-medium">
-                    ${priceData.calculation.basePrice.toFixed(2)}
+                    {fmt(priceData.calculation.basePrice, priceData.exchangeRates)}
                   </span>
                 </div>
 
@@ -943,7 +1004,7 @@ export default function BookingWizard(props: Props) {
                       {t("nightSurcharge")}
                     </span>
                     <span className="font-medium text-amber-400">
-                      +${priceData.calculation.nightSurcharge.toFixed(2)}
+                      +{fmt(priceData.calculation.nightSurcharge, priceData.exchangeRates)}
                     </span>
                   </div>
                 )}
@@ -955,7 +1016,7 @@ export default function BookingWizard(props: Props) {
                       {t("welcomeSignFee")}
                     </span>
                     <span className="font-medium">
-                      +${priceData.calculation.welcomeSignFee.toFixed(2)}
+                      +{fmt(priceData.calculation.welcomeSignFee, priceData.exchangeRates)}
                     </span>
                   </div>
                 )}
@@ -977,7 +1038,7 @@ export default function BookingWizard(props: Props) {
                       {t("roundTripDiscount")}
                     </span>
                     <span className="font-medium text-emerald-400">
-                      -${priceData.calculation.roundTripDiscount.toFixed(2)}
+                      -{fmt(priceData.calculation.roundTripDiscount, priceData.exchangeRates)}
                     </span>
                   </div>
                 )}
@@ -989,7 +1050,7 @@ export default function BookingWizard(props: Props) {
                       {t("couponDiscount")}
                     </span>
                     <span className="font-medium text-emerald-400">
-                      -${priceData.calculation.couponDiscount.toFixed(2)}
+                      -{fmt(priceData.calculation.couponDiscount, priceData.exchangeRates)}
                     </span>
                   </div>
                 )}
@@ -1000,31 +1061,16 @@ export default function BookingWizard(props: Props) {
                     {t("totalPrice")}
                   </span>
                   <span className="text-2xl font-bold text-orange-500">
-                    ${priceData.calculation.totalPrice.toFixed(2)}
+                    {fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}
                   </span>
                 </div>
 
-                {/* EUR/TRY equivalents */}
-                {priceData.exchangeRates.EUR && (
-                  <div className="text-xs text-[#555] text-right space-y-0.5">
-                    <p>
-                      ≈ €
-                      {(
-                        priceData.calculation.totalPrice *
-                        priceData.exchangeRates.EUR
-                      ).toFixed(2)}
-                    </p>
-                    {priceData.exchangeRates.TRY && (
-                      <p>
-                        ≈ ₺
-                        {(
-                          priceData.calculation.totalPrice *
-                          priceData.exchangeRates.TRY
-                        ).toFixed(0)}
-                      </p>
-                    )}
-                  </div>
-                )}
+                {/* Other currency equivalents */}
+                <div className="text-xs text-[#555] text-right space-y-0.5">
+                  {otherCurrencies(priceData.calculation.totalPrice, priceData.exchangeRates).map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
               </div>
             ) : (
               <p className="text-sm text-[#555] text-center py-6">

@@ -26,7 +26,12 @@
     "service": "Hizmet",
     "flightTracking": "Uçuş Takibi",
     "service247": "7/24 Hizmet",
-    "fixedPrice": "Sabit Fiyat"
+    "fixedPrice": "Sabit Fiyat",
+    "transfers": "transfer",
+    "licensedInsured": "Lisanslı & Sigortalı",
+    "trustStripe": "Stripe ile güvenli ödeme",
+    "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
+    "trustNoHidden": "Gizli ücret yok"
   },
   "booking": {
     "title": "Transfer Rezervasyonu",

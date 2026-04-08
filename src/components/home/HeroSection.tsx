@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
-import { Shield, Plane, Clock } from "lucide-react";
+import { Shield, Plane, Clock, Star, CheckCircle2 } from "lucide-react";
 import BookingFormMini from "@/components/booking/BookingFormMini";
 
 export default function HeroSection() {
@@ -30,9 +30,19 @@ export default function HeroSection() {
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
           {/* Mobile: Booking form first, Desktop: second */}
           <div className="order-2 lg:order-1">
-            <p className="text-orange-400 text-sm font-medium tracking-wide mb-4">
-              {t("badge")}
-            </p>
+            {/* Social proof bar */}
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.3)" }}>
+                <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                <span>4.9/5</span>
+                <span className="text-gray-400 ml-0.5">— 15,000+ {t("transfers")}</span>
+              </div>
+              <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)" }}>
+                <CheckCircle2 size={12} />
+                {t("licensedInsured")}
+              </div>
+            </div>
+
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] tracking-tight text-white mb-5">
               {t("title")}
             </h1>
@@ -54,7 +64,7 @@ export default function HeroSection() {
                 {t("fixedPrice")}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
               <Link
                 href="/booking"
                 className="inline-flex items-center px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110"
@@ -70,6 +80,10 @@ export default function HeroSection() {
                 {t("exploreRegions")}
               </Link>
             </div>
+            {/* Bottom trust strip */}
+            <p className="text-xs text-gray-500">
+              ✓ {t("trustStripe")} &nbsp;·&nbsp; ✓ {t("trustCancel")} &nbsp;·&nbsp; ✓ {t("trustNoHidden")}
+            </p>
           </div>
 
           {/* Booking form - shows first on mobile */}

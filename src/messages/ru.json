@@ -26,7 +26,12 @@
     "service": "Сервис",
     "flightTracking": "Отслеживание рейса",
     "service247": "24/7 Сервис",
-    "fixedPrice": "Фиксированная цена"
+    "fixedPrice": "Фиксированная цена",
+    "transfers": "трансферов",
+    "licensedInsured": "Лицензировано и застраховано",
+    "trustStripe": "Безопасная оплата через Stripe",
+    "trustCancel": "Бесплатная отмена за 24ч",
+    "trustNoHidden": "Без скрытых платежей"
   },
   "booking": {
     "title": "Забронировать Трансфер",

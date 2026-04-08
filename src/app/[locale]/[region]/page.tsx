@@ -171,6 +171,10 @@ export default async function RegionPage({
   const regionImage = regionImages[slug] || null;
 
   // Schema.org structured data
+  const avgRating = reviews && reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + (r.rating as number), 0) / reviews.length).toFixed(1)
+    : null;
+
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -193,6 +197,14 @@ export default async function RegionPage({
           availability: "https://schema.org/InStock",
         }
       : undefined,
+    ...(avgRating && reviews ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: avgRating,
+        reviewCount: reviews.length,
+        bestRating: 5,
+      },
+    } : {}),
   };
 
   return (
@@ -237,7 +249,7 @@ export default async function RegionPage({
 
                 {/* Pricing Display */}
                 {pricing && (
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-4 mb-5">
                     <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(48,209,88,0.08)", border: "1px solid rgba(48,209,88,0.2)" }}>
                       <div className="text-xs text-gray-400 mb-1">{t("oneWay")}</div>
                       <div className="text-2xl font-bold text-white">${pricing.one_way_price}</div>
@@ -250,6 +262,17 @@ export default async function RegionPage({
                     </div>
                   </div>
                 )}
+                {/* Trust strip */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
+                    <CheckCircle size={12} className="text-emerald-400" />
+                    {t("freeCancellation")}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
+                    <Shield size={12} className="text-blue-400" />
+                    {t("securePayTitle")}
+                  </span>
+                </div>
               </div>
 
               {/* Region Image */}

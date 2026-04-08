@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   // Fetch pricing for this region (first active category)
   const { data: pricing, error: pricingErr } = await supabase
     .from("pricing")
-    .select("*, vehicle_categories!inner(slug, is_active)")
+    .select("*, vehicle_categories!inner(name, slug, description, image_url, max_passengers, max_luggage, features, is_active)")
     .eq("region_id", region.id)
     .eq("vehicle_categories.is_active", true)
     .single();
@@ -129,6 +129,15 @@ export async function GET(request: NextRequest) {
       one_way_price: pricing.one_way_price,
       round_trip_price: pricing.round_trip_price,
       category_id: pricing.category_id,
+    },
+    vehicle: {
+      name: (pricing.vehicle_categories as Record<string, unknown>).name,
+      slug: (pricing.vehicle_categories as Record<string, unknown>).slug,
+      description: (pricing.vehicle_categories as Record<string, unknown>).description,
+      image_url: (pricing.vehicle_categories as Record<string, unknown>).image_url,
+      max_passengers: (pricing.vehicle_categories as Record<string, unknown>).max_passengers,
+      max_luggage: (pricing.vehicle_categories as Record<string, unknown>).max_luggage,
+      features: (pricing.vehicle_categories as Record<string, unknown>).features,
     },
     calculation,
     couponId,

@@ -26,7 +26,12 @@
     "service": "Service",
     "flightTracking": "Flight Tracking",
     "service247": "24/7 Service",
-    "fixedPrice": "Fixed Price"
+    "fixedPrice": "Fixed Price",
+    "transfers": "transfers",
+    "licensedInsured": "Licensed & Insured",
+    "trustStripe": "Secure payment via Stripe",
+    "trustCancel": "Free cancellation 24h before",
+    "trustNoHidden": "No hidden fees"
   },
   "booking": {
     "title": "Book Your Transfer",

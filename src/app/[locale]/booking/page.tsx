@@ -39,6 +39,16 @@ export default async function BookingPage({
     <>
       <Header />
       <main className="flex-1" style={{ backgroundColor: "#111113" }}>
+        {/* Structured data */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          name: "VELORA VIP Airport Transfer",
+          description: t("subtitle"),
+          provider: { "@type": "Organization", name: "VELORA Transfer", url: "https://veloratransfer.com" },
+          areaServed: { "@type": "Place", name: "Antalya, Turkey" },
+          serviceType: "Airport Transfer",
+        }) }} />
         <BookingWizard
           initialRegion={sp.region}
           initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}

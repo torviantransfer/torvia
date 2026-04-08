@@ -26,7 +26,12 @@
     "service": "Service",
     "flightTracking": "Flugverfolgung",
     "service247": "24/7 Service",
-    "fixedPrice": "Festpreis"
+    "fixedPrice": "Festpreis",
+    "transfers": "Transfers",
+    "licensedInsured": "Lizenziert & Versichert",
+    "trustStripe": "Sichere Zahlung über Stripe",
+    "trustCancel": "Kostenlose Stornierung 24h vor Abfahrt",
+    "trustNoHidden": "Keine versteckten Gebühren"
   },
   "booking": {
     "title": "Transfer Buchen",

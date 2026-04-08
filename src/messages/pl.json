@@ -26,7 +26,12 @@
     "service": "Serwis",
     "flightTracking": "Śledzenie Lotu",
     "service247": "24/7 Serwis",
-    "fixedPrice": "Stała Cena"
+    "fixedPrice": "Stała Cena",
+    "transfers": "transferów",
+    "licensedInsured": "Licencjonowany i ubezpieczony",
+    "trustStripe": "Bezpieczna płatność przez Stripe",
+    "trustCancel": "Bezpłatne anulowanie 24h przed",
+    "trustNoHidden": "Brak ukrytych opłat"
   },
   "booking": {
     "title": "Zarezerwuj Transfer",

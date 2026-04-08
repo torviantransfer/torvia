@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { currencies, currencySymbols, type Currency } from "@/i18n/config";
 
 export default function CurrencySelector() {
   const [currency, setCurrency] = useState<Currency>("USD");
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("velora_currency") as Currency | null;
+    if (stored && (stored === "USD" || stored === "EUR" || stored === "TRY")) {
+      setCurrency(stored);
+    }
+  }, []);
 
   const handleSelect = (c: Currency) => {
     setCurrency(c);

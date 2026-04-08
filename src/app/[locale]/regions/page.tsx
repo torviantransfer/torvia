@@ -79,6 +79,19 @@ export default async function RegionsPage({
     <>
       <Header />
       <main className="flex-1">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: t("title"),
+          description: t("subtitle"),
+          numberOfItems: regions?.length ?? 0,
+          itemListElement: (regions ?? []).map((r: Record<string, unknown>, i: number) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `https://veloratransfer.com/${locale}/${r.slug}-transfer`,
+            name: `${(r as Record<string, string>)[`name_${locale}`] || r.name_en} Transfer`,
+          })),
+        }) }} />
         <section className="relative py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #1c1c1e 0%, #111113 100%)" }}>
           <div className="absolute inset-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(249,115,22,0.15)" }} />
