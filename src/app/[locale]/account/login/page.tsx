@@ -16,20 +16,42 @@ export default function AccountLoginPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) ?? "en";
 
   const supabase = createClient();
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError(t.enterEmailFirst[locale] ?? t.enterEmailFirst.en);
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    setShowAlreadyRegistered(false);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/account`,
+    });
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess(t.resetEmailSent[locale] ?? t.resetEmailSent.en);
+    }
+    setLoading(false);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
+    setShowAlreadyRegistered(false);
 
     if (mode === "register") {
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -38,7 +60,19 @@ export default function AccountLoginPage() {
         },
       });
       if (error) {
-        setError(error.message);
+        // Check if user already exists (auto-created from booking)
+        if (
+          error.message.toLowerCase().includes("already registered") ||
+          error.message.toLowerCase().includes("already been registered") ||
+          error.message.toLowerCase().includes("user already exists")
+        ) {
+          setShowAlreadyRegistered(true);
+        } else {
+          setError(error.message);
+        }
+      } else if (data?.user?.identities?.length === 0) {
+        // Supabase returns empty identities when user already exists
+        setShowAlreadyRegistered(true);
       } else {
         setSuccess(t.checkEmail[locale] ?? t.checkEmail.en);
       }
@@ -159,6 +193,24 @@ export default function AccountLoginPage() {
                 <AlertCircle size={16} /> {error}
               </div>
             )}
+            {showAlreadyRegistered && (
+              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 space-y-2">
+                <p className="text-orange-400 text-sm font-medium">
+                  {t.alreadyRegistered[locale] ?? t.alreadyRegistered.en}
+                </p>
+                <p className="text-gray-400 text-xs">
+                  {t.alreadyRegisteredHint[locale] ?? t.alreadyRegisteredHint.en}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={loading}
+                  className="text-orange-500 hover:text-orange-400 text-sm font-medium underline"
+                >
+                  {t.forgotPassword[locale] ?? t.forgotPassword.en}
+                </button>
+              </div>
+            )}
             {success && (
               <div className="flex items-center gap-2 text-green-400 text-sm">
                 <Mail size={16} /> {success}
@@ -173,6 +225,17 @@ export default function AccountLoginPage() {
               {loading && <Loader2 size={16} className="animate-spin" />}
               {mode === "login" ? (t.loginBtn[locale] ?? t.loginBtn.en) : (t.registerBtn[locale] ?? t.registerBtn.en)}
             </button>
+
+            {mode === "login" && (
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                disabled={loading}
+                className="w-full text-center text-sm text-gray-500 hover:text-orange-400 transition-colors"
+              >
+                {t.forgotPassword[locale] ?? t.forgotPassword.en}
+              </button>
+            )}
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
@@ -209,4 +272,9 @@ const t: Record<string, Record<string, string>> = {
   registerLink: { en: "Register", tr: "Kayıt Ol", de: "Registrieren", pl: "Zarejestruj", ru: "Регистрация" },
   loginLink: { en: "Sign In", tr: "Giriş Yap", de: "Anmelden", pl: "Zaloguj", ru: "Войти" },
   checkEmail: { en: "Check your email to confirm your account.", tr: "Hesabınızı onaylamak için e-postanızı kontrol edin.", de: "Überprüfen Sie Ihre E-Mail.", pl: "Sprawdź swój email.", ru: "Проверьте почту для подтверждения." },
+  forgotPassword: { en: "Forgot Password?", tr: "Şifremi Unuttum", de: "Passwort vergessen?", pl: "Zapomniałeś hasła?", ru: "Забыли пароль?" },
+  alreadyRegistered: { en: "This email is already registered.", tr: "Bu e-posta adresi zaten kayıtlı.", de: "Diese E-Mail ist bereits registriert.", pl: "Ten email jest już zarejestrowany.", ru: "Этот email уже зарегистрирован." },
+  alreadyRegisteredHint: { en: "An account was automatically created with your booking. Use 'Forgot Password' to set your password and access your account.", tr: "Rezervasyonunuzla birlikte otomatik olarak bir hesap oluşturuldu. Şifrenizi belirlemek için 'Şifremi Unuttum' butonunu kullanın.", de: "Mit Ihrer Buchung wurde automatisch ein Konto erstellt. Verwenden Sie 'Passwort vergessen', um Ihr Passwort festzulegen.", pl: "Konto zostało automatycznie utworzone z rezerwacją. Użyj 'Zapomniałeś hasła?' aby ustawić hasło.", ru: "Аккаунт был автоматически создан при бронировании. Используйте 'Забыли пароль?' для установки пароля." },
+  resetEmailSent: { en: "Password reset link has been sent to your email.", tr: "Şifre sıfırlama linki e-posta adresinize gönderildi.", de: "Der Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet.", pl: "Link do resetowania hasła został wysłany na Twój email.", ru: "Ссылка для сброса пароля отправлена на вашу почту." },
+  enterEmailFirst: { en: "Please enter your email address first.", tr: "Lütfen önce e-posta adresinizi girin.", de: "Bitte geben Sie zuerst Ihre E-Mail-Adresse ein.", pl: "Najpierw wpisz swój adres email.", ru: "Сначала введите адрес электронной почты." },
 };

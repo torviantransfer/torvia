@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { CheckCircle, Phone, Mail, Download } from "lucide-react";
+import { CheckCircle, Phone, Mail, Download, Search } from "lucide-react";
 
 export default async function BookingSuccessPage({
   searchParams,
@@ -67,7 +67,7 @@ export default async function BookingSuccessPage({
           </div>
 
           {/* Download PDF Voucher */}
-          <div className="mb-8">
+          <div className="mb-4">
             <a
               href={`/api/voucher?code=${encodeURIComponent(code)}&locale=${sp.locale ?? "en"}`}
               target="_blank"
@@ -76,6 +76,17 @@ export default async function BookingSuccessPage({
             >
               <Download size={18} />
               {t("downloadVoucher")}
+            </a>
+          </div>
+
+          {/* Track Reservation */}
+          <div className="mb-8">
+            <a
+              href={`/${sp.locale ?? "en"}/track`}
+              className="inline-flex items-center gap-2 px-6 py-3 border border-white/10 font-medium rounded-xl hover:bg-white/5 transition-colors text-gray-300 text-sm"
+            >
+              <Search size={16} />
+              {t("trackReservation")}
             </a>
           </div>
 

@@ -61,9 +61,43 @@ export async function POST(request: NextRequest) {
       // Send confirmation email to customer
       const { data: resData } = await supabase
         .from("reservations")
-        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, slug), customers(email, first_name, last_name), vehicle_categories(name)")
+        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, slug), customers(id, email, first_name, last_name, auth_user_id), vehicle_categories(name)")
         .eq("id", reservationId)
         .single();
+
+      // Auto-create Supabase Auth account for the customer (passwordless)
+      if (resData?.customers?.email && !resData.customers.auth_user_id) {
+        try {
+          const { data: authData } = await supabase.auth.admin.createUser({
+            email: resData.customers.email,
+            email_confirm: true,
+            user_metadata: {
+              full_name: `${resData.customers.first_name} ${resData.customers.last_name}`.trim(),
+              first_name: resData.customers.first_name,
+              last_name: resData.customers.last_name,
+            },
+          });
+
+          if (authData?.user) {
+            await supabase
+              .from("customers")
+              .update({ auth_user_id: authData.user.id })
+              .eq("id", resData.customers.id);
+          }
+        } catch {
+          // User may already exist in auth — try to find and link
+          const { data: userList } = await supabase.auth.admin.listUsers();
+          const existingAuth = userList?.users?.find(
+            (u) => u.email === resData.customers.email
+          );
+          if (existingAuth) {
+            await supabase
+              .from("customers")
+              .update({ auth_user_id: existingAuth.id })
+              .eq("id", resData.customers.id);
+          }
+        }
+      }
 
       if (resData?.customers?.email) {
         const locale = paymentIntent.metadata?.locale ?? "en";

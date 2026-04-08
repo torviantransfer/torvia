@@ -14,7 +14,8 @@
     "blog": "Blog",
     "bookNow": "Rezervasyon Yap",
     "login": "Giriş",
-    "myReservations": "Rezervasyonlarım"
+    "myReservations": "Rezervasyonlarım",
+    "trackReservation": "Rezervasyon Takip"
   },
   "hero": {
     "title": "Antalya Havalimanı VIP Transfer",
@@ -522,7 +523,8 @@
     "step3": "Şoförünüz Antalya Havalimanı varış katında isim tabelasıyla sizi bekliyor olacak.",
     "whatsappSupport": "WhatsApp Destek",
     "emailSupport": "E-posta Destek",
-    "downloadVoucher": "PDF Voucher İndir"
+    "downloadVoucher": "PDF Voucher İndir",
+    "trackReservation": "Rezervasyonu Takip Et"
   },
   "bookingCancel": {
     "title": "Ödeme İptal Edildi",
@@ -557,5 +559,41 @@
     "feat2": "Lisanslı & Sigortalı",
     "feat3": "4.9 Müşteri Puanı",
     "feat4": "25+ Destinasyon"
+  },
+  "track": {
+    "title": "Rezervasyon Takip",
+    "subtitle": "Rezervasyon kodunuz ve e-posta adresiniz ile transferinizin durumunu kontrol edin.",
+    "codeLabel": "Rezervasyon Kodu",
+    "emailLabel": "E-posta Adresi",
+    "searchButton": "Rezervasyonu Bul",
+    "searching": "Aranıyor...",
+    "notFound": "Rezervasyon bulunamadı. Lütfen kodunuzu ve e-posta adresinizi kontrol edin.",
+    "error": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "reservationCode": "Rezervasyon Kodu",
+    "route": "Güzergah",
+    "pickup": "Alış Tarihi",
+    "return": "Dönüş Tarihi",
+    "passengers": "Yolcular",
+    "adults": "Yetişkin",
+    "children": "Çocuk",
+    "luggage": "Bavul",
+    "vehicle": "Araç",
+    "hotel": "Otel",
+    "flight": "Uçuş",
+    "extras": "Ekstralar",
+    "childSeat": "Çocuk Koltuğu",
+    "welcomeSign": "Karşılama Tabelası",
+    "total": "Toplam Tutar",
+    "oneWay": "Tek Yön",
+    "roundTrip": "Gidiş-Dönüş",
+    "downloadVoucher": "PDF Voucher İndir",
+    "whatsappSupport": "WhatsApp Destek",
+    "status_pending": "Beklemede",
+    "status_paid": "Ödendi",
+    "status_driver_assigned": "Şoför Atandı",
+    "status_passenger_picked_up": "Yolcu Alındı",
+    "status_completed": "Tamamlandı",
+    "status_cancel_requested": "İptal Talebi",
+    "status_cancelled": "İptal Edildi"
   }
 }

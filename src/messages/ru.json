@@ -14,7 +14,8 @@
     "blog": "Блог",
     "bookNow": "Забронировать",
     "login": "Войти",
-    "myReservations": "Мои Бронирования"
+    "myReservations": "Мои Бронирования",
+    "trackReservation": "Отследить Бронь"
   },
   "hero": {
     "title": "ВИП Трансфер из Аэропорта Анталии",
@@ -522,7 +523,8 @@
     "step3": "Ваш водитель будет ждать вас в зоне прилёта аэропорта Анталии с именной табличкой.",
     "whatsappSupport": "Поддержка WhatsApp",
     "emailSupport": "Поддержка по Email",
-    "downloadVoucher": "Скачать PDF ваучер"
+    "downloadVoucher": "Скачать PDF Ваучер",
+    "trackReservation": "Отследить Бронирование"
   },
   "bookingCancel": {
     "title": "Оплата Отменена",
@@ -557,5 +559,41 @@
     "feat2": "Лицензированный и Застрахованный",
     "feat3": "Рейтинг 4.9 от Клиентов",
     "feat4": "25+ Направлений"
+  },
+  "track": {
+    "title": "Отследить Бронирование",
+    "subtitle": "Проверьте статус трансфера, указав код бронирования и адрес электронной почты.",
+    "codeLabel": "Код Бронирования",
+    "emailLabel": "Адрес Электронной Почты",
+    "searchButton": "Найти Бронирование",
+    "searching": "Поиск...",
+    "notFound": "Бронирование не найдено. Проверьте код и адрес электронной почты.",
+    "error": "Произошла ошибка. Попробуйте ещё раз.",
+    "reservationCode": "Код Бронирования",
+    "route": "Маршрут",
+    "pickup": "Дата Встречи",
+    "return": "Дата Возврата",
+    "passengers": "Пассажиры",
+    "adults": "Взрослые",
+    "children": "Дети",
+    "luggage": "Багаж",
+    "vehicle": "Транспорт",
+    "hotel": "Отель",
+    "flight": "Рейс",
+    "extras": "Дополнительно",
+    "childSeat": "Детское Кресло",
+    "welcomeSign": "Табличка с Именем",
+    "total": "Итого",
+    "oneWay": "В одну сторону",
+    "roundTrip": "Туда и обратно",
+    "downloadVoucher": "Скачать PDF Ваучер",
+    "whatsappSupport": "WhatsApp Поддержка",
+    "status_pending": "Ожидает",
+    "status_paid": "Оплачено",
+    "status_driver_assigned": "Водитель Назначен",
+    "status_passenger_picked_up": "Забран",
+    "status_completed": "Завершено",
+    "status_cancel_requested": "Запрос на Отмену",
+    "status_cancelled": "Отменено"
   }
 }

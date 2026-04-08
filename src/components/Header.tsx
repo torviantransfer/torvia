@@ -47,6 +47,7 @@ export default function Header() {
     { href: "/faq", label: t("faq") },
     { href: "/blog", label: t("blog") },
     { href: "/contact", label: t("contact") },
+    { href: "/track", label: t("trackReservation") },
   ];
 
   return (

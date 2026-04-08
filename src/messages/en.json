@@ -14,7 +14,8 @@
     "blog": "Blog",
     "bookNow": "Book Now",
     "login": "Login",
-    "myReservations": "My Reservations"
+    "myReservations": "My Reservations",
+    "trackReservation": "Track Reservation"
   },
   "hero": {
     "title": "Antalya Airport VIP Transfer",
@@ -522,7 +523,8 @@
     "step3": "Your driver will be waiting for you at Antalya Airport arrivals with a name board.",
     "whatsappSupport": "WhatsApp Support",
     "emailSupport": "Email Support",
-    "downloadVoucher": "Download PDF Voucher"
+    "downloadVoucher": "Download PDF Voucher",
+    "trackReservation": "Track Your Reservation"
   },
   "bookingCancel": {
     "title": "Payment Cancelled",
@@ -557,5 +559,41 @@
     "feat2": "Licensed & Insured",
     "feat3": "4.9 Customer Rating",
     "feat4": "25+ Destinations"
+  },
+  "track": {
+    "title": "Track Reservation",
+    "subtitle": "Check your transfer status with your reservation code and email address.",
+    "codeLabel": "Reservation Code",
+    "emailLabel": "Email Address",
+    "searchButton": "Find Reservation",
+    "searching": "Searching...",
+    "notFound": "Reservation not found. Please check your code and email address.",
+    "error": "An error occurred. Please try again.",
+    "reservationCode": "Reservation Code",
+    "route": "Route",
+    "pickup": "Pickup Date",
+    "return": "Return Date",
+    "passengers": "Passengers",
+    "adults": "Adults",
+    "children": "Children",
+    "luggage": "Luggage",
+    "vehicle": "Vehicle",
+    "hotel": "Hotel",
+    "flight": "Flight",
+    "extras": "Extras",
+    "childSeat": "Child Seat",
+    "welcomeSign": "Welcome Sign",
+    "total": "Total",
+    "oneWay": "One Way",
+    "roundTrip": "Round Trip",
+    "downloadVoucher": "Download PDF Voucher",
+    "whatsappSupport": "WhatsApp Support",
+    "status_pending": "Pending",
+    "status_paid": "Paid",
+    "status_driver_assigned": "Driver Assigned",
+    "status_passenger_picked_up": "Picked Up",
+    "status_completed": "Completed",
+    "status_cancel_requested": "Cancel Requested",
+    "status_cancelled": "Cancelled"
   }
 }

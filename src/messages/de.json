@@ -14,7 +14,8 @@
     "blog": "Blog",
     "bookNow": "Jetzt Buchen",
     "login": "Anmelden",
-    "myReservations": "Meine Buchungen"
+    "myReservations": "Meine Buchungen",
+    "trackReservation": "Buchung Verfolgen"
   },
   "hero": {
     "title": "VIP Flughafentransfer Antalya",
@@ -522,7 +523,8 @@
     "step3": "Ihr Fahrer erwartet Sie am Flughafen Antalya Ankunft mit einem Namensschild.",
     "whatsappSupport": "WhatsApp Support",
     "emailSupport": "E-Mail Support",
-    "downloadVoucher": "PDF-Voucher herunterladen"
+    "downloadVoucher": "PDF Voucher Herunterladen",
+    "trackReservation": "Buchung Verfolgen"
   },
   "bookingCancel": {
     "title": "Zahlung Abgebrochen",
@@ -557,5 +559,41 @@
     "feat2": "Lizenziert & Versichert",
     "feat3": "4.9 Kundenbewertung",
     "feat4": "25+ Reiseziele"
+  },
+  "track": {
+    "title": "Buchung Verfolgen",
+    "subtitle": "Überprüfen Sie Ihren Transferstatus mit Ihrem Buchungscode und Ihrer E-Mail-Adresse.",
+    "codeLabel": "Buchungscode",
+    "emailLabel": "E-Mail-Adresse",
+    "searchButton": "Buchung Finden",
+    "searching": "Suche...",
+    "notFound": "Buchung nicht gefunden. Bitte überprüfen Sie Ihren Code und Ihre E-Mail-Adresse.",
+    "error": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "reservationCode": "Buchungscode",
+    "route": "Route",
+    "pickup": "Abholtermin",
+    "return": "Rückfahrt",
+    "passengers": "Passagiere",
+    "adults": "Erwachsene",
+    "children": "Kinder",
+    "luggage": "Gepäck",
+    "vehicle": "Fahrzeug",
+    "hotel": "Hotel",
+    "flight": "Flug",
+    "extras": "Extras",
+    "childSeat": "Kindersitz",
+    "welcomeSign": "Begrüßungsschild",
+    "total": "Gesamtbetrag",
+    "oneWay": "Einfache Fahrt",
+    "roundTrip": "Hin- und Rückfahrt",
+    "downloadVoucher": "PDF Voucher Herunterladen",
+    "whatsappSupport": "WhatsApp Support",
+    "status_pending": "Ausstehend",
+    "status_paid": "Bezahlt",
+    "status_driver_assigned": "Fahrer Zugewiesen",
+    "status_passenger_picked_up": "Abgeholt",
+    "status_completed": "Abgeschlossen",
+    "status_cancel_requested": "Stornierung Angefragt",
+    "status_cancelled": "Storniert"
   }
 }

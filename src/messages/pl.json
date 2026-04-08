@@ -14,7 +14,8 @@
     "blog": "Blog",
     "bookNow": "Rezerwuj",
     "login": "Logowanie",
-    "myReservations": "Moje Rezerwacje"
+    "myReservations": "Moje Rezerwacje",
+    "trackReservation": "Śledź Rezerwację"
   },
   "hero": {
     "title": "VIP Transfer z Lotniska Antalya",
@@ -522,7 +523,8 @@
     "step3": "Twój kierowca będzie czekał na Ciebie na lotnisku w Antalyi z tabliczką z imieniem.",
     "whatsappSupport": "Wsparcie WhatsApp",
     "emailSupport": "Wsparcie E-mail",
-    "downloadVoucher": "Pobierz voucher PDF"
+    "downloadVoucher": "Pobierz voucher PDF",
+    "trackReservation": "Śledź Rezerwację"
   },
   "bookingCancel": {
     "title": "Płatność Anulowana",
@@ -557,5 +559,41 @@
     "feat2": "Licencjonowany i Ubezpieczony",
     "feat3": "Ocena 4.9 od Klientów",
     "feat4": "25+ Destynacji"
+  },
+  "track": {
+    "title": "Śledź Rezerwację",
+    "subtitle": "Sprawdź status swojego transferu, podając kod rezerwacji i adres e-mail.",
+    "codeLabel": "Kod Rezerwacji",
+    "emailLabel": "Adres E-mail",
+    "searchButton": "Znajdź Rezerwację",
+    "searching": "Szukam...",
+    "notFound": "Nie znaleziono rezerwacji. Sprawdź kod i adres e-mail.",
+    "error": "Wystąpił błąd. Spróbuj ponownie.",
+    "reservationCode": "Kod Rezerwacji",
+    "route": "Trasa",
+    "pickup": "Data Odbioru",
+    "return": "Data Powrotu",
+    "passengers": "Pasażerowie",
+    "adults": "Dorośli",
+    "children": "Dzieci",
+    "luggage": "Bagaż",
+    "vehicle": "Pojazd",
+    "hotel": "Hotel",
+    "flight": "Lot",
+    "extras": "Dodatki",
+    "childSeat": "Fotelik Dziecięcy",
+    "welcomeSign": "Tabliczka Powitalna",
+    "total": "Suma",
+    "oneWay": "W jedną stronę",
+    "roundTrip": "W obie strony",
+    "downloadVoucher": "Pobierz PDF Voucher",
+    "whatsappSupport": "WhatsApp Wsparcie",
+    "status_pending": "Oczekujące",
+    "status_paid": "Opłacone",
+    "status_driver_assigned": "Kierowca Przydzielony",
+    "status_passenger_picked_up": "Odebrano",
+    "status_completed": "Zakończone",
+    "status_cancel_requested": "Prośba o Anulowanie",
+    "status_cancelled": "Anulowane"
   }
 }
