@@ -183,12 +183,6 @@ export default async function HomePage({
       highPrice: "180",
       priceCurrency: "USD",
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      reviewCount: "1250",
-      bestRating: "5",
-    },
   };
 
   const breadcrumbSchema = {
