@@ -623,14 +623,7 @@ export default function BookingWizard(props: Props) {
                         <Check size={16} className="text-white" />
                       </div>
                     </div>
-                    <div className="flex gap-4 text-sm text-[#86868b] mb-4">
-                      <span className="flex items-center gap-1">
-                        <Users size={14} /> {priceData?.vehicle?.max_passengers ?? 7} {t("passengers")}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Luggage size={14} /> {priceData?.vehicle?.max_luggage ?? 7} {t("luggageCapacity")}
-                      </span>
-                    </div>
+
                     {/* Features */}
                     {(priceData?.vehicle?.features?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -703,40 +696,7 @@ export default function BookingWizard(props: Props) {
                     </div>
                   </label>
 
-                  {/* Welcome sign toggle */}
-                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div className="flex items-center gap-3">
-                      <Tag size={20} className="text-white" />
-                      <div>
-                        <p className="font-medium text-white text-sm">
-                          {t("welcomeSign")}
-                        </p>
-                        <p className="text-xs text-[#555]">
-                          {t("welcomeSignDesc")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-[#86868b]">
-                        {priceData ? fmt(5, priceData.exchangeRates) : "$5"}
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={welcomeSign}
-                        onChange={(e) => setWelcomeSign(e.target.checked)}
-                        className="w-5 h-5 rounded text-orange-500 focus:ring-orange-500"
-                      />
-                    </div>
-                  </label>
-                  {welcomeSign && (
-                    <input
-                      type="text"
-                      placeholder={t("placeholderWelcomeName")}
-                      value={welcomeName}
-                      onChange={(e) => setWelcomeName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    />
-                  )}
+
                 </div>
 
                 {/* Coupon */}
@@ -997,29 +957,7 @@ export default function BookingWizard(props: Props) {
                   </span>
                 </div>
 
-                {/* Night surcharge */}
-                {priceData.calculation.nightSurcharge > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#86868b]">
-                      {t("nightSurcharge")}
-                    </span>
-                    <span className="font-medium text-amber-400">
-                      +{fmt(priceData.calculation.nightSurcharge, priceData.exchangeRates)}
-                    </span>
-                  </div>
-                )}
 
-                {/* Welcome sign */}
-                {priceData.calculation.welcomeSignFee > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#86868b]">
-                      {t("welcomeSignFee")}
-                    </span>
-                    <span className="font-medium">
-                      +{fmt(priceData.calculation.welcomeSignFee, priceData.exchangeRates)}
-                    </span>
-                  </div>
-                )}
 
                 {/* Child seat */}
                 {childSeat && (
