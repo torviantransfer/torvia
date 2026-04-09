@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
-import flags from "country-flag-icons/react/3x2";
+import * as flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
 
 const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
