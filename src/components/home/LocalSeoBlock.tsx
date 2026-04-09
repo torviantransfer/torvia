@@ -8,8 +8,18 @@ export default function LocalSeoBlock() {
   const t = useTranslations("localSeo");
 
   const destinations = [
-    "Belek", "Side", "Alanya", "Kemer", "Kundu-Lara",
-    "Kaş", "Fethiye", "Marmaris", "Manavgat", "Beldibi",
+    { label: "Belek Transfer", slug: "belek" },
+    { label: "Side Transfer", slug: "side" },
+    { label: "Alanya Transfer", slug: "alanya" },
+    { label: "Kemer Transfer", slug: "kemer" },
+    { label: "Kundu-Lara Transfer", slug: "kundu-lara" },
+    { label: "Kaş Transfer", slug: "kas" },
+    { label: "Fethiye Transfer", slug: "fethiye" },
+    { label: "Marmaris Transfer", slug: "marmaris" },
+    { label: "Manavgat Transfer", slug: "manavgat" },
+    { label: "Beldibi Transfer", slug: "beldibi" },
+    { label: "Kalkan Transfer", slug: "kalkan" },
+    { label: "Tekirova Transfer", slug: "tekirova" },
   ];
 
   return (
@@ -25,17 +35,18 @@ export default function LocalSeoBlock() {
           </p>
         </div>
 
-        {/* Destination tags */}
+        {/* Destination tags — internal links for SEO */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
           {destinations.map((dest) => (
-            <span
-              key={dest}
-              className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-400"
+            <Link
+              key={dest.slug}
+              href={`/${dest.slug}-transfer`}
+              className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-400 hover:text-orange-400 hover:border-orange-400/30 transition-colors"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <MapPin size={10} className="inline mr-1" />
-              {dest}
-            </span>
+              {dest.label}
+            </Link>
           ))}
         </div>
 

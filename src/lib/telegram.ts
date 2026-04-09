@@ -1,5 +1,5 @@
-/**
- * Velora Transfer — Telegram Notification Helper
+﻿/**
+ * TORVIAN Transfer — Telegram Notification Helper
  * Sends beautifully formatted HTML messages to admin Telegram
  */
 

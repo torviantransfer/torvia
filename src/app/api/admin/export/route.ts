@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="velora-reservations-${new Date().toISOString().slice(0, 10)}.csv"`,
+        "Content-Disposition": `attachment; filename="TORVIAN-reservations-${new Date().toISOString().slice(0, 10)}.csv"`,
       },
     });
   }
@@ -125,7 +125,7 @@ ${xmlRows}
   return new NextResponse(xml, {
     headers: {
       "Content-Type": "application/vnd.ms-excel",
-      "Content-Disposition": `attachment; filename="velora-reservations-${new Date().toISOString().slice(0, 10)}.xls"`,
+      "Content-Disposition": `attachment; filename="TORVIAN-reservations-${new Date().toISOString().slice(0, 10)}.xls"`,
     },
   });
 }

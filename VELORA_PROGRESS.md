@@ -1,4 +1,4 @@
-# VELORA Transfer — Proje İlerleme Durumu
+# TORVIAN Transfer — Proje İlerleme Durumu
 
 > **Son Güncelleme:** 7 Nisan 2026 — Gece
 > **GitHub:** https://github.com/worldshopperstore-coder/verola.git
@@ -10,14 +10,14 @@
 ## 📌 YARIN NEREDEN DEVAM EDİLECEK
 
 ### 🔴 Kritik — 50+ Bölge SEO Verileri (BAŞLANMADI)
-SEO anahtar kelime araştırması yapıldı (`VELORA_SEO_KEYWORDS.md` — 600+ satır, 26 bölge × 5 dil), 
+SEO anahtar kelime araştırması yapıldı (`TORVIAN_SEO_KEYWORDS.md` — 600+ satır, 26 bölge × 5 dil), 
 ama bu veriler henüz veritabanına eklenmedi. Yapılacaklar:
 
 1. **SQL Seed Dosyası Oluştur** — `supabase/migrations/002_seed_regions.sql`
    - 26 bölge (SEO doc'tan) + 10 ek bölge (BookingWizard'dan) = ~35 benzersiz bölge
    - Her bölge için: slug, name_{5dil}, description_{5dil}, meta_title_{5dil}, meta_description_{5dil}
    - distance_km, duration_minutes, is_popular, sort_order
-   - Meta title/description verileri `VELORA_SEO_KEYWORDS.md` dosyasından alınacak
+   - Meta title/description verileri `TORVIAN_SEO_KEYWORDS.md` dosyasından alınacak
 
 2. **API Endpoint** — `/api/regions` GET endpoint (aktif bölgeleri döndürür)
 
@@ -171,7 +171,7 @@ ama bu veriler henüz veritabanına eklenmedi. Yapılacaklar:
 ## 📁 PROJE DOSYA YAPISI
 
 ```
-velora/
+torvian/
 ├── src/
 │   ├── app/
 │   │   ├── [locale]/
@@ -251,8 +251,8 @@ velora/
 | Resend | v6.10.0 |
 | next-intl | v4.9.0 |
 | Diller | tr, en, de, pl, ru |
-| WhatsApp | 905431451548 (env var) |
-| E-posta | veloratransfer@gmail.com |
+| WhatsApp | 905469407955 (env var) |
+| E-posta | torviantransfer@gmail.com |
 | Tema | Dark (#111113 bg — public), Light (#F1F5F9 — admin) |
 | URL Pattern | /{locale}/{slug}-transfer |
 | Translation Namespaces | 24 adet |
@@ -292,6 +292,6 @@ velora/
 
 ---
 
-> **Not:** `VELORA_SEO_KEYWORDS.md` dosyasında 26 bölge × 5 dil için hazır meta title/description mevcut.
-> `VELORA_PRICING.md` dosyasında fiyat verileri var.
+> **Not:** `TORVIAN_SEO_KEYWORDS.md` dosyasında 26 bölge × 5 dil için hazır meta title/description mevcut.
+> `TORVIAN_PRICING.md` dosyasında fiyat verileri var.
 > Bu veriler yarın seed dosyasına aktarılacak.

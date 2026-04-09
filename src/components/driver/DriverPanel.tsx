@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback } from "react";
 import {
@@ -112,9 +112,9 @@ export default function DriverPanel({ assignment, token }: Props) {
     const code = res?.reservation_code ?? "";
 
     const messages: Record<string, string> = {
-      accepted: `✅ VELORA Transfer\n\nYour transfer ${code} has been accepted.\nYour driver: ${assignment.drivers?.full_name ?? "—"}\nVehicle: ${vehicle?.brand ?? ""} ${vehicle?.model ?? ""} (${vehicle?.plate_number ?? ""})\n\nWe'll be at the airport on time! 🚗`,
-      picked_up: `🚗 VELORA Transfer\n\nYour driver has confirmed pickup for transfer ${code}.\nYou're on your way! Enjoy the ride. 🌟`,
-      completed: `🏁 VELORA Transfer\n\nTransfer ${code} is complete.\nThank you for choosing VELORA! We hope you had a great experience.\n\n⭐ Rate us: veloratransfer.com`,
+      accepted: `✅ TORVIAN Transfer\n\nYour transfer ${code} has been accepted.\nYour driver: ${assignment.drivers?.full_name ?? "—"}\nVehicle: ${vehicle?.brand ?? ""} ${vehicle?.model ?? ""} (${vehicle?.plate_number ?? ""})\n\nWe'll be at the airport on time! 🚗`,
+      picked_up: `🚗 TORVIAN Transfer\n\nYour driver has confirmed pickup for transfer ${code}.\nYou're on your way! Enjoy the ride. 🌟`,
+      completed: `🏁 TORVIAN Transfer\n\nTransfer ${code} is complete.\nThank you for choosing TORVIAN! We hope you had a great experience.\n\n⭐ Rate us: torviantransfer.com`,
     };
 
     const text = messages[newStatus];

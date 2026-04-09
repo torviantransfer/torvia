@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
@@ -62,12 +62,14 @@ export default function Header() {
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
-          <div className="flex items-center justify-between h-14">
+          <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 group">
-              <span className="text-[17px] font-bold tracking-tight text-white">
-                VELORA
-              </span>
+            <Link href="/" className="flex items-center group">
+              <img
+                src="/images/logo.png"
+                alt="TORVIAN Transfer"
+                style={{ height: "44px", width: "auto", maxWidth: "180px", objectFit: "contain" }}
+              />
             </Link>
 
             {/* Desktop nav */}
@@ -76,7 +78,7 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-3 py-1.5 text-xs transition-colors ${
+                  className={`px-3 py-1.5 text-xs transition-colors whitespace-nowrap ${
                     pathname === item.href
                       ? "text-white"
                       : "text-gray-400 hover:text-white"
@@ -129,8 +131,8 @@ export default function Header() {
               </Link>
               <Link
                 href="/booking"
-                className="hidden sm:inline-flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-full transition-all hover:brightness-110"
-                style={{ backgroundColor: '#30D158', color: '#fff' }}
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all hover:brightness-110 whitespace-nowrap"
+                style={{ backgroundColor: '#F97316', color: '#fff' }}
               >
                 {t("bookNow")}
                 <ArrowRight size={13} />
@@ -177,7 +179,7 @@ export default function Header() {
               <Link
                 href="/booking"
                 className="block text-center py-3 text-sm font-semibold rounded-full transition-all"
-                style={{ backgroundColor: '#30D158', color: '#fff' }}
+                style={{ backgroundColor: '#F97316', color: '#fff' }}
                 onClick={() => setMobileOpen(false)}
               >
                 {t("bookNow")}

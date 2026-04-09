@@ -93,31 +93,47 @@ export async function generateMetadata({
   const name = region[`name_${locale}`] || region.name_en;
   const metaTitle =
     region[`meta_title_${locale}`] ||
-    `${name} Transfer | VELORA Antalya Airport VIP Transfer`;
+    `${name} Transfer | TORVIAN Antalya Airport VIP Transfer`;
+
+  const fallbackDesc: Record<string, string> = {
+    tr: `Antalya Havalimanı'ndan ${name}'a VIP özel transfer. Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
+    en: `VIP private transfer from Antalya Airport to ${name}. Fixed price, professional drivers, 24/7 service. Book online.`,
+    de: `VIP Privattransfer vom Flughafen Antalya nach ${name}. Festpreis, professionelle Fahrer, 24/7 Service.`,
+    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}. Stała cena, profesjonalni kierowcy, serwis 24/7.`,
+    ru: `ВИП трансфер из аэропорта Анталья в ${name}. Фиксированная цена, профессиональные водители, круглосуточный сервис.`,
+  };
   const metaDesc =
-    region[`meta_description_${locale}`] ||
-    `VIP private transfer from Antalya Airport to ${name}. Fixed price, professional drivers, 24/7 service.`;
+    region[`meta_description_${locale}`] || fallbackDesc[locale] || fallbackDesc.en;
+
+  const regionImg = `https://torviantransfer.com/images/regions/${slug}.jpg`;
 
   return {
     title: metaTitle,
     description: metaDesc,
     alternates: {
-      canonical: `https://veloratransfer.com/${locale}/${slug}-transfer`,
+      canonical: `https://torviantransfer.com/${locale}/${slug}-transfer`,
       languages: {
-        tr: `https://veloratransfer.com/tr/${slug}-transfer`,
-        en: `https://veloratransfer.com/en/${slug}-transfer`,
-        de: `https://veloratransfer.com/de/${slug}-transfer`,
-        pl: `https://veloratransfer.com/pl/${slug}-transfer`,
-        ru: `https://veloratransfer.com/ru/${slug}-transfer`,
+        "x-default": `https://torviantransfer.com/en/${slug}-transfer`,
+        tr: `https://torviantransfer.com/tr/${slug}-transfer`,
+        en: `https://torviantransfer.com/en/${slug}-transfer`,
+        de: `https://torviantransfer.com/de/${slug}-transfer`,
+        pl: `https://torviantransfer.com/pl/${slug}-transfer`,
+        ru: `https://torviantransfer.com/ru/${slug}-transfer`,
       },
     },
     openGraph: {
       title: metaTitle,
       description: metaDesc,
-      url: `https://veloratransfer.com/${locale}/${slug}-transfer`,
+      url: `https://torviantransfer.com/${locale}/${slug}-transfer`,
       type: "website",
-      siteName: "VELORA Transfer",
-      images: [{ url: "https://veloratransfer.com/images/og-default.jpg", width: 1200, height: 630 }],
+      siteName: "TORVIAN Transfer",
+      images: [{ url: regionImg, width: 1200, height: 630, alt: `${name} Transfer` }],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: metaTitle,
+      description: metaDesc,
+      images: [regionImg],
     },
   };
 }
@@ -179,12 +195,12 @@ export default async function RegionPage({
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: `VELORA ${name} Transfer`,
+    name: `TORVIAN ${name} Transfer`,
     description: t("defaultDesc", { name }),
     provider: {
       "@type": "Organization",
-      name: "VELORA Transfer",
-      url: "https://veloratransfer.com",
+      name: "TORVIAN Transfer",
+      url: "https://torviantransfer.com",
     },
     areaServed: {
       "@type": "Place",
@@ -253,15 +269,10 @@ export default async function RegionPage({
                 {/* Pricing Display */}
                 {pricing && (
                   <div className="flex flex-wrap gap-4 mb-5">
-                    <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(48,209,88,0.08)", border: "1px solid rgba(48,209,88,0.2)" }}>
-                      <div className="text-xs text-gray-400 mb-1">{t("oneWay")}</div>
+                    <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                      <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
                       <div className="text-2xl font-bold text-white"><PriceTag amount={pricing.one_way_price} /></div>
-                      <div className="text-xs text-gray-500">{t("perVehicle")}</div>
-                    </div>
-                    <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <div className="text-xs text-gray-400 mb-1">{t("roundTrip")}</div>
-                      <div className="text-2xl font-bold text-white"><PriceTag amount={pricing.round_trip_price} /></div>
-                      <div className="text-xs text-gray-500">{t("perVehicle")}</div>
+                      <div className="text-xs text-gray-500">{t("oneWay")} · {t("perVehicle")}</div>
                     </div>
                   </div>
                 )}
@@ -272,7 +283,7 @@ export default async function RegionPage({
                     {t("freeCancellation")}
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-                    <Shield size={12} className="text-blue-400" />
+                    <Shield size={12} className="text-orange-400" />
                     {t("securePayTitle")}
                   </span>
                 </div>
@@ -348,7 +359,7 @@ export default async function RegionPage({
                 <Link
                   href={`/booking?region=${slug}`}
                   className="w-full py-4 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:brightness-110 shadow-lg"
-                  style={{ backgroundColor: '#30D158', boxShadow: '0 8px 25px rgba(48,209,88,0.25)' }}
+                  style={{ backgroundColor: '#F97316', boxShadow: '0 8px 25px rgba(249,115,22,0.25)' }}
                 >
                   {bt("title")} <ArrowRight size={18} />
                 </Link>
@@ -541,7 +552,7 @@ export default async function RegionPage({
             <Link
               href={`/booking?region=${slug}`}
               className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-xl transition-all hover:brightness-110 shadow-lg"
-              style={{ backgroundColor: '#30D158', boxShadow: '0 8px 25px rgba(48,209,88,0.25)' }}
+              style={{ backgroundColor: '#F97316', boxShadow: '0 8px 25px rgba(249,115,22,0.25)' }}
             >
               {t("bookNow")} <ArrowRight size={18} />
             </Link>

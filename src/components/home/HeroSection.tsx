@@ -37,7 +37,7 @@ export default function HeroSection() {
                 <span>4.9/5</span>
                 <span className="text-gray-400 ml-0.5">— 15,000+ {t("transfers")}</span>
               </div>
-              <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)" }}>
+              <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-orange-400" style={{ backgroundColor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}>
                 <CheckCircle2 size={12} />
                 {t("licensedInsured")}
               </div>
@@ -60,7 +60,7 @@ export default function HeroSection() {
                 {t("service247")}
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs text-gray-300">
-                <Shield size={13} className="text-blue-400" />
+                <Shield size={13} className="text-orange-400" />
                 {t("fixedPrice")}
               </span>
             </div>
@@ -68,14 +68,14 @@ export default function HeroSection() {
               <Link
                 href="/booking"
                 className="inline-flex items-center px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110"
-                style={{ backgroundColor: '#30D158', color: '#fff' }}
+                style={{ backgroundColor: '#F97316', color: '#fff' }}
               >
                 {n("bookNow")}
               </Link>
               <Link
                 href="/regions"
-                className="inline-flex items-center px-7 py-3 text-sm font-medium rounded-full text-blue-400 hover:text-blue-300 transition-colors"
-                style={{ border: "1px solid rgba(59,130,246,0.3)" }}
+                className="inline-flex items-center px-7 py-3 text-sm font-medium rounded-full text-orange-400 hover:text-orange-300 transition-colors"
+                style={{ border: "1px solid rgba(249,115,22,0.3)" }}
               >
                 {t("exploreRegions")}
               </Link>

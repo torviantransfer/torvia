@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Save, RefreshCw, Eye, EyeOff, CheckCircle2, XCircle, CreditCard, Mail, Send, Globe, Shield } from "lucide-react";
@@ -53,7 +53,7 @@ const INTEGRATION_FIELDS: {
   { key: "resend_api_key", label: "API Key", group: "E-posta (Resend)", icon: Mail, placeholder: "re_...", sensitive: true },
   { key: "telegram_bot_token", label: "Bot Token", group: "Telegram Bildirim", icon: Send, placeholder: "123456:ABC-DEF...", sensitive: true },
   { key: "telegram_chat_id", label: "Chat ID", group: "Telegram Bildirim", icon: Send, placeholder: "-1001234567890", sensitive: false },
-  { key: "site_url", label: "Site URL", group: "Genel", icon: Globe, placeholder: "https://veloratransfer.com", sensitive: false },
+  { key: "site_url", label: "Site URL", group: "Genel", icon: Globe, placeholder: "https://torviantransfer.com", sensitive: false },
   { key: "admin_emails", label: "Admin E-postalar (virgülle ayır)", group: "Genel", icon: Shield, placeholder: "admin@firma.com, admin2@firma.com", sensitive: false },
 ];
 

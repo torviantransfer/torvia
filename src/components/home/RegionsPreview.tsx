@@ -29,7 +29,7 @@ export default function RegionsPreview() {
           </div>
           <Link
             href="/regions"
-            className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors group shrink-0"
+            className="inline-flex items-center gap-1.5 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors group shrink-0"
           >
             {t("allRegions")}
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />

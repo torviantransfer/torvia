@@ -14,7 +14,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
-  const title = `${t("title")} | VELORA Transfer`;
+  const title = `${t("title")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
@@ -43,9 +43,9 @@ export default async function BookingPage({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",
-          name: "VELORA VIP Airport Transfer",
+          name: "TORVIAN VIP Airport Transfer",
           description: t("subtitle"),
-          provider: { "@type": "Organization", name: "VELORA Transfer", url: "https://veloratransfer.com" },
+          provider: { "@type": "Organization", name: "TORVIAN Transfer", url: "https://torviantransfer.com" },
           areaServed: { "@type": "Place", name: "Antalya, Turkey" },
           serviceType: "Airport Transfer",
         }) }} />

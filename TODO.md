@@ -1,4 +1,4 @@
-# Velora Transfer - Kaldığımız Yer (7 Nisan 2026)
+# Torvian Transfer - Kaldığımız Yer (7 Nisan 2026)
 
 ## Tamamlanan İşler ✅
 - Stripe EmbeddedCheckout → PaymentElement (dark theme) geçişi
@@ -10,7 +10,7 @@
 - Şoför atandığında modal popup (link + WhatsApp butonu)
 - Booking form state kaybı düzeltildi (dil/kur değişince sessionStorage)
 - /driver route middleware exclusion düzeltildi (next-intl 404 sorunu)
-- Admin user oluşturuldu: admin@velora.test / Admin123!
+- Admin user oluşturuldu: admin@torvian.test / Admin123!
 - Hero section, blog preview, FAQ, SEO iyileştirmeleri
 - GitHub push tamamlandı (main branch)
 
@@ -24,7 +24,7 @@
 ## Önemli Bilgiler
 - Repo: https://github.com/worldshopperstore-coder/verola
 - Dev server: npx next dev --turbopack (localhost:3000)
-- Admin panel: /tr/admin → admin@velora.test / Admin123!
+- Admin panel: /tr/admin → admin@torvian.test / Admin123!
 - Test rezervasyon: VL-F7RQPS (Adrasan, $75, driver assigned)
 - Driver token: 87994b76-ea10-447d-8019-32de24e2d427
 - Supabase: ximlobdcblinqtlizwrz

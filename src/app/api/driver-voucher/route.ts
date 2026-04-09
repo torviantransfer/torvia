@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 function esc(str: string | null | undefined): string {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         <div style="font-size:48px;margin-bottom:16px">🔒</div>
         <h1 style="font-size:24px;margin:0 0 8px;color:#1d1d1f">Link Expired</h1>
         <p style="color:#888;font-size:14px">This voucher link has expired. Transfer links are deactivated 2 hours after completion.</p>
-        <p style="color:#ccc;font-size:11px;margin-top:24px;letter-spacing:2px">VELORA VIP TRANSFER</p>
+        <p style="color:#ccc;font-size:11px;margin-top:24px;letter-spacing:2px">TORVIAN VIP TRANSFER</p>
         </div></body></html>`,
         { headers: { "Content-Type": "text/html; charset=utf-8" } }
       );
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VELORA — Driver Voucher ${res.reservation_code}</title>
+  <title>TORVIAN — Driver Voucher ${res.reservation_code}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -374,7 +374,7 @@ export async function GET(request: NextRequest) {
 <body>
   <div class="voucher">
     <div class="header">
-      <h1>VELORA</h1>
+      <h1>TORVIAN</h1>
       <div class="subtitle">Driver Transfer Voucher</div>
       <div class="status-badge">TRANSFER ASSIGNMENT</div>
     </div>
@@ -492,8 +492,8 @@ export async function GET(request: NextRequest) {
     </div>
 
     <div class="footer">
-      <div class="support">24/7 Support: +90 543 145 15 48 | info@veloratransfer.com</div>
-      <div class="brand">VELORA VIP TRANSFER</div>
+      <div class="support">24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com</div>
+      <div class="brand">TORVIAN VIP TRANSFER</div>
     </div>
   </div>
 
@@ -516,7 +516,7 @@ export async function GET(request: NextRequest) {
           backgroundColor: '#f5f5f7',
         });
         const link = document.createElement('a');
-        link.download = 'velora-voucher-${res.reservation_code}.png';
+        link.download = 'TORVIAN-voucher-${res.reservation_code}.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         btn.textContent = '✅ Saved!';

@@ -54,7 +54,7 @@ export default async function DriverPage({
                 deactivated 2 hours after the transfer is completed.
               </p>
               <div className="text-xs text-gray-400">
-                VELORA VIP Transfer
+                TORVIAN VIP Transfer
               </div>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default async function DriverPage({
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-slate-900">
-            VELORA
+            TORVIAN
           </h1>
           <p className="text-sm text-gray-400">Driver Panel</p>
         </div>

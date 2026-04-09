@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,13 +15,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/about"),
     openGraph: seoOpenGraph(locale, "/about", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -31,9 +32,9 @@ export default async function AboutPage() {
   const aboutSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "VELORA Transfer",
-    url: "https://veloratransfer.com",
-    logo: "https://veloratransfer.com/images/logo.png",
+    name: "TORVIAN Transfer",
+    url: "https://torviantransfer.com",
+    logo: "https://torviantransfer.com/images/logo.png",
     description: "Professional VIP transfer service from Antalya Airport",
     foundingDate: "2020",
     address: {
@@ -43,7 +44,7 @@ export default async function AboutPage() {
     },
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+90-543-145-15-48",
+      telephone: "+90-546-940-79-55",
       contactType: "customer service",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },
@@ -80,7 +81,7 @@ export default async function AboutPage() {
             {/* Stats */}
             <div className="grid sm:grid-cols-3 gap-4 sm:gap-5 mt-14">
               {[
-                { icon: Shield, value: "500+", labelKey: "statTransfers" },
+                { icon: Shield, value: "15,000+", labelKey: "statTransfers" },
                 { icon: Star, value: "4.9", labelKey: "statRating" },
                 { icon: Users, value: "24/7", labelKey: "statSupport" },
               ].map(({ icon: Icon, value, labelKey }) => (
@@ -128,8 +129,8 @@ export default async function AboutPage() {
                   { icon: Star, label: t("trustSince") },
                 ].map(({ icon: Icon, label }) => (
                   <div key={label} className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(48,209,88,0.1)" }}>
-                      <Icon size={16} className="text-emerald-400" strokeWidth={1.5} />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
+                      <Icon size={16} className="text-orange-400" strokeWidth={1.5} />
                     </div>
                     <span className="text-xs text-[#86868b] font-medium">{label}</span>
                   </div>

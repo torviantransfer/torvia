@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
@@ -9,7 +9,7 @@ export default function CurrencySelector() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("velora_currency") as Currency | null;
+    const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;
     if (stored && (stored === "USD" || stored === "EUR" || stored === "TRY")) {
       setCurrency(stored);
     }
@@ -20,7 +20,7 @@ export default function CurrencySelector() {
     setOpen(false);
     // Store in localStorage for persistence
     if (typeof window !== "undefined") {
-      localStorage.setItem("velora_currency", c);
+      localStorage.setItem("TORVIAN_currency", c);
     }
     window.dispatchEvent(new CustomEvent("currency-change", { detail: c }));
   };
@@ -31,7 +31,7 @@ export default function CurrencySelector() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1 hover:text-orange-300 transition-colors"
       >
-        <span>{currencySymbols[currency]} {currency}</span>
+        <span className="whitespace-nowrap">{currencySymbols[currency]} {currency}</span>
         <ChevronDown size={12} />
       </button>
       {open && (

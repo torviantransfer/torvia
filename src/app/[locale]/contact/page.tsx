@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -15,13 +15,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "contact" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/contact"),
     openGraph: seoOpenGraph(locale, "/contact", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -31,14 +32,14 @@ export default async function ContactPage() {
   const contactSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    name: "VELORA Transfer",
-    url: "https://veloratransfer.com",
-    telephone: "+90-543-145-15-48",
-    email: "info@veloratransfer.com",
+    name: "TORVIAN Transfer",
+    url: "https://torviantransfer.com",
+    telephone: "+90-546-940-79-55",
+    email: "torviantransfer@gmail.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Antalya Havalimanı",
-      addressLocality: "Antalya",
+      streetAddress: "Kemerağzı Mah. Antalya Havalimanı Dış Hatlar Terminali",
+      addressLocality: "Muratpaşa",
       addressRegion: "Antalya",
       postalCode: "07230",
       addressCountry: "TR",
@@ -84,7 +85,7 @@ export default async function ContactPage() {
                 <h2 className="text-2xl font-bold text-white tracking-tight">{t("getInTouch")}</h2>
                 <div className="space-y-3">
                   <a
-                    href="https://wa.me/905431451548"
+                    href="https://wa.me/905469407955"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 p-4 rounded-2xl transition-colors"
@@ -102,7 +103,6 @@ export default async function ContactPage() {
                   {[
                     { icon: Mail, titleKey: "emailLabel", descKey: "emailDesc", color: "rgba(129,140,248" },
                     { icon: Phone, titleKey: "phoneLabel", descKey: "phoneDesc", color: "rgba(196,181,253" },
-                    { icon: MapPin, titleKey: "locationLabel", descKey: "locationDesc", color: "rgba(249,115,22" },
                   ].map(({ icon: Icon, titleKey, descKey, color }) => (
                     <div key={titleKey} className="flex items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: `${color},0.06)`, border: `1px solid ${color},0.12)` }}>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color},0.12)` }}>
@@ -114,11 +114,37 @@ export default async function ContactPage() {
                       </div>
                     </div>
                   ))}
+
+                  {/* Second phone */}
+                  <a
+                    href="tel:+905415952102"
+                    className="flex items-center gap-4 p-4 rounded-2xl transition-colors"
+                    style={{ backgroundColor: "rgba(196,181,253,0.06)", border: "1px solid rgba(196,181,253,0.12)" }}
+                  >
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(196,181,253,0.12)" }}>
+                      <Phone size={20} style={{ color: "rgba(196,181,253,1)" }} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{t("phoneLabel")} 2</p>
+                      <p className="text-sm text-[#86868b]">+90 541 595 21 02</p>
+                    </div>
+                  </a>
+
+                  {/* Address */}
+                  <div className="flex items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.12)" }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
+                      <MapPin size={20} style={{ color: "rgba(249,115,22,1)" }} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white">{t("locationLabel")}</p>
+                      <p className="text-sm text-[#86868b]">Kemerağzı Mah. Antalya Havalimanı Dış Hatlar, 07230 Muratpaşa/Antalya</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Response time + FAQ link */}
                 <div className="mt-6 space-y-3">
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(48,209,88,0.06)", border: "1px solid rgba(48,209,88,0.12)" }}>
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.12)" }}>
                     <Clock size={16} className="text-emerald-400 flex-shrink-0" strokeWidth={1.5} />
                     <span className="text-sm text-[#86868b]">{t("responseTime")}</span>
                   </div>

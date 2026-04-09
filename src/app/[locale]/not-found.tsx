@@ -13,7 +13,7 @@ export default function LocaleNotFound() {
         <p
           className="text-8xl font-extrabold mb-2"
           style={{
-            background: "linear-gradient(135deg, #F97316, #30D158)",
+            background: "linear-gradient(135deg, #F97316, #F97316)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
           }}

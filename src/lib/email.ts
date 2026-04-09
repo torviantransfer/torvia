@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+﻿import { Resend } from "resend";
 import { getConfig } from "@/lib/config";
 
 let _resend: Resend | null = null;
@@ -47,7 +47,7 @@ export interface ReservationEmailData {
 // ─── i18n labels ───
 const i18n: Record<string, Record<string, string>> = {
   en: {
-    subject: "Your VELORA Transfer Voucher",
+    subject: "Your TORVIAN Transfer Voucher",
     greeting: "Hello",
     confirmed: "Your VIP transfer has been confirmed and paid.",
     showVoucher: "Please present this voucher (printed or on screen) to your driver at pickup.",
@@ -90,7 +90,7 @@ const i18n: Record<string, Record<string, string>> = {
     footer: "This e-mail serves as your official transfer voucher.",
   },
   tr: {
-    subject: "VELORA Transfer Voucherınız",
+    subject: "TORVIAN Transfer Voucherınız",
     greeting: "Merhaba",
     confirmed: "VIP transferiniz onaylandı ve ödemeniz alındı.",
     showVoucher: "Lütfen bu voucher'ı (basılı veya ekranda) teslim noktasında şoförünüze gösterin.",
@@ -133,7 +133,7 @@ const i18n: Record<string, Record<string, string>> = {
     footer: "Bu e-posta resmi transfer voucherınız olarak geçerlidir.",
   },
   de: {
-    subject: "Ihr VELORA Transfer Voucher",
+    subject: "Ihr TORVIAN Transfer Voucher",
     greeting: "Hallo",
     confirmed: "Ihr VIP-Transfer wurde bestätigt und bezahlt.",
     showVoucher: "Bitte zeigen Sie diesen Voucher (gedruckt oder digital) Ihrem Fahrer bei der Abholung.",
@@ -176,7 +176,7 @@ const i18n: Record<string, Record<string, string>> = {
     footer: "Diese E-Mail dient als Ihr offizieller Transfer-Voucher.",
   },
   pl: {
-    subject: "Twój Voucher VELORA Transfer",
+    subject: "Twój Voucher TORVIAN Transfer",
     greeting: "Cześć",
     confirmed: "Twój transfer VIP został potwierdzony i opłacony.",
     showVoucher: "Prosimy o okazanie tego vouchera (wydrukowanego lub na ekranie) kierowcy przy odbiorze.",
@@ -219,7 +219,7 @@ const i18n: Record<string, Record<string, string>> = {
     footer: "Ten e-mail służy jako oficjalny voucher transferowy.",
   },
   ru: {
-    subject: "Ваш ваучер VELORA Transfer",
+    subject: "Ваш ваучер TORVIAN Transfer",
     greeting: "Здравствуйте",
     confirmed: "Ваш VIP-трансфер подтверждён и оплачен.",
     showVoucher: "Пожалуйста, покажите этот ваучер (распечатанный или на экране) водителю при посадке.",
@@ -281,8 +281,8 @@ async function generateQRBase64(text: string): Promise<string> {
 export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string): string {
   const loc = data.locale;
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://veloratransfer.com";
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905431451548";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
   const passengerParts: string[] = [];
   if (data.adults > 0) passengerParts.push(`${data.adults} ${data.adults === 1 ? t(loc, "adult") : t(loc, "adults")}`);
@@ -310,7 +310,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
 
   <!-- HEADER -->
   <div style="background:linear-gradient(135deg,#f97316,#ea580c);padding:28px 32px;text-align:center;">
-    <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:4px;font-weight:800;">VELORA</h1>
+    <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:4px;font-weight:800;">TORVIAN</h1>
     <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:13px;letter-spacing:1px;">VIP AIRPORT TRANSFER</p>
   </div>
 
@@ -412,14 +412,14 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
     <div style="text-align:center;margin-bottom:8px;">
       <p style="color:#86868b;font-size:12px;margin:0 0 10px;">${t(loc, "contact")}</p>
       <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-right:8px;">WhatsApp</a>
-      <a href="mailto:info@veloratransfer.com" style="display:inline-block;background:#f97316;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">E-mail</a>
+      <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#f97316;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">E-mail</a>
     </div>
   </div>
 
   <!-- FOOTER -->
   <div style="background:#0a0a0a;padding:16px 32px;text-align:center;border-top:1px solid #1a1a1d;">
     <p style="color:#52525b;font-size:11px;margin:0 0 4px;">${t(loc, "footer")}</p>
-    <p style="color:#3f3f46;font-size:10px;margin:0;">© ${new Date().getFullYear()} VELORA Transfer · Antalya, Turkey · <a href="${siteUrl}" style="color:#3f3f46;">veloratransfer.com</a></p>
+    <p style="color:#3f3f46;font-size:10px;margin:0;">© ${new Date().getFullYear()} TORVIAN Transfer · Antalya, Turkey · <a href="${siteUrl}" style="color:#3f3f46;">torviantransfer.com</a></p>
   </div>
 
 </div>
@@ -440,7 +440,7 @@ export async function sendReservationEmail(data: ReservationEmailData) {
   if (!resend) return;
 
   const qrDataUrl = data.qrCodeToken
-    ? await generateQRBase64(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://veloratransfer.com"}/verify/${data.qrCodeToken}`)
+    ? await generateQRBase64(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${data.qrCodeToken}`)
     : "";
 
   const subject = t(data.locale, "subject");
@@ -448,7 +448,7 @@ export async function sendReservationEmail(data: ReservationEmailData) {
 
   try {
     await resend.emails.send({
-      from: "VELORA Transfer <noreply@veloratransfer.com>",
+      from: "TORVIAN Transfer <noreply@torviantransfer.com>",
       to: data.to,
       subject,
       html,

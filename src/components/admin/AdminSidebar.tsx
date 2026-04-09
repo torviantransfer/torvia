@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -61,11 +61,11 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
       <div className="px-6 h-16 flex items-center" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <Link href={base} className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">V</span>
+            <span className="text-white font-bold text-sm">T</span>
           </div>
           <div>
             <span className="text-white font-bold text-base tracking-tight">
-              VELORA
+              TORVIAN
             </span>
             <span className="text-slate-500 text-[10px] font-medium ml-1.5 uppercase tracking-widest">
               Admin

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -23,13 +23,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "blog" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/blog"),
     openGraph: seoOpenGraph(locale, "/blog", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -176,7 +177,7 @@ export default async function BlogPage({
             <Link
               href="/booking"
               className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
-              style={{ backgroundColor: "#30D158", color: "#fff" }}
+              style={{ backgroundColor: "#F97316", color: "#fff" }}
             >
               {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
               <ArrowRight size={16} />

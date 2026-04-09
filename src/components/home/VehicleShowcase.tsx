@@ -75,7 +75,7 @@ export default function VehicleShowcase() {
             <Link
               href="/booking"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110"
-              style={{ backgroundColor: '#30D158', color: '#fff' }}
+              style={{ backgroundColor: '#F97316', color: '#fff' }}
             >
               {t("reserveTransfer")}
               <ArrowRight size={14} />

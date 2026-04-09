@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA TRANSFER — SEO Blog Posts v2
+-- TORVIAN TRANSFER — SEO Blog Posts v2
 -- Based on Google Trends data analysis
 -- Targeting: uber antalya, yandex taxi, havaş,
 --   kemer vip transfer, antalya flughafen transfer

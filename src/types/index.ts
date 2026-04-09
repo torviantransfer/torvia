@@ -1,5 +1,5 @@
-/* ==============================
-   VELORA Transfer — Shared Types
+﻿/* ==============================
+   TORVIAN Transfer — Shared Types
    ============================== */
 
 // ---------- Database row types ----------

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
@@ -46,7 +46,7 @@ export default function AdminLoginForm() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Lock size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">VELORA Yönetim</h1>
+          <h1 className="text-2xl font-bold text-gray-900">TORVIAN Yönetim</h1>
           <p className="text-gray-500 text-sm mt-1">Devam etmek için giriş yapın</p>
         </div>
 
@@ -69,7 +69,7 @@ export default function AdminLoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                placeholder="admin@veloratransfer.com"
+                placeholder="torviantransfer@gmail.com"
               />
             </div>
           </div>

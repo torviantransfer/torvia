@@ -52,7 +52,7 @@ export async function generateMetadata({
   const description = content.replace(/<[^>]*>/g, "").slice(0, 160);
 
   return {
-    title: `${title} | VELORA Transfer Blog`,
+    title: `${title} | TORVIAN Transfer Blog`,
     description,
     alternates: seoAlternates(locale, `/blog/${slug}`),
     openGraph: seoOpenGraph(locale, `/blog/${slug}`, title, description, post.image_url || undefined),
@@ -124,15 +124,15 @@ export default async function BlogPostPage({
     dateModified: post.updated_at || post.published_at,
     author: {
       "@type": "Organization",
-      name: "VELORA Transfer",
-      url: "https://veloratransfer.com",
+      name: "TORVIAN Transfer",
+      url: "https://torviantransfer.com",
     },
     publisher: {
       "@type": "Organization",
-      name: "VELORA Transfer",
-      logo: { "@type": "ImageObject", url: "https://veloratransfer.com/images/logo.png" },
+      name: "TORVIAN Transfer",
+      logo: { "@type": "ImageObject", url: "https://torviantransfer.com/images/logo.png" },
     },
-    mainEntityOfPage: `https://veloratransfer.com/${locale}/blog/${slug}`,
+    mainEntityOfPage: `https://torviantransfer.com/${locale}/blog/${slug}`,
     wordCount: wordCount,
   };
 
@@ -236,7 +236,7 @@ export default async function BlogPostPage({
         {/* Booking CTA */}
         <section className="py-12">
           <div className="max-w-3xl mx-auto px-4">
-            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(48,209,88,0.08) 100%)", border: "1px solid rgba(249,115,22,0.15)" }}>
+            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(249,115,22,0.08) 100%)", border: "1px solid rgba(249,115,22,0.15)" }}>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-orange-400 mb-4" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
                 <ArrowRight size={12} />
                 {locale === "tr" ? "VIP Transfer" : "VIP Transfer"}
@@ -250,7 +250,7 @@ export default async function BlogPostPage({
               <Link
                 href="/booking"
                 className="inline-flex items-center gap-2 px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
-                style={{ backgroundColor: "#30D158", color: "#fff" }}
+                style={{ backgroundColor: "#F97316", color: "#fff" }}
               >
                 {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
                 <ArrowRight size={14} />

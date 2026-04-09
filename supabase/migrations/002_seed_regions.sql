@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA TRANSFER — 26 Bölge SEO Seed Data
+-- TORVIAN TRANSFER — 26 Bölge SEO Seed Data
 -- 5 dil (tr/en/de/pl/ru) × 26 bölge
 -- Meta title, meta description, mesafe, süre
 -- =============================================

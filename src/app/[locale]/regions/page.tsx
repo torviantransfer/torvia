@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -51,13 +51,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "regions" });
-  const title = `${t("title")} | VELORA Transfer`;
+  const title = `${t("title")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/regions"),
     openGraph: seoOpenGraph(locale, "/regions", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -89,7 +90,7 @@ export default async function RegionsPage({
           itemListElement: (regions ?? []).map((r: Record<string, unknown>, i: number) => ({
             "@type": "ListItem",
             position: i + 1,
-            url: `https://veloratransfer.com/${locale}/${r.slug}-transfer`,
+            url: `https://torviantransfer.com/${locale}/${r.slug}-transfer`,
             name: `${(r as Record<string, string>)[`name_${locale}`] || r.name_en} Transfer`,
           })),
         }) }} />

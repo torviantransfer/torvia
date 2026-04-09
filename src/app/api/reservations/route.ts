@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import crypto from "crypto";
@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
       amount: Math.round(calc.totalPrice * 100),
       currency: "usd",
       payment_method_types: ["card"],
-      description: `VELORA VIP Transfer — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`,
+      description: `TORVIAN VIP Transfer — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`,
       receipt_email: email,
       metadata: {
         reservation_id: reservation.id,

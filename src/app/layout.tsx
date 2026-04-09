@@ -1,16 +1,16 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://veloratransfer.com"),
+  metadataBase: new URL("https://torviantransfer.com"),
   title: {
-    default: "VELORA Transfer | Antalya Airport VIP Transfer",
-    template: "%s | VELORA Transfer",
+    default: "TORVIAN Transfer | Antalya Airport VIP Transfer",
+    template: "%s | TORVIAN Transfer",
   },
   description: "Antalya Airport VIP Transfer Service - Professional private transfer to Belek, Side, Alanya, Kemer and all resort destinations. 24/7 service, flight tracking, fixed prices.",
   manifest: "/manifest.json",
   openGraph: {
     type: "website",
-    siteName: "VELORA Transfer",
+    siteName: "TORVIAN Transfer",
     images: [{ url: "/images/og-default.jpg", width: 1200, height: 630 }],
   },
   twitter: {

@@ -58,7 +58,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
           </div>
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors group shrink-0"
+            className="inline-flex items-center gap-1.5 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors group shrink-0"
           >
             {viewAll[loc]}
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />

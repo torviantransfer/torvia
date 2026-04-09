@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA TRANSFER — Fix Region Meta SEO (locale columns)
+-- TORVIAN TRANSFER — Fix Region Meta SEO (locale columns)
 -- Code uses meta_title_{locale} and meta_description_{locale}
 -- Previous 006 wrote to wrong generic columns
 -- This fixes by writing to locale-specific columns

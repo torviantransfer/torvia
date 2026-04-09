@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
@@ -10,7 +10,7 @@ export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("velora_cookie_consent");
+    const consent = localStorage.getItem("TORVIAN_cookie_consent");
     if (!consent) {
       const timer = setTimeout(() => setVisible(true), 1500);
       return () => clearTimeout(timer);
@@ -18,12 +18,12 @@ export default function CookieConsent() {
   }, []);
 
   const accept = () => {
-    localStorage.setItem("velora_cookie_consent", "accepted");
+    localStorage.setItem("TORVIAN_cookie_consent", "accepted");
     setVisible(false);
   };
 
   const decline = () => {
-    localStorage.setItem("velora_cookie_consent", "declined");
+    localStorage.setItem("TORVIAN_cookie_consent", "declined");
     setVisible(false);
   };
 

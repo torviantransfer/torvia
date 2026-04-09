@@ -19,6 +19,13 @@ export default function BookingFormMini() {
   const router = useRouter();
   const [tripType, setTripType] = useState<"one_way" | "round_trip">("one_way");
 
+  // Auto-fill today's date and next rounded hour
+  const today = new Date();
+  const defaultDate = today.toISOString().split("T")[0];
+  const nextHour = new Date(today.getTime() + 60 * 60 * 1000);
+  nextHour.setMinutes(0, 0, 0);
+  const defaultTime = `${String(nextHour.getHours()).padStart(2, "0")}:00`;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -137,7 +144,8 @@ export default function BookingFormMini() {
                 type="date"
                 name="date"
                 required
-                min={new Date().toISOString().split("T")[0]}
+                defaultValue={defaultDate}
+                min={defaultDate}
                 className="w-full pl-9 pr-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
               />
@@ -156,6 +164,7 @@ export default function BookingFormMini() {
                 type="time"
                 name="time"
                 required
+                defaultValue={defaultTime}
                 className="w-full pl-9 pr-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
               />
@@ -283,7 +292,7 @@ export default function BookingFormMini() {
         <button
           type="submit"
           className="w-full py-3 text-white font-semibold rounded-lg transition-all hover:brightness-110 flex items-center justify-center gap-2 text-sm"
-          style={{ backgroundColor: '#30D158' }}
+          style={{ backgroundColor: '#F97316' }}
         >
           {t("next")}
           <ArrowRight size={16} />

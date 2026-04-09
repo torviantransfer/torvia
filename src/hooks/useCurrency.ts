@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { type Currency, currencySymbols } from "@/i18n/config";
@@ -7,7 +7,7 @@ export function useCurrency() {
   const [currency, setCurrency] = useState<Currency>("USD");
 
   useEffect(() => {
-    const stored = localStorage.getItem("velora_currency") as Currency | null;
+    const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;
     if (stored && (stored === "USD" || stored === "EUR" || stored === "TRY")) {
       setCurrency(stored);
     }

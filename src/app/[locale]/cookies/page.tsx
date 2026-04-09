@@ -12,7 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "cookies" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
@@ -91,8 +91,8 @@ export default async function CookiesPage() {
               <h2 className="text-lg font-bold text-white mt-8">{t("s5Title")}</h2>
               <p>
                 {t("s5Text")}{" "}
-                <a href="mailto:info@veloratransfer.com" className="text-orange-500 hover:underline">
-                  info@veloratransfer.com
+                <a href="mailto:torviantransfer@gmail.com" className="text-orange-500 hover:underline">
+                  torviantransfer@gmail.com
                 </a>
               </p>
             </div>

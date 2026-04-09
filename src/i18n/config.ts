@@ -11,11 +11,11 @@ export const localeNames: Record<Locale, string> = {
 };
 
 export const localeFlags: Record<Locale, string> = {
-  tr: "🇹🇷",
-  en: "🇬🇧",
-  de: "🇩🇪",
-  pl: "🇵🇱",
-  ru: "🇷🇺",
+  tr: "TR",
+  en: "EN",
+  de: "DE",
+  pl: "PL",
+  ru: "RU",
 };
 
 export const currencies = ["USD", "EUR", "TRY"] as const;

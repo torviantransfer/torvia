@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -14,13 +14,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "faq" });
-  const title = `${t("title")} | VELORA Transfer`;
+  const title = `${t("title")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/faq"),
     openGraph: seoOpenGraph(locale, "/faq", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -72,7 +73,7 @@ export default async function FAQPage() {
               <Link
                 href="/contact"
                 className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all hover:brightness-110 text-sm"
-                style={{ backgroundColor: '#30D158' }}
+                style={{ backgroundColor: '#F97316' }}
               >
                 {t("contactUs")} <ArrowRight size={16} />
               </Link>

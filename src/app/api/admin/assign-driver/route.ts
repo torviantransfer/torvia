@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 import { notifyDriverAssigned } from "@/lib/telegram";
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     const voucherLink = `${process.env.NEXT_PUBLIC_SITE_URL}/api/driver-voucher?token=${linkToken}`;
 
     const waMessage = encodeURIComponent(
-      `🚗 VELORA — New Transfer Assignment\n\n` +
+      `🚗 TORVIAN — New Transfer Assignment\n\n` +
         `📋 Code: ${reservation.reservation_code}\n` +
         `👤 Customer: ${customer?.first_name} ${customer?.last_name}\n` +
         `📍 Destination: ${region?.name_en}\n` +

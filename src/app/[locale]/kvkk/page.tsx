@@ -12,7 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "kvkk" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,

@@ -1,4 +1,4 @@
-import type { MetadataRoute } from "next";
+﻿import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const BASE_URL = "https://veloratransfer.com";
+const BASE_URL = "https://torviantransfer.com";
 const locales = ["tr", "en", "de", "pl", "ru"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -34,24 +34,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static pages
   const staticPages = [
-    "about",
-    "contact",
-    "faq",
-    "regions",
-    "booking",
-    "blog",
-    "privacy",
-    "terms",
-    "cookies",
-    "cancellation",
+    { path: "about", priority: 0.7 },
+    { path: "contact", priority: 0.8 },
+    { path: "faq", priority: 0.7 },
+    { path: "regions", priority: 0.9 },
+    { path: "blog", priority: 0.7 },
+    { path: "privacy", priority: 0.3 },
+    { path: "terms", priority: 0.3 },
+    { path: "cookies", priority: 0.2 },
+    { path: "cancellation", priority: 0.4 },
   ];
   for (const locale of locales) {
     for (const page of staticPages) {
       entries.push({
-        url: `${BASE_URL}/${locale}/${page}`,
+        url: `${BASE_URL}/${locale}/${page.path}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
-        priority: 0.8,
+        priority: page.priority,
       });
     }
   }

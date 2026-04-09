@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA TRANSFER — Blog Seed Data
+-- TORVIAN TRANSFER — Blog Seed Data
 -- 6 SEO-optimized blog posts × 5 languages
 -- HTML content, published, with image URLs
 -- =============================================
@@ -207,7 +207,7 @@ true, NOW() - INTERVAL '30 days'),
 <h2>Transfer Fiyatları ve Rezervasyon</h2>
 <p>Belek transferleri sabit fiyat politikasıyla sunulmaktadır. Fiyat, yolcu sayısına ve araç tipine göre değişir ancak ekstra ücret veya gizli maliyet yoktur. Online rezervasyon sistemiyle hemen yerinizi ayırtabilir, uçuş gecikmesi durumunda bile ek ücret ödemezsiniz.</p>
 
-<h2>Neden Velora Transfer?</h2>
+<h2>Neden Torvian Transfer?</h2>
 <p>Profesyonel sürücülerimiz bölgeyi iyi tanır ve sizi doğrudan otelinizin resepsiyonuna bırakır. Uçuş takibi sayesinde sizi havalimanında isim tabelası ile karşılarız. Tatilinizin ilk anından itibaren konforu hissedin.</p>
 </article>',
 

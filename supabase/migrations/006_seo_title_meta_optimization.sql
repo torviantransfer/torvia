@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA TRANSFER — SEO Title & Meta Optimization
+-- TORVIAN TRANSFER — SEO Title & Meta Optimization
 -- Based on Google Trends 2025 analysis
 -- Updates: blog titles (add year), region meta tags
 -- =============================================

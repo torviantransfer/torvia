@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -168,7 +168,7 @@ export default function ReservationList({
     const pickupDate = new Date(r.pickup_datetime);
     const voucherLink = `${window.location.origin}/api/driver-voucher?token=${da.link_token}`;
     const msg = encodeURIComponent(
-      `🚗 VELORA — New Transfer Assignment\n\n` +
+      `🚗 TORVIAN — New Transfer Assignment\n\n` +
       `📋 Code: ${r.reservation_code}\n` +
       `👤 Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
       `📍 Destination: ${r.regions?.name_en}\n` +

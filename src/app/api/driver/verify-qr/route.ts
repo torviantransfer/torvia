@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract QR token from the scanned value
-    // QR value might be a full URL like "https://veloratransfer.com/verify/UUID" or just the UUID
+    // QR value might be a full URL like "https://torviantransfer.com/verify/UUID" or just the UUID
     let qrToken = qrValue;
     const urlMatch = qrValue.match(/\/verify\/([a-f0-9-]+)/i);
     if (urlMatch) {

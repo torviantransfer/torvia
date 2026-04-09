@@ -20,7 +20,7 @@ export default function CTASection() {
           <Link
             href="/booking"
             className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110"
-            style={{ backgroundColor: '#30D158', color: '#fff' }}
+            style={{ backgroundColor: '#F97316', color: '#fff' }}
           >
             {t("bookTransfer")}
             <ArrowRight size={14} />

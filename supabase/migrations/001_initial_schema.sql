@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA Transfer Platform — Database Schema
+-- TORVIAN Transfer Platform — Database Schema
 -- Aligned with application code column names
 -- =============================================
 

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -12,13 +12,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "terms" });
-  const title = `${t("heading")} | VELORA Transfer`;
+  const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
   return {
     title,
     description,
     alternates: seoAlternates(locale, "/terms"),
     openGraph: seoOpenGraph(locale, "/terms", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 
@@ -97,8 +98,8 @@ export default async function TermsPage() {
               <h2 className="text-lg font-bold text-white mt-8">{t("s9Title")}</h2>
               <p>
                 {t("s9Text")}{" "}
-                <a href="mailto:info@veloratransfer.com" className="text-orange-500 hover:underline">
-                  info@veloratransfer.com
+                <a href="mailto:torviantransfer@gmail.com" className="text-orange-500 hover:underline">
+                  torviantransfer@gmail.com
                 </a>
               </p>
             </div>

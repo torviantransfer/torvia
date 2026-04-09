@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
 import type { ReservationEmailData } from "@/lib/email";
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
   return new NextResponse(uint8, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="VELORA-Voucher-${code}.pdf"`,
+      "Content-Disposition": `inline; filename="TORVIAN-Voucher-${code}.pdf"`,
       "Cache-Control": "private, max-age=3600",
     },
   });

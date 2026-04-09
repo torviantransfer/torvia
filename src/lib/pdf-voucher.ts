@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+﻿import { jsPDF } from "jspdf";
 import type { ReservationEmailData } from "./email";
 
 // ─── i18n labels for PDF ───
@@ -41,7 +41,7 @@ const labels: Record<string, Record<string, string>> = {
     imp3: "Free waiting: 60 min for flights, 15 min for hotels.",
     imp4: "Free child seat & booster on request.",
     footer: "This document serves as your official transfer voucher.",
-    contact: "24/7 Support: +90 543 145 15 48 | info@veloratransfer.com",
+    contact: "24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com",
     paid: "PAID & CONFIRMED",
   },
   tr: {
@@ -82,7 +82,7 @@ const labels: Record<string, Record<string, string>> = {
     imp3: "Ücretsiz bekleme: Uçuşlarda 60 dk, otellerden 15 dk.",
     imp4: "Talep üzerine ücretsiz çocuk koltuğu.",
     footer: "Bu belge resmi transfer voucherınız olarak geçerlidir.",
-    contact: "7/24 Destek: +90 543 145 15 48 | info@veloratransfer.com",
+    contact: "7/24 Destek: +90 546 940 79 55 | torviantransfer@gmail.com",
     paid: "ÖDENDİ & ONAYLANDI",
   },
   de: {
@@ -123,7 +123,7 @@ const labels: Record<string, Record<string, string>> = {
     imp3: "Kostenlose Wartezeit: 60 Min Flüge, 15 Min Hotels.",
     imp4: "Kostenloser Kindersitz auf Anfrage.",
     footer: "Dieses Dokument dient als Ihr offizieller Transfer-Voucher.",
-    contact: "24/7 Support: +90 543 145 15 48 | info@veloratransfer.com",
+    contact: "24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com",
     paid: "BEZAHLT & BESTÄTIGT",
   },
   pl: {
@@ -164,7 +164,7 @@ const labels: Record<string, Record<string, string>> = {
     imp3: "Bezpłatne oczekiwanie: 60 min loty, 15 min hotele.",
     imp4: "Bezpłatny fotelik dziecięcy na życzenie.",
     footer: "Ten dokument służy jako oficjalny voucher transferowy.",
-    contact: "24/7 Wsparcie: +90 543 145 15 48 | info@veloratransfer.com",
+    contact: "24/7 Wsparcie: +90 546 940 79 55 | torviantransfer@gmail.com",
     paid: "OPŁACONO I POTWIERDZONE",
   },
   ru: {
@@ -205,7 +205,7 @@ const labels: Record<string, Record<string, string>> = {
     imp3: "Бесплатное ожидание: 60 мин рейсы, 15 мин отели.",
     imp4: "Бесплатное детское кресло по запросу.",
     footer: "Этот документ является вашим официальным ваучером на трансфер.",
-    contact: "24/7 Поддержка: +90 543 145 15 48 | info@veloratransfer.com",
+    contact: "24/7 Поддержка: +90 546 940 79 55 | torviantransfer@gmail.com",
     paid: "ОПЛАЧЕНО И ПОДТВЕРЖДЕНО",
   },
 };
@@ -241,7 +241,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setTextColor(...darkText);
   doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
-  doc.text("VELORA", margin, y);
+  doc.text("TORVIAN", margin, y);
 
   doc.setTextColor(...midGray);
   doc.setFontSize(9);
@@ -462,7 +462,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   if (data.qrCodeToken) {
     try {
       const QRCode = await import("qrcode");
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://veloratransfer.com";
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
       const qrDataUrl = await QRCode.toDataURL(`${siteUrl}/verify/${data.qrCodeToken}`, {
         width: 500, margin: 1, color: { dark: "#111827", light: "#FFFFFF" },
       });
@@ -525,7 +525,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.text(t(loc, "contact"), pw / 2, y, { align: "center" });
   y += 4;
   doc.setTextColor(200, 200, 200);
-  doc.text(`© ${new Date().getFullYear()} VELORA Transfer  ·  veloratransfer.com`, pw / 2, y, { align: "center" });
+  doc.text(`© ${new Date().getFullYear()} TORVIAN Transfer  ·  torviantransfer.com`, pw / 2, y, { align: "center" });
 
   // Bottom orange stripe
   const pageH = doc.internal.pageSize.getHeight();

@@ -1,5 +1,5 @@
 -- =============================================
--- VELORA Transfer Platform — Seed Data
+-- TORVIAN Transfer Platform — Seed Data
 -- =============================================
 
 -- Vehicle Category
@@ -82,8 +82,8 @@ INSERT INTO settings (key, value) VALUES
   ('night_surcharge_percent', '15'),
   ('child_seat_fee', '0'),
   ('welcome_sign_fee', '5'),
-  ('company_name', '"VELORA Transfer"'),
-  ('contact_email', '"info@veloratransfer.com"'),
+  ('company_name', '"TORVIAN Transfer"'),
+  ('contact_email', '"torviantransfer@gmail.com"'),
   ('whatsapp_number', '""'),
   ('cancellation_free_hours', '24');
 

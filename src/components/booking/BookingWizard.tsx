@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -62,7 +62,7 @@ export default function BookingWizard(props: Props) {
   const { format: fmt, otherCurrencies } = useCurrency();
 
   // ─── Restore persisted state from sessionStorage (survives locale/currency change) ───
-  const STORAGE_KEY = "velora_booking_state";
+  const STORAGE_KEY = "TORVIAN_booking_state";
 
   const getSaved = (): Record<string, unknown> | null => {
     if (typeof window === "undefined") return null;
