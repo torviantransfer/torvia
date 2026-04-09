@@ -267,14 +267,9 @@ function t(locale: string, key: string): string {
   return i18n[locale]?.[key] ?? i18n.en[key] ?? key;
 }
 
-// ─── QR Code generation (server-side, base64 PNG) ───
-async function generateQRBase64(text: string): Promise<string> {
-  try {
-    const QRCode = await import("qrcode");
-    return await QRCode.toDataURL(text, { width: 200, margin: 1, color: { dark: "#1B2E4B", light: "#FFFFFF" } });
-  } catch {
-    return "";
-  }
+// ─── QR Code URL (external API — data: URLs are blocked by most email clients) ───
+function generateQRUrl(text: string): string {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(text)}&color=1B2E4B&bgcolor=FFFFFF&margin=10`;
 }
 
 // ─── Build voucher HTML (shared by email & PDF) ───
@@ -301,136 +296,155 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   if (data.roundTripDiscount > 0) priceRows.push(row(t(loc, "rtDiscount"), `−€${data.roundTripDiscount.toFixed(2)}`, "#22c55e"));
   if (data.couponDiscount > 0) priceRows.push(row(t(loc, "couponDiscount"), `−€${data.couponDiscount.toFixed(2)}`, "#22c55e"));
 
+  const detailRows: string[] = [
+    detailRow("✈", t(loc, "route"), `Antalya Airport &rarr; ${data.regionName}`, true),
+    detailRow("🔁", t(loc, "type"), tripLabel),
+    detailRow("📅", t(loc, "pickup"), `${data.pickupDate} &nbsp;|&nbsp; ${data.pickupTime}`, true),
+    ...(data.returnDate ? [detailRow("🔄", t(loc, "returnLabel"), `${data.returnDate} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
+    ...(data.flightCode ? [detailRow("🛫", t(loc, "flight"), data.flightCode)] : []),
+    ...(data.hotelName ? [detailRow("🏨", t(loc, "hotel"), data.hotelName)] : []),
+    ...(data.vehicleName ? [detailRow("🚘", t(loc, "vehicle"), data.vehicleName)] : []),
+    detailRow("👥", t(loc, "passengers"), passengerText),
+    detailRow("🧳", t(loc, "luggage"), `${data.luggageCount} ${t(loc, "pieces")}`),
+    ...(extras.length > 0 ? [detailRow("⭐", t(loc, "extras"), extras.join(" &bull; "))] : []),
+  ];
+
   return `
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-<div style="max-width:600px;margin:0 auto;background:#111113;color:#e5e5e5;border-radius:12px;overflow:hidden;">
+<html lang="${loc}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${t(loc, "subject")}</title>
+</head>
+<body style="margin:0;padding:20px 0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
 
-  <!-- HEADER -->
-  <div style="background:linear-gradient(135deg,#f97316,#ea580c);padding:28px 32px;text-align:center;">
-    <h1 style="color:#fff;margin:0;font-size:28px;letter-spacing:4px;font-weight:800;">TORVIAN</h1>
-    <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:13px;letter-spacing:1px;">VIP AIRPORT TRANSFER</p>
-  </div>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
-  <!-- STATUS BAR -->
-  <div style="background:#14532d;padding:12px 32px;text-align:center;">
-    <span style="color:#4ade80;font-size:13px;font-weight:600;">✓ ${t(loc, "confirmed").toUpperCase()}</span>
-  </div>
+  <!-- ══ HEADER ══ -->
+  <tr>
+    <td style="background:linear-gradient(135deg,#f97316 0%,#c2410c 100%);border-radius:16px 16px 0 0;padding:36px 40px 32px;text-align:center;">
+      <div style="display:inline-block;border:2px solid rgba(255,255,255,0.25);border-radius:8px;padding:4px 16px;margin-bottom:14px;">
+        <span style="color:rgba(255,255,255,0.85);font-size:10px;letter-spacing:3px;font-weight:600;text-transform:uppercase;">VIP AIRPORT TRANSFER</span>
+      </div>
+      <h1 style="color:#ffffff;margin:0;font-size:42px;letter-spacing:8px;font-weight:900;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,0.3);">TORVIAN</h1>
+      <p style="color:rgba(255,255,255,0.7);margin:10px 0 0;font-size:12px;letter-spacing:1px;">ANTALYA · TÜRKIYE</p>
+    </td>
+  </tr>
 
-  <div style="padding:28px 32px;">
+  <!-- ══ CONFIRMED BANNER ══ -->
+  <tr>
+    <td style="background:#052e16;padding:14px 40px;text-align:center;border-left:4px solid #16a34a;border-right:4px solid #16a34a;">
+      <span style="font-size:13px;color:#4ade80;font-weight:700;letter-spacing:1px;">&#10003; &nbsp;${t(loc, "confirmed").toUpperCase()}</span>
+    </td>
+  </tr>
 
-    <!-- GREETING -->
-    <p style="font-size:16px;margin:0 0 6px;">${t(loc, "greeting")} ${data.firstName},</p>
-    <p style="margin:0 0 24px;color:#a1a1aa;font-size:14px;">${t(loc, "showVoucher")}</p>
+  <!-- ══ BODY ══ -->
+  <tr>
+    <td style="background:#111113;padding:36px 40px 28px;">
 
-    <!-- RESERVATION CODE -->
-    <div style="background:#1a1a1d;border:2px dashed #f97316;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
-      <p style="color:#86868b;font-size:11px;margin:0 0 4px;text-transform:uppercase;letter-spacing:1px;">${t(loc, "code")}</p>
-      <p style="color:#f97316;font-size:32px;font-weight:800;margin:0;letter-spacing:4px;">${data.reservationCode}</p>
-    </div>
+      <!-- Greeting -->
+      <p style="font-size:18px;color:#f4f4f5;margin:0 0 4px;font-weight:600;">${t(loc, "greeting")} ${data.firstName},</p>
+      <p style="margin:0 0 32px;color:#71717a;font-size:14px;line-height:1.6;">${t(loc, "showVoucher")}</p>
 
-    <!-- TRANSFER DETAILS -->
-    <div style="background:#1a1a1d;border:1px solid #27272a;border-radius:12px;padding:20px;margin-bottom:16px;">
-      <table style="width:100%;border-collapse:collapse;">
+      <!-- Reservation Code -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
         <tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;width:35%;">${t(loc, "route")}</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:600;">Antalya Airport → ${data.regionName}</td>
+          <td style="background:#18181b;border:2px dashed #f97316;border-radius:14px;padding:22px 16px;text-align:center;">
+            <p style="color:#71717a;font-size:10px;margin:0 0 6px;text-transform:uppercase;letter-spacing:2px;">${t(loc, "code")}</p>
+            <p style="color:#f97316;font-size:36px;font-weight:900;margin:0;letter-spacing:6px;font-variant-numeric:tabular-nums;">${data.reservationCode}</p>
+          </td>
         </tr>
-        <tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">${t(loc, "type")}</td>
-          <td style="padding:8px 0;font-size:13px;">${tripLabel}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">📅 ${t(loc, "pickup")}</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:600;">${data.pickupDate} — ${data.pickupTime}</td>
-        </tr>
-        ${data.returnDate ? `<tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">🔄 ${t(loc, "returnLabel")}</td>
-          <td style="padding:8px 0;font-size:13px;font-weight:600;">${data.returnDate} — ${data.returnTime}</td>
-        </tr>` : ""}
-        ${data.flightCode ? `<tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">✈ ${t(loc, "flight")}</td>
-          <td style="padding:8px 0;font-size:13px;">${data.flightCode}</td>
-        </tr>` : ""}
-        ${data.hotelName ? `<tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">🏨 ${t(loc, "hotel")}</td>
-          <td style="padding:8px 0;font-size:13px;">${data.hotelName}</td>
-        </tr>` : ""}
-        ${data.vehicleName ? `<tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">🚗 ${t(loc, "vehicle")}</td>
-          <td style="padding:8px 0;font-size:13px;">${data.vehicleName}</td>
-        </tr>` : ""}
-        <tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">👥 ${t(loc, "passengers")}</td>
-          <td style="padding:8px 0;font-size:13px;">${passengerText}</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">🧳 ${t(loc, "luggage")}</td>
-          <td style="padding:8px 0;font-size:13px;">${data.luggageCount} ${t(loc, "pieces")}</td>
-        </tr>
-        ${extras.length > 0 ? `<tr>
-          <td style="padding:8px 0;color:#86868b;font-size:13px;">⭐ ${t(loc, "extras")}</td>
-          <td style="padding:8px 0;font-size:13px;">${extras.join(", ")}</td>
-        </tr>` : ""}
       </table>
-    </div>
 
-    <!-- PRICE SUMMARY -->
-    <div style="background:#1a1a1d;border:1px solid #27272a;border-radius:12px;padding:20px;margin-bottom:16px;">
-      <p style="color:#86868b;font-size:11px;margin:0 0 12px;text-transform:uppercase;letter-spacing:1px;">${t(loc, "priceSummary")}</p>
-      <table style="width:100%;border-collapse:collapse;">
+      <!-- Section: Transfer Details -->
+      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "type")} &amp; ${t(loc, "route")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+        <tr><td style="padding:4px 0;"></td></tr>
+        ${detailRows.join("")}
+        <tr><td style="padding:4px 0;"></td></tr>
+      </table>
+
+      <!-- Section: Price -->
+      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "priceSummary")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+        <tr><td colspan="2" style="padding:4px 0;"></td></tr>
         ${priceRows.join("")}
-        <tr style="border-top:2px solid #27272a;">
-          <td style="padding:12px 0 0;font-size:15px;font-weight:700;">${t(loc, "total")}</td>
-          <td style="padding:12px 0 0;text-align:right;font-size:20px;font-weight:800;color:#f97316;">€${data.totalEur.toFixed(2)}</td>
+        <!-- Total row -->
+        <tr>
+          <td colspan="2" style="padding:0 0 4px;"><div style="height:1px;background:#27272a;margin:8px 20px;"></div></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#f4f4f5;">${t(loc, "total")}</td>
+          <td style="padding:8px 20px 16px;text-align:right;font-size:26px;font-weight:900;color:#f97316;font-variant-numeric:tabular-nums;">€${data.totalEur.toFixed(2)}</td>
         </tr>
       </table>
-    </div>
 
-    <!-- QR CODE -->
-    ${qrDataUrl ? `
-    <div style="background:#ffffff;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px;">
-      <p style="color:#111113;font-size:13px;font-weight:600;margin:0 0 12px;">${t(loc, "qrTitle")}</p>
-      <img src="${qrDataUrl}" width="180" height="180" alt="QR Code" style="display:block;margin:0 auto;" />
-      <p style="color:#6b7280;font-size:11px;margin:10px 0 0;">${t(loc, "qrInfo")}</p>
-    </div>` : ""}
-
-    <!-- IMPORTANT INFO -->
-    <div style="background:#1a1a1d;border:1px solid #27272a;border-radius:12px;padding:20px;margin-bottom:24px;">
-      <p style="color:#f97316;font-size:13px;font-weight:700;margin:0 0 12px;">📋 ${t(loc, "importantTitle")}</p>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="padding:6px 0;font-size:12px;color:#a1a1aa;">✈ ${t(loc, "imp1")}</td></tr>
-        <tr><td style="padding:6px 0;font-size:12px;color:#a1a1aa;">🪧 ${t(loc, "imp2")}</td></tr>
-        <tr><td style="padding:6px 0;font-size:12px;color:#a1a1aa;">⏳ ${t(loc, "imp3")}</td></tr>
-        <tr><td style="padding:6px 0;font-size:12px;color:#a1a1aa;">👶 ${t(loc, "imp4")}</td></tr>
+      ${qrDataUrl ? `
+      <!-- Section: QR Code -->
+      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "qrTitle")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+        <tr>
+          <td style="background:#ffffff;border-radius:12px;padding:24px;text-align:center;">
+            <img src="${qrDataUrl}" width="160" height="160" alt="QR Code" style="display:block;margin:0 auto;border-radius:4px;" />
+            <p style="color:#6b7280;font-size:11px;margin:12px 0 0;">${t(loc, "qrInfo")}</p>
+          </td>
+        </tr>
       </table>
-    </div>
+      ` : ""}
 
-    <!-- CONTACT -->
-    <div style="text-align:center;margin-bottom:8px;">
-      <p style="color:#86868b;font-size:12px;margin:0 0 10px;">${t(loc, "contact")}</p>
-      <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;margin-right:8px;">WhatsApp</a>
-      <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#f97316;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">E-mail</a>
-    </div>
-  </div>
+      <!-- Section: Important Info -->
+      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "importantTitle")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:28px;">
+        <tr><td style="padding:16px 20px 8px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;margin-left:20px;">&#9992; &nbsp;${t(loc, "imp1")}</td></tr>
+        <tr><td style="padding:8px 20px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#128697; &nbsp;${t(loc, "imp2")}</td></tr>
+        <tr><td style="padding:8px 20px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#8987; &nbsp;${t(loc, "imp3")}</td></tr>
+        <tr><td style="padding:8px 20px 16px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#128118; &nbsp;${t(loc, "imp4")}</td></tr>
+      </table>
 
-  <!-- FOOTER -->
-  <div style="background:#0a0a0a;padding:16px 32px;text-align:center;border-top:1px solid #1a1a1d;">
-    <p style="color:#52525b;font-size:11px;margin:0 0 4px;">${t(loc, "footer")}</p>
-    <p style="color:#3f3f46;font-size:10px;margin:0;">© ${new Date().getFullYear()} TORVIAN Transfer · Antalya, Turkey · <a href="${siteUrl}" style="color:#3f3f46;">torviantransfer.com</a></p>
-  </div>
+      <!-- Contact -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
+        <tr>
+          <td style="text-align:center;padding-bottom:14px;">
+            <p style="color:#71717a;font-size:12px;margin:0 0 14px;">${t(loc, "contact")}</p>
+            <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin-right:10px;">WhatsApp</a>
+            <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#f97316;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">E-mail</a>
+          </td>
+        </tr>
+      </table>
 
-</div>
+    </td>
+  </tr>
+
+  <!-- ══ FOOTER ══ -->
+  <tr>
+    <td style="background:#0a0a0b;border-top:1px solid #1c1c1e;border-radius:0 0 16px 16px;padding:18px 40px;text-align:center;">
+      <p style="color:#3f3f46;font-size:11px;margin:0 0 4px;">${t(loc, "footer")}</p>
+      <p style="color:#27272a;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#3f3f46;text-decoration:none;">torviantransfer.com</a></p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+
 </body>
 </html>`;
 }
 
 function row(label: string, value: string, color?: string): string {
   return `<tr>
-    <td style="padding:6px 0;color:#86868b;font-size:13px;">${label}</td>
-    <td style="padding:6px 0;text-align:right;font-size:13px;${color ? `color:${color};` : ""}">${value}</td>
+    <td style="padding:7px 20px;color:#71717a;font-size:13px;">${label}</td>
+    <td style="padding:7px 20px;text-align:right;font-size:13px;color:#d4d4d8;${color ? `color:${color};font-weight:600;` : ""}">${value}</td>
+  </tr>`;
+}
+
+function detailRow(icon: string, label: string, value: string, bold = false): string {
+  return `<tr>
+    <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">${icon} &nbsp;${label}</td>
+    <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;${bold ? "font-weight:600;" : ""}">${value}</td>
   </tr>`;
 }
 
@@ -440,7 +454,7 @@ export async function sendReservationEmail(data: ReservationEmailData) {
   if (!resend) return;
 
   const qrDataUrl = data.qrCodeToken
-    ? await generateQRBase64(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${data.qrCodeToken}`)
+    ? generateQRUrl(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${data.qrCodeToken}`)
     : "";
 
   const subject = t(data.locale, "subject");

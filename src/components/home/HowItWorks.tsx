@@ -38,7 +38,7 @@ export default function HowItWorks() {
               )}
 
               <h3 className="text-white font-semibold text-lg mb-3">{t(step.titleKey)}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">{t(step.descKey)}</p>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto">{t(step.descKey)}</p>
             </div>
           ))}
         </div>

@@ -29,6 +29,8 @@ export default function CurrencySelector() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
+        aria-label={`Select currency, current: ${currency}`}
+        aria-expanded={open}
         className="flex items-center gap-1 hover:text-orange-300 transition-colors"
       >
         <span className="whitespace-nowrap">{currencySymbols[currency]} {currency}</span>

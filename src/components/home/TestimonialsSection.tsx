@@ -26,46 +26,46 @@ export default function TestimonialsSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
           {testimonials.slice(0, 3).map((item) => (
             <div
               key={item.nameKey}
-              className="p-7 rounded-2xl"
+              className="p-6 sm:p-7 rounded-2xl"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <div className="flex items-center gap-0.5 mb-5">
+              <div className="flex items-center gap-0.5 mb-4" aria-label={`${item.rating} out of 5 stars`}>
                 {[...Array(item.rating)].map((_, i) => (
-                  <Star key={i} size={14} className="text-orange-400 fill-orange-400" />
+                  <Star key={i} size={14} className="text-orange-400 fill-orange-400" aria-hidden="true" />
                 ))}
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <p className="text-gray-300 text-sm leading-relaxed mb-5">
                 &ldquo;{t(item.textKey)}&rdquo;
               </p>
               <div>
                 <p className="text-white text-sm font-medium">{t(item.nameKey)}</p>
-                <p className="text-gray-500 text-xs">{t(item.fromKey)}</p>
+                <p className="text-gray-400 text-xs">{t(item.fromKey)}</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="grid md:grid-cols-2 gap-5 mt-5 md:max-w-[66%] mx-auto">
+        <div className="grid sm:grid-cols-2 gap-5 mt-5 md:max-w-[66%] mx-auto">
           {testimonials.slice(3).map((item) => (
             <div
               key={item.nameKey}
-              className="p-7 rounded-2xl"
+              className="p-6 sm:p-7 rounded-2xl"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <div className="flex items-center gap-0.5 mb-5">
+              <div className="flex items-center gap-0.5 mb-4" aria-label={`${item.rating} out of 5 stars`}>
                 {[...Array(item.rating)].map((_, i) => (
-                  <Star key={i} size={14} className="text-orange-400 fill-orange-400" />
+                  <Star key={i} size={14} className="text-orange-400 fill-orange-400" aria-hidden="true" />
                 ))}
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
+              <p className="text-gray-300 text-sm leading-relaxed mb-5">
                 &ldquo;{t(item.textKey)}&rdquo;
               </p>
               <div>
                 <p className="text-white text-sm font-medium">{t(item.nameKey)}</p>
-                <p className="text-gray-500 text-xs">{t(item.fromKey)}</p>
+                <p className="text-gray-400 text-xs">{t(item.fromKey)}</p>
               </div>
             </div>
           ))}

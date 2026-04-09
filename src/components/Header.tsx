@@ -97,6 +97,8 @@ export default function Header() {
               <div className="relative" ref={langRef}>
                 <button
                   onClick={() => setLangOpen(!langOpen)}
+                  aria-label="Select language"
+                  aria-expanded={langOpen}
                   className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-xs px-2 py-1"
                 >
                   <Globe size={13} />
@@ -142,9 +144,12 @@ export default function Header() {
 
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden p-1.5 text-gray-400 hover:text-white transition-colors"
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors rounded-md"
               >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
               </button>
             </div>
           </div>
@@ -153,7 +158,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden" style={{ backgroundColor: "rgba(0,0,0,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        <div id="mobile-menu" className="lg:hidden" style={{ backgroundColor: "rgba(0,0,0,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <div className="max-w-6xl mx-auto px-6 py-4 space-y-0.5">
             {navItems.map((item) => (
               <Link

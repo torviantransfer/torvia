@@ -79,7 +79,7 @@ export default function HeroSection() {
                 className="inline-flex items-center gap-1.5 px-6 py-3.5 text-sm font-medium rounded-full text-white hover:text-orange-300 transition-all hover:bg-white/5"
                 style={{ border: "1px solid rgba(255,255,255,0.15)" }}
               >
-                {t("exploreRegions")} →
+                {t("exploreRegions")} <span aria-hidden="true">→</span>
               </Link>
             </div>
 

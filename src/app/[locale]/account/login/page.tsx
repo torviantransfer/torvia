@@ -106,12 +106,18 @@ export default function AccountLoginPage() {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    await supabase.auth.signInWithOAuth({
+    setError("");
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/account`,
       },
     });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+    // If no error, browser will redirect — don't setLoading(false)
   };
 
   return (

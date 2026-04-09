@@ -57,11 +57,12 @@ export default function BookingFormMini() {
       </div>
 
       {/* Trip type toggle */}
-      <div className="flex rounded-lg p-0.5 mb-5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+      <div role="group" aria-label="Trip type" className="flex rounded-lg p-0.5 mb-5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
         <button
           type="button"
           onClick={() => setTripType("one_way")}
-          className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${
+          aria-pressed={tripType === "one_way"}
+          className={`flex-1 py-2.5 text-xs font-medium rounded-md transition-all ${
             tripType === "one_way"
               ? "bg-white text-black"
               : "text-gray-400 hover:text-white"
@@ -72,13 +73,14 @@ export default function BookingFormMini() {
         <button
           type="button"
           onClick={() => setTripType("round_trip")}
-          className={`flex-1 py-2 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+          aria-pressed={tripType === "round_trip"}
+          className={`flex-1 py-2.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
             tripType === "round_trip"
               ? "bg-white text-black"
               : "text-gray-400 hover:text-white"
           }`}
         >
-          <ArrowLeftRight size={12} />
+          <ArrowLeftRight size={12} aria-hidden="true" />
           {t("roundTrip")}
         </button>
       </div>
@@ -86,19 +88,21 @@ export default function BookingFormMini() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Dropoff (region select) */}
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1.5">
+          <label htmlFor="mini-region" className="block text-xs font-medium text-gray-300 mb-1.5">
             {t("dropoff")}
           </label>
           <div className="relative">
             <MapPin
               size={14}
+              aria-hidden="true"
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
             />
             <select
+              id="mini-region"
               name="region"
               required
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
-              style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+              className="w-full pl-9 pr-4 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none appearance-none"
+              style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
             >
               <option value="">{t("selectRegion")}</option>
               <option value="kundu-lara">Kundu - Lara</option>
@@ -132,41 +136,45 @@ export default function BookingFormMini() {
         {/* Date & Time row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            <label htmlFor="mini-date" className="block text-xs font-medium text-gray-300 mb-1.5">
               {t("departureDate")}
             </label>
             <div className="relative">
               <Calendar
                 size={14}
+                aria-hidden="true"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
               />
               <input
+                id="mini-date"
                 type="date"
                 name="date"
                 required
                 defaultValue={defaultDate}
                 min={defaultDate}
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            <label htmlFor="mini-time" className="block text-xs font-medium text-gray-300 mb-1.5">
               {t("departureTime")}
             </label>
             <div className="relative">
               <Clock
                 size={14}
+                aria-hidden="true"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
               />
               <input
+                id="mini-time"
                 type="time"
                 name="time"
                 required
                 defaultValue={defaultTime}
-                className="w-full pl-9 pr-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
               />
             </div>
           </div>
@@ -176,68 +184,76 @@ export default function BookingFormMini() {
         {tripType === "round_trip" && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              <label htmlFor="mini-return-date" className="block text-xs font-medium text-gray-300 mb-1.5">
                 {t("returnDate")}
               </label>
               <input
+                id="mini-return-date"
                 type="date"
                 name="returnDate"
                 required
                 min={new Date().toISOString().split("T")[0]}
                 placeholder="YYYY-MM-DD"
-                className="w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)", colorScheme: "dark" }}
+                className="w-full px-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              <label htmlFor="mini-return-time" className="block text-xs font-medium text-gray-300 mb-1.5">
                 {t("returnTime")}
               </label>
               <input
+                id="mini-return-time"
                 type="time"
                 name="returnTime"
                 required
-                className="w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                className="w-full px-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
               />
             </div>
           </div>
         )}
 
-        {/* Passengers & Flight row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="col-span-3">
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
-              {t("flightCode")} <span className="text-gray-600">({t("optional")})</span>
-            </label>
-            <div className="relative">
-              <Plane
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-              />
-              <input
-                type="text"
-                name="flight"
-                placeholder={t("flightCodePlaceholder")}
-                className="w-full pl-9 pr-3 py-2 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none placeholder:text-gray-600"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
-              />
-            </div>
+        {/* Flight code */}
+        <div>
+          <label htmlFor="mini-flight" className="block text-xs font-medium text-gray-300 mb-1.5">
+            {t("flightCode")} <span className="text-gray-500">({t("optional")})</span>
+          </label>
+          <div className="relative">
+            <Plane
+              size={14}
+              aria-hidden="true"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            />
+            <input
+              id="mini-flight"
+              type="text"
+              name="flight"
+              placeholder={t("flightCodePlaceholder")}
+              className="w-full pl-9 pr-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none placeholder:text-gray-600"
+              style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
+            />
           </div>
+        </div>
+
+        {/* Passengers row */}
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            <label htmlFor="mini-adults" className="block text-xs font-medium text-gray-300 mb-1.5">
               {t("adults")}
             </label>
             <div className="relative">
               <Users
                 size={14}
+                aria-hidden="true"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
               />
               <select
+                id="mini-adults"
                 name="adults"
                 defaultValue="2"
-                className="w-full pl-9 pr-2 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none appearance-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 {[1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <option key={n} value={n}>
@@ -248,14 +264,15 @@ export default function BookingFormMini() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            <label htmlFor="mini-children" className="block text-xs font-medium text-gray-300 mb-1.5">
               {t("children")}
             </label>
             <select
+              id="mini-children"
               name="children"
               defaultValue="0"
-              className="w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
-              style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+              className="w-full px-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none appearance-none"
+              style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
             >
               {[0, 1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
@@ -265,19 +282,21 @@ export default function BookingFormMini() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            <label htmlFor="mini-luggage" className="block text-xs font-medium text-gray-300 mb-1.5">
               {t("luggage")}
             </label>
             <div className="relative">
               <Luggage
                 size={14}
+                aria-hidden="true"
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
               />
               <select
+                id="mini-luggage"
                 name="luggage"
                 defaultValue="2"
-                className="w-full pl-9 pr-2 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none appearance-none"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
                   <option key={n} value={n}>
@@ -292,11 +311,11 @@ export default function BookingFormMini() {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full py-3 text-white font-semibold rounded-lg transition-all hover:brightness-110 flex items-center justify-center gap-2 text-sm"
+          className="w-full py-3.5 text-white font-semibold rounded-xl transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 text-sm"
           style={{ backgroundColor: '#F97316' }}
         >
           {t("next")}
-          <ArrowRight size={16} />
+          <ArrowRight size={16} aria-hidden="true" />
         </button>
       </form>
     </div>

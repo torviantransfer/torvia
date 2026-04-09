@@ -32,8 +32,8 @@ export default function VehicleShowcase() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid lg:grid-cols-[3fr_2fr] gap-8 items-center">
           {/* Left: Vehicle visual */}
-          <div className="relative overflow-hidden rounded-xl">
-            <div className="relative w-full h-[320px] lg:h-[400px]">
+          <div className="relative overflow-hidden rounded-xl order-2 lg:order-1">
+            <div className="relative w-full h-[240px] sm:h-[300px] lg:h-[400px]">
               <Image
                 src="/images/two-cars.webp"
                 alt="Mercedes Vito VIP Transfer Vehicle - Leather seats, Wi-Fi, Climate control"
@@ -45,7 +45,7 @@ export default function VehicleShowcase() {
           </div>
 
           {/* Right: Info */}
-          <div>
+          <div className="order-1 lg:order-2">
             <p className="text-orange-400 text-sm font-medium tracking-wide mb-3">{t("fleetLabel")}</p>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
               {t("heading")}

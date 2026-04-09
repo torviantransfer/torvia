@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
+import flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
 
 const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
@@ -830,6 +831,17 @@ export default function BookingWizard(props: Props) {
                     placeholder={t("placeholderPhone")}
                     className="phone-input-dark w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none"
                     style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    flagComponent={({ country, countryName }) => {
+                      const Flag = flags[country as keyof typeof flags];
+                      return Flag ? (
+                        <Flag
+                          title={countryName}
+                          style={{ width: 24, height: 16, borderRadius: 2, display: "block", flexShrink: 0 }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>
+                      );
+                    }}
                   />
                 </div>
 
@@ -929,11 +941,18 @@ export default function BookingWizard(props: Props) {
             />
           </div>
 
-          <div className="rounded-2xl p-6" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <h3 className="text-lg font-bold text-white mb-4">
-              {t("totalPrice")}
-            </h3>
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            {/* Card header */}
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "linear-gradient(135deg, rgba(249,115,22,0.08) 0%, transparent 100%)" }}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-white">{t("totalPrice")}</h3>
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
+                  Best Price
+                </span>
+              </div>
+            </div>
 
+            <div className="p-5">
             {priceLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2
@@ -944,46 +963,39 @@ export default function BookingWizard(props: Props) {
             ) : priceData ? (
               <div className="space-y-3">
                 {/* Region info */}
-                <div className="pb-3 border-b border-white/5">
-                  <p className="text-sm text-[#86868b]">{t("dropoff")}</p>
-                  <p className="font-semibold text-white">
+                <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.1)" }}>
+                  <p className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">{t("dropoff")}</p>
+                  <p className="font-bold text-white text-sm">
                     {selectedRegion ? getRegionName(selectedRegion) : regionSlug}
                   </p>
-                  <p className="text-xs text-[#555] mt-1">
-                    ~{priceData.region.duration_minutes} min •{" "}
-                    {priceData.region.distance_km} km
+                  <p className="text-xs text-[#86868b] mt-0.5">
+                    ~{priceData.region.duration_minutes} min &nbsp;·&nbsp;{priceData.region.distance_km} km
                   </p>
                 </div>
 
                 {/* Trip type */}
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm py-1">
                   <span className="text-[#86868b]">
                     {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
                   </span>
-                  <span className="font-medium">
+                  <span className="font-semibold text-white">
                     {fmt(priceData.calculation.basePrice, priceData.exchangeRates)}
                   </span>
                 </div>
 
-
-
                 {/* Child seat */}
                 {childSeat && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#86868b]">
-                      {t("childSeatFee")}
-                    </span>
-                    <span className="font-medium text-emerald-400">{t("free")}</span>
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-[#86868b]">{t("childSeatFee")}</span>
+                    <span className="font-semibold text-emerald-400">{t("free")}</span>
                   </div>
                 )}
 
                 {/* Round trip discount */}
                 {priceData.calculation.roundTripDiscount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#86868b]">
-                      {t("roundTripDiscount")}
-                    </span>
-                    <span className="font-medium text-emerald-400">
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-[#86868b]">{t("roundTripDiscount")}</span>
+                    <span className="font-semibold text-emerald-400">
                       -{fmt(priceData.calculation.roundTripDiscount, priceData.exchangeRates)}
                     </span>
                   </div>
@@ -991,31 +1003,28 @@ export default function BookingWizard(props: Props) {
 
                 {/* Coupon discount */}
                 {priceData.calculation.couponDiscount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#86868b]">
-                      {t("couponDiscount")}
-                    </span>
-                    <span className="font-medium text-emerald-400">
+                  <div className="flex justify-between items-center text-sm py-1">
+                    <span className="text-[#86868b]">{t("couponDiscount")}</span>
+                    <span className="font-semibold text-emerald-400">
                       -{fmt(priceData.calculation.couponDiscount, priceData.exchangeRates)}
                     </span>
                   </div>
                 )}
 
                 {/* Total */}
-                <div className="pt-3 border-t border-white/5 flex justify-between items-center">
-                  <span className="font-bold text-white">
-                    {t("totalPrice")}
-                  </span>
-                  <span className="text-2xl font-bold text-orange-500">
-                    {fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}
-                  </span>
-                </div>
-
-                {/* Other currency equivalents */}
-                <div className="text-xs text-[#555] text-right space-y-0.5">
-                  {otherCurrencies(priceData.calculation.totalPrice, priceData.exchangeRates).map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
+                <div className="mt-2 p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(249,115,22,0.06) 100%)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-white text-sm">{t("totalPrice")}</span>
+                    <span className="text-2xl font-bold text-orange-400">
+                      {fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}
+                    </span>
+                  </div>
+                  {/* Other currency equivalents */}
+                  <div className="mt-2 text-xs text-right space-y-0.5">
+                    {otherCurrencies(priceData.calculation.totalPrice, priceData.exchangeRates).map((line, i) => (
+                      <p key={i} className="text-[#86868b]">≈ {line}</p>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -1025,21 +1034,20 @@ export default function BookingWizard(props: Props) {
             )}
 
             {/* Trust badges */}
-            <div className="mt-6 pt-4 border-t border-white/5 space-y-2.5">
-              <div className="flex items-center gap-2 text-xs text-[#86868b]">
-                <Shield size={14} className="text-green-500" />
-                {t("trustSecure")}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-[#86868b]">
-                <Check size={14} className="text-green-500" />
-                {t("trustCancel")}
-              </div>
-              <div className="flex items-center gap-2 text-xs text-[#86868b]">
-                <Check size={14} className="text-green-500" />
-                {t("trustNoHidden")}
-              </div>
+            <div className="mt-5 space-y-2">
+              {[
+                { icon: Shield, text: t("trustSecure"), color: "rgba(52,211,153" },
+                { icon: Check, text: t("trustCancel"), color: "rgba(52,211,153" },
+                { icon: Check, text: t("trustNoHidden"), color: "rgba(52,211,153" },
+              ].map(({ icon: Icon, text, color }) => (
+                <div key={text} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#86868b]" style={{ backgroundColor: `${color},0.05)` }}>
+                  <Icon size={13} style={{ color: `${color},1)`, flexShrink: 0 }} strokeWidth={2.5} />
+                  {text}
+                </div>
+              ))}
             </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

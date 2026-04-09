@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ContactForm from "@/components/ContactForm";
 import { Link } from "@/i18n/routing";
-import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowRight, HelpCircle } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowRight, HelpCircle, Globe, Shield, Headphones } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -74,6 +74,30 @@ export default async function ContactPage() {
             <p className="text-sm font-semibold text-orange-400 uppercase tracking-widest mb-4">{t("title")}</p>
             <h1 className="text-3xl lg:text-5xl font-bold mb-5 tracking-tight text-white">{t("heading")}</h1>
             <p className="text-[#86868b] text-lg max-w-xl mx-auto">{t("subtitle")}</p>
+          </div>
+        </section>
+
+        {/* Stats bar */}
+        <section style={{ backgroundColor: "#0a0a0b", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="max-w-5xl mx-auto px-4 py-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: Headphones, label: "24/7 Support", sub: "Always available" },
+                { icon: Clock, label: "< 30 min", sub: "Response time" },
+                { icon: Globe, label: "5 Languages", sub: "TR · EN · DE · PL · RU" },
+                { icon: Shield, label: "Fully Insured", sub: "Licensed & secure" },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
+                    <Icon size={18} className="text-orange-400" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{label}</p>
+                    <p className="text-xs text-[#86868b]">{sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -161,6 +185,48 @@ export default async function ContactPage() {
                 <h2 className="text-2xl font-bold text-white mb-6 tracking-tight">{t("sendMessage")}</h2>
                 <ContactForm />
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Languages section */}
+        <section className="py-16" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">Multilingual Team</p>
+            <h2 className="text-2xl font-bold text-white mb-2">We Speak Your Language</h2>
+            <p className="text-[#86868b] mb-10 max-w-md mx-auto">Our team is fluent in 5 languages so you can communicate comfortably from your first inquiry to arrival.</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { flag: "🇹🇷", lang: "Turkish" },
+                { flag: "🇬🇧", lang: "English" },
+                { flag: "🇩🇪", lang: "German" },
+                { flag: "🇵🇱", lang: "Polish" },
+                { flag: "🇷🇺", lang: "Russian" },
+              ].map(({ flag, lang }) => (
+                <div key={lang} className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <span className="text-xl">{flag}</span>
+                  <span>{lang}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Map section */}
+        <section className="pb-20">
+          <div className="max-w-4xl mx-auto px-4">
+            <h2 className="text-xl font-bold text-white mb-4">Our Location</h2>
+            <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3189.784!2d30.8005!3d36.8987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14c385a94efb0e15%3A0x7aae38d6b3e6fbe4!2sAntalya+Airport!5e0!3m2!1sen!2str!4v1700000000000"
+                width="100%"
+                height="320"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Antalya Airport - TORVIAN Transfer Location"
+              />
             </div>
           </div>
         </section>
