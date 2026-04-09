@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
 import { notifyNewPayment } from "@/lib/telegram";
 
@@ -10,12 +10,8 @@ function getStripe() {
   });
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(request: NextRequest) {
+  const supabase = createAdminClient();
   const body = await request.text();
   const sig = request.headers.get("stripe-signature");
 

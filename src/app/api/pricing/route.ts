@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { calculatePrice } from "@/lib/pricing";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function GET(request: NextRequest) {
+  const supabase = createAdminClient();
   const { searchParams } = request.nextUrl;
   const regionSlug = searchParams.get("region");
   const tripType = searchParams.get("trip") as "one_way" | "round_trip" | null;

@@ -1,15 +1,11 @@
 ﻿import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const BASE_URL = "https://torviantransfer.com";
 const locales = ["tr", "en", "de", "pl", "ru"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
     .select("slug")

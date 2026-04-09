@@ -1,13 +1,9 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+﻿import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // Called by Vercel CRON or manually to refresh exchange rates
 export async function GET() {
+  const supabase = createAdminClient();
   try {
     const res = await fetch(
       "https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,TRY"

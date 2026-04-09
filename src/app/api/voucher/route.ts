@@ -1,14 +1,10 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
 import type { ReservationEmailData } from "@/lib/email";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function GET(request: NextRequest) {
+  const supabase = createAdminClient();
   const code = request.nextUrl.searchParams.get("code");
   const locale = request.nextUrl.searchParams.get("locale") ?? "en";
 
