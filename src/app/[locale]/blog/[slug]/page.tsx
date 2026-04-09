@@ -14,6 +14,7 @@ import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
 export async function generateStaticParams() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
   const { data: posts } = await supabase
     .from("blog_posts")

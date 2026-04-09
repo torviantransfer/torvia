@@ -5,6 +5,7 @@ const BASE_URL = "https://torviantransfer.com";
 const locales = ["tr", "en", "de", "pl", "ru"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
