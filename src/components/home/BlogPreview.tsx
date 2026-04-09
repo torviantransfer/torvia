@@ -105,7 +105,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                 {/* Content */}
                 <div className="p-5">
                   {date && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
                       <Calendar size={12} />
                       <span>{date}</span>
                     </div>
@@ -114,7 +114,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                     {post.title}
                   </h3>
                   {excerpt && (
-                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
+                    <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
                       {excerpt}...
                     </p>
                   )}

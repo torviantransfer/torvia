@@ -33,7 +33,7 @@ export default function TestimonialsSection() {
               className="p-6 sm:p-7 rounded-2xl"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <div className="flex items-center gap-0.5 mb-4" aria-label={`${item.rating} out of 5 stars`}>
+              <div className="flex items-center gap-0.5 mb-4" role="img" aria-label={`${item.rating} out of 5 stars`}>
                 {[...Array(item.rating)].map((_, i) => (
                   <Star key={i} size={14} className="text-orange-400 fill-orange-400" aria-hidden="true" />
                 ))}
@@ -55,7 +55,7 @@ export default function TestimonialsSection() {
               className="p-6 sm:p-7 rounded-2xl"
               style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <div className="flex items-center gap-0.5 mb-4" aria-label={`${item.rating} out of 5 stars`}>
+              <div className="flex items-center gap-0.5 mb-4" role="img" aria-label={`${item.rating} out of 5 stars`}>
                 {[...Array(item.rating)].map((_, i) => (
                   <Star key={i} size={14} className="text-orange-400 fill-orange-400" aria-hidden="true" />
                 ))}

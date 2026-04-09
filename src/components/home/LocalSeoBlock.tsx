@@ -51,7 +51,7 @@ export default function LocalSeoBlock() {
         </div>
 
         {/* SEO paragraphs */}
-        <div className="space-y-5 text-gray-500 text-sm leading-relaxed">
+        <div className="space-y-5 text-gray-400 text-sm leading-relaxed">
           <p>{t("paragraph2")}</p>
           <p>{t("paragraph3")}</p>
         </div>
@@ -64,7 +64,7 @@ export default function LocalSeoBlock() {
             { icon: Star, label: t("feat3") },
             { icon: MapPin, label: t("feat4") },
           ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2 text-gray-500 text-xs">
+            <div key={label} className="flex items-center gap-2 text-gray-400 text-xs">
               <Icon size={14} className="text-orange-400 shrink-0" />
               <span>{label}</span>
             </div>

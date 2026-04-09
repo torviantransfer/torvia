@@ -85,9 +85,9 @@ export default function HeroSection() {
 
             {/* Bottom trust strip */}
             <div className="flex flex-wrap gap-x-4 gap-y-1">
-              <span className="text-xs text-gray-500">✓ {t("trustStripe")}</span>
-              <span className="text-xs text-gray-500">✓ {t("trustCancel")}</span>
-              <span className="text-xs text-gray-500">✓ {t("trustNoHidden")}</span>
+              <span className="text-xs text-gray-400">✓ {t("trustStripe")}</span>
+              <span className="text-xs text-gray-400">✓ {t("trustCancel")}</span>
+              <span className="text-xs text-gray-400">✓ {t("trustNoHidden")}</span>
             </div>
           </div>
 

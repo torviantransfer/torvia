@@ -46,7 +46,7 @@ export default function TrustBadges() {
                 <Icon size={20} style={{ color }} strokeWidth={1.5} />
               </div>
               <h3 className="text-white font-semibold text-base mb-2">{t(titleKey)}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{t(descKey)}</p>
+              <p className="text-gray-400 text-sm leading-relaxed">{t(descKey)}</p>
             </div>
           ))}
         </div>

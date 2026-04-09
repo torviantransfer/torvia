@@ -21,7 +21,7 @@ export default function StatsSection() {
               <p className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-2">
                 {stat.value}
               </p>
-              <p className="text-gray-500 text-sm">{t(stat.labelKey)}</p>
+              <p className="text-gray-400 text-sm">{t(stat.labelKey)}</p>
             </div>
           ))}
         </div>

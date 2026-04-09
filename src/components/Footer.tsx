@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -45,13 +45,13 @@ export default function Footer() {
               height={52}
               style={{ height: "36px", width: "auto", maxWidth: "160px", objectFit: "contain", marginBottom: "12px" }}
             />
-            <p className="text-gray-500 text-sm leading-relaxed">{t("description")}</p>
+            <p className="text-gray-400 text-sm leading-relaxed">{t("description")}</p>
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://instagram.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Instagram" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+            <a href="https://instagram.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Instagram" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
             </a>
-            <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+            <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
             <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-500 hover:text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
@@ -73,7 +73,7 @@ export default function Footer() {
                 { href: "/faq", label: t("faq") },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-gray-500 hover:text-white text-sm transition-colors">
+                  <Link href={item.href} className="text-gray-400 hover:text-white text-sm transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -87,7 +87,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {popularRegions.slice(0, 8).map((region) => (
                 <li key={region.slug}>
-                  <Link href={`/${region.slug}-transfer`} className="text-gray-500 hover:text-white text-sm transition-colors">
+                  <Link href={`/${region.slug}-transfer`} className="text-gray-400 hover:text-white text-sm transition-colors">
                     {region[`name_${locale}`] || region.name_en}
                   </Link>
                 </li>
@@ -107,7 +107,7 @@ export default function Footer() {
                 { href: "/kvkk", label: t("kvkk") },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-gray-500 hover:text-white text-sm transition-colors">
+                  <Link href={item.href} className="text-gray-400 hover:text-white text-sm transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -120,19 +120,19 @@ export default function Footer() {
             <h4 className="text-sm font-semibold text-white mb-5">{t("support")}</h4>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-500 hover:text-white text-sm transition-colors">
+                <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
                   <Phone size={14} />
                   +90 546 940 79 55
                 </a>
               </li>
               <li>
-                <a href="tel:+905415952102" className="flex items-center gap-2 text-gray-500 hover:text-white text-sm transition-colors">
+                <a href="tel:+905415952102" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
                   <Phone size={14} />
                   +90 541 595 21 02
                 </a>
               </li>
               <li>
-                <a href="mailto:torviantransfer@gmail.com" className="flex items-center gap-2 text-gray-500 hover:text-white text-sm transition-colors">
+                <a href="mailto:torviantransfer@gmail.com" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
                   <Mail size={14} />
                   torviantransfer@gmail.com
                 </a>
@@ -149,9 +149,9 @@ export default function Footer() {
                 </a>
               </li>
               <li className="pt-1">
-                <div className="flex items-start gap-2 text-gray-600 text-sm">
+                <div className="flex items-start gap-2 text-gray-400 text-sm">
                   <MapPin size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>Kemerağzı Mah. Antalya Havalimanı Dış Hatlar, 07230 Muratpaşa/Antalya</span>
+                  <span>Kemera�z� Mah. Antalya Havaliman� D�� Hatlar, 07230 Muratpa�a/Antalya</span>
                 </div>
               </li>
             </ul>
@@ -160,10 +160,10 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-gray-600 text-xs">
-            © {currentYear} TORVIAN Transfer. {t("allRightsReserved")}
+          <p className="text-gray-400 text-xs">
+            � {currentYear} TORVIAN Transfer. {t("allRightsReserved")}
           </p>
-          <p className="text-gray-600 text-xs">
+          <p className="text-gray-400 text-xs">
             {t("tagline")}
           </p>
         </div>
