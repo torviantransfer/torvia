@@ -136,7 +136,7 @@ export default function Header() {
               <Link
                 href="/booking"
                 className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-full transition-all hover:brightness-110 whitespace-nowrap"
-                style={{ backgroundColor: '#F97316', color: '#fff' }}
+                style={{ backgroundColor: '#C2410C', color: '#fff' }}
               >
                 {t("bookNow")}
                 <ArrowRight size={13} />
@@ -186,7 +186,7 @@ export default function Header() {
               <Link
                 href="/booking"
                 className="block text-center py-3 text-sm font-semibold rounded-full transition-all"
-                style={{ backgroundColor: '#F97316', color: '#fff' }}
+                style={{ backgroundColor: '#C2410C', color: '#fff' }}
                 onClick={() => setMobileOpen(false)}
               >
                 {t("bookNow")}

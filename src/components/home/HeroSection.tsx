@@ -70,7 +70,7 @@ export default function HeroSection() {
               <Link
                 href="/booking"
                 className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full shadow-lg transition-all hover:brightness-110 hover:scale-105"
-                style={{ backgroundColor: '#F97316', color: '#fff', boxShadow: '0 0 24px rgba(249,115,22,0.35)' }}
+                style={{ backgroundColor: '#C2410C', color: '#fff', boxShadow: '0 0 24px rgba(194,65,12,0.35)' }}
               >
                 {n("bookNow")}
               </Link>

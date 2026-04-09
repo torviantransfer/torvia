@@ -401,6 +401,7 @@
   "cookieConsent": {
     "message": "Używamy plików cookie, aby poprawić Twoje doświadczenia. Kontynuując korzystanie z tej strony, zgadzasz się z naszą polityką cookie.",
     "learnMore": "Dowiedz się więcej",
+    "learnMoreAriaLabel": "Dowiedz się więcej o naszej polityce plików cookie",
     "accept": "Akceptuj",
     "decline": "Odrzuć"
   },

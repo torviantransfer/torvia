@@ -64,7 +64,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-10 md:mb-12">
           {/* Company */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-5">{t("company")}</h4>
+            <h3 className="text-sm font-semibold text-white mb-5">{t("company")}</h3>
             <ul className="space-y-3">
               {[
                 { href: "/about", label: t("about") },
@@ -83,7 +83,7 @@ export default function Footer() {
 
           {/* Popular Destinations */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-5">{t("destinations")}</h4>
+            <h3 className="text-sm font-semibold text-white mb-5">{t("destinations")}</h3>
             <ul className="space-y-3">
               {popularRegions.slice(0, 8).map((region) => (
                 <li key={region.slug}>
@@ -97,7 +97,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-5">{t("legal")}</h4>
+            <h3 className="text-sm font-semibold text-white mb-5">{t("legal")}</h3>
             <ul className="space-y-3">
               {[
                 { href: "/privacy", label: t("privacy") },
@@ -117,7 +117,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-5">{t("support")}</h4>
+            <h3 className="text-sm font-semibold text-white mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
                 <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">

@@ -41,7 +41,7 @@ export default function CookieConsent() {
       >
         <div className="flex-1 text-sm text-gray-400 leading-relaxed">
           {t("message")}{" "}
-          <Link href="/cookies" className="text-orange-400 underline underline-offset-2 hover:text-orange-300">
+          <Link href="/cookies" className="text-orange-400 underline underline-offset-2 hover:text-orange-300" aria-label={t("learnMoreAriaLabel")}>
             {t("learnMore")}
           </Link>
         </div>
@@ -54,7 +54,7 @@ export default function CookieConsent() {
           </button>
           <button
             onClick={accept}
-            className="px-5 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 transition-colors rounded-lg"
+            className="px-5 py-2 text-sm font-medium text-white bg-orange-700 hover:bg-orange-800 transition-colors rounded-lg"
           >
             {t("accept")}
           </button>

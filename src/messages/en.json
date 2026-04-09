@@ -401,6 +401,7 @@
   "cookieConsent": {
     "message": "We use cookies to improve your experience. By continuing to use this site, you agree to our cookie policy.",
     "learnMore": "Learn More",
+    "learnMoreAriaLabel": "Learn more about our cookie policy",
     "accept": "Accept",
     "decline": "Decline"
   },

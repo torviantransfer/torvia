@@ -401,6 +401,7 @@
   "cookieConsent": {
     "message": "Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Sitemizi kullanmaya devam ederek çerez politikamızı kabul etmiş olursunuz.",
     "learnMore": "Daha Fazla Bilgi",
+    "learnMoreAriaLabel": "Çerez politikamız hakkında daha fazla bilgi",
     "accept": "Kabul Et",
     "decline": "Reddet"
   },
