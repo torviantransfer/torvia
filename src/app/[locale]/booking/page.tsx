@@ -3,11 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import dynamic from "next/dynamic";
+import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
-
-const BookingWizard = dynamic(() => import("@/components/booking/BookingWizard"), { ssr: false });
 
 export async function generateMetadata({
   params,
@@ -51,7 +49,7 @@ export default async function BookingPage({
           areaServed: { "@type": "Place", name: "Antalya, Turkey" },
           serviceType: "Airport Transfer",
         }) }} />
-        <BookingWizard
+        <BookingWizardClient
           initialRegion={sp.region}
           initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
           initialDate={sp.date}
