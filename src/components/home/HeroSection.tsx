@@ -13,12 +13,12 @@ export default function HeroSection() {
   return (
     <section className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, #000 0%, #1d1d1f 100%)" }}>
       {/* Airport background image */}
-      <div className="absolute inset-0 opacity-[0.18]">
+      <div className="absolute inset-0 opacity-30">
         <Image
-          src="/images/antalya-airport.jpg"
+          src="/images/hero-travel-world.jpg"
           alt=""
           fill
-          className="object-cover"
+          className="object-cover object-center"
           sizes="100vw"
           priority
         />
