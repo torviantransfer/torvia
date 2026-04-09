@@ -99,23 +99,55 @@ select option {
 }
 
 /* Phone input dark theme */
+.phone-input-dark {
+  display: flex;
+  align-items: center;
+}
 .phone-input-dark .PhoneInputInput {
   background: transparent !important;
   border: none !important;
   color: #f5f5f7 !important;
   outline: none !important;
   font-size: 0.875rem;
+  flex: 1;
 }
 .phone-input-dark .PhoneInputCountry {
   margin-right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.phone-input-dark .PhoneInputCountryIcon {
+  width: 22px;
+  height: 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  display: block;
+}
+.phone-input-dark .PhoneInputCountryIcon--square {
+  width: 18px;
+  height: 18px;
+}
+.phone-input-dark .PhoneInputCountryIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .phone-input-dark .PhoneInputCountrySelectArrow {
   color: #86868b;
   opacity: 0.6;
+  margin-left: 2px;
 }
 .phone-input-dark .PhoneInputCountrySelect {
   background: #1c1c1e !important;
   color: #f5f5f7 !important;
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  cursor: pointer;
 }
 .phone-input-dark .PhoneInputCountrySelect option {
   background: #1c1c1e;

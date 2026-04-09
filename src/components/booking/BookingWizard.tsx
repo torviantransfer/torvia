@@ -26,6 +26,13 @@ import {
   Shield,
   Loader2,
   AlertCircle,
+  Wind,
+  Wifi,
+  Droplets,
+  Armchair,
+  Plug,
+  Tv,
+  GlassWater,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -637,22 +644,23 @@ export default function BookingWizard(props: Props) {
                             tv: "TV",
                             minibar: "Minibar",
                           };
-                          const icons: Record<string, string> = {
-                            ac: "❄️",
-                            wifi: "📶",
-                            water: "💧",
-                            leather: "🪑",
-                            usb: "🔌",
-                            tv: "📺",
-                            minibar: "🥤",
+                          const iconMap: Record<string, React.ReactNode> = {
+                            ac: <Wind size={11} />,
+                            wifi: <Wifi size={11} />,
+                            water: <Droplets size={11} />,
+                            leather: <Armchair size={11} />,
+                            usb: <Plug size={11} />,
+                            tv: <Tv size={11} />,
+                            minibar: <GlassWater size={11} />,
                           };
                           return (
                             <span
                               key={f}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-white"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs text-gray-300"
                               style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
                             >
-                              {icons[f] || "✓"} {label[f] || f}
+                              <span className="text-orange-400">{iconMap[f] ?? <Check size={11} />}</span>
+                              {label[f] || f}
                             </span>
                           );
                         })}
