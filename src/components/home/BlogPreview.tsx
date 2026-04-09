@@ -1,12 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, BookOpen, Calendar } from "lucide-react";
 import Image from "next/image";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
@@ -35,6 +30,7 @@ const viewAll: Record<Locale, string> = {
 };
 
 export default async function BlogPreview({ locale }: { locale: string }) {
+  const supabase = createAdminClient();
   const loc = (locale as Locale) || "en";
 
   const { data: posts } = await supabase

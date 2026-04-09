@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -50,14 +50,10 @@ const regionImages: Record<string, string> = {
   marmaris: "/images/regions/marmaris.jpg",
 };
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
 export async function generateStaticParams() {
+  const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
     .select("slug")
@@ -79,6 +75,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; region: string }>;
 }): Promise<Metadata> {
+  const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
   const slug = regionParam.replace("-transfer", "");
 
@@ -143,6 +140,7 @@ export default async function RegionPage({
 }: {
   params: Promise<{ locale: string; region: string }>;
 }) {
+  const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
   const slug = regionParam.replace("-transfer", "");
   const t = await getTranslations({ locale, namespace: "regionDetail" });

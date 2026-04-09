@@ -1,17 +1,13 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import DriverPanel from "@/components/driver/DriverPanel";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export default async function DriverPage({
   params,
 }: {
   params: Promise<{ token: string }>;
 }) {
+  const supabase = createAdminClient();
   const { token } = await params;
 
   // Find assignment by token

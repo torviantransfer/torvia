@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
@@ -9,11 +9,6 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { Calendar, ArrowRight, BookOpen, Plane } from "lucide-react";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
 export async function generateMetadata({
@@ -21,6 +16,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
+  const supabase = createAdminClient();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "blog" });
   const title = `${t("heading")} | TORVIAN Transfer`;
@@ -39,6 +35,7 @@ export default async function BlogPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  const supabase = createAdminClient();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "blog" });
   const loc = locale as Locale;
