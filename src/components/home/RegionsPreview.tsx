@@ -1,18 +1,19 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, ArrowUpRight, Clock } from "lucide-react";
+import Image from "next/image";
 
 export default function RegionsPreview() {
   const t = useTranslations("regions");
   const c = useTranslations("common");
 
   const popularRegions = [
-    { slug: "belek", name: "Belek", duration: 30, tagKey: "tagGolf" },
-    { slug: "side", name: "Side", duration: 55, tagKey: "tagHistory" },
-    { slug: "alanya", name: "Alanya", duration: 120, tagKey: "tagCoastal" },
-    { slug: "kemer", name: "Kemer", duration: 40, tagKey: "tagNature" },
-    { slug: "kundu", name: "Kundu · Lara", duration: 15, tagKey: "tagClosest" },
-    { slug: "kas", name: "Kaş", duration: 180, tagKey: "tagHidden" },
+    { slug: "belek", name: "Belek", duration: 30, tagKey: "tagGolf", image: "/images/regions/belek-golf.jpg" },
+    { slug: "side", name: "Side", duration: 55, tagKey: "tagHistory", image: "/images/regions/side-ancient.jpg" },
+    { slug: "alanya", name: "Alanya", duration: 120, tagKey: "tagCoastal", image: "/images/regions/alanya-castle.jpg" },
+    { slug: "kemer", name: "Kemer", duration: 40, tagKey: "tagNature", image: "/images/regions/kemer-coast.webp" },
+    { slug: "kundu", name: "Kundu · Lara", duration: 15, tagKey: "tagClosest", image: "/images/regions/kundu-lara.jpg" },
+    { slug: "kas", name: "Kaş", duration: 180, tagKey: "tagHidden", image: "/images/regions/kas-beach.webp" },
   ];
 
   return (
@@ -42,18 +43,28 @@ export default function RegionsPreview() {
               key={region.slug}
               href={`/${region.slug}-transfer`}
               className="group relative flex flex-col justify-end p-6 rounded-2xl overflow-hidden min-h-[200px] transition-all duration-300 hover:scale-[1.02]"
-              style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+              style={{ border: "1px solid rgba(255,255,255,0.06)" }}
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white text-xl font-semibold group-hover:text-orange-400 transition-colors">
-                  {region.name}
-                </h3>
-                <ArrowUpRight size={16} className="text-gray-600 group-hover:text-orange-400 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </div>
-              <p className="text-gray-500 text-sm mb-3">{t(region.tagKey)}</p>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Clock size={12} />
-                <span>~{region.duration} {c("minutes")} {t("fromAirport").toLowerCase()}</span>
+              <Image
+                src={region.image}
+                alt={region.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white text-xl font-semibold group-hover:text-orange-400 transition-colors">
+                    {region.name}
+                  </h3>
+                  <ArrowUpRight size={16} className="text-gray-400 group-hover:text-orange-400 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </div>
+                <p className="text-gray-300 text-sm mb-3">{t(region.tagKey)}</p>
+                <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <Clock size={12} />
+                  <span>~{region.duration} {c("minutes")} {t("fromAirport").toLowerCase()}</span>
+                </div>
               </div>
             </Link>
           ))}

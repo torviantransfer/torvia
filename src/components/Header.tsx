@@ -66,9 +66,11 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center group">
               <img
-                src="/images/logo.png"
+                src="/images/logo.webp"
                 alt="TORVIAN Transfer"
-                style={{ height: "44px", width: "auto", maxWidth: "180px", objectFit: "contain" }}
+                width={180}
+                height={42}
+                style={{ height: "32px", width: "auto", maxWidth: "140px", objectFit: "contain" }}
               />
             </Link>
 

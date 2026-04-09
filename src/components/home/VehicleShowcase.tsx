@@ -30,25 +30,17 @@ export default function VehicleShowcase() {
   return (
     <section className="py-24 lg:py-32" style={{ backgroundColor: "#000" }}>
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-[3fr_2fr] gap-8 items-center">
           {/* Left: Vehicle visual */}
-          <div className="relative">
-            <div
-              className="rounded-3xl aspect-[4/3] overflow-hidden relative"
-              style={{ border: "1px solid rgba(255,255,255,0.06)" }}
-            >
+          <div className="relative overflow-hidden rounded-xl">
+            <div className="relative w-full h-[320px] lg:h-[400px]">
               <Image
-                src="/images/vehicles/mercedes-vito-vip.png"
+                src="/images/two-cars.webp"
                 alt="Mercedes Vito VIP Transfer Vehicle - Leather seats, Wi-Fi, Climate control"
                 fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 60vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-6 left-6">
-                <p className="text-white text-xl font-semibold tracking-tight">Mercedes Vito</p>
-                <p className="text-gray-400 text-sm mt-1">{t("vipTourer")}</p>
-              </div>
             </div>
           </div>
 

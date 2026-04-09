@@ -184,8 +184,9 @@ export default function BookingFormMini() {
                 name="returnDate"
                 required
                 min={new Date().toISOString().split("T")[0]}
+                placeholder="YYYY-MM-DD"
                 className="w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)" }}
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.06)", colorScheme: "dark" }}
               />
             </div>
             <div>

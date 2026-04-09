@@ -39,9 +39,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="max-w-sm">
             <img
-              src="/images/logo.png"
+              src="/images/logo.webp"
               alt="TORVIAN Transfer"
-              style={{ height: "52px", width: "auto", maxWidth: "200px", objectFit: "contain", marginBottom: "12px" }}
+              width={200}
+              height={52}
+              style={{ height: "36px", width: "auto", maxWidth: "160px", objectFit: "contain", marginBottom: "12px" }}
             />
             <p className="text-gray-500 text-sm leading-relaxed">{t("description")}</p>
           </div>
