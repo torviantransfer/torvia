@@ -3,9 +3,11 @@ import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BookingWizard from "@/components/booking/BookingWizard";
+import dynamic from "next/dynamic";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
+
+const BookingWizard = dynamic(() => import("@/components/booking/BookingWizard"), { ssr: false });
 
 export async function generateMetadata({
   params,
