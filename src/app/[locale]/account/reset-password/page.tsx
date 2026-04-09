@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const supabase = createClient();
@@ -19,6 +19,33 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [expired, setExpired] = useState(false);
+
+  useEffect(() => {
+    // Check for error in URL hash (expired/invalid link)
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash.includes("error=access_denied") || hash.includes("error_code=otp_expired")) {
+        setExpired(true);
+        return;
+      }
+    }
+
+    // Listen for PASSWORD_RECOVERY event — Supabase processes the hash token
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setSessionReady(true);
+      }
+    });
+
+    // Also check if session already exists (came via /auth/callback cookie)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionReady(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -58,6 +85,26 @@ export default function ResetPasswordPage() {
                 </div>
                 <h1 className="text-xl font-bold text-white">Password Updated!</h1>
                 <p className="text-[#86868b] text-sm">Redirecting you to your account…</p>
+              </div>
+            ) : expired ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: "rgba(239,68,68,0.12)" }}>
+                  <AlertCircle size={32} className="text-red-400" />
+                </div>
+                <h1 className="text-xl font-bold text-white">Link Expired</h1>
+                <p className="text-[#86868b] text-sm">This password reset link has expired or already been used. Please request a new one.</p>
+                <button
+                  onClick={() => router.push(`/${locale}/account/login`)}
+                  className="mt-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white"
+                  style={{ backgroundColor: "#C2410C" }}
+                >
+                  Back to Login
+                </button>
+              </div>
+            ) : !sessionReady ? (
+              <div className="text-center space-y-4">
+                <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-[#86868b] text-sm">Verifying your reset link…</p>
               </div>
             ) : (
               <>
