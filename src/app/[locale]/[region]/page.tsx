@@ -219,6 +219,7 @@ export default async function RegionPage({
         ratingValue: avgRating,
         reviewCount: reviews.length,
         bestRating: 5,
+        worstRating: 1,
       },
     } : {}),
   };
