@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about" });
-  const title = `${t("heading")} | TORVIAN Transfer`;
+  const title = `${t("heading")} | Antalya Airport VIP Transfer Service`;
   const description = t("subtitle");
   return {
     title,
@@ -44,7 +44,7 @@ export default async function AboutPage() {
     },
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+90-546-940-79-55",
+      telephone: "+90-850-840-13-27",
       contactType: "customer service",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "TORVIAN Transfer | Antalya Havalimanı VIP Transfer",
-    "description": "Antalya Havalimanı özel VIP transfer — Belek, Side, Alanya, Kemer, Kaş ve tüm Türk Rivierası destinasyonlarına sabit fiyatlı lüks transferler. 7/24 hizmet, Mercedes Vito, ücretsiz iptal. Online rezervasyon."
+    "title": "Antalya Havalimanı VIP Transfer | TORVIAN Transfer",
+    "description": "Antalya Havalimanı (AYT) özel VIP transfer — Belek, Side, Alanya, Kemer, Kaş, Fethiye ve tüm Türk Rivierası destinasyonlarına sabit fiyatlı lüks transferler. 7/24 hizmet, Mercedes Vito, ücretsiz iptal. Online rezervasyon."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -28,7 +28,7 @@
     "service247": "7/24 Hizmet",
     "fixedPrice": "Sabit Fiyat",
     "transfers": "transfer",
-    "licensedInsured": "Lisanslı & Sigortalı",
+    "licensedInsured": "Güvenli & Güvenilir Taşıma",
     "trustStripe": "Stripe ile güvenli ödeme",
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
     "trustNoHidden": "Gizli ücret yok"
@@ -96,8 +96,8 @@
     "seoSubheading": "Antalya Havalimanı'ndan tüm tatil bölgelerine güvenli, konforlu ve zamanında VIP transfer hizmeti.",
     "seoFlightTracking": "Uçuş Takibi",
     "seoFlightTrackingDesc": "Uçuşunuzu gerçek zamanlı takip ediyoruz. Gecikmeli bile olsa şoförünüz sizi bekler.",
-    "seoInsured": "Lisanslı & Sigortalı",
-    "seoInsuredDesc": "Tüm araçlarımız tam lisanslı ve kapsamlı sigorta ile güvence altındadır.",
+    "seoInsured": "Güvenli & Güvenilir",
+    "seoInsuredDesc": "Tüm transferlerimiz profesyonel şoförler eşliğinde, düzgünce bakımlı ve güvenli araçlarla gerçekleştirilmektedir.",
     "seoSecurePayment": "Güvenli Ödeme",
     "seoSecurePaymentDesc": "Stripe altyapısı ile SSL şifreli, güvenli kredi kartı ödemesi.",
     "seo247": "7/24 Destek",
@@ -114,7 +114,7 @@
     "seoFaq3Q": "Hangi bölgelere transfer yapılıyor?",
     "seoFaq3A": "Belek, Kemer, Alanya, Side, Lara, Kundu, Kaş, Manavgat, Konyaaltı ve daha birçok bölgeye VIP transfer hizmeti sunuyoruz.",
     "seoFaq4Q": "Gece uçuşları için ek ücret var mı?",
-    "seoFaq4A": "22:00-06:00 arası uçuşlar için %15 gece tarifesi uygulanır. Bu ücret rezervasyon sırasında otomatik hesaplanır.",
+    "seoFaq4A": "Hayır, gece tarifesi uygulamayız. Fiyatımız saattirümünden bağımsız olarak sabittir.",
     "seoTextBlock": "TORVIAN Transfer, Antalya Havalimanı (AYT) ile Belek, Kemer, Side, Alanya, Lara, Kundu, Kaş, Manavgat ve diğer tüm tatil bölgeleri arasında premium VIP transfer hizmeti sunmaktadır. Mercedes Vito araçlarımız ile konforlu, güvenli ve zamanında ulaşım sağlıyoruz. Online rezervasyon, Stripe güvenli ödeme, ücretsiz iptal ve 7/24 destek ile hizmetinizdeyiz.",
     "optional": "opsiyonel",
     "extras": "Ekstralar",
@@ -130,8 +130,8 @@
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",
     "subheading": "Her yıl Türk Rivierası'nı ziyaret eden binlerce yolcunun güvendiği premium havalimanı transfer hizmeti.",
-    "licensedTitle": "Lisanslı & Sigortalı",
-    "licensedDesc": "Tüm araçlarımız tam lisanslı, düzenli olarak denetleniyor ve kapsamlı sigorta ile güvence altında.",
+    "licensedTitle": "Güvenli & Güvenilir Taşıma",
+    "licensedDesc": "Tüm araçlarımız düzenli olarak bakıma alınır ve profesyonel, deneyimli şoförler tarafından kullanılır.",
     "punctualTitle": "Dakik Hizmet",
     "punctualDesc": "Uçuşunuzu gerçek zamanlı takip ediyoruz. Erken veya gecikmeli fark etmez, şoförünüz sizi bekliyor.",
     "doorToDoorTitle": "Kapıdan Kapıya",
@@ -143,12 +143,12 @@
     "flightTitle": "Uçuş Takibi",
     "flightDesc": "Antalya Havalimanı'na inen her uçuşu takip ediyoruz. Şoförünüz varışınıza her zaman mükemmel zamanlı.",
     "support247": "7/24 Destek",
-    "licensedVehicles": "Lisanslı Araçlar",
+    "licensedVehicles": "Güvenli Araçlar",
     "securePayment": "Güvenli Ödeme",
     "proDrivers": "Profesyonel Şoförler",
     "fixedPrice": "Sabit Fiyat",
     "flightTracking": "Uçuş Takibi",
-    "freeChildSeat": "Ücretsiz Çocuk Koltuğu",
+    "freeChildSeat": "Çocuk Koltuğu Mevcut",
     "meetGreet": "Karşılama Hizmeti"
   },
   "howItWorks": {
@@ -167,8 +167,8 @@
     "fleetLabel": "Filomuz",
     "reserveTransfer": "Transfer Rezervasyonu",
     "vipTourer": "VIP Tourer Edition",
-    "spec1": "7 yolcuya kadar",
-    "spec2": "7 büyük bavul",
+    "spec1": "5 yolcuya kadar",
+    "spec2": "5 büyük bavul",
     "spec3": "Çift bölgeli klima",
     "spec4": "Ücretsiz Wi-Fi",
     "spec5": "Su ikramı",
@@ -220,8 +220,8 @@
     "contactUs": "Bize Ulaşın"
   },
   "regions": {
-    "title": "Transfer Bölgeleri",
-    "subtitle": "Antalya Havalimanı'ndan tüm popüler tatil beldelerine VIP transfer",
+    "title": "Antalya Havalimanı Transfer Bölgeleri",
+    "subtitle": "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer, Kaş, Fethiye, Marmaris ve 25+ destinasyona sabit fiyatlı VIP özel transfer.",
     "popularHeading": "Popüler destinasyonlar.",
     "allRegions": "Tüm bölgeler",
     "fromAirport": "havalimanından",
@@ -240,7 +240,7 @@
   "about": {
     "title": "Hakkımızda",
     "heading": "TORVIAN Transfer Hakkında",
-    "subtitle": "Antalya, Türkiye'de premium VIP havalimanı transfer hizmeti",
+    "subtitle": "Antalya Havalimanı'nın güvenilir özel VIP transfer hizmeti — Mercedes Vito, sabit fiyat, 7/24 destek.",
     "paragraph1": "TORVIAN Transfer, Antalya Havalimanı'ndan Türk Rivierası'ndaki tüm popüler tatil beldelerine birinci sınıf VIP özel transfer hizmeti sunmaktadır. Profesyonel şoförlerimiz ve lüks Mercedes Vito VIP araçlarımızla konforlu, güvenli ve dakik transferleri garanti ediyoruz.",
     "paragraph2": "25'den fazla bölgeye hizmet vererek sabit fiyat garantisi, 7/24 müşteri desteği ve güvenli çevrimiçi ödeme imkânı sunuyoruz. Misyonumuz her transferi unutulmaz bir deneyime dönüştürmektir.",
     "statTransfers": "Tamamlanan Transfer",
@@ -253,25 +253,25 @@
     "feature2Desc": "Rezervasyonunuz anında onaylanır. Sürücü bilgileri ve QR kodlu karşılama detayları e-posta ile gönderilir.",
     "feature3Title": "Çok Dilli Destek",
     "feature3Desc": "7/24 Türkçe, İngilizce, Almanca, Lehçe ve Rusça destek. İhtiyacınız olduğunda size yardımcı olmak için buradayız.",
-    "feature4Title": "Tam Lisanslı & Sigortalı",
-    "feature4Desc": "Tüm araçlarımız düzenli olarak denetlenir, lisanslıdır ve tam kapsamlı yolcu sigortası taşır.",
+    "feature4Title": "Güvenli & Güvenilir Taşıma",
+    "feature4Desc": "Tüm araçlarımız düzenli olarak bakıma alınır ve en yüksek standartlarda tutulur. Yalnızca profesyonel, deneyimli şoförler.",
     "trustStripePayments": "Güvenli Stripe Ödeme",
-    "trustInsured": "Tam Sigortalı Transferler",
+    "trustInsured": "Güvenli & Güvenilir Transferler",
     "trustFlightTracking": "Canlı Uçuş Takibi",
     "trustFreeCancellation": "24s Öncesine Kadar Ücretsiz İptal",
     "trustSince": "2022'den beri hizmet veriyoruz"
   },
   "contact": {
-    "title": "İletişim",
+    "title": "TORVIAN Transfer İletişim | Antalya Havalimanı VIP Transfer",
     "heading": "Bize Ulaşın",
-    "subtitle": "Sorularınız mı var? 7/24 buradayız.",
+    "subtitle": "Antalya havalimanı transferiniz hakkında sorularınız mı var? 7/24 telefon, WhatsApp veya e-posta ile ulaşın.",
     "getInTouch": "İletişime Geçin",
     "whatsapp": "WhatsApp",
     "whatsappDesc": "En hızlı yanıt",
     "emailLabel": "E-posta",
     "emailDesc": "7/24 destek",
     "phoneLabel": "Telefon",
-    "phoneDesc": "+90 546 940 79 55 / +90 541 595 21 02",
+    "phoneDesc": "0850 840 1327",
     "locationLabel": "Konum",
     "locationDesc": "Antalya, Türkiye",
     "sendMessage": "Mesaj Gönder",
@@ -287,9 +287,9 @@
     "checkFaq": "Hızlı yanıtlar için SSS sayfamızı kontrol edin"
   },
   "faq": {
-    "title": "SSS",
+    "title": "Antalya Havalimanı Transfer SSS",
     "heading": "Sık Sorulan Sorular",
-    "subtitle": "VIP transfer hizmetimiz hakkında bilmeniz gereken her şey",
+    "subtitle": "Antalya havalimanı özel transfer hakkında: fiyatlar, Mercedes Vito, uçuş takibi, iptal koşulları, çocuk koltuk ve daha fazlası.",
     "q1": "Nasıl rezervasyon yapabilirim?",
     "a1": "Web sitemiz üzerinden bölge, tarih ve saatinizi seçerek saniyeler içinde online rezervasyon yapabilirsiniz. Ödeme güvenli olarak Stripe ile işlenir.",
     "q2": "Havalimanında şoförüm beni nasıl bulacak?",
@@ -297,17 +297,17 @@
     "q3": "Uçuşum rötar yaparsa ne olur?",
     "a3": "Tüm uçuşları gerçek zamanlı takip ediyoruz. Uçuşunuz gecikirse şoförünüz ücretsiz olarak bekler.",
     "q4": "Hangi araçları kullanıyorsunuz?",
-    "a4": "Tüm transferlerimiz deri koltuk, Wi-Fi, klima ve 7 yolcuya kadar kapasite sunan Mercedes Vito VIP araçlarla yapılmaktadır.",
+    "a4": "Tüm transferlerimiz deri koltuk, Wi-Fi, klima ve 5 yolcuya kadar kapasite sunan Mercedes Vito VIP araçlarla yapılmaktadır.",
     "q5": "Fiyatlar kişi başı mı?",
-    "a5": "Hayır, fiyatlarımız araç başınadır. Tek bir Mercedes Vito'da 7 yolcuya kadar aynı fiyatla seyahat edebilirsiniz.",
+    "a5": "Hayır, fiyatlarımız araç başınadır. Tek bir Mercedes Vito’da 5 yolcuya kadar aynı fiyatla seyahat edebilirsiniz.",
     "q6": "Ücretsiz iptal var mı?",
-    "a6": "Evet, planlanan kalkış saatinden 24 saat öncesine kadar ücretsiz iptal hakkınız bulunmaktadır.",
+    "a6": "Evet, planlanılan kalkış saatinden 24 saat öncesine kadar ücretsiz iptal hakkınız bulunmaktadır.",
     "q7": "Çocuk koltuğu mevcut mu?",
-    "a7": "Evet, ücretsiz çocuk koltuğu sağlıyoruz. Lütfen rezervasyon sırasında talep edin.",
+    "a7": "Evet, 10 dolar ücreti karşılığında çocuk koltuğu hizmeti sunuyoruz. Lütfen rezervasyon sırasında talep edin.",
     "q8": "Ödemeyi nasıl yapabilirim?",
     "a8": "Kredi kartı veya banka kartı ile güvenli ödeme yapabilirsiniz. Ödemeler Stripe altyapısı ile PCI DSS uyumlu olarak işlenir.",
     "q9": "Gece transferleri için ek ücret var mı?",
-    "a9": "22:00-06:00 arası transferlerde %15 gece tarifesi uygulanır. Bu, rezervasyon sırasında otomatik hesaplanır.",
+    "a9": "Hayır, gece tarifesi uygulamıyoruz. Fiyatımız günün saatinden bağımsız olarak sabittir.",
     "q10": "Karşılama hizmeti nedir?",
     "a10": "Şoförünüz varış salonunda isminizin yazılı olduğu tabela ile sizi karşılar ve bagajlarınızla araca kadar eşlik eder.",
     "q11": "Hangi bölgelere transfer yapıyorsunuz?",
@@ -396,6 +396,13 @@
     "allRightsReserved": "Tüm hakları saklıdır.",
     "description": "Antalya Havalimanı'ndan tüm bölgelere VIP özel transfer hizmeti.",
     "destinations": "Destinasyonlar",
+    "newsletterTitle": "Güncel Kalın",
+    "newsletterSubtitle": "Özel fırsatlar ve seyahat ipucu alanın.",
+    "newsletterPlaceholder": "E-posta adresiniz",
+    "newsletterButton": "Abone Ol",
+    "newsletterSuccess": "Abone oldunuz! Teşekkürler.",
+    "newsletterDuplicate": "Zaten abonesiniz.",
+    "newsletterError": "Bir hata oluştu. Tekrar deneyin.",
     "tagline": "Antalya Havalimanı (AYT) VIP Transfer Hizmeti"
   },
   "cookieConsent": {
@@ -442,9 +449,9 @@
     "whatsappMessage": "Merhaba! Antalya Havalimanı'ndan VIP transfer rezervasyonu yapmak istiyorum."
   },
   "blog": {
-    "title": "Blog",
-    "heading": "Seyahat İpuçları & Rehberler",
-    "subtitle": "Antalya transferleri, seyahat ipuçları ve destinasyon rehberleri hakkında en güncel yazılarımızı keşfedin.",
+    "title": "Antalya Transfer Blog",
+    "heading": "Antalya Transfer İpuçları & Rehberler",
+    "subtitle": "Antalya havalimanı transferi, VIP transfer ipucu, Belek, Side, Alanya, Kemer destinasyon rehberleri ve daha fazlası.",
     "readMore": "Devamını Oku",
     "backToBlog": "Bloga Dön",
     "publishedOn": "Yayınlanma tarihi",
@@ -655,6 +662,6 @@
     "s6Title": "6. Veri Güvenliği",
     "s6Text": "Kişisel verilerinizi yetkisiz erişime, değiştirmeye, ifşa etmeye veya imhaya karşı korumak için uygun teknik ve organizasyonel önlemler uyguluyoruz. Tüm ödeme verileri PCI-DSS uyumlu Stripe altyapısı üzerinden işlenmektedir.",
     "s7Title": "7. İletişim",
-    "s7Text": "Kişisel verilerinizle ilgili sorularınız veya haklarınızı kullanmak için torviantransfer@gmail.com adresinden veya +90 546 940 79 55 numarasından bize ulaşabilirsiniz."
+    "s7Text": "Kişisel verilerinizle ilgili sorularınız veya haklarınızı kullanmak için torviantransfer@gmail.com adresinden veya 0850 840 1327 numarasından bize ulaşabilirsiniz."
   }
 }

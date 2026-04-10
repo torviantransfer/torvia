@@ -23,6 +23,11 @@ export default function Footer() {
 
   const [popularRegions, setPopularRegions] = useState<RegionItem[]>([]);
 
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState<
+    "idle" | "loading" | "success" | "duplicate" | "error"
+  >("idle");
+
   useEffect(() => {
     fetch("/api/regions?popular=true")
       .then((res) => res.json())
@@ -31,6 +36,30 @@ export default function Footer() {
       })
       .catch(() => {});
   }, []);
+
+  async function handleNewsletterSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newsletterEmail || newsletterStatus === "loading") return;
+    setNewsletterStatus("loading");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNewsletterStatus("success");
+        setNewsletterEmail("");
+      } else if (res.status === 409 || data?.error === "duplicate") {
+        setNewsletterStatus("duplicate");
+      } else {
+        setNewsletterStatus("error");
+      }
+    } catch {
+      setNewsletterStatus("error");
+    }
+  }
 
   return (
     <footer style={{ backgroundColor: "#000", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
@@ -54,10 +83,48 @@ export default function Footer() {
             <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-500 hover:text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-500 hover:text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
               <MessageCircle size={18} aria-hidden="true" />
             </a>
           </div>
+        </div>
+
+        {/* Newsletter */}
+        <div className="mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <h3 className="text-white font-semibold text-base mb-1">{t("newsletterTitle")}</h3>
+              <p className="text-gray-400 text-sm">{t("newsletterSubtitle")}</p>
+            </div>
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[360px]">
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => { setNewsletterEmail(e.target.value); setNewsletterStatus("idle"); }}
+                placeholder={t("newsletterPlaceholder")}
+                required
+                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-700 disabled:opacity-50 transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
+                style={{ backgroundColor: "#C2410C" }}
+              >
+                {newsletterStatus === "loading" ? "..." : t("newsletterButton")}
+              </button>
+            </form>
+          </div>
+          {newsletterStatus === "success" && (
+            <p className="mt-3 text-emerald-400 text-sm">{t("newsletterSuccess")}</p>
+          )}
+          {newsletterStatus === "duplicate" && (
+            <p className="mt-3 text-yellow-400 text-sm">{t("newsletterDuplicate")}</p>
+          )}
+          {newsletterStatus === "error" && (
+            <p className="mt-3 text-red-400 text-sm">{t("newsletterError")}</p>
+          )}
         </div>
 
         {/* Columns */}
@@ -120,15 +187,9 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-white mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="tel:+908508401327" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
                   <Phone size={14} />
-                  +90 546 940 79 55
-                </a>
-              </li>
-              <li>
-                <a href="tel:+905415952102" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
-                  <Phone size={14} />
-                  +90 541 595 21 02
+                  0850 840 1327
                 </a>
               </li>
               <li>
@@ -139,10 +200,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`}
                 >
                   <MessageCircle size={14} />
                   WhatsApp

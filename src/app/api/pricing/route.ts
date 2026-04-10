@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
     welcomeSign,
     couponDiscountPercent,
     couponDiscountFixed,
-    nightSurchargePercent: settingsMap.night_surcharge_percent ?? 15,
-    childSeatFee: settingsMap.child_seat_fee ?? 0,
+    nightSurchargePercent: settingsMap.night_surcharge_percent ?? 0,
+    childSeatFee: settingsMap.child_seat_fee ?? 10,
     welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
   });
 
