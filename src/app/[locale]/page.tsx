@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/home/HeroSection";
 import TrustBadges from "@/components/home/TrustBadges";
-import StatsSection from "@/components/home/StatsSection";
+
 import RegionsPreview from "@/components/home/RegionsPreview";
 import HowItWorks from "@/components/home/HowItWorks";
 import VehicleShowcase from "@/components/home/VehicleShowcase";
@@ -229,10 +229,9 @@ export default async function HomePage({
       <main className="flex-1">
         <HeroSection />
         <TrustBadges />
-        <StatsSection />
-        <HowItWorks />
         <RegionsPreview />
         <VehicleShowcase />
+        <HowItWorks />
         <TestimonialsSection />
         <HomeFAQ />
         <CTASection />

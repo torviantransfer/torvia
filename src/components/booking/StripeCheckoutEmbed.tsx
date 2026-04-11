@@ -52,7 +52,7 @@ const appearance: StripeElementsOptions["appearance"] = {
       boxShadow: "0 0 0 1px #F97316",
     },
     ".Label": {
-      color: "#a1a1a6",
+      color: "#6b7280",
       fontSize: "13px",
       fontWeight: "500",
       marginBottom: "6px",
@@ -125,19 +125,19 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
       {/* Order Summary Card */}
       <div className="rounded-xl border border-[#2a2a2e] bg-[#1a1a1d] p-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
-            <MapPin size={16} className="text-orange-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <MapPin size={16} className="text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold truncate">Antalya Airport → {regionName}</p>
-            <p className="text-[#86868b] text-xs">
+            <p className="text-gray-900 text-sm font-semibold truncate">Antalya Airport → {regionName}</p>
+            <p className="text-gray-500 text-xs">
               {tripType === "round_trip" ? "↔ Round Trip" : "→ One Way"} · {pickupDate} · {pickupTime}
             </p>
           </div>
         </div>
         <div className="flex items-center justify-between pt-3 border-t border-[#2a2a2e]">
-          <span className="text-[#86868b] text-sm">Total</span>
-          <span className="text-white text-xl font-bold">${totalPrice.toFixed(2)}</span>
+          <span className="text-gray-500 text-sm">Total</span>
+          <span className="text-gray-900 text-xl font-bold">${totalPrice.toFixed(2)}</span>
         </div>
       </div>
 
@@ -147,8 +147,8 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           {/* Card info header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <CreditCard size={16} className="text-[#86868b]" />
-              <span className="text-white text-sm font-medium">Card Details</span>
+              <CreditCard size={16} className="text-gray-500" />
+              <span className="text-gray-900 text-sm font-medium">Card Details</span>
             </div>
             {/* Stripe logo */}
             <div className="flex items-center gap-1.5">
@@ -174,7 +174,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="w-full py-4 rounded-xl font-bold text-white text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.99]"
+          className="w-full py-4 rounded-xl font-bold text-gray-900 text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.99]"
           style={{ backgroundColor: "#F97316" }}
         >
           {loading ? (
@@ -195,15 +195,15 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
       <div className="grid grid-cols-3 gap-3">
         <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
           <Shield size={16} className="text-green-500" />
-          <span className="text-[10px] text-[#86868b] text-center leading-tight">SSL Encrypted</span>
+          <span className="text-[10px] text-gray-500 text-center leading-tight">SSL Encrypted</span>
         </div>
         <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
           <CheckCircle size={16} className="text-green-500" />
-          <span className="text-[10px] text-[#86868b] text-center leading-tight">PCI Compliant</span>
+          <span className="text-[10px] text-gray-500 text-center leading-tight">PCI Compliant</span>
         </div>
         <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
           <Lock size={16} className="text-green-500" />
-          <span className="text-[10px] text-[#86868b] text-center leading-tight">3D Secure</span>
+          <span className="text-[10px] text-gray-500 text-center leading-tight">3D Secure</span>
         </div>
       </div>
 
@@ -217,7 +217,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           {/* Amex */}
           <div className="text-[9px] font-bold text-[#6B7280] border border-[#3a3a3e] rounded px-1.5 py-0.5">AMEX</div>
         </div>
-        <p className="text-[10px] text-[#555] text-center">
+        <p className="text-[10px] text-gray-500 text-center">
           Your payment is securely processed. We never store your card details.
         </p>
       </div>

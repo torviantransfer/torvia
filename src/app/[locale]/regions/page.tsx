@@ -91,14 +91,14 @@ export default async function RegionsPage({
             name: `${(r as Record<string, string>)[`name_${locale}`] || r.name_en} Transfer`,
           })),
         }) }} />
-        <section className="relative py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #1c1c1e 0%, #111113 100%)" }}>
+        <section className="relative py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(249,115,22,0.15)" }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 text-center">
-            <p className="text-sm font-semibold text-orange-400 uppercase tracking-widest mb-4">{t("destinations")}</p>
-            <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-white">{t("title")}</h1>
-            <p className="text-[#86868b] text-lg max-w-2xl mx-auto">{t("subtitle")}</p>
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("destinations")}</p>
+            <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">{t("title")}</h1>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto">{t("subtitle")}</p>
           </div>
         </section>
 
@@ -115,8 +115,8 @@ export default async function RegionsPage({
                   <Link
                     key={region.id as string}
                     href={`/${slug}-transfer`}
-                    className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                    style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+                    className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                    style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
                   >
                     {img && (
                       <div className="relative aspect-[16/9] overflow-hidden">
@@ -129,7 +129,7 @@ export default async function RegionsPage({
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         {pricingData?.one_way_price && (
-                          <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-sm font-bold text-white" style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}>
+                          <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-900" style={{ backgroundColor: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", color: "#1d1d1f" }}>
                             <PriceTag amount={pricingData.one_way_price} />
                           </div>
                         )}
@@ -137,26 +137,26 @@ export default async function RegionsPage({
                     )}
                     <div className="p-5">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
-                          <MapPin size={16} className="text-orange-400" strokeWidth={1.5} />
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                          <MapPin size={16} className="text-blue-600" strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h2 className="font-bold text-white group-hover:text-orange-400 transition-colors">{name}</h2>
-                          <p className="text-[11px] text-[#555] font-medium">{t("fromAirport")}</p>
+                          <h2 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{name}</h2>
+                          <p className="text-[11px] text-gray-500 font-medium">{t("fromAirport")}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-[#86868b]">
+                      <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
-                          <Clock size={12} className="text-[#555]" />~{region.duration_minutes as number} {c("minutes")}
+                          <Clock size={12} className="text-gray-500" />~{region.duration_minutes as number} {c("minutes")}
                         </span>
-                        <span className="w-1 h-1 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.15)" }} />
+                        <span className="w-1 h-1 rounded-full" style={{ backgroundColor: "rgba(0,0,0,0.1)" }} />
                         <span>{region.distance_km as number} {c("km")}</span>
                       </div>
                     </div>
-                    <div className="px-5 py-3 text-[13px] font-medium text-[#86868b] flex items-center justify-between transition-colors group-hover:text-orange-400" style={{ backgroundColor: "rgba(255,255,255,0.02)", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                    <div className="px-5 py-3 text-[13px] font-medium text-gray-500 flex items-center justify-between transition-colors group-hover:text-blue-600" style={{ backgroundColor: "#F9FAFB", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                       {t("bookTransfer")}
-                      <ArrowUpRight size={14} className="text-[#555] group-hover:text-orange-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      <ArrowUpRight size={14} className="text-gray-500 group-hover:text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </div>
                   </Link>
                 );

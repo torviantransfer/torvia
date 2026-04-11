@@ -1,7 +1,7 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Inter } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import CookieConsent from "@/components/CookieConsent";
 import Script from "next/script";
@@ -10,6 +10,12 @@ import "../globals.css";
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-inter",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  weight: ["800", "900"],
+  variable: "--font-montserrat",
 });
 
 export function generateStaticParams() {
@@ -35,7 +41,7 @@ export default async function LocaleLayout({
   const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID;
 
   return (
-    <html lang={locale} className={`${inter.variable} h-full`} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${montserrat.variable} h-full`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {gaId && (
           <>
@@ -54,7 +60,7 @@ export default async function LocaleLayout({
           </Script>
         )}
       </head>
-      <body className="min-h-full flex flex-col font-sans antialiased" style={{ backgroundColor: '#111113', color: '#f5f5f7' }} suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans antialiased" style={{ backgroundColor: '#FFFFFF', color: '#1d1d1f' }} suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           {children}
           <CookieConsent />

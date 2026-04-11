@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import AccountSidebar from "@/components/account/AccountSidebar";
+import AccountTabs from "@/components/account/AccountTabs";
 
 export default async function AccountLayout({
   children,
@@ -22,12 +22,10 @@ export default async function AccountLayout({
   return (
     <>
       <Header />
-      <main className="flex-1 bg-[#0c0c0e] min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            <AccountSidebar locale={locale} userEmail={user.email ?? ""} userName={user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? ""} />
-            <div className="flex-1 min-w-0">{children}</div>
-          </div>
+      <main className="flex-1 bg-gray-50/50 min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-8 sm:pb-10" style={{ paddingTop: "88px" }}>
+          <AccountTabs locale={locale} />
+          {children}
         </div>
       </main>
       <Footer />

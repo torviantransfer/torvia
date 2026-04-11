@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { CalendarCheck, Clock, CheckCircle, XCircle, ArrowRight, MapPin } from "lucide-react";
 
 const t: Record<string, Record<string, string>> = {
-  title: { en: "Dashboard", tr: "Panel", de: "Dashboard", pl: "Panel", ru: "Панель" },
+  title: { en: "Overview", tr: "Genel Bakış", de: "Übersicht", pl: "Przegląd", ru: "Обзор" },
   welcome: { en: "Welcome back", tr: "Tekrar hoş geldiniz", de: "Willkommen zurück", pl: "Witamy ponownie", ru: "С возвращением" },
   upcoming: { en: "Upcoming Transfers", tr: "Yaklaşan Transferler", de: "Bevorstehende Transfers", pl: "Nadchodzące transfery", ru: "Предстоящие трансферы" },
   noUpcoming: { en: "No upcoming transfers", tr: "Yaklaşan transfer yok", de: "Keine bevorstehenden Transfers", pl: "Brak nadchodzących transferów", ru: "Нет предстоящих трансферов" },
@@ -66,59 +66,56 @@ export default async function AccountDashboard({
     r?.[`name_${locale}` as keyof typeof r] ?? r?.name_en ?? "";
 
   const stats = [
-    { label: t.total[locale] ?? t.total.en, value: totalCount, icon: CalendarCheck, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-    { label: t.active[locale] ?? t.active.en, value: activeCount, icon: Clock, color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" },
-    { label: t.completed[locale] ?? t.completed.en, value: completedCount, icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-    { label: t.cancelled[locale] ?? t.cancelled.en, value: cancelledCount, icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20" },
+    { label: t.total[locale] ?? t.total.en, value: totalCount, icon: CalendarCheck, color: "text-blue-500", bg: "bg-blue-50" },
+    { label: t.active[locale] ?? t.active.en, value: activeCount, icon: Clock, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: t.completed[locale] ?? t.completed.en, value: completedCount, icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: t.cancelled[locale] ?? t.cancelled.en, value: cancelledCount, icon: XCircle, color: "text-red-500", bg: "bg-red-50" },
   ];
 
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
-        <h1 className="text-2xl font-bold text-white">{t.title[locale] ?? t.title.en}</h1>
-        <p className="text-gray-400 text-sm mt-1">{t.welcome[locale] ?? t.welcome.en}, <span className="text-orange-400 font-medium">{userName}</span></p>
+      <div className="bg-white rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <h1 className="text-2xl font-bold text-gray-900">{t.title[locale] ?? t.title.en}</h1>
+        <p className="text-gray-500 text-sm mt-1">{t.welcome[locale] ?? t.welcome.en}, <span className="text-blue-600 font-medium">{userName}</span></p>
       </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className={`relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-5 backdrop-blur-sm overflow-hidden`}>
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.bg} border ${stat.border}`}>
+          <div key={stat.label} className="bg-white rounded-2xl p-5" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.bg}`}>
               <stat.icon size={18} className={stat.color} />
             </div>
-            <p className="text-3xl font-bold text-white">{stat.value}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1 font-medium">{stat.label}</p>
+            <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-1 font-medium">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Upcoming transfers */}
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <div className="px-6 py-4 border-b border-white/5">
+      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <h2 className="text-xs text-gray-400 uppercase tracking-[0.15em] font-semibold">{t.upcoming[locale] ?? t.upcoming.en}</h2>
         </div>
         {upcoming.length === 0 ? (
           <div className="p-6">
-            <p className="text-gray-500 text-sm">{t.noUpcoming[locale] ?? t.noUpcoming.en}</p>
+            <p className="text-gray-400 text-sm">{t.noUpcoming[locale] ?? t.noUpcoming.en}</p>
           </div>
         ) : (
-          <div className="divide-y divide-white/5">
+          <div className="divide-y" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
             {upcoming.map((r) => (
-              <div key={r.reservation_code} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors">
+              <div key={r.reservation_code} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50/50 transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-orange-500/20">
-                    <MapPin size={16} className="text-orange-400" />
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <MapPin size={16} className="text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">Antalya Airport → {regionName(r.regions)}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{new Date(r.pickup_datetime).toLocaleDateString(locale)} — {new Date(r.pickup_datetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p className="text-sm font-medium text-gray-900">Antalya Airport → {regionName(r.regions)}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{new Date(r.pickup_datetime).toLocaleDateString(locale)} — {new Date(r.pickup_datetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-orange-400 bg-orange-500/10 px-2.5 py-1 rounded-lg border border-orange-500/20">{r.reservation_code}</span>
+                <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">{r.reservation_code}</span>
               </div>
             ))}
           </div>
@@ -129,22 +126,21 @@ export default async function AccountDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <a
           href={`/${locale}/account/reservations`}
-          className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] hover:from-white/[0.10] hover:to-white/[0.05] border border-white/10 rounded-2xl p-5 flex items-center justify-between transition-all group overflow-hidden"
+          className="bg-white hover:bg-gray-50 rounded-2xl p-5 flex items-center justify-between transition-all group"
+          style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
         >
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <div className="flex items-center gap-3">
-            <CalendarCheck size={18} className="text-gray-400 group-hover:text-white transition-colors" />
-            <span className="text-sm text-gray-300 group-hover:text-white transition-colors font-medium">{t.viewAll[locale] ?? t.viewAll.en}</span>
+            <CalendarCheck size={18} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">{t.viewAll[locale] ?? t.viewAll.en}</span>
           </div>
-          <ArrowRight size={16} className="text-gray-600 group-hover:text-orange-400 transition-colors" />
+          <ArrowRight size={16} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
         </a>
         <a
           href={`/${locale}/booking`}
-          className="relative bg-gradient-to-r from-orange-500/10 to-orange-600/10 hover:from-orange-500/20 hover:to-orange-600/20 border border-orange-500/20 rounded-2xl p-5 flex items-center justify-between transition-all group overflow-hidden"
+          className="bg-blue-600 hover:bg-blue-700 rounded-2xl p-5 flex items-center justify-between transition-all group shadow-lg shadow-blue-600/20"
         >
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
-          <span className="text-sm text-orange-400 font-semibold">{t.bookNew[locale] ?? t.bookNew.en}</span>
-          <ArrowRight size={16} className="text-orange-500 group-hover:translate-x-1 transition-transform" />
+          <span className="text-sm text-white font-semibold">{t.bookNew[locale] ?? t.bookNew.en}</span>
+          <ArrowRight size={16} className="text-white/80 group-hover:translate-x-1 transition-transform" />
         </a>
       </div>
     </div>

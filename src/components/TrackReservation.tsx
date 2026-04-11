@@ -75,13 +75,13 @@ const statusConfig: Record<
   string,
   { icon: typeof CheckCircle; color: string; bg: string; border: string; textColor: string }
 > = {
-  pending: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", textColor: "text-amber-300" },
-  paid: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-300" },
-  driver_assigned: { icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", textColor: "text-blue-300" },
+  pending: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", textColor: "text-amber-600" },
+  paid: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-600" },
+  driver_assigned: { icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", textColor: "text-blue-600" },
   passenger_picked_up: { icon: Car, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30", textColor: "text-violet-300" },
-  completed: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-300" },
-  cancel_requested: { icon: AlertTriangle, color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30", textColor: "text-orange-300" },
-  cancelled: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", textColor: "text-red-300" },
+  completed: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-600" },
+  cancel_requested: { icon: AlertTriangle, color: "text-blue-600", bg: "bg-blue-500/10", border: "border-blue-600/30", textColor: "text-blue-600" },
+  cancelled: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", textColor: "text-red-500" },
 };
 
 const CANCELLABLE = ["pending", "paid", "driver_assigned"];
@@ -232,15 +232,15 @@ export default function TrackReservation() {
       {/* Search Form */}
       <form
         onSubmit={handleSubmit}
-        className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 sm:p-8 backdrop-blur-sm"
+        className="relative bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 backdrop-blur-sm"
       >
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center">
-            <Shield size={20} className="text-orange-400" />
+          <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+            <Shield size={20} className="text-blue-600" />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-lg">{t("title")}</h3>
+            <h3 className="text-gray-900 font-semibold text-lg">{t("title")}</h3>
             <p className="text-gray-500 text-xs">{t("subtitle")}</p>
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function TrackReservation() {
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="VL-ABC123"
               required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 tracking-wider font-mono text-lg transition-all"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600/50 tracking-wider font-mono text-lg transition-all"
             />
           </div>
           <div>
@@ -269,7 +269,7 @@ export default function TrackReservation() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600/50 transition-all"
             />
           </div>
           {error && (
@@ -281,7 +281,7 @@ export default function TrackReservation() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 shadow-lg shadow-orange-500/20"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-500/20"
           >
             <Search size={18} />
             {loading ? t("searching") : t("searchButton")}
@@ -293,7 +293,7 @@ export default function TrackReservation() {
       {cancelSuccess && (
         <div className="mt-4 flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 rounded-xl">
           <CheckCircle size={20} className="text-emerald-400 flex-shrink-0" />
-          <p className="text-emerald-300 text-sm font-medium">{t("cancelSuccess")}</p>
+          <p className="text-emerald-600 text-sm font-medium">{t("cancelSuccess")}</p>
         </div>
       )}
 
@@ -302,8 +302,8 @@ export default function TrackReservation() {
         <div className="mt-8 space-y-4">
 
           {/* Header Card */}
-          <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
             <div className="p-6">
               <div className="flex items-start justify-between flex-wrap gap-4">
@@ -311,7 +311,7 @@ export default function TrackReservation() {
                   <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-medium mb-1">
                     {t("reservationCode")}
                   </p>
-                  <p className="text-2xl sm:text-3xl font-bold text-white tracking-wider font-mono">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-wider font-mono">
                     {reservation.reservation_code}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -334,7 +334,7 @@ export default function TrackReservation() {
                     const isCurrent = i === currentStepIdx;
                     return (
                       <div key={step} className="flex-1 flex items-center gap-1">
-                        <div className={`flex-1 h-1.5 rounded-full transition-all ${isActive ? "bg-orange-500" : "bg-white/10"} ${isCurrent ? "bg-orange-400 animate-pulse" : ""}`} />
+                        <div className={`flex-1 h-1.5 rounded-full transition-all ${isActive ? "bg-blue-600" : "bg-gray-100"} ${isCurrent ? "bg-blue-400 animate-pulse" : ""}`} />
                       </div>
                     );
                   })}
@@ -343,29 +343,29 @@ export default function TrackReservation() {
             </div>
 
             {/* Price Bar */}
-            <div className="px-6 py-4 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
               <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t("total")}</span>
-              <span className="text-xl font-bold text-white">
+              <span className="text-xl font-bold text-gray-900">
                 €{totalEur.toFixed(2)}
               </span>
             </div>
           </div>
 
           {/* Transfer Details Card */}
-          <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
-            <div className="px-6 py-4 border-b border-white/5">
+          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
               <p className="text-xs text-gray-400 uppercase tracking-[0.15em] font-semibold">{t("transferDetails")}</p>
             </div>
 
             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* Route */}
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 bg-orange-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MapPin size={16} className="text-orange-400" />
+                <div className="w-9 h-9 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <MapPin size={16} className="text-blue-600" />
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("route")}</p>
-                  <p className="text-white font-medium text-sm">{regionName}</p>
+                  <p className="text-gray-900 font-medium text-sm">{regionName}</p>
                   <p className="text-[10px] text-gray-500 mt-0.5 flex items-center gap-1">
                     <ChevronRight size={10} />
                     {reservation.trip_type === "round_trip" ? t("roundTrip") : t("oneWay")}
@@ -380,13 +380,13 @@ export default function TrackReservation() {
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("pickup")}</p>
-                  <p className="text-white font-medium text-sm">
+                  <p className="text-gray-900 font-medium text-sm">
                     {formatDate(reservation.pickup_datetime)}
                   </p>
                   {reservation.return_datetime && (
                     <>
                       <p className="text-[10px] text-gray-500 mt-1.5 uppercase tracking-wider">{t("return")}</p>
-                      <p className="text-white text-sm">
+                      <p className="text-gray-900 text-sm">
                         {formatDate(reservation.return_datetime)}
                       </p>
                     </>
@@ -401,7 +401,7 @@ export default function TrackReservation() {
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("passengers")}</p>
-                  <p className="text-white font-medium text-sm">
+                  <p className="text-gray-900 font-medium text-sm">
                     {reservation.adults} {t("adults")}
                     {reservation.children > 0 && ` + ${reservation.children} ${t("children")}`}
                   </p>
@@ -419,7 +419,7 @@ export default function TrackReservation() {
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("vehicle")}</p>
-                    <p className="text-white font-medium text-sm">
+                    <p className="text-gray-900 font-medium text-sm">
                       {reservation.vehicle_categories.name}
                     </p>
                   </div>
@@ -434,7 +434,7 @@ export default function TrackReservation() {
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("hotel")}</p>
-                    <p className="text-white font-medium text-sm">{reservation.hotel_name}</p>
+                    <p className="text-gray-900 font-medium text-sm">{reservation.hotel_name}</p>
                     {reservation.hotel_address && (
                       <p className="text-[10px] text-gray-500 mt-0.5">{reservation.hotel_address}</p>
                     )}
@@ -450,7 +450,7 @@ export default function TrackReservation() {
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("flight")}</p>
-                    <p className="text-white font-medium text-sm">{reservation.flight_code}</p>
+                    <p className="text-gray-900 font-medium text-sm">{reservation.flight_code}</p>
                   </div>
                 </div>
               )}
@@ -463,7 +463,7 @@ export default function TrackReservation() {
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("extras")}</p>
-                    <p className="text-white text-sm font-medium">{t("childSeat")}</p>
+                    <p className="text-gray-900 text-sm font-medium">{t("childSeat")}</p>
                   </div>
                 </div>
               )}
@@ -472,8 +472,8 @@ export default function TrackReservation() {
 
           {/* Driver Info Card */}
           {reservation.driver_assignments && reservation.driver_assignments.length > 0 && (
-            <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
-              <div className="px-6 py-4 border-b border-white/5">
+            <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
+              <div className="px-6 py-4 border-b border-gray-200">
                 <p className="text-xs text-gray-400 uppercase tracking-[0.15em] font-semibold">{t("driverInfo")}</p>
               </div>
 
@@ -493,11 +493,11 @@ export default function TrackReservation() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                           <div>
                             <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("driverName")}</p>
-                            <p className="text-white font-semibold">{da.drivers?.full_name}</p>
+                            <p className="text-gray-900 font-semibold">{da.drivers?.full_name}</p>
                           </div>
                           <div>
                             <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("driverPhone")}</p>
-                            <a href={`tel:${da.drivers?.phone}`} className="text-orange-400 font-semibold hover:underline inline-flex items-center gap-1">
+                            <a href={`tel:${da.drivers?.phone}`} className="text-blue-600 font-semibold hover:underline inline-flex items-center gap-1">
                               <Phone size={12} />
                               {da.drivers?.phone}
                             </a>
@@ -505,19 +505,19 @@ export default function TrackReservation() {
                           {da.vehicles && (
                             <div>
                               <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("vehicle")}</p>
-                              <p className="text-white text-sm">{da.vehicles.brand} {da.vehicles.model} — {da.vehicles.plate_number}</p>
+                              <p className="text-gray-900 text-sm">{da.vehicles.brand} {da.vehicles.model} — {da.vehicles.plate_number}</p>
                             </div>
                           )}
                           {da.pickup_time && (
                             <div>
                               <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("pickupTime")}</p>
-                              <p className="text-orange-400 font-bold text-lg">{da.pickup_time}</p>
+                              <p className="text-blue-600 font-bold text-lg">{da.pickup_time}</p>
                             </div>
                           )}
                         </div>
                         {isReturn && da.pickup_time && (
-                          <div className="mt-3 p-2.5 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                            <p className="text-xs text-orange-300 font-medium">{t("earlyWarning")}</p>
+                          <div className="mt-3 p-2.5 bg-blue-500/10 rounded-lg border border-blue-600/20">
+                            <p className="text-xs text-blue-500 font-medium">{t("earlyWarning")}</p>
                           </div>
                         )}
                       </div>
@@ -528,7 +528,7 @@ export default function TrackReservation() {
           )}
 
           {/* Actions Card */}
-          <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
+          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
             <div className="p-6 flex flex-wrap gap-3">
               {reservation.status !== "cancelled" &&
                 reservation.status !== "cancel_requested" && (
@@ -536,7 +536,7 @@ export default function TrackReservation() {
                     href={`/api/voucher?code=${encodeURIComponent(reservation.reservation_code)}&locale=${locale}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all text-sm shadow-lg shadow-orange-500/20"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-sm shadow-lg shadow-blue-500/20"
                   >
                     <Download size={16} />
                     {t("downloadVoucher")}
@@ -571,7 +571,7 @@ export default function TrackReservation() {
                 <div className="p-5 bg-red-500/5 border border-red-500/15 rounded-xl space-y-4">
                   <div className="flex items-start gap-3">
                     <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-red-300 text-sm font-medium">{t("cancelConfirm")}</p>
+                    <p className="text-red-500 text-sm font-medium">{t("cancelConfirm")}</p>
                   </div>
                   <textarea
                     value={cancelReason}
@@ -579,7 +579,7 @@ export default function TrackReservation() {
                     placeholder={t("cancelReason")}
                     rows={2}
                     maxLength={500}
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none"
                   />
                   {cancelError && (
                     <p className="text-red-400 text-xs">{cancelError}</p>
@@ -594,7 +594,7 @@ export default function TrackReservation() {
                     </button>
                     <button
                       onClick={() => { setShowCancel(false); setCancelError(""); }}
-                      className="px-5 py-2 bg-white/5 border border-white/10 text-gray-300 font-medium rounded-lg hover:bg-white/10 transition-colors text-sm"
+                      className="px-5 py-2 bg-white border border-gray-200 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
                     >
                       {t("cancelBack")}
                     </button>
@@ -606,7 +606,7 @@ export default function TrackReservation() {
 
           {/* Review Card – only for completed reservations */}
           {reservation.status === "completed" && !reviewSuccess && (
-            <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
+            <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
@@ -614,7 +614,7 @@ export default function TrackReservation() {
                     <Star size={20} className="text-amber-400" />
                   </div>
                   <div>
-                    <p className="text-white font-semibold">{t("rateTitle")}</p>
+                    <p className="text-gray-900 font-semibold">{t("rateTitle")}</p>
                     <p className="text-gray-500 text-xs">{t("rateSubtitle")}</p>
                   </div>
                 </div>
@@ -634,7 +634,7 @@ export default function TrackReservation() {
                         className={`transition-colors ${
                           star <= (hoverRating || rating)
                             ? "text-amber-400 fill-amber-400"
-                            : "text-gray-600"
+                            : "text-gray-500"
                         }`}
                       />
                     </button>
@@ -647,7 +647,7 @@ export default function TrackReservation() {
                   placeholder={t("rateComment")}
                   rows={3}
                   maxLength={1000}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none"
                 />
 
                 {reviewError && (
@@ -657,7 +657,7 @@ export default function TrackReservation() {
                 <button
                   onClick={handleReview}
                   disabled={rating === 0 || submittingReview}
-                  className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all text-sm disabled:opacity-40 shadow-lg shadow-amber-500/20"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-sm disabled:opacity-40 shadow-lg shadow-blue-500/20"
                 >
                   {submittingReview ? t("rateSubmitting") : t("rateSubmit")}
                 </button>
@@ -669,7 +669,7 @@ export default function TrackReservation() {
           {reviewSuccess && (
             <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 rounded-xl">
               <CheckCircle size={20} className="text-emerald-400 flex-shrink-0" />
-              <p className="text-emerald-300 text-sm font-medium">{t("rateSuccess")}</p>
+              <p className="text-emerald-600 text-sm font-medium">{t("rateSuccess")}</p>
             </div>
           )}
 

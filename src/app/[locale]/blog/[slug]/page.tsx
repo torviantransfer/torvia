@@ -147,25 +147,25 @@ export default async function BlogPostPage({
           className="relative py-16 lg:py-20 overflow-hidden"
           style={{
             background:
-              "linear-gradient(180deg, #1c1c1e 0%, #111113 100%)",
+              "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
           }}
         >
           <div className="absolute inset-0">
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
-              style={{ backgroundColor: "rgba(249,115,22,0.15)" }}
+              style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
           <div className="relative max-w-3xl mx-auto px-4">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-[#86868b] hover:text-orange-400 transition-colors mb-8 text-sm"
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors mb-8 text-sm"
             >
               <ArrowLeft size={16} />
               {t("backToBlog")}
             </Link>
 
-            <div className="flex items-center gap-3 text-sm text-[#86868b] mb-5">
+            <div className="flex items-center gap-3 text-sm text-gray-500 mb-5">
               {post.published_at && (
                 <div className="flex items-center gap-2">
                   <Calendar size={14} />
@@ -185,7 +185,7 @@ export default async function BlogPostPage({
               </div>
             </div>
 
-            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-white leading-snug">
+            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 leading-snug">
               {title}
             </h1>
           </div>
@@ -213,18 +213,18 @@ export default async function BlogPostPage({
             <article
               className="
                 blog-content
-                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-12 [&_h1]:mb-4 [&_h1]:tracking-tight
-                [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:tracking-tight [&_h2]:border-l-2 [&_h2]:border-orange-400 [&_h2]:pl-4
-                [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-8 [&_h3]:mb-3
-                [&_h4]:text-base [&_h4]:font-semibold [&_h4]:text-white [&_h4]:mt-6 [&_h4]:mb-2
-                [&_p]:text-[#a1a1a6] [&_p]:leading-[1.85] [&_p]:mb-5
-                [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-[#a1a1a6] [&_li]:leading-relaxed [&_li]:pl-5 [&_li]:relative [&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-[10px] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-orange-400
-                [&_ol]:my-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol_li]:marker:text-orange-400 [&_ol_li]:marker:font-semibold
-                [&_blockquote]:my-6 [&_blockquote]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-orange-400/40 [&_blockquote]:text-[#86868b] [&_blockquote]:italic
-                [&_strong]:text-white [&_b]:text-white
-                [&_a]:text-orange-400 [&_a]:underline [&_a]:underline-offset-2
-                [&_hr]:my-10 [&_hr]:border-white/5
-                [&_table]:w-full [&_table]:my-6 [&_table]:text-sm [&_th]:text-left [&_th]:text-white [&_th]:pb-3 [&_th]:border-b [&_th]:border-white/10 [&_td]:text-[#a1a1a6] [&_td]:py-2.5 [&_td]:border-b [&_td]:border-white/5
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mt-12 [&_h1]:mb-4 [&_h1]:tracking-tight
+                [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:tracking-tight [&_h2]:border-l-2 [&_h2]:border-blue-500 [&_h2]:pl-4
+                [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-3
+                [&_h4]:text-base [&_h4]:font-semibold [&_h4]:text-gray-900 [&_h4]:mt-6 [&_h4]:mb-2
+                [&_p]:text-gray-600 [&_p]:leading-[1.85] [&_p]:mb-5
+                [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-gray-600 [&_li]:leading-relaxed [&_li]:pl-5 [&_li]:relative [&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-[10px] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-blue-500
+                [&_ol]:my-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol_li]:marker:text-blue-600 [&_ol_li]:marker:font-semibold
+                [&_blockquote]:my-6 [&_blockquote]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-blue-500/40 [&_blockquote]:text-gray-500 [&_blockquote]:italic
+                [&_strong]:text-gray-900 [&_b]:text-gray-900
+                [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2
+                [&_hr]:my-10 [&_hr]:border-gray-200
+                [&_table]:w-full [&_table]:my-6 [&_table]:text-sm [&_th]:text-left [&_th]:text-gray-900 [&_th]:pb-3 [&_th]:border-b [&_th]:border-gray-200 [&_td]:text-gray-600 [&_td]:py-2.5 [&_td]:border-b [&_td]:border-gray-200
                 [&_img]:rounded-xl [&_img]:my-6
               "
               dangerouslySetInnerHTML={{ __html: content }}
@@ -235,12 +235,12 @@ export default async function BlogPostPage({
         {/* Booking CTA */}
         <section className="py-12">
           <div className="max-w-3xl mx-auto px-4">
-            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(249,115,22,0.08) 100%)", border: "1px solid rgba(249,115,22,0.15)" }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-orange-400 mb-4" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
+            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.05) 0%, rgba(0,122,255,0.05) 100%)", border: "1px solid rgba(0,122,255,0.06)" }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-blue-600 mb-4" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
                 <ArrowRight size={12} />
                 {locale === "tr" ? "VIP Transfer" : "VIP Transfer"}
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold text-white mb-3">
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
                 {locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer"}
               </h3>
               <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
@@ -260,9 +260,9 @@ export default async function BlogPostPage({
 
         {/* Related posts */}
         {related && related.length > 0 && (
-          <section className="py-14 border-t border-white/5">
+          <section className="py-14 border-t border-gray-200">
             <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-white mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">
                 {t("relatedPosts")}
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
@@ -277,8 +277,8 @@ export default async function BlogPostPage({
                       href={`/blog/${rp.slug}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
-                        backgroundColor: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        backgroundColor: "rgba(0,0,0,0.03)",
+                        border: "1px solid rgba(0,0,0,0.06)",
                       }}
                     >
                       <div className="relative aspect-[16/9] overflow-hidden">
@@ -292,20 +292,20 @@ export default async function BlogPostPage({
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)" }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
-                              <ArrowRight size={20} className="text-orange-400" />
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                              <ArrowRight size={20} className="text-blue-600" />
                             </div>
                           </div>
                         )}
                       </div>
                       <div className="p-5">
-                        <h3 className="text-base font-semibold text-white group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
+                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
                           {rpTitle}
                         </h3>
                         {rpExcerpt && (
-                          <p className="text-sm text-[#86868b] line-clamp-2 mb-3">{rpExcerpt}...</p>
+                          <p className="text-sm text-gray-500 line-clamp-2 mb-3">{rpExcerpt}...</p>
                         )}
-                        <span className="inline-flex items-center gap-1 text-orange-400 text-sm font-medium">
+                        <span className="inline-flex items-center gap-1 text-blue-600 text-sm font-medium">
                           {t("readMore")}
                           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </span>
@@ -320,9 +320,9 @@ export default async function BlogPostPage({
 
         {/* Popular Transfers Cross-Link */}
         {popularRegions && popularRegions.length > 0 && (
-          <section className="py-16 border-t border-white/5">
+          <section className="py-16 border-t border-gray-200">
             <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-white mb-8">{t("popularTransfers")}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">{t("popularTransfers")}</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {popularRegions.map((r) => {
                   const rName = r[`name_${loc}`] || r.name_en;
@@ -331,12 +331,12 @@ export default async function BlogPostPage({
                       key={r.slug}
                       href={`/${r.slug}-transfer`}
                       className="group rounded-xl p-4 text-center transition-all hover:-translate-y-0.5"
-                      style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+                      style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
                     >
-                      <div className="w-9 h-9 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
-                        <MapPin size={14} className="text-orange-400" strokeWidth={1.5} />
+                      <div className="w-9 h-9 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                        <MapPin size={14} className="text-blue-600" strokeWidth={1.5} />
                       </div>
-                      <h3 className="text-sm font-semibold text-white group-hover:text-orange-400 transition-colors mb-1">{rName}</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">{rName}</h3>
                       <p className="text-[11px] text-gray-500 flex items-center justify-center gap-1">
                         <Clock size={10} /> ~{r.duration_minutes} min
                       </p>

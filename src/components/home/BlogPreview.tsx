@@ -47,18 +47,18 @@ export default async function BlogPreview({ locale }: { locale: string }) {
   if (!posts || posts.length === 0) return null;
 
   return (
-    <section className="py-24 lg:py-32" style={{ backgroundColor: "#000" }}>
+    <section className="py-24 lg:py-32" style={{ backgroundColor: "#FFFFFF" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
           <div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-3">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-gray-900 mb-3">
               {headings[loc]}
             </h2>
-            <p className="text-gray-400 text-lg">{subheadings[loc]}</p>
+            <p className="text-gray-500 text-lg">{subheadings[loc]}</p>
           </div>
           <Link
             href="/blog"
-            className="inline-flex items-center gap-1.5 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors group shrink-0"
+            className="inline-flex items-center gap-1.5 text-blue-600 text-sm font-medium hover:text-blue-700 transition-colors group shrink-0"
           >
             {viewAll[loc]}
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
@@ -85,8 +85,8 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                 href={`/blog/${post.slug}`}
                 className="group rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]"
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  backgroundColor: "#F5F5F7",
+                  border: "1px solid rgba(0,0,0,0.06)",
                 }}
               >
                 {/* Image */}
@@ -100,7 +100,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-500/20 to-blue-500/20">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500/10 to-emerald-500/10">
                       <BookOpen size={32} className="text-gray-600" />
                     </div>
                   )}
@@ -109,16 +109,16 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                 {/* Content */}
                 <div className="p-5">
                   {date && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
                       <Calendar size={12} />
                       <span>{date}</span>
                     </div>
                   )}
-                  <h3 className="text-white font-semibold text-base mb-2 group-hover:text-orange-400 transition-colors line-clamp-2">
+                  <h3 className="text-gray-900 font-semibold text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                     {post.title}
                   </h3>
                   {excerpt && (
-                    <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">
                       {excerpt}...
                     </p>
                   )}

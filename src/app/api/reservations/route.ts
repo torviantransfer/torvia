@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
 
     const {
       regionSlug,
+      categorySlug,
       tripType,
       pickupDate,
       pickupTime,
@@ -113,12 +114,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch pricing
-    const { data: pricing } = await supabase
+    // Fetch pricing — use categorySlug if provided for multi-vehicle support
+    let pricingQuery = supabase
       .from("pricing")
-      .select("*")
-      .eq("region_id", region.id)
-      .single();
+      .select("*, vehicle_categories!inner(slug)")
+      .eq("region_id", region.id);
+
+    if (categorySlug) {
+      pricingQuery = pricingQuery.eq("vehicle_categories.slug", categorySlug);
+    }
+
+    const { data: pricing } = await pricingQuery.limit(1).single();
 
     if (!pricing) {
       return NextResponse.json({ error: "Pricing not found" }, { status: 404 });

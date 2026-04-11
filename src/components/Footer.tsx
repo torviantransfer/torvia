@@ -62,39 +62,33 @@ export default function Footer() {
   }
 
   return (
-    <footer style={{ backgroundColor: "#000", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+    <footer style={{ backgroundColor: "#F5F5F7", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
       <div className="max-w-6xl mx-auto px-6 py-14">
         {/* Top: Logo + description */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <div className="max-w-sm">
-            <img
-              src="/images/logo.webp"
-              alt="TORVIAN Transfer"
-              width={200}
-              height={52}
-              style={{ height: "36px", width: "auto", maxWidth: "160px", objectFit: "contain", marginBottom: "12px" }}
-            />
-            <p className="text-gray-400 text-sm leading-relaxed">{t("description")}</p>
+            <span className="text-2xl font-black tracking-tight mb-3 inline-block" style={{ fontFamily: "var(--font-montserrat), sans-serif", color: "#10B981" }}>TORVIAN</span>
+            <p className="text-gray-500 text-sm leading-relaxed">{t("description")}</p>
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://instagram.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Instagram" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+            <a href="https://instagram.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Instagram" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-gray-900" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
             </a>
-            <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-white" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+            <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-gray-900" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-500 hover:text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-600 hover:text-emerald-700" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
               <MessageCircle size={18} aria-hidden="true" />
             </a>
           </div>
         </div>
 
         {/* Newsletter */}
-        <div className="mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h3 className="text-white font-semibold text-base mb-1">{t("newsletterTitle")}</h3>
-              <p className="text-gray-400 text-sm">{t("newsletterSubtitle")}</p>
+              <h3 className="text-gray-900 font-semibold text-base mb-1">{t("newsletterTitle")}</h3>
+              <p className="text-gray-500 text-sm">{t("newsletterSubtitle")}</p>
             </div>
             <form onSubmit={handleNewsletterSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[360px]">
               <input
@@ -104,13 +98,13 @@ export default function Footer() {
                 placeholder={t("newsletterPlaceholder")}
                 required
                 disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-700 disabled:opacity-50 transition-colors"
+                className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50 transition-colors"
               />
               <button
                 type="submit"
                 disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-                style={{ backgroundColor: "#C2410C" }}
+                style={{ backgroundColor: "#007AFF" }}
               >
                 {newsletterStatus === "loading" ? "..." : t("newsletterButton")}
               </button>
@@ -131,7 +125,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-10 md:mb-12">
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-5">{t("company")}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("company")}</h3>
             <ul className="space-y-3">
               {[
                 { href: "/about", label: t("about") },
@@ -140,7 +134,7 @@ export default function Footer() {
                 { href: "/faq", label: t("faq") },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href={item.href} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -150,11 +144,11 @@ export default function Footer() {
 
           {/* Popular Destinations */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-5">{t("destinations")}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("destinations")}</h3>
             <ul className="space-y-3">
               {popularRegions.slice(0, 8).map((region) => (
                 <li key={region.slug}>
-                  <Link href={`/${region.slug}-transfer`} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href={`/${region.slug}-transfer`} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                     {region[`name_${locale}`] || region.name_en}
                   </Link>
                 </li>
@@ -164,7 +158,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-5">{t("legal")}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("legal")}</h3>
             <ul className="space-y-3">
               {[
                 { href: "/privacy", label: t("privacy") },
@@ -174,7 +168,7 @@ export default function Footer() {
                 { href: "/kvkk", label: t("kvkk") },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-gray-400 hover:text-white text-sm transition-colors">
+                  <Link href={item.href} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -184,16 +178,16 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-sm font-semibold text-white mb-5">{t("support")}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+908508401327" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="tel:+908508401327" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
                   <Phone size={14} />
                   0850 840 1327
                 </a>
               </li>
               <li>
-                <a href="mailto:torviantransfer@gmail.com" className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors">
+                <a href="mailto:torviantransfer@gmail.com" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
                   <Mail size={14} />
                   torviantransfer@gmail.com
                 </a>
@@ -201,13 +195,16 @@ export default function Footer() {
               <li>
                 <a
                   href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors"
                 >
                   <MessageCircle size={14} />
                   WhatsApp
                 </a>
               </li>
               <li className="pt-1">
-                <div className="flex items-start gap-2 text-gray-400 text-sm">
+                <div className="flex items-start gap-2 text-gray-500 text-sm">
                   <MapPin size={14} className="flex-shrink-0 mt-0.5" />
                   <span>Kemerağzı Mah. Antalya Havalimanı Dış Hatlar, 07230 Muratpaşa/Antalya</span>
                 </div>
@@ -217,11 +214,11 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-gray-400 text-xs">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+          <p className="text-gray-500 text-xs">
             © {currentYear} TORVIAN Transfer. {t("allRightsReserved")}
           </p>
-          <p className="text-gray-400 text-xs">
+          <p className="text-gray-500 text-xs">
             {t("tagline")}
           </p>
         </div>

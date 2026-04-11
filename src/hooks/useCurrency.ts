@@ -51,12 +51,12 @@ export function useCurrency() {
       return others
         .map((c) => {
           const symbol = currencySymbols[c];
-          if (c === "USD") return `≈ ${symbol}${usdAmount.toFixed(2)}`;
+          if (c === "USD") return `${symbol}${usdAmount.toFixed(2)}`;
           const rate = exchangeRates[c];
           if (!rate) return "";
           const converted = usdAmount * rate;
           const d = c === "TRY" ? 0 : 2;
-          return `≈ ${symbol}${converted.toFixed(d)}`;
+          return `${symbol}${converted.toFixed(d)}`;
         })
         .filter(Boolean);
     },

@@ -50,13 +50,13 @@ const t: Record<string, Record<string, string>> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  paid: "bg-green-500/15 text-green-400 border-green-500/20",
-  driver_assigned: "bg-blue-500/15 text-blue-400 border-blue-500/20",
-  passenger_picked_up: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-  completed: "bg-gray-500/15 text-gray-400 border-gray-500/20",
-  cancelled: "bg-red-500/15 text-red-400 border-red-500/20",
-  cancel_requested: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-  pending: "bg-yellow-500/15 text-yellow-400 border-yellow-500/20",
+  paid: "bg-green-50 text-green-600 border-green-200",
+  driver_assigned: "bg-blue-50 text-blue-600 border-blue-200",
+  passenger_picked_up: "bg-purple-50 text-purple-600 border-purple-200",
+  completed: "bg-gray-100 text-gray-500 border-gray-200",
+  cancelled: "bg-red-50 text-red-600 border-red-200",
+  cancel_requested: "bg-amber-50 text-amber-600 border-amber-200",
+  pending: "bg-yellow-50 text-yellow-600 border-yellow-200",
 };
 
 const CANCELLABLE = ["pending", "paid", "driver_assigned"];
@@ -94,10 +94,12 @@ export default function ReservationsList({
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [cancelledIds, setCancelledIds] = useState<Set<string>>(new Set());
+  const [cancelError, setCancelError] = useState("");
 
   const handleCancel = async () => {
     if (!cancelId) return;
     setCancelling(true);
+    setCancelError("");
     try {
       const res = await fetch("/api/reservations/cancel", {
         method: "POST",
@@ -108,8 +110,15 @@ export default function ReservationsList({
         setCancelledIds((prev) => new Set(prev).add(cancelId));
         setCancelId(null);
         setCancelReason("");
+        // Refresh the page to get updated data from server
+        window.location.reload();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setCancelError(data.error || "Failed to cancel");
       }
-    } catch { /* ignore */ }
+    } catch {
+      setCancelError("Network error");
+    }
     setCancelling(false);
   };
 
@@ -140,17 +149,15 @@ export default function ReservationsList({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+      <div className="bg-white rounded-2xl p-6 overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h1 className="text-2xl font-bold text-white">{t.title[locale] ?? t.title.en}</h1>
-          <span className="text-xs text-gray-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 font-mono">{filtered.length} / {reservations.length}</span>
+          <h1 className="text-2xl font-bold text-gray-900">{t.title[locale] ?? t.title.en}</h1>
+          <span className="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200 font-mono">{filtered.length} / {reservations.length}</span>
         </div>
       </div>
 
       {/* Search + Filters */}
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-5 backdrop-blur-sm overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="bg-white rounded-2xl p-5 overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -159,7 +166,8 @@ export default function ReservationsList({
               placeholder={t.search[locale] ?? t.search.en}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all"
+              className="w-full bg-gray-50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+              style={{ border: "1px solid rgba(0,0,0,0.08)" }}
             />
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -170,8 +178,8 @@ export default function ReservationsList({
                 onClick={() => setStatusFilter(s)}
                 className={`text-xs px-3.5 py-2 rounded-xl border transition-all font-medium ${
                   statusFilter === s
-                    ? "bg-orange-500/15 border-orange-500/30 text-orange-400"
-                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                    ? "bg-blue-50 border-blue-200 text-blue-600"
+                    : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                 }`}
               >
                 {t[s]?.[locale] ?? t[s]?.en ?? s}
@@ -183,8 +191,7 @@ export default function ReservationsList({
 
       {/* Reservation Cards */}
       {filtered.length === 0 ? (
-        <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-12 text-center backdrop-blur-sm overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="bg-white rounded-2xl p-12 text-center" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           <p className="text-gray-500 text-sm">{t.noResults[locale] ?? t.noResults.en}</p>
         </div>
       ) : (
@@ -194,9 +201,9 @@ export default function ReservationsList({
             return (
               <div
                 key={r.id}
-                className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden transition-all hover:border-white/15 backdrop-blur-sm"
+                className="bg-white rounded-2xl overflow-hidden transition-all hover:shadow-md"
+                style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
               >
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 {/* Summary row */}
                 <button
                   onClick={() => setExpandedId(expanded ? null : r.id)}
@@ -209,7 +216,7 @@ export default function ReservationsList({
 
                   {/* Route */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-medium text-gray-900 truncate">
                       Antalya Airport → {regionName(r.regions)}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -219,7 +226,7 @@ export default function ReservationsList({
 
                   {/* Code + Price */}
                   <div className="hidden sm:flex flex-col items-end shrink-0">
-                    <span className="text-xs font-mono text-orange-400">{r.reservation_code}</span>
+                    <span className="text-xs font-mono text-blue-600">{r.reservation_code}</span>
                     <span className="text-xs text-gray-500">
                       {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
                     </span>
@@ -235,11 +242,11 @@ export default function ReservationsList({
 
                 {/* Expanded details */}
                 {expanded && (
-                  <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
+                  <div className="px-5 pb-5 border-t border-gray-200 pt-4 space-y-4">
                     {/* Mobile: code + price */}
                     <div className="sm:hidden flex items-center justify-between">
-                      <span className="text-xs font-mono text-orange-400">{r.reservation_code}</span>
-                      <span className="text-sm font-bold text-white">
+                      <span className="text-xs font-mono text-blue-600">{r.reservation_code}</span>
+                      <span className="text-sm font-bold text-gray-900">
                         {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
                       </span>
                     </div>
@@ -247,9 +254,9 @@ export default function ReservationsList({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                       {/* Trip type */}
                       <div className="flex items-center gap-2 text-gray-400">
-                        <MapPin size={14} className="text-orange-400 shrink-0" />
+                        <MapPin size={14} className="text-blue-600 shrink-0" />
                         <span className="text-gray-500">{t.tripType[locale] ?? t.tripType.en}:</span>
-                        <span className="text-white">
+                        <span className="text-gray-900">
                           {r.trip_type === "round_trip"
                             ? (t.roundTrip[locale] ?? t.roundTrip.en)
                             : (t.oneWay[locale] ?? t.oneWay.en)}
@@ -258,9 +265,9 @@ export default function ReservationsList({
 
                       {/* Pickup datetime */}
                       <div className="flex items-center gap-2 text-gray-400">
-                        <Calendar size={14} className="text-orange-400 shrink-0" />
+                        <Calendar size={14} className="text-blue-600 shrink-0" />
                         <span className="text-gray-500">{t.pickup[locale] ?? t.pickup.en}:</span>
-                        <span className="text-white">{formatDate(r.pickup_datetime)} {formatTime(r.pickup_datetime)}</span>
+                        <span className="text-gray-900">{formatDate(r.pickup_datetime)} {formatTime(r.pickup_datetime)}</span>
                       </div>
 
                       {/* Return datetime */}
@@ -268,40 +275,40 @@ export default function ReservationsList({
                         <div className="flex items-center gap-2 text-gray-400">
                           <Calendar size={14} className="text-blue-400 shrink-0" />
                           <span className="text-gray-500">{t.returnLabel[locale] ?? t.returnLabel.en}:</span>
-                          <span className="text-white">{formatDate(r.return_datetime)} {formatTime(r.return_datetime)}</span>
+                          <span className="text-gray-900">{formatDate(r.return_datetime)} {formatTime(r.return_datetime)}</span>
                         </div>
                       )}
 
                       {/* Passengers */}
                       <div className="flex items-center gap-2 text-gray-400">
-                        <Users size={14} className="text-orange-400 shrink-0" />
+                        <Users size={14} className="text-blue-600 shrink-0" />
                         <span className="text-gray-500">{t.passengers[locale] ?? t.passengers.en}:</span>
-                        <span className="text-white">{r.adults} {t.adults[locale] ?? t.adults.en}{r.children > 0 ? ` + ${r.children} ${t.children[locale] ?? t.children.en}` : ""}</span>
+                        <span className="text-gray-900">{r.adults} {t.adults[locale] ?? t.adults.en}{r.children > 0 ? ` + ${r.children} ${t.children[locale] ?? t.children.en}` : ""}</span>
                       </div>
 
                       {/* Vehicle */}
                       {r.vehicle_categories?.name && (
                         <div className="flex items-center gap-2 text-gray-400">
-                          <Car size={14} className="text-orange-400 shrink-0" />
+                          <Car size={14} className="text-blue-600 shrink-0" />
                           <span className="text-gray-500">{t.vehicle[locale] ?? t.vehicle.en}:</span>
-                          <span className="text-white">{r.vehicle_categories.name}</span>
+                          <span className="text-gray-900">{r.vehicle_categories.name}</span>
                         </div>
                       )}
 
                       {/* Hotel */}
                       {r.hotel_name && (
                         <div className="flex items-center gap-2 text-gray-400">
-                          <Luggage size={14} className="text-orange-400 shrink-0" />
+                          <Luggage size={14} className="text-blue-600 shrink-0" />
                           <span className="text-gray-500">{t.hotel[locale] ?? t.hotel.en}:</span>
-                          <span className="text-white">{r.hotel_name}</span>
+                          <span className="text-gray-900">{r.hotel_name}</span>
                         </div>
                       )}
 
                       {/* Total (desktop) */}
                       <div className="hidden sm:flex items-center gap-2 text-gray-400">
-                        <FileText size={14} className="text-orange-400 shrink-0" />
+                        <FileText size={14} className="text-blue-600 shrink-0" />
                         <span className="text-gray-500">{t.total[locale] ?? t.total.en}:</span>
-                        <span className="text-white font-semibold">
+                        <span className="text-gray-900 font-semibold">
                           {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
                         </span>
                       </div>
@@ -315,7 +322,7 @@ export default function ReservationsList({
                           href={`/api/voucher?code=${r.reservation_code}&locale=${locale}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-orange-500/20"
+                          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-600/20"
                         >
                           <Download size={14} />
                           {t.downloadVoucher[locale] ?? t.downloadVoucher.en}
@@ -326,7 +333,7 @@ export default function ReservationsList({
                       {CANCELLABLE.includes(cancelledIds.has(r.id) ? "" : r.status) && (
                         <button
                           onClick={() => setCancelId(r.id)}
-                          className="inline-flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-semibold px-5 py-2.5 rounded-xl transition-all"
+                          className="inline-flex items-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 text-xs font-semibold px-5 py-2.5 rounded-xl transition-all"
                         >
                           <XCircle size={14} />
                           {t.cancelBtn[locale] ?? t.cancelBtn.en}
@@ -335,7 +342,7 @@ export default function ReservationsList({
 
                       {/* Cancel requested badge */}
                       {(r.status === "cancel_requested" || cancelledIds.has(r.id)) && (
-                        <span className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium px-3 py-1.5 rounded-lg">
+                        <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-600 text-xs font-medium px-3 py-1.5 rounded-lg">
                           {t.cancelSuccess[locale] ?? t.cancelSuccess.en}
                         </span>
                       )}
@@ -350,27 +357,32 @@ export default function ReservationsList({
 
       {/* Cancel Modal */}
       {cancelId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-          <div className="relative bg-gradient-to-b from-[#1e1e22] to-[#16161a] border border-white/10 rounded-2xl w-full max-w-md p-6 sm:p-8 space-y-5 overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 sm:p-8 space-y-5 overflow-hidden shadow-2xl" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white">{t.cancelTitle[locale] ?? t.cancelTitle.en}</h3>
-              <button onClick={() => { setCancelId(null); setCancelReason(""); }} className="text-gray-500 hover:text-white">
+              <h3 className="text-lg font-bold text-gray-900">{t.cancelTitle[locale] ?? t.cancelTitle.en}</h3>
+              <button onClick={() => { setCancelId(null); setCancelReason(""); setCancelError(""); }} className="text-gray-500 hover:text-gray-900">
                 <X size={18} />
               </button>
             </div>
-            <p className="text-sm text-gray-400">{t.cancelConfirm[locale] ?? t.cancelConfirm.en}</p>
+            <p className="text-sm text-gray-500">{t.cancelConfirm[locale] ?? t.cancelConfirm.en}</p>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder={t.cancelReason[locale] ?? t.cancelReason.en}
               rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none transition-all"
+              className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none transition-all"
+              style={{ border: "1px solid rgba(0,0,0,0.08)" }}
             />
+            {cancelError && (
+              <div className="text-red-500 text-xs bg-red-50 px-3 py-2 rounded-lg" style={{ border: "1px solid rgba(239,68,68,0.15)" }}>
+                {cancelError}
+              </div>
+            )}
             <div className="flex items-center gap-3 justify-end">
               <button
-                onClick={() => { setCancelId(null); setCancelReason(""); }}
-                className="text-sm text-gray-400 hover:text-white px-4 py-2 transition-colors"
+                onClick={() => { setCancelId(null); setCancelReason(""); setCancelError(""); }}
+                className="text-sm text-gray-500 hover:text-gray-900 px-4 py-2 transition-colors"
               >
                 {t.all[locale] === "Tümü" ? "Vazgeç" : "Close"}
               </button>

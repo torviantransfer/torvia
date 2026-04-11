@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
 
 export async function generateMetadata({
@@ -35,10 +36,42 @@ export default async function BookingPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
 
+  const hasRegion = !!sp.region;
+
   return (
     <>
-      <Header />
-      <main className="flex-1" style={{ backgroundColor: "#111113" }}>
+      {/* Header + Hero only when no region selected */}
+      {!hasRegion && (
+        <>
+          <Header />
+          <section className="relative -mt-16 min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center">
+            <Image
+              src="/images/havaalani-vip-transfer.jpg"
+              alt="Antalya Airport VIP Transfer"
+              fill
+              className="object-cover"
+              priority
+              quality={80}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-28 pb-10">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+                  {t("title")}
+                </h1>
+                <p className="text-base sm:text-lg text-white/85 max-w-2xl mx-auto drop-shadow">
+                  {t("subtitle")}
+                </p>
+              </div>
+              <div className="max-w-5xl mx-auto">
+                <BookingWizardClient />
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      <main className="flex-1" style={{ backgroundColor: "#FFFFFF" }}>
         {/* Structured data */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
@@ -49,26 +82,30 @@ export default async function BookingPage({
           areaServed: { "@type": "Place", name: "Antalya, Turkey" },
           serviceType: "Airport Transfer",
         }) }} />
-        <BookingWizardClient
-          initialRegion={sp.region}
-          initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
-          initialDate={sp.date}
-          initialTime={sp.time}
-          initialReturnDate={sp.returnDate}
-          initialReturnTime={sp.returnTime}
-          initialFlight={sp.flight}
-          initialAdults={sp.adults ? parseInt(sp.adults) : 2}
-          initialChildren={sp.children ? parseInt(sp.children) : 0}
-          initialLuggage={sp.luggage ? parseInt(sp.luggage) : 2}
-        />
+
+        {/* When region IS selected, full-page wizard (no header/hero) */}
+        {hasRegion && (
+          <BookingWizardClient
+            initialRegion={sp.region}
+            initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
+            initialDate={sp.date}
+            initialTime={sp.time}
+            initialReturnDate={sp.returnDate}
+            initialReturnTime={sp.returnTime}
+            initialFlight={sp.flight}
+            initialAdults={sp.adults ? parseInt(sp.adults) : 2}
+            initialChildren={sp.children ? parseInt(sp.children) : 0}
+            initialLuggage={sp.luggage ? parseInt(sp.luggage) : 2}
+          />
+        )}
 
         {/* SEO Trust Section */}
-        <section className="py-16 border-t border-white/5">
+        <section className="py-16 border-t border-gray-200">
           <div className="max-w-5xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-white text-center mb-3">
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
               {t("seoHeading")}
             </h2>
-            <p className="text-[#86868b] text-center max-w-2xl mx-auto mb-10">
+            <p className="text-gray-500 text-center max-w-2xl mx-auto mb-10">
               {t("seoSubheading")}
             </p>
 
@@ -85,25 +122,25 @@ export default async function BookingPage({
                   key={i}
                   className="rounded-xl p-5 transition-all"
                   style={{
-                    backgroundColor: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid rgba(0,0,0,0.06)",
                   }}
                 >
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-orange-400 mb-3"
-                    style={{ backgroundColor: "rgba(249,115,22,0.1)" }}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-blue-600 mb-3"
+                    style={{ backgroundColor: "rgba(0,122,255,0.08)" }}
                   >
                     {item.icon}
                   </div>
-                  <h3 className="text-sm font-semibold text-white mb-1">{item.title}</h3>
-                  <p className="text-xs text-[#86868b] leading-relaxed">{item.desc}</p>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1">{item.title}</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
 
             {/* SEO FAQ mini */}
             <div className="max-w-3xl mx-auto">
-              <h3 className="text-lg font-bold text-white mb-5 text-center">
+              <h3 className="text-lg font-bold text-gray-900 mb-5 text-center">
                 {t("seoFaqTitle")}
               </h3>
               <div className="space-y-3">
@@ -112,15 +149,15 @@ export default async function BookingPage({
                     key={n}
                     className="group rounded-xl overflow-hidden"
                     style={{
-                      backgroundColor: "rgba(255,255,255,0.03)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid rgba(0,0,0,0.06)",
                     }}
                   >
-                    <summary className="px-5 py-4 text-sm font-medium text-white cursor-pointer list-none flex items-center justify-between hover:text-orange-400 transition-colors">
+                    <summary className="px-5 py-4 text-sm font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between hover:text-blue-600 transition-colors">
                       {t(`seoFaq${n}Q`)}
-                      <span className="text-[#555] group-open:rotate-45 transition-transform text-lg">+</span>
+                      <span className="text-gray-500 group-open:rotate-45 transition-transform text-lg">+</span>
                     </summary>
-                    <div className="px-5 pb-4 text-sm text-[#86868b] leading-relaxed">
+                    <div className="px-5 pb-4 text-sm text-gray-500 leading-relaxed">
                       {t(`seoFaq${n}A`)}
                     </div>
                   </details>
@@ -130,7 +167,7 @@ export default async function BookingPage({
 
             {/* SEO text block */}
             <div className="mt-14 max-w-3xl mx-auto">
-              <p className="text-sm text-[#555] leading-relaxed text-center">
+              <p className="text-sm text-gray-500 leading-relaxed text-center">
                 {t("seoTextBlock")}
               </p>
             </div>

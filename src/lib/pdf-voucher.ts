@@ -1,4 +1,6 @@
 ﻿import { jsPDF } from "jspdf";
+import fs from "fs";
+import path from "path";
 import type { ReservationEmailData } from "./email";
 
 // ─── i18n labels for PDF ───
@@ -217,8 +219,20 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   const contentW = pw - margin * 2; // 170
   const rightEdge = pw - margin;
 
-  // Colors
-  const orange = [249, 115, 22] as const;
+  // ─── Load & register Inter font for Unicode (Turkish chars etc.) ───
+  const fontsDir = path.join(process.cwd(), "public", "fonts");
+  const interRegularData = fs.readFileSync(path.join(fontsDir, "Inter-Regular.ttf"));
+  const interBoldData = fs.readFileSync(path.join(fontsDir, "Inter-Bold.ttf"));
+  const interRegularBase64 = interRegularData.toString("base64");
+  const interBoldBase64 = interBoldData.toString("base64");
+
+  doc.addFileToVFS("Inter-Regular.ttf", interRegularBase64);
+  doc.addFont("Inter-Regular.ttf", "Inter", "normal");
+  doc.addFileToVFS("Inter-Bold.ttf", interBoldBase64);
+  doc.addFont("Inter-Bold.ttf", "Inter", "bold");
+
+  // Colors — brand blue theme
+  const blue = [0, 122, 255] as const;
   const darkText = [17, 24, 39] as const;
   const midGray = [107, 114, 128] as const;
   const lightGray = [156, 163, 175] as const;
@@ -229,18 +243,18 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   let y = 0;
 
   // ─── HEADER STRIPE ───
-  doc.setFillColor(...orange);
+  doc.setFillColor(...blue);
   doc.rect(0, 0, pw, 4, "F");
 
   y = 18;
   doc.setTextColor(...darkText);
   doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text("TORVIAN", margin, y);
 
   doc.setTextColor(...midGray);
   doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   doc.text("VIP AIRPORT TRANSFER", margin, y + 6);
 
   // Status badge (right side)
@@ -251,7 +265,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.roundedRect(rightEdge - 50, y - 8, 50, 10, 2, 2, "S");
   doc.setTextColor(...green);
   doc.setFontSize(7.5);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(statusText, rightEdge - 25, y - 2, { align: "center" });
 
   y += 14;
@@ -265,23 +279,23 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   // ─── RESERVATION CODE ───
   doc.setTextColor(...lightGray);
   doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   doc.text(t(loc, "code").toUpperCase(), margin, y);
 
-  doc.setTextColor(...orange);
+  doc.setTextColor(...blue);
   doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(data.reservationCode, margin, y + 10);
 
   // Customer name (right aligned)
   doc.setTextColor(...lightGray);
   doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   doc.text(t(loc, "customer").toUpperCase(), rightEdge, y, { align: "right" });
 
   doc.setTextColor(...darkText);
   doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(`${data.firstName} ${data.lastName}`, rightEdge, y + 10, { align: "right" });
 
   y += 20;
@@ -292,21 +306,21 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   doc.setTextColor(...midGray);
   doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   doc.text("ANTALYA AIRPORT (AYT)", margin + 6, y + 7);
 
   // Arrow
-  doc.setFillColor(...orange);
+  doc.setFillColor(...blue);
   const arrowX = pw / 2;
   doc.circle(arrowX, y + 9, 3.5, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(">", arrowX, y + 10.5, { align: "center" });
 
   doc.setTextColor(...darkText);
   doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   const destMaxW = contentW / 2 - 16;
   const destLines = doc.splitTextToSize(data.regionName.toUpperCase(), destMaxW);
   doc.text(destLines, rightEdge - 6, y + (destLines.length > 1 ? 6 : 8), { align: "right" });
@@ -314,7 +328,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   // Trip type below route
   doc.setTextColor(...lightGray);
   doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
   doc.text(tripLabel.toUpperCase(), margin + 6, y + 14);
 
@@ -366,12 +380,12 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
     if (leftCol[i]) {
       doc.setTextColor(...lightGray);
       doc.setFontSize(7.5);
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Inter", "normal");
       doc.text(leftCol[i].label.toUpperCase(), col1, ry + 5);
 
       doc.setTextColor(...darkText);
       doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
+      doc.setFont("Inter", "bold");
       doc.text(leftCol[i].value, col1, ry + 11);
     }
 
@@ -379,12 +393,12 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
     if (rightCol[i]) {
       doc.setTextColor(...lightGray);
       doc.setFontSize(7.5);
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Inter", "normal");
       doc.text(rightCol[i].label.toUpperCase(), col2, ry + 5);
 
       doc.setTextColor(...darkText);
       doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
+      doc.setFont("Inter", "bold");
       doc.text(rightCol[i].value, col2, ry + 11);
     }
   }
@@ -408,7 +422,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   // Price section (left)
   doc.setTextColor(...darkText);
   doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(t(loc, "priceSummary"), margin, y + 4);
 
   y += 10;
@@ -423,12 +437,12 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   for (const line of priceLines) {
     doc.setTextColor(...midGray);
     doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
+    doc.setFont("Inter", "normal");
     doc.text(line.label, margin, y);
 
     if (line.isGreen) doc.setTextColor(...green);
     else doc.setTextColor(...darkText);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("Inter", "bold");
     doc.text(line.value, margin + priceColW - 10, y, { align: "right" });
     y += 6.5;
   }
@@ -441,12 +455,12 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   doc.setTextColor(...darkText);
   doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(t(loc, "total"), margin, y);
 
-  doc.setTextColor(...orange);
+  doc.setTextColor(...blue);
   doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(`€${data.totalEur.toFixed(2)}`, margin + priceColW - 10, y + 1, { align: "right" });
 
   const priceEndY = y + 4;
@@ -472,7 +486,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
       doc.setTextColor(...midGray);
       doc.setFontSize(6.5);
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Inter", "normal");
       doc.text(t(loc, "qrLabel"), qrX + qrSize / 2, qrY + qrSize + 6, { align: "center" });
     } catch {
       // skip
@@ -489,12 +503,12 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   doc.setTextColor(161, 98, 7);
   doc.setFontSize(7.5);
-  doc.setFont("helvetica", "bold");
+  doc.setFont("Inter", "bold");
   doc.text(t(loc, "important"), margin + 5, y + 6);
 
   doc.setTextColor(120, 53, 15);
   doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   const infoItems = [t(loc, "imp1"), t(loc, "imp2"), t(loc, "imp3"), t(loc, "imp4"), t(loc, "imp5")];
   let iy = y + 12;
   for (const item of infoItems) {
@@ -512,7 +526,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   doc.setTextColor(...lightGray);
   doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
+  doc.setFont("Inter", "normal");
   doc.text(t(loc, "footer"), pw / 2, y, { align: "center" });
   y += 4;
   doc.text(t(loc, "contact"), pw / 2, y, { align: "center" });
@@ -522,7 +536,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   // Bottom orange stripe
   const pageH = doc.internal.pageSize.getHeight();
-  doc.setFillColor(...orange);
+  doc.setFillColor(...blue);
   doc.rect(0, pageH - 3, pw, 3, "F");
 
   return Buffer.from(doc.output("arraybuffer"));

@@ -10,8 +10,8 @@ export default function GlobalError({
     <html lang="en">
       <body
         style={{
-          backgroundColor: "#111113",
-          color: "#f5f5f7",
+          backgroundColor: "#FFFFFF",
+          color: "#1d1d1f",
           fontFamily: "system-ui, -apple-system, sans-serif",
           margin: 0,
           minHeight: "100vh",
@@ -26,7 +26,7 @@ export default function GlobalError({
               fontSize: "5rem",
               fontWeight: 800,
               margin: 0,
-              background: "linear-gradient(135deg, #F97316, #EF4444)",
+              background: "linear-gradient(135deg, #FF3B30, #FF9500)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -43,7 +43,7 @@ export default function GlobalError({
             onClick={reset}
             style={{
               padding: "0.75rem 2rem",
-              backgroundColor: "#F97316",
+              backgroundColor: "#007AFF",
               color: "#fff",
               border: "none",
               borderRadius: "0.75rem",

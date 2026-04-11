@@ -34,27 +34,28 @@ export default function CookieConsent() {
       <div
         className="max-w-4xl mx-auto rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
         style={{
-          backgroundColor: "rgba(30,30,32,0.97)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          backgroundColor: "rgba(255,255,255,0.97)",
+          border: "1px solid rgba(0,0,0,0.08)",
           backdropFilter: "blur(20px)",
+          boxShadow: "0 -4px 30px rgba(0,0,0,0.1)",
         }}
       >
-        <div className="flex-1 text-sm text-gray-400 leading-relaxed">
+        <div className="flex-1 text-sm text-gray-600 leading-relaxed">
           {t("message")}{" "}
-          <Link href="/cookies" className="text-orange-400 underline underline-offset-2 hover:text-orange-300" aria-label={t("learnMoreAriaLabel")}>
+          <Link href="/cookies" className="text-blue-600 underline underline-offset-2 hover:text-blue-700" aria-label={t("learnMoreAriaLabel")}>
             {t("learnMore")}
           </Link>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
             onClick={decline}
-            className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg border border-white/10 hover:border-white/20"
+            className="px-4 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors rounded-lg border border-gray-200 hover:border-gray-300"
           >
             {t("decline")}
           </button>
           <button
             onClick={accept}
-            className="px-5 py-2 text-sm font-medium text-white bg-orange-700 hover:bg-orange-800 transition-colors rounded-lg"
+            className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded-lg"
           >
             {t("accept")}
           </button>

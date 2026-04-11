@@ -36,62 +36,77 @@ export default async function CookiesPage() {
       <main className="flex-1">
         {/* Hero */}
         <section
-          className="relative py-24 overflow-hidden"
+          className="relative py-14 sm:py-18 overflow-hidden"
           style={{
             background:
-              "linear-gradient(180deg, #1c1c1e 0%, #111113 100%)",
+              "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
           }}
         >
           <div className="absolute inset-0">
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
-              style={{ backgroundColor: "rgba(249,115,22,0.15)" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
+              style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
-            <p className="text-sm font-semibold text-orange-400 uppercase tracking-widest mb-4">
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">
               {t("title")}
             </p>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-5 tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">
               {t("heading")}
             </h1>
-            <p className="text-[#86868b] text-lg max-w-xl mx-auto">
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">
               {t("subtitle")}
             </p>
           </div>
         </section>
 
         {/* Content */}
-        <section className="py-16" style={{ backgroundColor: "#111113" }}>
+        <section className="py-16" style={{ backgroundColor: "#FFFFFF" }}>
           <div className="max-w-3xl mx-auto px-4">
-            <div className="space-y-6 text-sm leading-relaxed text-[#86868b]">
+            <div className="space-y-8 text-sm leading-relaxed text-gray-600">
               <p>
-                <strong className="text-white">{t("lastUpdated")}</strong>
+                <strong className="text-gray-900">{t("lastUpdated")}</strong>
               </p>
 
-              <h2 className="text-lg font-bold text-white mt-8">{t("s1Title")}</h2>
+              <div className="flex items-center gap-3 mt-10 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>1</div>
+                <h2 className="text-lg font-bold text-gray-900">{t("s1Title")}</h2>
+              </div>
               <p>{t("s1Text")}</p>
 
-              <h2 className="text-lg font-bold text-white mt-8">{t("s2Title")}</h2>
+              <div className="flex items-center gap-3 mt-10 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>2</div>
+                <h2 className="text-lg font-bold text-gray-900">{t("s2Title")}</h2>
+              </div>
 
-              <h3 className="font-bold text-white mt-4">{t("s2aTitle")}</h3>
+              <h3 className="font-bold text-gray-900 mt-4">{t("s2aTitle")}</h3>
               <p>{t("s2aText")}</p>
               <ul className="list-disc pl-5 space-y-1">{renderList("s2aItems")}</ul>
 
-              <h3 className="font-bold text-white mt-4">{t("s2bTitle")}</h3>
+              <h3 className="font-bold text-gray-900 mt-4">{t("s2bTitle")}</h3>
               <p>{t("s2bText")}</p>
 
-              <h2 className="text-lg font-bold text-white mt-8">{t("s3Title")}</h2>
+              <div className="flex items-center gap-3 mt-10 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>3</div>
+                <h2 className="text-lg font-bold text-gray-900">{t("s3Title")}</h2>
+              </div>
               <p>{t("s3Text")}</p>
 
-              <h2 className="text-lg font-bold text-white mt-8">{t("s4Title")}</h2>
+              <div className="flex items-center gap-3 mt-10 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>4</div>
+                <h2 className="text-lg font-bold text-gray-900">{t("s4Title")}</h2>
+              </div>
               <p>{t("s4Text")}</p>
               <ul className="list-disc pl-5 space-y-1">{renderList("s4Items")}</ul>
 
-              <h2 className="text-lg font-bold text-white mt-8">{t("s5Title")}</h2>
+              <div className="flex items-center gap-3 mt-10 mb-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>5</div>
+                <h2 className="text-lg font-bold text-gray-900">{t("s5Title")}</h2>
+              </div>
               <p>
                 {t("s5Text")}{" "}
-                <a href="mailto:torviantransfer@gmail.com" className="text-orange-500 hover:underline">
+                <a href="mailto:torviantransfer@gmail.com" className="text-blue-600 hover:underline">
                   torviantransfer@gmail.com
                 </a>
               </p>

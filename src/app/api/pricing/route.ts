@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
   const childSeat = searchParams.get("childSeat") === "true";
   const welcomeSign = searchParams.get("welcomeSign") === "true";
   const couponCode = searchParams.get("coupon");
+  const categorySlug = searchParams.get("category");
 
   if (!regionSlug) {
     return NextResponse.json({ error: "region is required" }, { status: 400 });
@@ -28,15 +29,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Region not found" }, { status: 404 });
   }
 
-  // Fetch pricing for this region (first active category)
-  const { data: pricing, error: pricingErr } = await supabase
+  // Fetch pricing for this region — all active vehicle categories
+  let pricingQuery = supabase
     .from("pricing")
-    .select("*, vehicle_categories!inner(name, slug, description, image_url, max_passengers, max_luggage, features, is_active)")
+    .select("*, vehicle_categories!inner(id, name, slug, description, image_url, max_passengers, max_luggage, features, is_active, sort_order)")
     .eq("region_id", region.id)
-    .eq("vehicle_categories.is_active", true)
-    .single();
+    .eq("vehicle_categories.is_active", true);
 
-  if (pricingErr || !pricing) {
+  if (categorySlug) {
+    pricingQuery = pricingQuery.eq("vehicle_categories.slug", categorySlug);
+  }
+
+  const { data: pricingRows, error: pricingErr } = await pricingQuery.order("one_way_price", { ascending: true });
+
+  if (pricingErr || !pricingRows || pricingRows.length === 0) {
     return NextResponse.json({ error: "Pricing not found" }, { status: 404 });
   }
 
@@ -82,21 +88,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Calculate price
-  const calculation = calculatePrice({
-    oneWayPrice: pricing.one_way_price,
-    roundTripPrice: pricing.round_trip_price,
-    tripType: tripType ?? "one_way",
-    pickupTime,
-    childSeat,
-    welcomeSign,
-    couponDiscountPercent,
-    couponDiscountFixed,
-    nightSurchargePercent: settingsMap.night_surcharge_percent ?? 0,
-    childSeatFee: settingsMap.child_seat_fee ?? 10,
-    welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
-  });
-
   // Fetch exchange rates
   const { data: rates } = await supabase
     .from("exchange_rates")
@@ -107,6 +98,42 @@ export async function GET(request: NextRequest) {
   for (const r of rates ?? []) {
     exchangeRates[r.target_currency] = r.rate;
   }
+
+  // Build vehicles array with price calculation for each
+  const vehicles = pricingRows.map((pricing) => {
+    const cat = pricing.vehicle_categories as Record<string, unknown>;
+    const calculation = calculatePrice({
+      oneWayPrice: pricing.one_way_price,
+      roundTripPrice: pricing.round_trip_price,
+      tripType: tripType ?? "one_way",
+      pickupTime,
+      childSeat,
+      welcomeSign,
+      couponDiscountPercent,
+      couponDiscountFixed,
+      nightSurchargePercent: 0, // Gece tarifesi yok
+      childSeatFee: settingsMap.child_seat_fee ?? 10,
+      welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
+    });
+
+    return {
+      categoryId: pricing.category_id,
+      name: cat.name as string,
+      slug: cat.slug as string,
+      description: cat.description as string | null,
+      image_url: cat.image_url as string | null,
+      max_passengers: cat.max_passengers as number,
+      max_luggage: cat.max_luggage as number,
+      features: cat.features as string[],
+      sort_order: cat.sort_order as number,
+      oneWayPrice: pricing.one_way_price,
+      roundTripPrice: pricing.round_trip_price,
+      calculation,
+    };
+  });
+
+  // Sort by sort_order then by price
+  vehicles.sort((a, b) => a.sort_order - b.sort_order || a.calculation.totalPrice - b.calculation.totalPrice);
 
   return NextResponse.json({
     region: {
@@ -119,24 +146,15 @@ export async function GET(request: NextRequest) {
       name_ru: region.name_ru,
       distance_km: region.distance_km,
       duration_minutes: region.duration_minutes,
+      latitude: region.latitude,
+      longitude: region.longitude,
     },
-    pricing: {
-      id: pricing.id,
-      one_way_price: pricing.one_way_price,
-      round_trip_price: pricing.round_trip_price,
-      category_id: pricing.category_id,
-    },
-    vehicle: {
-      name: (pricing.vehicle_categories as Record<string, unknown>).name,
-      slug: (pricing.vehicle_categories as Record<string, unknown>).slug,
-      description: (pricing.vehicle_categories as Record<string, unknown>).description,
-      image_url: (pricing.vehicle_categories as Record<string, unknown>).image_url,
-      max_passengers: (pricing.vehicle_categories as Record<string, unknown>).max_passengers,
-      max_luggage: (pricing.vehicle_categories as Record<string, unknown>).max_luggage,
-      features: (pricing.vehicle_categories as Record<string, unknown>).features,
-    },
-    calculation,
+    vehicles,
     couponId,
     exchangeRates,
+    settings: {
+      childSeatFee: settingsMap.child_seat_fee ?? 10,
+      welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
+    },
   });
 }

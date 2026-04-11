@@ -5,8 +5,8 @@ export default function NotFound() {
     <html lang="en">
       <body
         style={{
-          backgroundColor: "#111113",
-          color: "#f5f5f7",
+          backgroundColor: "#FFFFFF",
+          color: "#1d1d1f",
           fontFamily: "system-ui, -apple-system, sans-serif",
           margin: 0,
           minHeight: "100vh",
@@ -21,7 +21,7 @@ export default function NotFound() {
               fontSize: "6rem",
               fontWeight: 800,
               margin: 0,
-              background: "linear-gradient(135deg, #F97316, #F97316)",
+              background: "linear-gradient(135deg, #007AFF, #5856D6)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -39,7 +39,7 @@ export default function NotFound() {
             style={{
               display: "inline-block",
               padding: "0.75rem 2rem",
-              backgroundColor: "#F97316",
+              backgroundColor: "#007AFF",
               color: "#fff",
               borderRadius: "0.75rem",
               textDecoration: "none",

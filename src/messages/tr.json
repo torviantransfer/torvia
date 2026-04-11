@@ -15,7 +15,9 @@
     "bookNow": "Rezervasyon Yap",
     "login": "Giriş",
     "myReservations": "Rezervasyonlarım",
-    "trackReservation": "Rezervasyon Takip"
+    "trackReservation": "Rezervasyon Takip",
+    "profile": "Profil",
+    "signOut": "Çıkış Yap"
   },
   "hero": {
     "title": "Antalya Havalimanı VIP Transfer",
@@ -65,7 +67,7 @@
     "back": "Geri",
     "step1": "Transfer Bilgileri",
     "step2": "Araç Seçimi",
-    "step3": "Bilgiler & Ödeme",
+    "step3": "Yolcu Bilgileri",
     "step4": "Ödeme",
     "paymentSecureNote": "Ödeme bilgileriniz Stripe tarafından güvenli bir şekilde işlenir. Kart bilgileriniz sunucularımızda saklanmaz.",
     "firstName": "Ad",
@@ -90,6 +92,7 @@
     "errorFillRequired": "Lütfen tüm zorunlu alanları doldurun",
     "errorFillReturn": "Lütfen dönüş tarih ve saatini doldurun",
     "dateUnavailable": "Bu tarih dolu. Lütfen başka bir tarih seçin.",
+    "suggestedDates": "Bu tarihlerde müsait araçlarımız var:",
     "errorGeneric": "Bir hata oluştu",
     "errorNetwork": "Ağ hatası. Lütfen tekrar deneyin.",
     "placeholderWelcomeName": "Karşılama tabelasındaki isim",
@@ -129,7 +132,14 @@
     "couponInvalid": "Geçersiz veya süresi dolmuş kupon",
     "trustSecure": "Stripe ile güvenli ödeme",
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
-    "trustNoHidden": "Gizli ücret yok"
+    "trustNoHidden": "Gizli ücret yok",
+    "findTransfer": "Transfer Bul",
+    "addReturn": "Dönüş Ekle",
+    "adult": "Yetişkin",
+    "child": "Çocuk",
+    "age": "Yaş",
+    "person": "Kişi",
+    "backToHome": "Ana Sayfaya Dön"
   },
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",
@@ -239,7 +249,14 @@
     "tagCoastal": "Canlı Sahil Şehri",
     "tagNature": "Doğa & Deniz",
     "tagClosest": "Havalimanına En Yakın",
-    "tagHidden": "Gizli Cennet"
+    "tagHidden": "Gizli Cennet",
+    "belekDesc": "Antalya Havalimanı'ndan Belek'e özel VIP transfer. Golf otelleri, lüks resort'lar ve sahil bölgelerine kapıdan kapıya hizmet.",
+    "sideDesc": "Antik kent Side'ye konforlu ve güvenli transfer hizmeti. Tarihi kalıntılar, sahil şeridi ve hareketli gece hayatı sizi bekliyor.",
+    "alanyaDesc": "Alanya'ya Antalya Havalimanı'ndan özel transfer. Kale, Kleopatra Plajı ve çevresindeki tatil beldelerine ulaşım.",
+    "kemerDesc": "Kemer'e doğa ve deniz arasında huzurlu bir transfer deneyimi. Çamyuva, Göynük, Beldibi, Tekirova bölgelerine hizmet.",
+    "kunduDesc": "Antalya'nın en yakın tatil bölgesi Kundu-Lara'ya hızlı ve ekonomik havalimanı transferi. Her şey dahil otellere kolay erişim.",
+    "kasDesc": "Akdeniz'in saklı cenneti Kaş'a özel transfer. Turkuaz koylar, dalış noktaları ve otantik kasaba atmosferi.",
+    "viewDetails": "Detayları Gör"
   },
   "about": {
     "title": "Hakkımızda",
@@ -287,7 +304,11 @@
     "featPanorama": "Panoramik camlar",
     "featAirCon": "Klima",
     "featUsb": "USB şarj",
-    "featLegRoom": "Ekstra bacak mesafesi"
+    "featLegRoom": "Ekstra bacak mesafesi",
+    "coverageTag": "Kapsam Alanı",
+    "coverageTitle": "Nerelere Hizmet Veriyoruz",
+    "coverageDesc": "Antalya bölgesindeki tüm popüler tatil destinasyonlarını kapsıyoruz.",
+    "coverageCta": "Transferinizi Rezerve Edin"
   },
   "contact": {
     "title": "TORVIAN Transfer İletişim | Antalya Havalimanı VIP Transfer",
@@ -648,7 +669,9 @@
     "feat1": "Uçuş Takip Sistemi",
     "feat2": "Lisanslı & Sigortalı",
     "feat3": "4.9 Müşteri Puanı",
-    "feat4": "25+ Destinasyon"
+    "feat4": "25+ Destinasyon",
+    "subHeading": "Profesyonel ve Güvenilir Transfer Deneyimi",
+    "readMore": "Hemen Rezervasyon Yap →"
   },
   "track": {
     "title": "Rezervasyon Takip",

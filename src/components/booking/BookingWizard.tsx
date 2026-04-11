@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -10,30 +10,13 @@ import "react-phone-number-input/style.css";
 
 const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
 const StripeCheckoutEmbed = dynamic(() => import("./StripeCheckoutEmbed"), { ssr: false });
+const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false });
+
 import {
-  Plane,
-  MapPin,
-  Calendar,
-  Clock,
-  Users,
-  Luggage,
-  ArrowRight,
-  ArrowLeft,
-  ArrowLeftRight,
-  Baby,
-  CreditCard,
-  Check,
-  Tag,
-  Shield,
-  Loader2,
-  AlertCircle,
-  Wind,
-  Wifi,
-  Droplets,
-  Armchair,
-  Plug,
-  Tv,
-  GlassWater,
+  Plane, MapPin, Calendar, Clock, Users, Luggage, ArrowRight, ArrowLeft,
+  ArrowLeftRight, Baby, CreditCard, Check, Tag, Shield, Loader2, AlertCircle,
+  Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, Headphones, X,
+  CalendarCheck,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -51,1098 +34,587 @@ interface Props {
   initialLuggage?: number;
 }
 
-type RegionItem = {
+type Locale = "tr" | "en" | "de" | "pl" | "ru";
+
+interface VehicleOption {
+  categoryId: string;
+  name: string;
   slug: string;
-  name_tr: string;
+  description: string | null;
+  image_url: string | null;
+  max_passengers: number;
+  max_luggage: number;
+  features: string[];
+  sort_order: number;
+  oneWayPrice: number;
+  roundTripPrice: number | null;
+  calculation: PriceCalculation;
+}
+
+interface RegionData {
+  id: string;
+  slug: string;
   name_en: string;
+  name_tr: string;
   name_de: string;
   name_pl: string;
   name_ru: string;
+  distance_km: number;
+  duration_minutes: number;
   latitude?: number;
   longitude?: number;
-};
-
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+}
 
 export default function BookingWizard(props: Props) {
+  const t = useTranslations("booking");
+
+  if (!props.initialRegion) {
+    return <BookingFormMini />;
+  }
+
+  return <BookingWizardInner {...props} />;
+}
+function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
   const { format: fmt, otherCurrencies } = useCurrency();
 
-  // ─── Restore persisted state from sessionStorage (survives locale/currency change) ───
-  const STORAGE_KEY = "TORVIAN_booking_state";
+  const regionSlug = props.initialRegion!;
+  const tripType = props.initialTrip ?? "one_way";
+  const pickupDate = props.initialDate ?? "";
+  const pickupTime = props.initialTime ?? "12:00";
+  const returnDate = props.initialReturnDate ?? "";
+  const returnTime = props.initialReturnTime ?? "";
+  const adults = props.initialAdults ?? 2;
+  const children = props.initialChildren ?? 0;
 
-  const getSaved = (): Record<string, unknown> | null => {
-    if (typeof window === "undefined") return null;
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      // Expire after 30 minutes
-      if (parsed._ts && Date.now() - parsed._ts > 30 * 60 * 1000) {
-        sessionStorage.removeItem(STORAGE_KEY);
-        return null;
-      }
-      return parsed;
-    } catch { return null; }
-  };
-
-  const saved = getSaved();
-
-  const [step, setStep] = useState((saved?.step as number) ?? 1);
-  const [loading, setLoading] = useState(false);
-  const [priceLoading, setPriceLoading] = useState(false);
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
+  const [regionData, setRegionData] = useState<RegionData | null>(null);
+  const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
+  const [settingsData, setSettingsData] = useState<{ childSeatFee: number; welcomeSignFee: number }>({ childSeatFee: 10, welcomeSignFee: 5 });
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [flightCode, setFlightCode] = useState(props.initialFlight ?? "");
+  const [hotelName, setHotelName] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const [childSeat, setChildSeat] = useState(false);
+  const [welcomeSign, setWelcomeSign] = useState(false);
+  const [welcomeName, setWelcomeName] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [reservationCode, setReservationCode] = useState<string | null>(null);
 
-  // Auto-fill today's date & current rounded time
-  const getDefaults = () => {
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mi = String(Math.ceil(now.getMinutes() / 5) * 5 % 60).padStart(2, "0");
-    return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${mi}` };
-  };
-  const defaults = getDefaults();
+  const [dateAvailable, setDateAvailable] = useState(true);
+  const [suggestedDates, setSuggestedDates] = useState<string[]>([]);
+  const [suggestedVehicles, setSuggestedVehicles] = useState<Record<string, { name: string; slug: string; max_passengers: number }[]>>({});
 
-  // Step 1:  Transfer details
-  const [tripType, setTripType] = useState((saved?.tripType as string as "one_way" | "round_trip") ?? props.initialTrip ?? "one_way");
-  const [regionSlug, setRegionSlug] = useState(props.initialRegion || (saved?.regionSlug as string) || "");
-  const [pickupDate, setPickupDate] = useState((saved?.pickupDate as string) ?? props.initialDate ?? defaults.date);
-  const [pickupTime, setPickupTime] = useState((saved?.pickupTime as string) ?? props.initialTime ?? defaults.time);
-  const [returnDate, setReturnDate] = useState((saved?.returnDate as string) ?? props.initialReturnDate ?? "");
-  const [returnTime, setReturnTime] = useState((saved?.returnTime as string) ?? props.initialReturnTime ?? "");
-  const [flightCode, setFlightCode] = useState((saved?.flightCode as string) ?? props.initialFlight ?? "");
-  const [adults, setAdults] = useState((saved?.adults as number) ?? props.initialAdults ?? 2);
-  const [children, setChildren] = useState((saved?.children as number) ?? props.initialChildren ?? 0);
-  const [luggage, setLuggage] = useState((saved?.luggage as number) ?? props.initialLuggage ?? 2);
+  const totalPrice = useMemo(() => {
+    if (!selectedVehicle) return 0;
+    let total = selectedVehicle.calculation.basePrice;
+    // roundTripDiscount is informational only — basePrice is already the round trip price
+    if (childSeat) total += settingsData.childSeatFee;
+    if (welcomeSign) total += settingsData.welcomeSignFee;
+    return total;
+  }, [selectedVehicle, childSeat, welcomeSign, settingsData]);
 
-  // Dynamic regions from Supabase
-  const [regions, setRegions] = useState<RegionItem[]>([]);
-  const [unavailableDates, setUnavailableDates] = useState<Set<string>>(new Set());
+  const getRegionName = (r: RegionData) => r[`name_${locale}`] || r.name_en;
 
   useEffect(() => {
-    fetch("/api/regions")
+    const params = new URLSearchParams({ region: regionSlug, trip: tripType, time: pickupTime });
+    fetch(`/api/pricing?${params}`)
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) setRegions(data);
+        if (data.vehicles) {
+          setVehicles(data.vehicles);
+          setRegionData(data.region);
+          setExchangeRates(data.exchangeRates);
+          if (data.settings) setSettingsData(data.settings);
+        }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => setError(t("errorNetwork")))
+      .finally(() => setLoading(false));
+  }, [regionSlug, tripType, pickupTime, t]);
 
-  // Fetch unavailable dates for next 6 months
+  // Check date availability
   useEffect(() => {
-    const today = new Date();
-    const from = today.toISOString().split("T")[0];
-    const future = new Date(today);
-    future.setMonth(future.getMonth() + 6);
-    const to = future.toISOString().split("T")[0];
-
-    fetch(`/api/availability?from=${from}&to=${to}`)
+    if (!pickupDate) return;
+    const from = pickupDate;
+    const toDate = new Date(pickupDate + "T00:00:00");
+    toDate.setDate(toDate.getDate() + 60);
+    const to = toDate.toISOString().split("T")[0];
+    const params = new URLSearchParams({ from, to, checkDate: pickupDate, region: regionSlug });
+    fetch(`/api/availability?${params}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.unavailableDates) {
-          setUnavailableDates(new Set(data.unavailableDates.map((d: { date: string }) => d.date)));
+        if (typeof data.isAvailable === "boolean") {
+          setDateAvailable(data.isAvailable);
+          setSuggestedDates(data.suggestedDates ?? []);
+          setSuggestedVehicles(data.suggestedVehicles ?? {});
         }
       })
       .catch(() => {});
-  }, []);
+  }, [pickupDate]);
 
-  const getRegionName = (r: RegionItem) => r[`name_${locale}`] || r.name_en;
-
-  const selectedRegion = useMemo(
-    () => regions.find((r) => r.slug === regionSlug) ?? null,
-    [regions, regionSlug]
-  );
-
-  // Step 2: Vehicle & extras
-  const [childSeat, setChildSeat] = useState((saved?.childSeat as boolean) ?? false);
-  const [welcomeSign, setWelcomeSign] = useState((saved?.welcomeSign as boolean) ?? false);
-  const [welcomeName, setWelcomeName] = useState((saved?.welcomeName as string) ?? "");
-  const [couponCode, setCouponCode] = useState((saved?.couponCode as string) ?? "");
-  const [couponApplied, setCouponApplied] = useState((saved?.couponApplied as boolean) ?? false);
-  const [couponError, setCouponError] = useState<string | null>(null);
-  const [couponSuccess, setCouponSuccess] = useState(false);
-
-  // Step 3: Personal info
-  const [firstName, setFirstName] = useState((saved?.firstName as string) ?? "");
-  const [lastName, setLastName] = useState((saved?.lastName as string) ?? "");
-  const [email, setEmail] = useState((saved?.email as string) ?? "");
-  const [phone, setPhone] = useState((saved?.phone as string) ?? "");
-  const [hotelName, setHotelName] = useState((saved?.hotelName as string) ?? "");
-  const [hotelAddress, setHotelAddress] = useState((saved?.hotelAddress as string) ?? "");
-  const [notes, setNotes] = useState((saved?.notes as string) ?? "");
-
-  // ─── Persist form state to sessionStorage on every change ───
-  useEffect(() => {
-    // Don't persist once payment started (step 4)
-    if (step >= 4) return;
-    try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        _ts: Date.now(),
-        step: Math.min(step, 3), // Never persist step 4
-        tripType, regionSlug, pickupDate, pickupTime, returnDate, returnTime,
-        flightCode, adults, children, luggage,
-        childSeat, welcomeSign, welcomeName, couponCode, couponApplied,
-        firstName, lastName, email, phone, hotelName, hotelAddress, notes,
-      }));
-    } catch { /* storage full or unavailable */ }
-  }, [step, tripType, regionSlug, pickupDate, pickupTime, returnDate, returnTime,
-      flightCode, adults, children, luggage, childSeat, welcomeSign, welcomeName,
-      couponCode, couponApplied, firstName, lastName, email, phone, hotelName,
-      hotelAddress, notes]);
-
-  // Auto-fill return date/time when switching to round trip
-  useEffect(() => {
-    if (tripType === "round_trip" && !returnDate && pickupDate) {
-      const nextDay = new Date(pickupDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const yyyy = nextDay.getFullYear();
-      const mm = String(nextDay.getMonth() + 1).padStart(2, "0");
-      const dd = String(nextDay.getDate()).padStart(2, "0");
-      setReturnDate(`${yyyy}-${mm}-${dd}`);
-    }
-    if (tripType === "round_trip" && !returnTime && pickupTime) {
-      setReturnTime(pickupTime);
-    }
-  }, [tripType, returnDate, returnTime, pickupDate, pickupTime]);
-
-  // Price calculation result
-  const [priceData, setPriceData] = useState<{
-    calculation: PriceCalculation;
-    exchangeRates: Record<string, number>;
-    region: { duration_minutes: number; distance_km: number };
-    couponId: string | null;
-    vehicle?: {
-      name: string;
-      slug: string;
-      description: string | null;
-      image_url: string | null;
-      max_passengers: number;
-      max_luggage: number;
-      features: string[];
-    };
-  } | null>(null);
-
-  const fetchPrice = useCallback(async () => {
-    if (!regionSlug || !pickupTime) return;
-    setPriceLoading(true);
-    try {
-      const params = new URLSearchParams({
-        region: regionSlug,
-        trip: tripType,
-        time: pickupTime,
-        childSeat: childSeat.toString(),
-        welcomeSign: welcomeSign.toString(),
-      });
-      if (couponApplied && couponCode) {
-        params.set("coupon", couponCode);
-      }
-      const res = await fetch(`/api/pricing?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPriceData(data);
-      }
-    } catch {
-      // Silently fail for price preview
-    } finally {
-      setPriceLoading(false);
-    }
-  }, [regionSlug, tripType, pickupTime, childSeat, welcomeSign, couponApplied, couponCode]);
-
-  useEffect(() => {
-    fetchPrice();
-  }, [fetchPrice]);
-
-  const applyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setCouponError(null);
-    setCouponSuccess(false);
-    setCouponApplied(true);
-    // fetchPrice will be triggered via useEffect
-    // Check result after a short delay
-    setTimeout(() => {
-      if (priceData?.calculation?.couponDiscount && priceData.calculation.couponDiscount > 0) {
-        setCouponSuccess(true);
-      }
-    }, 1500);
-  };
-
-  const goNext = () => {
-    setError(null);
-    if (step === 1) {
-      if (!regionSlug || !pickupDate || !pickupTime) {
-        setError(t("errorFillRequired"));
-        return;
-      }
-      // Check if pickup date is unavailable
-      if (unavailableDates.has(pickupDate)) {
-        setError(t("dateUnavailable"));
-        return;
-      }
-      if (tripType === "round_trip" && (!returnDate || !returnTime)) {
-        setError(t("errorFillReturn"));
-        return;
-      }
-      // Check if return date is unavailable
-      if (tripType === "round_trip" && returnDate && unavailableDates.has(returnDate)) {
-        setError(t("dateUnavailable"));
-        return;
-      }
-    }
-    setStep((s) => Math.min(s + 1, 4));
-  };
-
-  const goBack = () => {
-    setError(null);
-    if (step === 4) return; // Can't go back from payment
-    setStep((s) => Math.max(s - 1, 1));
+  const selectVehicle = (vehicle: VehicleOption) => {
+    setSelectedVehicle(vehicle);
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSubmit = async () => {
     setError(null);
-    if (!firstName || !lastName || !email || !phone) {
-      setError(t("errorFillRequired"));
-      return;
-    }
-    setLoading(true);
+    if (!firstName || !lastName || !email || !phone) { setError(t("errorFillRequired")); return; }
+    if (!selectedVehicle) return;
+    setSubmitting(true);
     try {
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          regionSlug,
-          tripType,
-          pickupDate,
-          pickupTime,
+          regionSlug, categorySlug: selectedVehicle.slug, tripType, pickupDate, pickupTime,
           returnDate: tripType === "round_trip" ? returnDate : undefined,
           returnTime: tripType === "round_trip" ? returnTime : undefined,
-          flightCode: flightCode || undefined,
-          adults,
-          children,
-          luggage,
-          childSeat,
-          welcomeSign,
-          welcomeName: welcomeSign ? welcomeName : undefined,
-          firstName,
-          lastName,
-          email,
-          phone,
-          hotelName: hotelName || undefined,
-          hotelAddress: hotelAddress || undefined,
-          notes: notes || undefined,
-          couponCode: couponApplied ? couponCode : undefined,
-          locale,
+          flightCode: flightCode || undefined, adults, children, luggage: props.initialLuggage ?? 0,
+          childSeat, welcomeSign, welcomeName: welcomeSign ? welcomeName : undefined,
+          firstName, lastName, email, phone, hotelName: hotelName || undefined,
+          notes: notes || undefined, couponCode: couponApplied ? couponCode : undefined, locale,
         }),
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? t("errorGeneric"));
-        return;
-      }
-
-      // Show embedded Stripe checkout on Step 4
+      if (!res.ok) { setError(data.error ?? t("errorGeneric")); return; }
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);
-        setStep(4);
-        // Clear saved state — payment in progress
-        try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+        setStep(3);
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
-    } catch {
-      setError(t("errorNetwork"));
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError(t("errorNetwork")); }
+    finally { setSubmitting(false); }
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const goBack = () => { setError(null); if (step === 2) { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); } };
 
+  const featureIcon: Record<string, React.ReactNode> = {
+    ac: <Wind size={13} />, wifi: <Wifi size={13} />, water: <Droplets size={13} />,
+    leather: <Armchair size={13} />, usb: <Plug size={13} />, tv: <Tv size={13} />, minibar: <GlassWater size={13} />,
+  };
+  const featureLabel: Record<string, string> = {
+    ac: "A/C", wifi: "Wi-Fi", water: "Water", leather: "Leather", usb: "USB", tv: "TV", minibar: "Minibar",
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    try { return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(dateStr + "T00:00:00")); }
+    catch { return dateStr; }
+  };
+
+  const stepLabels = [t("step2"), t("step3"), t("step4")];
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Step indicator */}
-      <div className="flex items-center justify-center mb-10">
-        <div className="flex items-center gap-1 sm:gap-0 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-        {[1, 2, 3, 4].map((s) => (
-          <div key={s} className="flex items-center">
-            <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-xl transition-all"
-              style={s === step ? { background: "linear-gradient(135deg, #f97316, #ea580c)", boxShadow: "0 4px 15px rgba(249,115,22,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
-            >
-              <div
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  s < step
-                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : s === step
-                      ? "bg-white/20 text-white"
-                      : "bg-white/5 text-[#555] ring-1 ring-white/10"
-                }`}
+      <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center gap-0 px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+          {[1, 2, 3].map((s) => (
+            <div key={s} className="flex items-center">
+              <div className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl transition-all"
+                style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
               >
-                {s < step ? <Check size={14} strokeWidth={3} /> : s}
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                  {s < step ? <Check size={12} strokeWidth={3} /> : s}
+                </div>
+                <span className={`text-[9px] sm:text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                  {stepLabels[s - 1]}
+                </span>
               </div>
-              <span
-                className={`hidden sm:inline text-xs font-semibold whitespace-nowrap ${
-                  s < step ? "text-emerald-400" : s === step ? "text-white" : "text-[#555]"
-                }`}
-              >
-                {t(`step${s}`)}
-              </span>
+              {s < 3 && <div className="w-3 sm:w-8 flex items-center justify-center"><div className={`w-full h-px ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} /></div>}
             </div>
-            {s < 4 && (
-              <div className="w-4 sm:w-8 flex items-center justify-center">
-                <div className={`w-full h-px ${s < step ? "bg-emerald-500/40" : "bg-white/10"}`} />
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
         </div>
       </div>
 
-      {/* Mobile price bar — visible only on small screens */}
-      {priceData && (
-        <div className="lg:hidden mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="flex items-center justify-between px-5 py-3.5">
-            <div>
-              <p className="text-xs text-[#86868b] font-medium">{selectedRegion ? getRegionName(selectedRegion) : regionSlug}</p>
-              <p className="text-xs text-[#86868b] mt-0.5">
-                {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
-                {priceData.region.distance_km && <> · {priceData.region.distance_km} km</>}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xl font-bold text-emerald-400">{fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}</p>
-              <p className="text-[10px] text-[#86868b]">{t("totalPrice")}</p>
-            </div>
-          </div>
+      {/* Route summary bar */}
+      {regionData && (
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-8 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center gap-2 text-sm"><Plane size={15} className="text-blue-600" /><span className="font-medium text-gray-900">Antalya Airport</span></div>
+          <ArrowRight size={14} className="text-gray-400" />
+          <div className="flex items-center gap-2 text-sm"><MapPin size={15} className="text-emerald-600" /><span className="font-medium text-gray-900">{getRegionName(regionData)}</span></div>
+          <span className="text-gray-400 hidden sm:inline">&bull;</span>
+          <span className="text-xs text-gray-500 hidden sm:inline">{formatDate(pickupDate)} &middot; {pickupTime}</span>
+          {tripType === "round_trip" && (<><span className="text-gray-400 hidden sm:inline">&bull;</span><span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium"><ArrowLeftRight size={12} />{t("roundTrip")}</span></>)}
+          <span className="text-gray-400 hidden sm:inline">&bull;</span>
+          <span className="text-xs text-gray-500 hidden sm:inline">{regionData.distance_km} km &middot; ~{regionData.duration_minutes} min</span>
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left: Form */}
-        <div className="lg:col-span-2">
-          <div className="rounded-2xl p-6 lg:p-8" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            {error && (
-              <div className="mb-6 p-4 rounded-lg text-red-400 flex items-center gap-2 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <AlertCircle size={16} />
-                {error}
+      {/* Route map */}
+      {regionData && step <= 2 && (
+        <div className="mb-8 rounded-xl" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+          <RouteMap destinationLat={regionData.latitude} destinationLng={regionData.longitude} destinationName={getRegionName(regionData)} className="h-[220px] sm:h-[250px]" />
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="mb-6 p-4 rounded-lg text-red-600 flex items-center gap-2 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <AlertCircle size={16} />{error}
+          <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
+        </div>
+      )}
+      {/* STEP 1: Vehicle Selection */}
+      {step === 1 && (
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Car size={22} className="text-blue-600" />{t("step2")}
+          </h2>
+
+          {/* Date unavailability warning with suggestions */}
+          {!dateAvailable && (
+            <div className="mb-6 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
+              <div className="px-5 py-4 flex items-center gap-3" style={{ backgroundColor: "rgba(239,68,68,0.06)" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(239,68,68,0.12)" }}>
+                  <AlertCircle size={20} className="text-red-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-red-700 text-sm">{t("dateUnavailable")}</p>
+                  <p className="text-xs text-red-500 mt-0.5">{formatDate(pickupDate)}</p>
+                </div>
               </div>
-            )}
-
-            {/* STEP 1: Transfer Details */}
-            {step === 1 && (
-              <div className="space-y-5">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <MapPin size={20} className="text-orange-500" />
-                  {t("step1")}
-                </h2>
-
-                {/* Trip type */}
-                <div className="flex rounded-xl p-1" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <button
-                    type="button"
-                    onClick={() => setTripType("one_way")}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-                      tripType === "one_way"
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
-                        : "text-[#86868b] hover:text-white/70"
-                    }`}
-                  >
-                    {t("oneWay")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTripType("round_trip")}
-                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                      tripType === "round_trip"
-                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
-                        : "text-[#86868b] hover:text-white/70"
-                    }`}
-                  >
-                    <ArrowLeftRight size={14} />
-                    {t("roundTrip")}
-                  </button>
-                </div>
-
-                {/* Pickup */}
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("pickup")}
-                  </label>
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                    <Plane size={18} className="text-orange-500" />
-                    <span className="text-sm text-white font-medium">
-                      Antalya Airport
-                    </span>
+              {suggestedDates.length > 0 && (
+                <div className="px-5 py-4" style={{ backgroundColor: "rgba(52,211,153,0.04)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <p className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <CalendarCheck size={16} className="text-emerald-600" />
+                    {t("suggestedDates")}
+                  </p>
+                  <div className="space-y-3">
+                    {suggestedDates.map((date) => (
+                      <a
+                        key={date}
+                        href={`?region=${regionSlug}&trip=${tripType}&date=${date}&time=${pickupTime}&adults=${adults}&children=${children}${returnDate ? `&returnDate=${returnDate}&returnTime=${returnTime}` : ""}`}
+                        className="block px-4 py-3 rounded-xl transition-all hover:shadow-md"
+                        style={{ backgroundColor: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}
+                      >
+                        <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 mb-1">
+                          <Calendar size={14} />
+                          {formatDate(date)}
+                        </div>
+                        {suggestedVehicles[date] && suggestedVehicles[date].length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            {suggestedVehicles[date].map((v) => (
+                              <span key={v.slug} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] text-gray-600 bg-white/80" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+                                <Car size={10} className="text-blue-600" />
+                                {v.name}
+                                <span className="text-gray-400">({v.max_passengers}p)</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </a>
+                    ))}
                   </div>
                 </div>
-
-                {/* Dropoff */}
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("dropoff")} *
-                  </label>
-                  <div className="relative">
-                    <MapPin
-                      size={18}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                    />
-                    <select
-                      value={regionSlug}
-                      onChange={(e) => setRegionSlug(e.target.value)}
-                      required
-                      className="w-full pl-10 pr-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    >
-                      <option value="">{t("selectRegion")}</option>
-                      {regions.map((r) => (
-                        <option key={r.slug} value={r.slug}>
-                          {getRegionName(r)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Date & Time */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      {t("departureDate")} *
-                    </label>
-                    <div className="relative">
-                      <Calendar
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                      />
-                      <input
-                        type="date"
-                        value={pickupDate}
-                        onChange={(e) => setPickupDate(e.target.value)}
-                        min={today}
-                        required
-                        className={`w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none ${unavailableDates.has(pickupDate) ? "ring-2 ring-red-500" : ""}`} style={{ backgroundColor: "rgba(255,255,255,0.04)", border: unavailableDates.has(pickupDate) ? "1px solid rgba(239,68,68,0.5)" : "1px solid rgba(255,255,255,0.08)" }}
-                      />
-                    </div>
-                    {unavailableDates.has(pickupDate) && (
-                      <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                        <AlertCircle size={12} /> {t("dateUnavailable")}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      {t("departureTime")} *
-                    </label>
-                    <div className="relative">
-                      <Clock
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                      />
-                      <input
-                        type="time"
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        required
-                        className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Return date (round trip) */}
-                {tripType === "round_trip" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                        {t("returnDate")} *
-                      </label>
-                      <div className="relative">
-                        <Calendar
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                        />
-                        <input
-                          type="date"
-                          value={returnDate}
-                          onChange={(e) => setReturnDate(e.target.value)}
-                          min={pickupDate || today}
-                          required
-                          className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                        {t("returnTime")} *
-                      </label>
-                      <div className="relative">
-                        <Clock
-                          size={16}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                        />
-                        <input
-                          type="time"
-                          value={returnTime}
-                          onChange={(e) => setReturnTime(e.target.value)}
-                          required
-                          className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Flight code */}
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("flightCode")} <span className="text-[#555] text-xs">({t("optional")})</span>
-                  </label>
-                  <div className="relative">
-                    <Plane
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
-                    />
-                    <input
-                      type="text"
-                      value={flightCode}
-                      onChange={(e) =>
-                        setFlightCode(e.target.value.toUpperCase())
-                      }
-                      placeholder={t("flightCodePlaceholder")}
-                      className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    />
-                  </div>
-                </div>
-
-                {/* Passengers */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      <Users size={14} className="inline mr-1" />
-                      {t("adults")}
-                    </label>
-                    <select
-                      value={adults}
-                      onChange={(e) => setAdults(Number(e.target.value))}
-                      className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    >
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      {t("children")}
-                    </label>
-                    <select
-                      value={children}
-                      onChange={(e) => setChildren(Number(e.target.value))}
-                      className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    >
-                      {[0, 1, 2, 3, 4].map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      <Luggage size={14} className="inline mr-1" />
-                      {t("luggage")}
-                    </label>
-                    <select
-                      value={luggage}
-                      onChange={(e) => setLuggage(Number(e.target.value))}
-                      className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    >
-                      {[0, 1, 2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  {t("next")}
-                  <ArrowRight size={18} />
-                </button>
-              </div>
-            )}
-
-            {/* STEP 2: Vehicle & Extras */}
-            {step === 2 && (
-              <div className="space-y-5">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Shield size={20} className="text-orange-500" />
-                  {t("step2")}
-                </h2>
-
-                {/* Vehicle card */}
-                <div className="relative border-2 border-orange-500 rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(249,115,22,0.06)" }}>
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent" />
+              )}
+            </div>
+          )}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 size={32} className="animate-spin text-blue-600 mb-3" />
+              <p className="text-sm text-gray-500">{t("processing")}</p>
+            </div>
+          ) : vehicles.length === 0 ? (
+            <div className="text-center py-20">
+              <AlertCircle size={40} className="mx-auto text-gray-400 mb-3" />
+              <p className="text-gray-500">{t("errorGeneric")}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {vehicles.map((vehicle) => (
+                <div key={vehicle.categoryId} className="group rounded-2xl overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
                   <div className="flex flex-col sm:flex-row">
-                    {/* Vehicle image — left side */}
-                    <div className="relative w-full sm:w-[45%] h-48 sm:h-auto sm:min-h-[220px] bg-gradient-to-br from-[#1a1a1a] to-[#111] flex-shrink-0">
-                      <Image
-                        src={priceData?.vehicle?.image_url || "/images/vehicles/mercedes-vito-vip.png"}
-                        alt={priceData?.vehicle?.name || "VIP Transfer"}
-                        fill
-                        className="object-contain p-4"
-                        sizes="(max-width: 768px) 100vw, 300px"
-                      />
+                    <div className="relative w-full sm:w-[280px] h-48 sm:h-auto sm:min-h-[200px] bg-gradient-to-br from-gray-50 to-gray-100 flex-shrink-0">
+                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className="object-contain p-6 group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 280px" />
                     </div>
-                    {/* Info — right side */}
-                    <div className="flex-1 p-5 sm:p-6 flex flex-col justify-center">
-                      <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1 p-5 sm:p-6 flex flex-col">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
+                        {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicle.description}</p>}
+                        <div className="flex flex-wrap gap-3 mt-3 mb-4">
+                          <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
+                          <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
+                        </div>
+                        {vehicle.features.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-4">
+                            {vehicle.features.map((f) => (
+                              <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-gray-600" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
+                                <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
+                                {featureLabel[f] || f}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {[{ icon: <Shield size={12} />, text: t("trustSecure") }, { icon: <Check size={12} />, text: t("trustCancel") }, { icon: <Headphones size={12} />, text: t("seo247") }].map(({ icon, text }) => (
+                            <span key={text} className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">{icon} {text}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-end justify-between mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                         <div>
-                          <span className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.15em]">
-                            {priceData?.vehicle?.name || "VIP"}
-                          </span>
-                          <h3 className="text-lg font-bold text-white mt-0.5">
-                            Mercedes-Benz Vito Tourer
-                          </h3>
-                          {priceData?.vehicle?.description && (
-                            <p className="text-xs text-[#86868b] mt-1">{priceData.vehicle.description}</p>
+                          <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
+                          {vehicle.calculation.roundTripDiscount > 0 && (
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-sm text-gray-400 line-through">{fmt(vehicle.oneWayPrice * 2, exchangeRates)}</span>
+                              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">-{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}</span>
+                            </div>
                           )}
+                          <div className="text-xs text-gray-500 mt-0.5 space-y-0.5">
+                            {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (<p key={i}>{line}</p>))}
+                          </div>
                         </div>
-                        <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
-                          <Check size={16} className="text-white" />
-                        </div>
+                        <button type="button" onClick={() => selectVehicle(vehicle)} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30">
+                          {t("selectVehicle")}<ArrowRight size={16} />
+                        </button>
                       </div>
-
-                      {/* Features */}
-                      {(priceData?.vehicle?.features?.length ?? 0) > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {priceData!.vehicle!.features.map((f) => {
-                          const label: Record<string, string> = {
-                            ac: "A/C",
-                            wifi: "Wi-Fi",
-                            water: "Water",
-                            leather: "Leather",
-                            usb: "USB",
-                            tv: "TV",
-                            minibar: "Minibar",
-                          };
-                          const iconMap: Record<string, React.ReactNode> = {
-                            ac: <Wind size={11} />,
-                            wifi: <Wifi size={11} />,
-                            water: <Droplets size={11} />,
-                            leather: <Armchair size={11} />,
-                            usb: <Plug size={11} />,
-                            tv: <Tv size={11} />,
-                            minibar: <GlassWater size={11} />,
-                          };
-                          return (
-                            <span
-                              key={f}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs text-gray-300"
-                              style={{ backgroundColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
-                            >
-                              <span className="text-orange-400">{iconMap[f] ?? <Check size={11} />}</span>
-                              {label[f] || f}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {/* STEP 2: Passenger Info + Extras */}
+      {step === 2 && selectedVehicle && (
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="rounded-2xl p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+                <Users size={20} className="text-blue-600" />{t("step3")}
+              </h2>
+              <div className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("lastName")} *</label>
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("email")} *</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
+                    <PhoneInput international defaultCountry="TR" value={phone} onChange={(val) => setPhone(val ?? "")} placeholder={t("placeholderPhone")}
+                      className="phone-input-dark w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                      style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
+                      flagComponent={({ country, countryName }) => {
+                        const Flag = flags[country as keyof typeof flags];
+                        return Flag ? <Flag title={countryName} style={{ width: 24, height: 16, borderRadius: 2, display: "block", flexShrink: 0 }} /> : <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>;
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
+                    <div className="relative">
+                      <Plane size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input type="text" value={flightCode} onChange={(e) => setFlightCode(e.target.value.toUpperCase())} placeholder={t("flightCodePlaceholder")} className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
+                    <input type="text" value={hotelName} onChange={(e) => setHotelName(e.target.value)} placeholder={t("placeholderHotel")} className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("notes")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={t("notesPlaceholder")} className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                 </div>
 
                 {/* Extras */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[#555] uppercase tracking-wide">
-                    {t("extras")}
-                  </h3>
-
-                  {/* Child seat toggle */}
-                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="pt-2">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t("extras")}</h3>
+                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer mb-2 transition-colors" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
                     <div className="flex items-center gap-3">
-                      <Baby
-                        size={20}
-                        className="text-white"
-                      />
-                      <div>
-                        <p className="font-medium text-white text-sm">
-                          {t("childSeat")}
-                        </p>
-                        <p className="text-xs text-[#555]">
-                          {t("childSeatNeeded")}
-                        </p>
-                      </div>
+                      <Baby size={20} className="text-gray-700" />
+                      <div><p className="font-medium text-gray-900 text-sm">{t("childSeat")}</p><p className="text-xs text-gray-500">{t("childSeatNeeded")}</p></div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-orange-400">
-                        +$10
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={childSeat}
-                        onChange={(e) => setChildSeat(e.target.checked)}
-                        className="w-5 h-5 rounded text-orange-500 focus:ring-orange-500"
-                      />
+                      <span className="text-sm font-semibold text-blue-600">+${settingsData.childSeatFee}</span>
+                      <input type="checkbox" checked={childSeat} onChange={(e) => setChildSeat(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
                     </div>
                   </label>
-
-
                 </div>
 
                 {/* Coupon */}
                 <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("couponCode")}
-                  </label>
+                  <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("couponCode")}</label>
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => {
-                        setCouponCode(e.target.value.toUpperCase());
-                        setCouponApplied(false);
-                      }}
-                      placeholder={t("placeholderCoupon")}
-                      className="flex-1 px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={applyCoupon}
-                      disabled={!couponCode.trim()}
-                      className="px-5 py-3 text-white text-sm font-medium rounded-lg disabled:opacity-40 transition-all" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                    >
-                      {t("applyCoupon")}
-                    </button>
+                    <input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponApplied(false); }} placeholder={t("placeholderCoupon")} className="flex-1 px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <button type="button" onClick={() => setCouponApplied(true)} disabled={!couponCode.trim()} className="px-5 py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all" style={{ backgroundColor: "rgba(0,0,0,0.06)" }}>{t("applyCoupon")}</button>
                   </div>
-                  {couponApplied && priceData && !priceLoading && (
-                    priceData.calculation.couponDiscount > 0 ? (
-                      <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-                        <Check size={12} /> {t("couponAppliedSuccess")} (-{fmt(priceData.calculation.couponDiscount, priceData.exchangeRates)})
-                      </p>
-                    ) : (
-                      <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                        <AlertCircle size={12} /> {t("couponInvalid")}
-                      </p>
-                    )
-                  )}
                 </div>
 
                 {/* Navigation */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={goBack}
-                    className="flex-1 py-3.5 font-medium rounded-lg text-[#86868b] transition-colors flex items-center justify-center gap-2" style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    <ArrowLeft size={16} />
-                    {t("back")}
+                <div className="flex gap-3 pt-4">
+                  <button type="button" onClick={goBack} className="flex-1 py-3.5 font-medium rounded-lg text-gray-600 transition-colors flex items-center justify-center gap-2" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+                    <ArrowLeft size={16} />{t("back")}
                   </button>
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    {t("next")}
-                    <ArrowRight size={18} />
+                  <button type="button" onClick={handleSubmit} disabled={submitting} className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-blue-600/20">
+                    {submitting ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>) : (<><CreditCard size={18} />{t("pay")}</>)}
                   </button>
                 </div>
-              </div>
-            )}
-
-            {/* STEP 3: Personal Info & Payment */}
-            {step === 3 && (
-              <div className="space-y-5">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <CreditCard
-                    size={20}
-                    className="text-orange-500"
-                  />
-                  {t("step3")}
-                </h2>
-
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      {t("firstName")} *
-                    </label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                      {t("lastName")} *
-                    </label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required
-                      className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("email")} *
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("phone")} *
-                  </label>
-                  <PhoneInput
-                    international
-                    defaultCountry="TR"
-                    value={phone}
-                    onChange={(val) => setPhone(val ?? "")}
-                    placeholder={t("placeholderPhone")}
-                    className="phone-input-dark w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none"
-                    style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                    flagComponent={({ country, countryName }) => {
-                      const Flag = flags[country as keyof typeof flags];
-                      return Flag ? (
-                        <Flag
-                          title={countryName}
-                          style={{ width: 24, height: 16, borderRadius: 2, display: "block", flexShrink: 0 }}
-                        />
-                      ) : (
-                        <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>
-                      );
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("selectHotel")}
-                  </label>
-                  <input
-                    type="text"
-                    value={hotelName}
-                    onChange={(e) => setHotelName(e.target.value)}
-                    placeholder={t("placeholderHotel")}
-                    className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#86868b] mb-1.5">
-                    {t("notes")}
-                  </label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                    placeholder={t("notesPlaceholder")}
-                    className="w-full px-4 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none resize-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                  />
-                </div>
-
-                {/* Navigation */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={goBack}
-                    className="flex-1 py-3.5 font-medium rounded-lg text-[#86868b] transition-colors flex items-center justify-center gap-2" style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    <ArrowLeft size={16} />
-                    {t("back")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="flex-1 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        {t("processing")}
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard size={18} />
-                        {t("pay")}
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Stripe Payment */}
-            {step === 4 && clientSecret && (
-              <div className="space-y-5">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <CreditCard size={20} className="text-orange-500" />
-                  {t("step4")}
-                </h2>
-                <StripeCheckoutEmbed
-                  clientSecret={clientSecret}
-                  reservationCode={reservationCode ?? ""}
-                  locale={locale}
-                  totalPrice={priceData?.calculation?.totalPrice ?? 0}
-                  regionName={selectedRegion ? getRegionName(selectedRegion) : regionSlug}
-                  tripType={tripType}
-                  pickupDate={pickupDate}
-                  pickupTime={pickupTime}
-                  onSuccess={() => {
-                    window.location.href = `/${locale}/booking/success?code=${reservationCode}`;
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Price Summary sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-20 z-10 space-y-4">
-          {/* Route Map */}
-          <div>
-            <RouteMap
-              destinationLat={selectedRegion?.latitude}
-              destinationLng={selectedRegion?.longitude}
-              destinationName={selectedRegion ? getRegionName(selectedRegion) : undefined}
-              className="h-[220px]"
-            />
-          </div>
-
-          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            {/* Card header */}
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)" }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-white">{t("totalPrice")}</h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
-                  Best Price
-                </span>
               </div>
             </div>
-
-            <div className="p-5">
-            {priceLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2
-                  size={24}
-                  className="animate-spin text-[#555]"
-                />
-              </div>
-            ) : priceData ? (
-              <div className="space-y-3">
-                {/* Region info */}
-                <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">{t("dropoff")}</p>
-                  <p className="font-bold text-white text-sm">
-                    {selectedRegion ? getRegionName(selectedRegion) : regionSlug}
-                  </p>
-                  <p className="text-xs text-[#86868b] mt-0.5">
-                    ~{priceData.region.duration_minutes} min &nbsp;·&nbsp;{priceData.region.distance_km} km
-                  </p>
+          </div>
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-20 z-10">
+              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+                {/* Header */}
+                <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
+                  <h3 className="text-sm font-bold text-white">{t("step1")}</h3>
                 </div>
-
-                {/* Trip type */}
-                <div className="flex justify-between items-center text-sm py-1">
-                  <span className="text-[#86868b]">
-                    {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
-                  </span>
-                  <span className="font-semibold text-white">
-                    {fmt(priceData.calculation.basePrice, priceData.exchangeRates)}
-                  </span>
-                </div>
-
-                {/* Child seat */}
-                {childSeat && priceData.calculation.childSeatFee > 0 && (
-                  <div className="flex justify-between items-center text-sm py-1">
-                    <span className="text-[#86868b]">{t("childSeatFee")}</span>
-                    <span className="font-semibold text-orange-400">
-                      +{fmt(priceData.calculation.childSeatFee, priceData.exchangeRates)}
-                    </span>
+                <div className="p-5 space-y-4">
+                  {/* Vehicle */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "rgba(0,122,255,0.04)", border: "1px solid rgba(0,122,255,0.08)" }}>
+                    <div className="relative w-14 h-10 flex-shrink-0">
+                      <Image src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={selectedVehicle.name} fill className="object-contain" sizes="56px" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-900">{selectedVehicle.name}</p>
+                      <p className="text-[11px] text-gray-500">{selectedVehicle.max_passengers} {t("passengers")} · {selectedVehicle.max_luggage} {t("luggageCapacity")}</p>
+                    </div>
                   </div>
-                )}
 
-                {/* Round trip discount */}
-                {priceData.calculation.roundTripDiscount > 0 && (
-                  <div className="flex justify-between items-center text-sm py-1">
-                    <span className="text-[#86868b]">{t("roundTripDiscount")}</span>
-                    <span className="font-semibold text-emerald-400">
-                      -{fmt(priceData.calculation.roundTripDiscount, priceData.exchangeRates)}
-                    </span>
+                  {/* Route + Date + Passengers */}
+                  <div className="space-y-2.5">
+                    {regionData && (
+                      <div className="flex items-start gap-2.5">
+                        <div className="flex flex-col items-center mt-0.5">
+                          <div className="w-2 h-2 rounded-full bg-blue-600" />
+                          <div className="w-px h-5 bg-gray-200" />
+                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        </div>
+                        <div className="space-y-1.5 min-w-0">
+                          <p className="text-xs font-medium text-gray-700 truncate">Antalya Airport (AYT)</p>
+                          <p className="text-xs font-medium text-gray-700 truncate">{getRegionName(regionData)}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Calendar size={13} className="text-gray-400 flex-shrink-0" />
+                      <span>{formatDate(pickupDate)} · {pickupTime}</span>
+                    </div>
+                    {tripType === "round_trip" && returnDate && (
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <ArrowLeftRight size={13} className="text-gray-400 flex-shrink-0" />
+                        <span>{formatDate(returnDate)} · {returnTime}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Users size={13} className="text-gray-400 flex-shrink-0" />
+                      <span>{adults} {t("adult")}{children > 0 ? ` · ${children} ${t("child")}` : ""}</span>
+                    </div>
                   </div>
-                )}
 
-                {/* Coupon discount */}
-                {priceData.calculation.couponDiscount > 0 && (
-                  <div className="flex justify-between items-center text-sm py-1">
-                    <span className="text-[#86868b]">{t("couponDiscount")}</span>
-                    <span className="font-semibold text-emerald-400">
-                      -{fmt(priceData.calculation.couponDiscount, priceData.exchangeRates)}
-                    </span>
+                  {/* Price breakdown */}
+                  <div className="pt-3 space-y-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">{tripType === "round_trip" ? `2 × ${t("oneWay")}` : t("oneWay")}</span>
+                      <span className="font-medium text-gray-800">{fmt(tripType === "round_trip" ? selectedVehicle.oneWayPrice * 2 : selectedVehicle.calculation.basePrice, exchangeRates)}</span>
+                    </div>
+                    {selectedVehicle.calculation.roundTripDiscount > 0 && (
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">{t("roundTripDiscount")}</span><span className="font-medium text-emerald-600">-{fmt(selectedVehicle.calculation.roundTripDiscount, exchangeRates)}</span></div>
+                    )}
+                    {childSeat && (
+                      <div className="flex justify-between text-xs"><span className="text-gray-500">{t("childSeatFee")}</span><span className="font-medium text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span></div>
+                    )}
                   </div>
-                )}
 
-                {/* Total */}
-                <div className="mt-2 p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(52,211,153,0.1) 0%, rgba(16,185,129,0.06) 100%)", border: "1px solid rgba(52,211,153,0.2)" }}>
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-sm">{t("totalPrice")}</span>
-                    <span className="text-2xl font-bold text-emerald-400">
-                      {fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}
-                    </span>
+                  {/* Total */}
+                  <div className="p-3.5 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.12)" }}>
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-gray-900 text-xs">{t("totalPrice")}</span>
+                      <span className="text-xl font-bold text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
+                    </div>
+                    <div className="mt-1.5 text-[11px] text-right space-y-0.5">
+                      {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}
+                    </div>
                   </div>
-                  {/* Other currency equivalents */}
-                  <div className="mt-2 text-xs text-right space-y-0.5">
-                    {otherCurrencies(priceData.calculation.totalPrice, priceData.exchangeRates).map((line, i) => (
-                      <p key={i} className="text-[#86868b]">≈ {line}</p>
+
+                  {/* Trust badges */}
+                  <div className="space-y-1.5">
+                    {[
+                      { icon: Shield, text: t("trustSecure") },
+                      { icon: Check, text: t("trustCancel") },
+                      { icon: Check, text: t("trustNoHidden") },
+                    ].map(({ icon: Icon, text }) => (
+                      <div key={text} className="flex items-center gap-2 text-[11px] text-gray-500">
+                        <Icon size={12} className="text-emerald-500 flex-shrink-0" strokeWidth={2.5} />{text}
+                      </div>
                     ))}
                   </div>
                 </div>
               </div>
-            ) : (
-              <p className="text-sm text-[#555] text-center py-6">
-                {t("selectRegionForPrice")}
-              </p>
-            )}
-
-            {/* Trust badges */}
-            <div className="mt-5 space-y-2">
-              {[
-                { icon: Shield, text: t("trustSecure"), color: "rgba(52,211,153" },
-                { icon: Check, text: t("trustCancel"), color: "rgba(52,211,153" },
-                { icon: Check, text: t("trustNoHidden"), color: "rgba(52,211,153" },
-              ].map(({ icon: Icon, text, color }) => (
-                <div key={text} className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-[#86868b]" style={{ backgroundColor: `${color},0.05)` }}>
-                  <Icon size={13} style={{ color: `${color},1)`, flexShrink: 0 }} strokeWidth={2.5} />
-                  {text}
-                </div>
-              ))}
             </div>
-            </div>
-          </div>
           </div>
         </div>
+      )}
+      {/* STEP 3: Stripe Payment */}
+      {step === 3 && clientSecret && (
+        <div className="max-w-2xl mx-auto">
+          <div className="rounded-2xl p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+              <CreditCard size={20} className="text-blue-600" />{t("step4")}
+            </h2>
+            <p className="text-xs text-gray-500 mb-6">{t("paymentSecureNote")}</p>
+            <StripeCheckoutEmbed
+              clientSecret={clientSecret} reservationCode={reservationCode ?? ""} locale={locale}
+              totalPrice={totalPrice} regionName={regionData ? getRegionName(regionData) : regionSlug}
+              tripType={tripType} pickupDate={pickupDate} pickupTime={pickupTime}
+              onSuccess={() => { window.location.href = `/${locale}/booking/success?code=${reservationCode}`; }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Back to previous step / booking page */}
+      <div className="flex justify-center mt-10 mb-4">
+        <button
+          type="button"
+          onClick={() => {
+            if (step > 1) {
+              if (step === 3) { setStep(2); }
+              else if (step === 2) { setStep(1); }
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+              window.location.href = `/${locale}/booking`;
+            }
+          }}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          style={{ border: "1px solid rgba(0,0,0,0.08)" }}
+        >
+          <ArrowLeft size={16} />
+          {t("back")}
+        </button>
       </div>
     </div>
   );

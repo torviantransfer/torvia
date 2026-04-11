@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import { Mail, Lock, Loader2, AlertCircle, User, Eye, EyeOff } from "lucide-react";
@@ -18,11 +18,23 @@ export default function AccountLoginPage() {
   const [loading, setLoading] = useState(false);
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
   const params = useParams();
   const locale = (params.locale as string) ?? "en";
 
   const supabase = createClient();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace(`/${locale}/account`);
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+  }, []);
 
   const handleForgotPassword = async () => {
     if (!email) {
@@ -120,19 +132,32 @@ export default function AccountLoginPage() {
     // If no error, browser will redirect — don't setLoading(false)
   };
 
+  if (checkingAuth) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 min-h-[80vh] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
-      <main className="flex-1 bg-[#111113]">
-        <div className="max-w-md mx-auto px-4 py-16">
+      <main className="flex-1 bg-gray-50/50">
+        <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500/10 flex items-center justify-center">
-              <User size={28} className="text-orange-500" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+              <User size={28} className="text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               {mode === "login" ? (t.loginTitle[locale] ?? t.loginTitle.en) : (t.registerTitle[locale] ?? t.registerTitle.en)}
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-gray-500 text-sm mt-1">
               {t.subtitle[locale] ?? t.subtitle.en}
             </p>
           </div>
@@ -141,7 +166,7 @@ export default function AccountLoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full py-3 mb-4 bg-white hover:bg-gray-100 text-gray-800 font-medium rounded-xl transition-colors flex items-center justify-center gap-3 disabled:opacity-60"
+            className="w-full py-3 mb-4 bg-white hover:bg-gray-50 text-gray-800 font-medium rounded-xl border border-gray-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-60 shadow-sm"
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -153,9 +178,9 @@ export default function AccountLoginPage() {
           </button>
 
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-gray-200" />
             <span className="text-xs text-gray-500">{t.or[locale] ?? t.or.en}</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,7 +193,7 @@ export default function AccountLoginPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder={t.firstName[locale] ?? t.firstName.en}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
                 <div>
@@ -178,7 +203,7 @@ export default function AccountLoginPage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder={t.lastName[locale] ?? t.lastName.en}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
               </div>
@@ -192,7 +217,7 @@ export default function AccountLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t.email[locale] ?? t.email.en}
-                className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
 
@@ -205,7 +230,7 @@ export default function AccountLoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t.password[locale] ?? t.password.en}
-                className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
               <button
                 type="button"
@@ -223,8 +248,8 @@ export default function AccountLoginPage() {
               </div>
             )}
             {showAlreadyRegistered && (
-              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 space-y-2">
-                <p className="text-orange-400 text-sm font-medium">
+              <div className="bg-blue-500/10 border border-blue-600/20 rounded-xl p-4 space-y-2">
+                <p className="text-blue-600 text-sm font-medium">
                   {t.alreadyRegistered[locale] ?? t.alreadyRegistered.en}
                 </p>
                 <p className="text-gray-400 text-xs">
@@ -234,14 +259,14 @@ export default function AccountLoginPage() {
                   type="button"
                   onClick={handleForgotPassword}
                   disabled={loading}
-                  className="text-orange-500 hover:text-orange-400 text-sm font-medium underline"
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium underline"
                 >
                   {t.forgotPassword[locale] ?? t.forgotPassword.en}
                 </button>
               </div>
             )}
             {success && (
-              <div className="flex items-center gap-2 text-green-400 text-sm">
+              <div className="flex items-center gap-2 text-green-600 text-sm">
                 <Mail size={16} /> {success}
               </div>
             )}
@@ -249,7 +274,7 @@ export default function AccountLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
               {mode === "login" ? (t.loginBtn[locale] ?? t.loginBtn.en) : (t.registerBtn[locale] ?? t.registerBtn.en)}
@@ -260,7 +285,7 @@ export default function AccountLoginPage() {
                 type="button"
                 onClick={handleForgotPassword}
                 disabled={loading}
-                className="w-full text-center text-sm text-gray-500 hover:text-orange-400 transition-colors"
+                className="w-full text-center text-sm text-gray-500 hover:text-blue-600 transition-colors"
               >
                 {t.forgotPassword[locale] ?? t.forgotPassword.en}
               </button>
@@ -271,11 +296,12 @@ export default function AccountLoginPage() {
             {mode === "login" ? (t.noAccount[locale] ?? t.noAccount.en) : (t.hasAccount[locale] ?? t.hasAccount.en)}{" "}
             <button
               onClick={() => { setMode(mode === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
-              className="text-orange-500 hover:text-orange-400 font-medium"
+              className="text-blue-600 hover:text-blue-700 font-medium"
             >
               {mode === "login" ? (t.registerLink[locale] ?? t.registerLink.en) : (t.loginLink[locale] ?? t.loginLink.en)}
             </button>
           </p>
+        </div>
         </div>
       </main>
       <Footer />

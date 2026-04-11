@@ -18,23 +18,23 @@ export default async function BookingSuccessPage({
   return (
     <>
       <Header />
-      <main className="flex-1 bg-[#111113]">
+      <main className="flex-1 bg-white">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
           <div className="w-20 h-20 mx-auto bg-green-500/10 rounded-full flex items-center justify-center mb-6">
             <CheckCircle size={40} className="text-green-500" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-3">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
             {t("title")}
           </h1>
-          <p className="text-gray-400 text-lg mb-8">
+          <p className="text-gray-500 text-lg mb-8">
             {t("description")}
           </p>
 
           {/* Reservation code */}
-          <div className="bg-white/5 rounded-2xl border border-white/10 p-6 mb-8">
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 mb-8">
             <p className="text-sm text-gray-500 mb-2">{t("reservationCode")}</p>
-            <p className="text-3xl font-bold text-white tracking-wider">
+            <p className="text-3xl font-bold text-gray-900 tracking-wider">
               {code}
             </p>
             <p className="text-xs text-gray-500 mt-3">
@@ -43,25 +43,25 @@ export default async function BookingSuccessPage({
           </div>
 
           {/* What happens next */}
-          <div className="bg-white/5 rounded-2xl border border-white/10 p-6 mb-8 text-left">
-            <h2 className="font-bold text-white mb-4">
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 p-6 mb-8 text-left">
+            <h2 className="font-bold text-gray-900 mb-4">
               {t("whatNext")}
             </h2>
-            <ol className="space-y-3 text-sm text-gray-400">
+            <ol className="space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                <span className="w-6 h-6 bg-blue-500/10 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                   1
                 </span>
                 {t("step1")}
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                <span className="w-6 h-6 bg-blue-500/10 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                   2
                 </span>
                 {t("step2")}
               </li>
               <li className="flex items-start gap-3">
-                <span className="w-6 h-6 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                <span className="w-6 h-6 bg-blue-500/10 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                   3
                 </span>
                 {t("step3")}
@@ -75,7 +75,7 @@ export default async function BookingSuccessPage({
               href={`/api/voucher?code=${encodeURIComponent(code)}&locale=${locale}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/25"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/25"
             >
               <Download size={18} />
               {t("downloadVoucher")}
@@ -86,7 +86,7 @@ export default async function BookingSuccessPage({
           <div className="mb-8">
             <a
               href={`/${locale}/track`}
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/10 font-medium rounded-xl hover:bg-white/5 transition-colors text-gray-300 text-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 font-medium rounded-xl hover:bg-gray-50 transition-colors text-gray-600 text-sm"
             >
               <Search size={16} />
               {t("trackReservation")}
@@ -99,14 +99,14 @@ export default async function BookingSuccessPage({
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-medium rounded-lg hover:bg-[#20BD5A] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-gray-900 font-medium rounded-lg hover:bg-[#20BD5A] transition-colors"
             >
               <Phone size={16} />
               {t("whatsappSupport")}
             </a>
             <a
               href="mailto:torviantransfer@gmail.com"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/10 font-medium rounded-lg hover:bg-white/5 transition-colors text-gray-300"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 font-medium rounded-lg hover:bg-gray-50 transition-colors text-gray-600"
             >
               <Mail size={16} />
               {t("emailSupport")}

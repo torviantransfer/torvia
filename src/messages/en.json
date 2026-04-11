@@ -15,7 +15,9 @@
     "bookNow": "Book Now",
     "login": "Login",
     "myReservations": "My Reservations",
-    "trackReservation": "Track Reservation"
+    "trackReservation": "Track Reservation",
+    "profile": "Profile",
+    "signOut": "Sign Out"
   },
   "hero": {
     "title": "Antalya Airport VIP Transfer",
@@ -65,7 +67,7 @@
     "back": "Back",
     "step1": "Transfer Details",
     "step2": "Vehicle Selection",
-    "step3": "Details & Payment",
+    "step3": "Passenger Info",
     "step4": "Payment",
     "paymentSecureNote": "Your payment information is securely processed by Stripe. Your card details are never stored on our servers.",
     "firstName": "First Name",
@@ -90,6 +92,7 @@
     "errorFillRequired": "Please fill all required fields",
     "errorFillReturn": "Please fill return date and time",
     "dateUnavailable": "This date is fully booked. Please select another date.",
+    "suggestedDates": "Vehicles available on these dates:",
     "errorGeneric": "Something went wrong",
     "errorNetwork": "Network error. Please try again.",
     "placeholderWelcomeName": "Name on welcome sign",
@@ -129,7 +132,14 @@
     "couponInvalid": "Invalid or expired coupon",
     "trustSecure": "Secure payment via Stripe",
     "trustCancel": "Free cancellation 24h before",
-    "trustNoHidden": "No hidden fees"
+    "trustNoHidden": "No hidden fees",
+    "findTransfer": "Find Transfer",
+    "addReturn": "Add Return",
+    "adult": "Adult",
+    "child": "Child",
+    "age": "Age",
+    "person": "Person",
+    "backToHome": "Back to Home"
   },
   "trust": {
     "heading": "Why travelers choose TORVIAN.",
@@ -239,7 +249,14 @@
     "tagCoastal": "Vibrant Coastal City",
     "tagNature": "Nature & Sea",
     "tagClosest": "Closest to Airport",
-    "tagHidden": "Hidden Gem"
+    "tagHidden": "Hidden Gem",
+    "belekDesc": "Private VIP transfer from Antalya Airport to Belek. Door-to-door service to golf resorts, luxury hotels, and beachfront properties.",
+    "sideDesc": "Comfortable and safe transfer to ancient Side. Explore historic ruins, sandy beaches, and vibrant nightlife along the coast.",
+    "alanyaDesc": "Private transfer from Antalya Airport to Alanya. Easy access to Alanya Castle, Cleopatra Beach, and surrounding resorts.",
+    "kemerDesc": "Peaceful transfer to Kemer between mountains and sea. Service to Çamyuva, Göynük, Beldibi, and Tekirova areas.",
+    "kunduDesc": "Fast and affordable airport transfer to Kundu-Lara, the closest resort area. Easy access to all-inclusive hotels.",
+    "kasDesc": "Private transfer to Kaş, the hidden gem of the Mediterranean. Turquoise bays, diving spots, and authentic town charm.",
+    "viewDetails": "View Details"
   },
   "about": {
     "title": "About",
@@ -287,7 +304,11 @@
     "featPanorama": "Panoramic windows",
     "featAirCon": "Air conditioning",
     "featUsb": "USB charging",
-    "featLegRoom": "Extra leg room"
+    "featLegRoom": "Extra leg room",
+    "coverageTag": "Coverage",
+    "coverageTitle": "Where We Operate",
+    "coverageDesc": "We cover all major tourist destinations in the Antalya region.",
+    "coverageCta": "Book Your Transfer"
   },
   "contact": {
     "title": "Contact TORVIAN Transfer | Antalya Airport VIP Transfer",
@@ -648,7 +669,9 @@
     "feat1": "Flight Tracking System",
     "feat2": "Licensed & Insured",
     "feat3": "4.9 Customer Rating",
-    "feat4": "25+ Destinations"
+    "feat4": "25+ Destinations",
+    "subHeading": "Professional and Reliable Transfer Experience",
+    "readMore": "Book Your Transfer Now →"
   },
   "track": {
     "title": "Track Reservation",

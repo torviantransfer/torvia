@@ -16,29 +16,29 @@ export default async function BookingCancelPage({
   return (
     <>
       <Header />
-      <main className="flex-1 bg-[#111113]">
+      <main className="flex-1 bg-white">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
           <div className="w-20 h-20 mx-auto bg-red-500/10 rounded-full flex items-center justify-center mb-6">
             <XCircle size={40} className="text-red-500" />
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-3">
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">
             {t("title")}
           </h1>
-          <p className="text-gray-400 text-lg mb-8">
+          <p className="text-gray-500 text-lg mb-8">
             {t("description")}
           </p>
 
           {code && (
             <p className="text-sm text-gray-500 mb-8">
-              {t("reference")}: <span className="font-medium text-gray-300">{code}</span>
+              {t("reference")}: <span className="font-medium text-gray-700">{code}</span>
             </p>
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/booking"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue- -white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
               {t("tryAgain")}
             </Link>
@@ -46,7 +46,7 @@ export default async function BookingCancelPage({
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 border border-white/10 font-medium rounded-lg hover:bg-white/5 transition-colors text-gray-300"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 font-medium rounded-lg hover:bg-gray-50 transition-colors text-gray-600"
             >
               {t("whatsappSupport")}
             </a>

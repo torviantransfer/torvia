@@ -55,23 +55,23 @@ export default async function BlogPage({
           className="relative py-24 overflow-hidden"
           style={{
             background:
-              "linear-gradient(180deg, #1c1c1e 0%, #111113 100%)",
+              "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
           }}
         >
           <div className="absolute inset-0">
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]"
-              style={{ backgroundColor: "rgba(249,115,22,0.15)" }}
+              style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
-            <p className="text-sm font-semibold text-orange-400 uppercase tracking-widest mb-4">
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">
               {t("title")}
             </p>
-            <h1 className="text-3xl lg:text-5xl font-bold mb-5 tracking-tight text-white">
+            <h1 className="text-3xl lg:text-5xl font-bold mb-5 tracking-tight text-gray-900">
               {t("heading")}
             </h1>
-            <p className="text-[#86868b] text-lg max-w-xl mx-auto">
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">
               {t("subtitle")}
             </p>
           </div>
@@ -82,7 +82,7 @@ export default async function BlogPage({
           <div className="max-w-6xl mx-auto px-4">
             {!posts || posts.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-[#86868b] text-lg">{t("noPosts")}</p>
+                <p className="text-gray-500 text-lg">{t("noPosts")}</p>
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -100,8 +100,8 @@ export default async function BlogPage({
                       href={`/blog/${post.slug}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
-                        backgroundColor: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        backgroundColor: "rgba(0,0,0,0.03)",
+                        border: "1px solid rgba(0,0,0,0.06)",
                       }}
                     >
                       <div className="relative aspect-[16/9] overflow-hidden">
@@ -115,15 +115,15 @@ export default async function BlogPage({
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)" }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>
-                              <BookOpen size={20} className="text-orange-400" />
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                              <BookOpen size={20} className="text-blue-600" />
                             </div>
                           </div>
                         )}
                       </div>
                       <div className="p-6">
                         {post.published_at && (
-                          <div className="flex items-center gap-2 text-xs text-[#86868b] mb-3">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
                             <Calendar size={14} />
                             <time>
                               {new Date(
@@ -136,13 +136,13 @@ export default async function BlogPage({
                             </time>
                           </div>
                         )}
-                        <h2 className="text-xl font-semibold text-white mb-3 group-hover:text-orange-400 transition-colors line-clamp-2">
+                        <h2 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
                           {title}
                         </h2>
-                        <p className="text-[#86868b] text-sm leading-relaxed line-clamp-3 mb-4">
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-4">
                           {excerpt}
                         </p>
-                        <span className="inline-flex items-center gap-2 text-orange-400 text-sm font-medium">
+                        <span className="inline-flex items-center gap-2 text-blue-600 text-sm font-medium">
                           {t("readMore")}
                           <ArrowRight
                             size={14}
@@ -159,13 +159,13 @@ export default async function BlogPage({
         </section>
 
         {/* CTA Section */}
-        <section className="py-20" style={{ backgroundColor: "#1d1d1f" }}>
+        <section className="py-20" style={{ backgroundColor: "#F5F5F7" }}>
           <div className="max-w-3xl mx-auto px-4 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-orange-400 mb-6" style={{ backgroundColor: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-blue-600 mb-6" style={{ backgroundColor: "rgba(0,122,255,0.08)", border: "1px solid rgba(0,122,255,0.12)" }}>
               <Plane size={14} />
               {locale === "tr" ? "VIP Transfer" : locale === "de" ? "VIP Transfer" : locale === "ru" ? "VIP Трансфер" : "VIP Transfer"}
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-gray-900 mb-4">
               {locale === "tr" ? "Antalya Havalimanı VIP Transfer Rezervasyonu" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer"}
             </h2>
             <p className="text-gray-400 text-base mb-8 max-w-xl mx-auto">

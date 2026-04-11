@@ -15,7 +15,9 @@
     "bookNow": "Jetzt Buchen",
     "login": "Anmelden",
     "myReservations": "Meine Buchungen",
-    "trackReservation": "Buchung Verfolgen"
+    "trackReservation": "Buchung Verfolgen",
+    "profile": "Profil",
+    "signOut": "Abmelden"
   },
   "hero": {
     "title": "VIP Flughafentransfer Antalya",
@@ -65,7 +67,7 @@
     "back": "Zurück",
     "step1": "Transfer Details",
     "step2": "Fahrzeugwahl",
-    "step3": "Angaben & Zahlung",
+    "step3": "Passagierinformationen",
     "step4": "Zahlung",
     "paymentSecureNote": "Ihre Zahlungsinformationen werden sicher von Stripe verarbeitet. Ihre Kartendaten werden nie auf unseren Servern gespeichert.",
     "firstName": "Vorname",
@@ -90,6 +92,7 @@
     "errorFillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
     "errorFillReturn": "Bitte füllen Sie Rückfahrtdatum und -zeit aus",
     "dateUnavailable": "Dieses Datum ist ausgebucht. Bitte wählen Sie ein anderes Datum.",
+    "suggestedDates": "An diesen Terminen sind Fahrzeuge verfügbar:",
     "errorGeneric": "Etwas ist schiefgelaufen",
     "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     "placeholderWelcomeName": "Name auf dem Willkommensschild",
@@ -129,7 +132,14 @@
     "couponInvalid": "Ungültiger oder abgelaufener Gutschein",
     "trustSecure": "Sichere Zahlung über Stripe",
     "trustCancel": "Kostenlose Stornierung 24h vorher",
-    "trustNoHidden": "Keine versteckten Gebühren"
+    "trustNoHidden": "Keine versteckten Gebühren",
+    "findTransfer": "Transfer Finden",
+    "addReturn": "Rückfahrt",
+    "adult": "Erwachsene",
+    "child": "Kind",
+    "age": "Jahre",
+    "person": "Person",
+    "backToHome": "Zur Startseite"
   },
   "trust": {
     "heading": "Warum Reisende TORVIAN wählen.",
@@ -239,7 +249,14 @@
     "tagCoastal": "Lebhafte Küstenstadt",
     "tagNature": "Natur & Meer",
     "tagClosest": "Dem Flughafen am nächsten",
-    "tagHidden": "Geheimtipp"
+    "tagHidden": "Geheimtipp",
+    "belekDesc": "Privater VIP-Transfer vom Flughafen Antalya nach Belek. Tür-zu-Tür-Service zu Golfresorts, Luxushotels und Strandanlagen.",
+    "sideDesc": "Komfortabler und sicherer Transfer in die antike Stadt Side. Historische Ruinen, Sandstrände und lebendiges Nachtleben.",
+    "alanyaDesc": "Privattransfer vom Flughafen Antalya nach Alanya. Einfacher Zugang zur Burg, Kleopatra-Strand und umliegenden Resorts.",
+    "kemerDesc": "Entspannter Transfer nach Kemer zwischen Bergen und Meer. Service nach Çamyuva, Göynük, Beldibi und Tekirova.",
+    "kunduDesc": "Schneller und günstiger Flughafentransfer nach Kundu-Lara, dem nächstgelegenen Feriengebiet. Zugang zu All-Inclusive-Hotels.",
+    "kasDesc": "Privattransfer nach Kaş, dem Geheimtipp am Mittelmeer. Türkisfarbene Buchten, Tauchspots und authentischer Charme.",
+    "viewDetails": "Details Ansehen"
   },
   "about": {
     "title": "Über Uns",
@@ -287,7 +304,11 @@
     "featPanorama": "Panoramafenster",
     "featAirCon": "Klimaanlage",
     "featUsb": "USB-Ladung",
-    "featLegRoom": "Extra Beinfreiheit"
+    "featLegRoom": "Extra Beinfreiheit",
+    "coverageTag": "Abdeckung",
+    "coverageTitle": "Wo wir tätig sind",
+    "coverageDesc": "Wir decken alle wichtigen Touristenziele in der Region Antalya ab.",
+    "coverageCta": "Transfer buchen"
   },
   "contact": {
     "title": "TORVIAN Transfer Kontakt | Antalya Flughafen VIP Transfer",
@@ -648,7 +669,9 @@
     "feat1": "Flugverfolgungssystem",
     "feat2": "Lizenziert & Versichert",
     "feat3": "4.9 Kundenbewertung",
-    "feat4": "25+ Reiseziele"
+    "feat4": "25+ Reiseziele",
+    "subHeading": "Professionelles und Zuverlässiges Transfer-Erlebnis",
+    "readMore": "Jetzt Transfer Buchen →"
   },
   "track": {
     "title": "Buchung Verfolgen",

@@ -28,7 +28,7 @@ export default function RouteMap({
   // Custom orange marker icon
   const airportIcon = L.divIcon({
     className: "",
-    html: `<div style="width:32px;height:32px;background:#f97316;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
+    html: `<div style="width:32px;height:32px;background:#007AFF;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.4-.1.9.3 1.1l5.5 3.2-2.9 2.9-2.1-.4c-.3-.1-.7 0-.9.2l-.5.5 3.3 1.9 1.9 3.3.5-.5c.3-.3.3-.6.2-.9l-.4-2.1 2.9-2.9 3.2 5.5c.2.4.8.5 1.1.3l.5-.3c.4-.2.6-.7.5-1.1z"/></svg>
     </div>`,
     iconSize: [32, 32],
@@ -57,8 +57,9 @@ export default function RouteMap({
         scrollWheelZoom: false,
       }).setView(AIRPORT, 10);
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
+        detectRetina: true,
       }).addTo(map);
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -66,6 +67,9 @@ export default function RouteMap({
       const routeLayer = L.layerGroup().addTo(map);
       routeLayerRef.current = routeLayer;
       mapInstanceRef.current = map;
+
+      // Force tile reload after mount
+      setTimeout(() => map.invalidateSize(), 200);
     }
 
     return () => {
@@ -90,20 +94,20 @@ export default function RouteMap({
       map.setView(AIRPORT, 10);
       // Add airport marker alone
       L.marker(AIRPORT, { icon: airportIcon })
-        .bindPopup("<b>Antalya Airport</b>")
+        .bindTooltip("Antalya Airport", { permanent: true, direction: "top", offset: [0, -16], className: "map-label" })
         .addTo(routeLayer);
       return;
     }
 
     const dest: [number, number] = [destinationLat, destinationLng];
 
-    // Add markers
+    // Add markers with permanent labels
     L.marker(AIRPORT, { icon: airportIcon })
-      .bindPopup("<b>Antalya Airport (AYT)</b>")
+      .bindTooltip("Antalya Airport", { permanent: true, direction: "top", offset: [0, -16], className: "map-label" })
       .addTo(routeLayer);
 
     L.marker(dest, { icon: destIcon })
-      .bindPopup(`<b>${destinationName ?? "Destination"}</b>`)
+      .bindTooltip(destinationName ?? "Destination", { permanent: true, direction: "top", offset: [0, -40], className: "map-label" })
       .addTo(routeLayer);
 
     // Fetch route from OpenRouteService (free, 2000 req/day)
@@ -131,7 +135,7 @@ export default function RouteMap({
 
         // Route line with glow effect
         L.polyline(coords, {
-          color: "#f97316",
+          color: "#007AFF",
           weight: 5,
           opacity: 0.8,
           lineJoin: "round",
@@ -139,7 +143,7 @@ export default function RouteMap({
 
         // Glow underneath
         L.polyline(coords, {
-          color: "#f97316",
+          color: "#007AFF",
           weight: 12,
           opacity: 0.15,
           lineJoin: "round",
@@ -171,7 +175,7 @@ export default function RouteMap({
     map: L.Map
   ) {
     L.polyline([from, to], {
-      color: "#f97316",
+      color: "#007AFF",
       weight: 3,
       opacity: 0.6,
       dashArray: "10 6",
@@ -182,20 +186,20 @@ export default function RouteMap({
   }
 
   return (
-    <div className={`relative rounded-xl overflow-hidden ${className}`} style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-      <div ref={mapRef} className="w-full h-full" style={{ minHeight: 220, background: "#1a1a2e" }} />
+    <div className={`relative rounded-xl overflow-hidden ${className}`} style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+      <div ref={mapRef} className="w-full h-full" style={{ minHeight: 220, background: "#f0f4f8" }} />
 
       {/* Route info badge */}
       {routeInfo && (
-        <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-xs font-medium text-white flex items-center gap-2 z-[1000]" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}>
+        <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-xs font-medium text-white flex items-center gap-2 z-[1000]" style={{ background: "rgba(0,122,255,0.9)", backdropFilter: "blur(8px)" }}>
           <span>{routeInfo.km} km</span>
-          <span className="w-1 h-1 rounded-full bg-orange-500" />
+          <span className="w-1 h-1 rounded-full bg-white" />
           <span>~{routeInfo.min} min</span>
         </div>
       )}
 
       {/* Powered by badge */}
-      <div className="absolute bottom-1 left-1 px-2 py-0.5 text-[10px] text-white/30 z-[1000]">
+      <div className="absolute bottom-1 left-1 px-2 py-0.5 text-[10px] text-gray-900/30 z-[1000]">
         OpenStreetMap
       </div>
     </div>

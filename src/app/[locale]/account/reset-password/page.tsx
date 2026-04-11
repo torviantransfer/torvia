@@ -77,56 +77,55 @@ export default function ResetPasswordPage() {
       <Header />
       <main className="flex-1 flex items-center justify-center min-h-[70vh] px-4 py-16">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl p-8" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="rounded-2xl p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
             {done ? (
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: "rgba(52,211,153,0.12)" }}>
-                  <CheckCircle size={32} className="text-emerald-400" />
+                  <CheckCircle size={32} className="text-emerald-500" />
                 </div>
-                <h1 className="text-xl font-bold text-white">Password Updated!</h1>
-                <p className="text-[#86868b] text-sm">Redirecting you to your account…</p>
+                <h1 className="text-xl font-bold text-gray-900">Password Updated!</h1>
+                <p className="text-gray-500 text-sm">Redirecting you to your account…</p>
               </div>
             ) : expired ? (
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: "rgba(239,68,68,0.12)" }}>
-                  <AlertCircle size={32} className="text-red-400" />
+                  <AlertCircle size={32} className="text-red-500" />
                 </div>
-                <h1 className="text-xl font-bold text-white">Link Expired</h1>
-                <p className="text-[#86868b] text-sm">This password reset link has expired or already been used. Please request a new one.</p>
+                <h1 className="text-xl font-bold text-gray-900">Link Expired</h1>
+                <p className="text-gray-500 text-sm">This password reset link has expired or already been used. Please request a new one.</p>
                 <button
                   onClick={() => router.push(`/${locale}/account/login`)}
-                  className="mt-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white"
-                  style={{ backgroundColor: "#C2410C" }}
+                  className="mt-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                 >
                   Back to Login
                 </button>
               </div>
             ) : !sessionReady ? (
               <div className="text-center space-y-4">
-                <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-[#86868b] text-sm">Verifying your reset link…</p>
+                <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-gray-500 text-sm">Verifying your reset link…</p>
               </div>
             ) : (
               <>
                 <div className="flex items-center gap-3 mb-8">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
-                    <Lock size={18} className="text-orange-400" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.1)" }}>
+                    <Lock size={18} className="text-blue-600" />
                   </div>
                   <div>
-                    <h1 className="text-lg font-bold text-white">Set New Password</h1>
-                    <p className="text-xs text-[#86868b]">Choose a strong password</p>
+                    <h1 className="text-lg font-bold text-gray-900">Set New Password</h1>
+                    <p className="text-xs text-gray-500">Choose a strong password</p>
                   </div>
                 </div>
 
                 {error && (
-                  <div className="mb-5 px-4 py-3 rounded-xl text-red-400 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                  <div className="mb-5 px-4 py-3 rounded-xl text-red-600 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)" }}>
                     {error}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="new-password" className="block text-sm font-medium text-[#86868b] mb-1.5">
+                    <label htmlFor="new-password" className="block text-sm font-medium text-gray-500 mb-1.5">
                       New Password
                     </label>
                     <div className="relative">
@@ -137,13 +136,13 @@ export default function ResetPasswordPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Minimum 8 characters"
                         required
-                        className="w-full px-4 py-3 pr-11 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-orange-500"
-                        style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        className="w-full px-4 py-3 pr-11 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPw(!showPw)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-white transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors"
                         aria-label={showPw ? "Hide password" : "Show password"}
                       >
                         {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -152,7 +151,7 @@ export default function ResetPasswordPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="confirm-password" className="block text-sm font-medium text-[#86868b] mb-1.5">
+                    <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-500 mb-1.5">
                       Confirm Password
                     </label>
                     <input
@@ -162,16 +161,15 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirm(e.target.value)}
                       placeholder="Repeat your password"
                       required
-                      className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-orange-500"
-                      style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 rounded-xl font-semibold text-sm text-white transition-opacity disabled:opacity-60 mt-2"
-                    style={{ backgroundColor: "#f97316" }}
+                    className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition-all disabled:opacity-60 mt-2"
                   >
                     {loading ? "Updating…" : "Update Password"}
                   </button>

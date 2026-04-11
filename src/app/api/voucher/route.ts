@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       vehicle_categories(name)
     `)
     .eq("reservation_code", code)
-    .eq("status", "paid")
+    .in("status", ["paid", "driver_assigned", "passenger_picked_up"])
     .single();
 
   if (!res) {

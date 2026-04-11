@@ -28,7 +28,7 @@ export default function VehicleShowcase() {
   ];
 
   return (
-    <section className="py-24 lg:py-32" style={{ backgroundColor: "#000" }}>
+    <section className="py-24 lg:py-32" style={{ backgroundColor: "#FFFFFF" }}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid lg:grid-cols-[3fr_2fr] gap-8 items-center">
           {/* Left: Vehicle visual */}
@@ -46,11 +46,11 @@ export default function VehicleShowcase() {
 
           {/* Right: Info */}
           <div className="order-1 lg:order-2">
-            <p className="text-orange-400 text-sm font-medium tracking-wide mb-3">{t("fleetLabel")}</p>
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+            <p className="text-blue-600 text-sm font-medium tracking-wide mb-3">{t("fleetLabel")}</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 mb-4">
               {t("heading")}
             </h2>
-            <p className="text-gray-400 text-base leading-relaxed mb-10">
+            <p className="text-gray-500 text-base leading-relaxed mb-10">
               {t("subheading")}
             </p>
 
@@ -59,7 +59,7 @@ export default function VehicleShowcase() {
               {specs.map(({ icon: Icon, labelKey, color }) => (
                 <div key={labelKey} className="flex items-center gap-3 py-2">
                   <Icon size={16} style={{ color }} strokeWidth={1.5} />
-                  <span className="text-gray-300 text-sm">{t(labelKey)}</span>
+                  <span className="text-gray-600 text-sm">{t(labelKey)}</span>
                 </div>
               ))}
             </div>
@@ -67,7 +67,7 @@ export default function VehicleShowcase() {
             <Link
               href="/booking"
               className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110"
-              style={{ backgroundColor: '#C2410C', color: '#fff' }}
+              style={{ backgroundColor: '#007AFF', color: '#fff' }}
             >
               {t("reserveTransfer")}
               <ArrowRight size={14} />

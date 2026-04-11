@@ -60,63 +60,64 @@ export default function ProfileForm({
 
   return (
     <div className="space-y-6">
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
-        <h1 className="text-2xl font-bold text-white">{t.title[locale] ?? t.title.en}</h1>
+      <div className="bg-white rounded-2xl p-6" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <h1 className="text-2xl font-bold text-gray-900">{t.title[locale] ?? t.title.en}</h1>
       </div>
 
-      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 sm:p-8 space-y-6 max-w-lg backdrop-blur-sm overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        
+      <div className="bg-white rounded-2xl p-6 sm:p-8 space-y-6 max-w-lg" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
         {/* First name */}
         <div>
-          <label className="text-[10px] text-gray-500 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
+          <label className="text-[10px] text-gray-400 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
             <User size={12} /> {t.firstName[locale] ?? t.firstName.en}
           </label>
           <input
             type="text"
             value={form.first_name}
             onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all"
+            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            style={{ border: "1px solid rgba(0,0,0,0.08)" }}
           />
         </div>
 
         {/* Last name */}
         <div>
-          <label className="text-[10px] text-gray-500 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
+          <label className="text-[10px] text-gray-400 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
             <User size={12} /> {t.lastName[locale] ?? t.lastName.en}
           </label>
           <input
             type="text"
             value={form.last_name}
             onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all"
+            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            style={{ border: "1px solid rgba(0,0,0,0.08)" }}
           />
         </div>
 
         {/* Email (read-only) */}
         <div>
-          <label className="text-[10px] text-gray-500 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
+          <label className="text-[10px] text-gray-400 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
             <Mail size={12} /> {t.email[locale] ?? t.email.en}
           </label>
           <input
             type="email"
             value={customer.email}
             readOnly
-            className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-gray-500 cursor-not-allowed"
+            className="w-full bg-gray-100 rounded-xl px-4 py-3 text-sm text-gray-400 cursor-not-allowed"
+            style={{ border: "1px solid rgba(0,0,0,0.06)" }}
           />
         </div>
 
         {/* Phone */}
         <div>
-          <label className="text-[10px] text-gray-500 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
+          <label className="text-[10px] text-gray-400 mb-2 flex items-center gap-1.5 uppercase tracking-wider font-medium">
             <Phone size={12} /> {t.phone[locale] ?? t.phone.en}
           </label>
           <input
             type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all"
+            className="w-full bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            style={{ border: "1px solid rgba(0,0,0,0.08)" }}
           />
         </div>
 
@@ -126,8 +127,8 @@ export default function ProfileForm({
           disabled={saving}
           className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all ${
             saved
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-              : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/20"
+              ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+              : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20"
           } disabled:opacity-50`}
         >
           {saved ? <Check size={16} /> : <Save size={16} />}
@@ -135,7 +136,7 @@ export default function ProfileForm({
         </button>
 
         {error && (
-          <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl">
+          <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 px-4 py-3 rounded-xl" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
             {error}
           </div>
         )}

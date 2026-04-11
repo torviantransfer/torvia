@@ -48,8 +48,8 @@ export default function ContactForm() {
         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
           <CheckCircle size={32} className="text-emerald-400" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-2">{t("successTitle")}</h3>
-        <p className="text-[#86868b]">{t("successDesc")}</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">{t("successTitle")}</h3>
+        <p className="text-gray-500">{t("successDesc")}</p>
       </div>
     );
   }
@@ -62,16 +62,16 @@ export default function ContactForm() {
           type="text"
           required
           placeholder={t("firstNamePlaceholder")}
-          className="px-4 py-3 rounded-xl text-sm text-white placeholder-[#555] transition-all"
-          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
+          style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
         />
         <input
           name="lastName"
           type="text"
           required
           placeholder={t("lastNamePlaceholder")}
-          className="px-4 py-3 rounded-xl text-sm text-white placeholder-[#555] transition-all"
-          style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
+          style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
         />
       </div>
       <input
@@ -79,16 +79,16 @@ export default function ContactForm() {
         type="email"
         required
         placeholder={t("emailPlaceholder")}
-        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#555] transition-all"
-        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
+        style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
       />
       <textarea
         name="message"
         rows={5}
         required
         placeholder={t("messagePlaceholder")}
-        className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-[#555] resize-none transition-all"
-        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 resize-none transition-all"
+        style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
       />
 
       {status === "error" && (
@@ -101,7 +101,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold rounded-xl transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 disabled:opacity-50"
+        className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50"
       >
         {status === "loading" ? (
           <Loader2 size={16} className="animate-spin" />
