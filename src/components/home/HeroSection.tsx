@@ -1,19 +1,17 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
 import Image from "next/image";
-import { Shield, Plane, Clock, Star, CheckCircle2 } from "lucide-react";
+import { Shield, Clock, CheckCircle2 } from "lucide-react";
 import BookingFormMini from "@/components/booking/BookingFormMini";
 
 export default function HeroSection() {
   const t = useTranslations("hero");
-  const n = useTranslations("nav");
 
   return (
-    <section className="relative overflow-hidden" style={{ background: "linear-gradient(180deg, #000 0%, #1d1d1f 100%)" }}>
-      {/* Airport background image */}
-      <div className="absolute inset-0 opacity-30">
+    <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden -mt-16">
+      {/* Full-width background image */}
+      <div className="absolute inset-0">
         <Image
           src="/images/hero-travel-world.webp"
           alt=""
@@ -22,79 +20,41 @@ export default function HeroSection() {
           sizes="100vw"
           priority
         />
+        {/* Dark overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
       </div>
-      {/* Subtle radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-40" style={{ background: "radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%)" }} />
 
-      <div className="relative max-w-6xl mx-auto px-6 py-16 lg:py-28">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
-          {/* Mobile: Booking form first, Desktop: second */}
-          <div className="order-2 lg:order-1">
-            {/* Social proof bar */}
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: "rgba(249,115,22,0.18)", border: "1px solid rgba(249,115,22,0.35)" }}>
-                <Star size={11} className="text-yellow-400 fill-yellow-400" />
-                <span>4.9/5</span>
-                <span className="text-gray-300">· 15,000+ {t("transfers")}</span>
-              </div>
-              <div className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)" }}>
-                <CheckCircle2 size={11} />
-                {t("licensedInsured")}
-              </div>
-            </div>
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-16 lg:pt-36 lg:pb-20 text-center">
+        {/* Booking search form */}
+        <BookingFormMini />
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-white mb-5">
-              {t("title")}
-            </h1>
-            <p className="text-base sm:text-lg text-gray-400 leading-relaxed mb-7 max-w-lg">
-              {t("subtitle")}
-            </p>
+        {/* Main headline BELOW form */}
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight text-white mt-10 mb-4">
+          {t("title")}
+        </h1>
 
-            {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-3 mb-8">
-              <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-gray-300" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <Plane size={13} className="text-orange-400" />
-                {t("flightTracking")}
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-gray-300" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <Clock size={13} className="text-green-400" />
-                {t("service247")}
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-gray-300" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <Shield size={13} className="text-blue-400" />
-                {t("fixedPrice")}
-              </div>
-            </div>
+        {/* Subtitle */}
+        <p className="text-base sm:text-lg text-white/60 leading-relaxed max-w-2xl mx-auto">
+          {t("subtitle")}
+        </p>
 
-            <div className="flex flex-wrap items-center gap-3 mb-7">
-              <Link
-                href="/booking"
-                className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full shadow-lg transition-all hover:brightness-110 hover:scale-105"
-                style={{ backgroundColor: '#C2410C', color: '#fff', boxShadow: '0 0 24px rgba(194,65,12,0.35)' }}
-              >
-                {n("bookNow")}
-              </Link>
-              <Link
-                href="/regions"
-                className="inline-flex items-center gap-1.5 px-6 py-3.5 text-sm font-medium rounded-full text-white hover:text-orange-300 transition-all hover:bg-white/5"
-                style={{ border: "1px solid rgba(255,255,255,0.15)" }}
-              >
-                {t("exploreRegions")} <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-
-            {/* Bottom trust strip */}
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
-              <span className="text-xs text-gray-400">✓ {t("trustStripe")}</span>
-              <span className="text-xs text-gray-400">✓ {t("trustCancel")}</span>
-              <span className="text-xs text-gray-400">✓ {t("trustNoHidden")}</span>
-            </div>
-          </div>
-
-          {/* Booking form - shows first on mobile */}
-          <div className="order-1 lg:order-2 w-full max-w-md mx-auto lg:max-w-none">
-            <BookingFormMini />
-          </div>
+        {/* Trust badges */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-5">
+          <span className="flex items-center gap-1.5 text-sm text-white/80">
+            <Shield size={14} className="text-orange-400" />
+            {t("fixedPrice")}
+          </span>
+          <span className="w-1 h-1 rounded-full bg-white/30 hidden sm:block" />
+          <span className="flex items-center gap-1.5 text-sm text-white/80">
+            <Clock size={14} className="text-green-400" />
+            {t("service247")}
+          </span>
+          <span className="w-1 h-1 rounded-full bg-white/30 hidden sm:block" />
+          <span className="flex items-center gap-1.5 text-sm text-white/80">
+            <CheckCircle2 size={14} className="text-blue-400" />
+            {t("trustCancel")}
+          </span>
         </div>
       </div>
     </section>

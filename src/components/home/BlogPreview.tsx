@@ -30,6 +30,10 @@ const viewAll: Record<Locale, string> = {
 };
 
 export default async function BlogPreview({ locale }: { locale: string }) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null;
+  }
+
   const supabase = createAdminClient();
   const loc = (locale as Locale) || "en";
 
