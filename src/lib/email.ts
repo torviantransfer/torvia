@@ -287,16 +287,16 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   if (data.couponDiscount > 0) priceRows.push(row(t(loc, "couponDiscount"), `−€${data.couponDiscount.toFixed(2)}`, "#22c55e"));
 
   const detailRows: string[] = [
-    detailRow("✈", t(loc, "route"), `Antalya Airport &rarr; ${data.regionName}`, true),
-    detailRow("🔁", t(loc, "type"), tripLabel),
-    detailRow("📅", t(loc, "pickup"), `${data.pickupDate} &nbsp;|&nbsp; ${data.pickupTime}`, true),
-    ...(data.returnDate ? [detailRow("🔄", t(loc, "returnLabel"), `${data.returnDate} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
-    ...(data.flightCode ? [detailRow("🛫", t(loc, "flight"), data.flightCode)] : []),
-    ...(data.hotelName ? [detailRow("🏨", t(loc, "hotel"), data.hotelName)] : []),
-    ...(data.vehicleName ? [detailRow("🚘", t(loc, "vehicle"), data.vehicleName)] : []),
-    detailRow("👥", t(loc, "passengers"), passengerText),
-    detailRow("🧳", t(loc, "luggage"), `${data.luggageCount} ${t(loc, "pieces")}`),
-    ...(extras.length > 0 ? [detailRow("⭐", t(loc, "extras"), extras.join(" &bull; "))] : []),
+    detailRow("&#9992;&#65039;", t(loc, "route"), `Antalya Airport &rarr; ${data.regionName}`, true),
+    detailRow("&#8596;", t(loc, "type"), tripLabel),
+    detailRow("&#128197;", t(loc, "pickup"), `${data.pickupDate} &nbsp;|&nbsp; ${data.pickupTime}`, true),
+    ...(data.returnDate ? [detailRow("&#8634;", t(loc, "returnLabel"), `${data.returnDate} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
+    ...(data.flightCode ? [detailRow("&#9992;", t(loc, "flight"), data.flightCode)] : []),
+    ...(data.hotelName ? [detailRow("&#127968;", t(loc, "hotel"), data.hotelName)] : []),
+    ...(data.vehicleName ? [detailRow("&#128663;", t(loc, "vehicle"), data.vehicleName)] : []),
+    detailRow("&#128101;", t(loc, "passengers"), passengerText),
+    detailRow("&#128188;", t(loc, "luggage"), `${data.luggageCount} ${t(loc, "pieces")}`),
+    ...(extras.length > 0 ? [detailRow("&#10003;", t(loc, "extras"), extras.join(" &bull; "))] : []),
   ];
 
   return `
@@ -306,78 +306,78 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${t(loc, "subject")}</title>
+  <!--[if mso]><style>table,td{font-family:Arial,sans-serif!important;}</style><![endif]-->
 </head>
-<body style="margin:0;padding:20px 0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+<table cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
   <!-- ══ HEADER ══ -->
   <tr>
-    <td style="background:linear-gradient(135deg,#f97316 0%,#c2410c 100%);border-radius:16px 16px 0 0;padding:36px 40px 32px;text-align:center;">
-      <div style="display:inline-block;border:2px solid rgba(255,255,255,0.25);border-radius:8px;padding:4px 16px;margin-bottom:14px;">
-        <span style="color:rgba(255,255,255,0.85);font-size:10px;letter-spacing:3px;font-weight:600;text-transform:uppercase;">VIP AIRPORT TRANSFER</span>
+    <td style="background:linear-gradient(135deg,#007AFF 0%,#0055CC 100%);border-radius:16px 16px 0 0;padding:32px 24px 28px;text-align:center;">
+      <div style="display:inline-block;border:2px solid rgba(255,255,255,0.3);border-radius:8px;padding:4px 14px;margin-bottom:12px;">
+        <span style="color:rgba(255,255,255,0.9);font-size:10px;letter-spacing:3px;font-weight:600;text-transform:uppercase;">VIP AIRPORT TRANSFER</span>
       </div>
-      <h1 style="color:#ffffff;margin:0;font-size:42px;letter-spacing:8px;font-weight:900;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,0.3);">TORVIAN</h1>
-      <p style="color:rgba(255,255,255,0.7);margin:10px 0 0;font-size:12px;letter-spacing:1px;">ANTALYA · TÜRKIYE</p>
+      <h1 style="color:#ffffff;margin:0;font-size:36px;letter-spacing:6px;font-weight:900;line-height:1;">TORVIAN</h1>
+      <p style="color:rgba(255,255,255,0.7);margin:8px 0 0;font-size:12px;letter-spacing:1px;">ANTALYA &middot; T&Uuml;RKIYE</p>
     </td>
   </tr>
 
   <!-- ══ CONFIRMED BANNER ══ -->
   <tr>
-    <td style="background:#052e16;padding:14px 40px;text-align:center;border-left:4px solid #16a34a;border-right:4px solid #16a34a;">
-      <span style="font-size:13px;color:#4ade80;font-weight:700;letter-spacing:1px;">&#10003; &nbsp;${t(loc, "confirmed").toUpperCase()}</span>
+    <td style="background:#ecfdf5;padding:14px 24px;text-align:center;border-left:4px solid #10b981;border-right:4px solid #10b981;">
+      <span style="font-size:13px;color:#059669;font-weight:700;letter-spacing:1px;">&#10003; &nbsp;${t(loc, "confirmed").toUpperCase()}</span>
     </td>
   </tr>
 
   <!-- ══ BODY ══ -->
   <tr>
-    <td style="background:#111113;padding:36px 40px 28px;">
+    <td style="background:#ffffff;padding:32px 24px 24px;">
 
       <!-- Greeting -->
-      <p style="font-size:18px;color:#f4f4f5;margin:0 0 4px;font-weight:600;">${t(loc, "greeting")} ${data.firstName},</p>
-      <p style="margin:0 0 32px;color:#71717a;font-size:14px;line-height:1.6;">${t(loc, "showVoucher")}</p>
+      <p style="font-size:18px;color:#111827;margin:0 0 4px;font-weight:600;">${t(loc, "greeting")} ${data.firstName},</p>
+      <p style="margin:0 0 28px;color:#6b7280;font-size:14px;line-height:1.6;">${t(loc, "showVoucher")}</p>
 
       <!-- Reservation Code -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
         <tr>
-          <td style="background:#18181b;border:2px dashed #f97316;border-radius:14px;padding:22px 16px;text-align:center;">
-            <p style="color:#71717a;font-size:10px;margin:0 0 6px;text-transform:uppercase;letter-spacing:2px;">${t(loc, "code")}</p>
-            <p style="color:#f97316;font-size:36px;font-weight:900;margin:0;letter-spacing:6px;font-variant-numeric:tabular-nums;">${data.reservationCode}</p>
+          <td style="background:#f0f7ff;border:2px dashed #007AFF;border-radius:14px;padding:20px 16px;text-align:center;">
+            <p style="color:#6b7280;font-size:10px;margin:0 0 6px;text-transform:uppercase;letter-spacing:2px;">${t(loc, "code")}</p>
+            <p style="color:#007AFF;font-size:32px;font-weight:900;margin:0;letter-spacing:5px;font-variant-numeric:tabular-nums;">${data.reservationCode}</p>
           </td>
         </tr>
       </table>
 
       <!-- Section: Transfer Details -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "type")} &amp; ${t(loc, "route")}</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(loc, "type")} &amp; ${t(loc, "route")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td style="padding:4px 0;"></td></tr>
         ${detailRows.join("")}
         <tr><td style="padding:4px 0;"></td></tr>
       </table>
 
       <!-- Section: Price -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "priceSummary")}</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(loc, "priceSummary")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td colspan="2" style="padding:4px 0;"></td></tr>
         ${priceRows.join("")}
-        <!-- Total row -->
         <tr>
-          <td colspan="2" style="padding:0 0 4px;"><div style="height:1px;background:#27272a;margin:8px 20px;"></div></td>
+          <td colspan="2" style="padding:0 0 4px;"><div style="height:1px;background:#e5e7eb;margin:8px 20px;"></div></td>
         </tr>
         <tr>
-          <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#f4f4f5;">${t(loc, "total")}</td>
-          <td style="padding:8px 20px 16px;text-align:right;font-size:26px;font-weight:900;color:#f97316;font-variant-numeric:tabular-nums;">€${data.totalEur.toFixed(2)}</td>
+          <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#111827;">${t(loc, "total")}</td>
+          <td style="padding:8px 20px 16px;text-align:right;font-size:24px;font-weight:900;color:#007AFF;font-variant-numeric:tabular-nums;">&euro;${data.totalEur.toFixed(2)}</td>
         </tr>
       </table>
 
       ${qrDataUrl ? `
       <!-- Section: QR Code -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "qrTitle")}</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(loc, "qrTitle")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
         <tr>
-          <td style="background:#ffffff;border-radius:12px;padding:24px;text-align:center;">
+          <td style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:24px;text-align:center;">
             <img src="${qrDataUrl}" width="160" height="160" alt="QR Code" style="display:block;margin:0 auto;border-radius:4px;" />
             <p style="color:#6b7280;font-size:11px;margin:12px 0 0;">${t(loc, "qrInfo")}</p>
           </td>
@@ -386,22 +386,22 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
       ` : ""}
 
       <!-- Section: Important Info -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">${t(loc, "importantTitle")}</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:28px;">
-        <tr><td style="padding:16px 20px 8px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;margin-left:20px;">&#9992; &nbsp;${t(loc, "imp1")}</td></tr>
-        <tr><td style="padding:8px 20px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#128697; &nbsp;${t(loc, "imp2")}</td></tr>
-        <tr><td style="padding:8px 20px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#8987; &nbsp;${t(loc, "imp3")}</td></tr>
-        <tr><td style="padding:8px 20px;font-size:13px;color:#d4d4d8;border-left:3px solid #f97316;">&#128118; &nbsp;${t(loc, "imp4")}</td></tr>
-        <tr><td style="padding:8px 20px 16px;font-size:13px;color:#fbbf24;border-left:3px solid #ef4444;font-weight:600;">&#9888; &nbsp;${t(loc, "imp5")}</td></tr>
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(loc, "importantTitle")}</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:24px;border:1px solid #f3f4f6;">
+        <tr><td style="padding:14px 20px 6px;font-size:13px;color:#374151;border-left:3px solid #007AFF;">&#9992;&#65039; &nbsp;${t(loc, "imp1")}</td></tr>
+        <tr><td style="padding:6px 20px;font-size:13px;color:#374151;border-left:3px solid #007AFF;">&#128100; &nbsp;${t(loc, "imp2")}</td></tr>
+        <tr><td style="padding:6px 20px;font-size:13px;color:#374151;border-left:3px solid #007AFF;">&#8987; &nbsp;${t(loc, "imp3")}</td></tr>
+        <tr><td style="padding:6px 20px;font-size:13px;color:#374151;border-left:3px solid #007AFF;">&#128118; &nbsp;${t(loc, "imp4")}</td></tr>
+        <tr><td style="padding:6px 20px 14px;font-size:13px;color:#b45309;border-left:3px solid #ef4444;font-weight:600;">&#9888; &nbsp;${t(loc, "imp5")}</td></tr>
       </table>
 
       <!-- Contact -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
         <tr>
           <td style="text-align:center;padding-bottom:14px;">
-            <p style="color:#71717a;font-size:12px;margin:0 0 14px;">${t(loc, "contact")}</p>
-            <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin-right:10px;">WhatsApp</a>
-            <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#f97316;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">E-mail</a>
+            <p style="color:#6b7280;font-size:12px;margin:0 0 14px;">${t(loc, "contact")}</p>
+            <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 4px 4px 0;">WhatsApp</a>
+            <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#007AFF;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 0 4px 4px;">E-mail</a>
           </td>
         </tr>
       </table>
@@ -411,9 +411,9 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
 
   <!-- ══ FOOTER ══ -->
   <tr>
-    <td style="background:#0a0a0b;border-top:1px solid #1c1c1e;border-radius:0 0 16px 16px;padding:18px 40px;text-align:center;">
-      <p style="color:#3f3f46;font-size:11px;margin:0 0 4px;">${t(loc, "footer")}</p>
-      <p style="color:#27272a;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#3f3f46;text-decoration:none;">torviantransfer.com</a></p>
+    <td style="background:#f9fafb;border-top:1px solid #e5e7eb;border-radius:0 0 16px 16px;padding:18px 24px;text-align:center;">
+      <p style="color:#9ca3af;font-size:11px;margin:0 0 4px;">${t(loc, "footer")}</p>
+      <p style="color:#d1d5db;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#9ca3af;text-decoration:none;">torviantransfer.com</a></p>
     </td>
   </tr>
 
@@ -427,15 +427,15 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
 
 function row(label: string, value: string, color?: string): string {
   return `<tr>
-    <td style="padding:7px 20px;color:#71717a;font-size:13px;">${label}</td>
-    <td style="padding:7px 20px;text-align:right;font-size:13px;color:#d4d4d8;${color ? `color:${color};font-weight:600;` : ""}">${value}</td>
+    <td style="padding:7px 20px;color:#6b7280;font-size:13px;">${label}</td>
+    <td style="padding:7px 20px;text-align:right;font-size:13px;color:#374151;${color ? `color:${color};font-weight:600;` : ""}">${value}</td>
   </tr>`;
 }
 
 function detailRow(icon: string, label: string, value: string, bold = false): string {
   return `<tr>
-    <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">${icon} &nbsp;${label}</td>
-    <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;${bold ? "font-weight:600;" : ""}">${value}</td>
+    <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${icon} &nbsp;${label}</td>
+    <td style="padding:9px 20px;font-size:13px;color:#111827;${bold ? "font-weight:600;" : ""}">${value}</td>
   </tr>`;
 }
 
@@ -498,16 +498,16 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
 
   const pickupTimeRow = isReturn && data.pickupTime
     ? `<tr>
-        <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#9200; &nbsp;Alış Saati</td>
-        <td style="padding:9px 20px;font-size:14px;color:#f97316;font-weight:700;">${data.pickupTime}</td>
+        <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#9200; &nbsp;Al&#305;&#351; Saati</td>
+        <td style="padding:9px 20px;font-size:14px;color:#007AFF;font-weight:700;">${data.pickupTime}</td>
       </tr>`
     : "";
 
   const earlyWarning = isReturn
     ? `<tr>
-        <td colspan="2" style="padding:12px 20px;background:#422006;border-left:3px solid #f97316;">
-          <p style="color:#fbbf24;font-size:13px;font-weight:700;margin:0;">&#9888; Lütfen alış saatinden en az 2 saat önce hazır olunuz.</p>
-          <p style="color:#d4d4d8;font-size:12px;margin:4px 0 0;">Şoförünüz belirtilen saatte otel/adresinizde olacaktır.</p>
+        <td colspan="2" style="padding:12px 20px;background:#fef3c7;border-left:3px solid #007AFF;">
+          <p style="color:#92400e;font-size:13px;font-weight:700;margin:0;">&#9888; L&uuml;tfen al&#305;&#351; saatinden en az 2 saat &ouml;nce haz&#305;r olunuz.</p>
+          <p style="color:#78350f;font-size:12px;margin:4px 0 0;">&#350;of&ouml;r&uuml;n&uuml;z belirtilen saatte otel/adresinizde olacakt&#305;r.</p>
         </td>
       </tr>`
     : "";
@@ -523,15 +523,15 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${subject}</title>
 </head>
-<body style="margin:0;padding:20px 0;background:#0d0d0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr><td align="center">
-<table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+<table cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
   <!-- HEADER -->
   <tr>
-    <td style="background:linear-gradient(135deg,#f97316 0%,#c2410c 100%);border-radius:16px 16px 0 0;padding:28px 40px 24px;text-align:center;">
+    <td style="background:linear-gradient(135deg,#007AFF 0%,#0055CC 100%);border-radius:16px 16px 0 0;padding:28px 24px 24px;text-align:center;">
       <h1 style="color:#ffffff;margin:0;font-size:32px;letter-spacing:6px;font-weight:900;">TORVIAN</h1>
       <p style="color:rgba(255,255,255,0.7);margin:6px 0 0;font-size:11px;letter-spacing:1px;">VIP AIRPORT TRANSFER</p>
     </td>
@@ -539,58 +539,58 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
 
   <!-- BANNER -->
   <tr>
-    <td style="background:#1e3a5f;padding:14px 40px;text-align:center;">
-      <span style="font-size:14px;color:#93c5fd;font-weight:700;letter-spacing:1px;">&#128663; &nbsp;${legLabel.toUpperCase()} ŞOFÖRÜNÜZ ATANDI</span>
+    <td style="background:#eff6ff;padding:14px 24px;text-align:center;border-left:4px solid #007AFF;border-right:4px solid #007AFF;">
+      <span style="font-size:14px;color:#1d4ed8;font-weight:700;letter-spacing:1px;">&#128663; &nbsp;${legLabel.toUpperCase()} &#350;OF&Ouml;R&Uuml;N&Uuml;Z ATANDI</span>
     </td>
   </tr>
 
   <!-- BODY -->
   <tr>
-    <td style="background:#111113;padding:32px 40px 24px;">
+    <td style="background:#ffffff;padding:32px 24px 24px;">
 
-      <p style="font-size:17px;color:#f4f4f5;margin:0 0 4px;font-weight:600;">Merhaba ${data.customerFirstName},</p>
-      <p style="margin:0 0 28px;color:#71717a;font-size:13px;line-height:1.6;">${isReturn ? "Dönüş" : "Gidiş"} transferiniz için şoför ataması yapılmıştır. Aşağıda detayları bulabilirsiniz.</p>
+      <p style="font-size:17px;color:#111827;margin:0 0 4px;font-weight:600;">Merhaba ${data.customerFirstName},</p>
+      <p style="margin:0 0 24px;color:#6b7280;font-size:13px;line-height:1.6;">${isReturn ? "Dönüş" : "Gidiş"} transferiniz için şoför ataması yapılmıştır. Aşağıda detayları bulabilirsiniz.</p>
 
       <!-- Reservation Code -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
         <tr>
-          <td style="background:#18181b;border:2px dashed #f97316;border-radius:12px;padding:16px;text-align:center;">
-            <p style="color:#71717a;font-size:10px;margin:0 0 4px;text-transform:uppercase;letter-spacing:2px;">Rezervasyon Kodu</p>
-            <p style="color:#f97316;font-size:28px;font-weight:900;margin:0;letter-spacing:4px;">${data.reservationCode}</p>
+          <td style="background:#f0f7ff;border:2px dashed #007AFF;border-radius:12px;padding:16px;text-align:center;">
+            <p style="color:#6b7280;font-size:10px;margin:0 0 4px;text-transform:uppercase;letter-spacing:2px;">Rezervasyon Kodu</p>
+            <p style="color:#007AFF;font-size:28px;font-weight:900;margin:0;letter-spacing:4px;">${data.reservationCode}</p>
           </td>
         </tr>
       </table>
 
       <!-- Driver Info -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">Şoför Bilgileri</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">&#350;of&ouml;r Bilgileri</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td style="padding:4px 0;"></td></tr>
         <tr>
-          <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#128100; &nbsp;Şoför</td>
-          <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;font-weight:600;">${data.driverName}</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128100; &nbsp;&#350;of&ouml;r</td>
+          <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${data.driverName}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#128222; &nbsp;Telefon</td>
-          <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;">${data.driverPhone}</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128222; &nbsp;Telefon</td>
+          <td style="padding:9px 20px;font-size:13px;color:#111827;">${data.driverPhone}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#128663; &nbsp;Araç</td>
-          <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;">${data.vehicleInfo}</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128663; &nbsp;Ara&ccedil;</td>
+          <td style="padding:9px 20px;font-size:13px;color:#111827;">${data.vehicleInfo}</td>
         </tr>
         <tr><td style="padding:4px 0;"></td></tr>
       </table>
 
       <!-- Transfer Info -->
-      <p style="color:#a1a1aa;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #27272a;padding-bottom:8px;">Transfer Detayları</p>
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#18181b;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">Transfer Detaylar&#305;</p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td style="padding:4px 0;"></td></tr>
         <tr>
-          <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#9992; &nbsp;Güzergah</td>
-          <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;font-weight:600;">${direction}</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#9992;&#65039; &nbsp;G&uuml;zergah</td>
+          <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${direction}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#71717a;font-size:13px;white-space:nowrap;width:38%;">&#128197; &nbsp;Tarih</td>
-          <td style="padding:9px 20px;font-size:13px;color:#f4f4f5;font-weight:600;">${dateStr} — ${timeStr}</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128197; &nbsp;Tarih</td>
+          <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${dateStr} &mdash; ${timeStr}</td>
         </tr>
         ${pickupTimeRow}
         ${earlyWarning}
@@ -598,11 +598,11 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       </table>
 
       <!-- Warning -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#422006;border-radius:12px;overflow:hidden;margin-bottom:28px;border-left:4px solid #ef4444;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef3c7;border-radius:12px;overflow:hidden;margin-bottom:24px;border-left:4px solid #ef4444;">
         <tr>
           <td style="padding:16px 20px;">
-            <p style="color:#fbbf24;font-size:13px;font-weight:700;margin:0 0 4px;">&#9888; Önemli Uyarı</p>
-            <p style="color:#d4d4d8;font-size:12px;margin:0;line-height:1.5;">Bir sonraki taşımalarda şoför ile doğrudan iletişime geçmeyiniz. Yaşanan olumsuzluklardan firmamız sorumlu değildir.</p>
+            <p style="color:#92400e;font-size:13px;font-weight:700;margin:0 0 4px;">&#9888; &Ouml;nemli Uyar&#305;</p>
+            <p style="color:#78350f;font-size:12px;margin:0;line-height:1.5;">Bir sonraki taşımalarda şof&ouml;r ile doğrudan iletişime ge&ccedil;meyiniz. Yaşanan olumsuzluklardan firmamız sorumlu değildir.</p>
           </td>
         </tr>
       </table>
@@ -611,9 +611,9 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
         <tr>
           <td style="text-align:center;padding-bottom:14px;">
-            <p style="color:#71717a;font-size:12px;margin:0 0 14px;">Soru veya sorun için 7/24 ulaşabilirsiniz</p>
-            <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin-right:10px;">WhatsApp</a>
-            <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#f97316;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;">E-mail</a>
+            <p style="color:#6b7280;font-size:12px;margin:0 0 14px;">Soru veya sorun i&ccedil;in 7/24 ulaşabilirsiniz</p>
+            <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 4px 4px 0;">WhatsApp</a>
+            <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#007AFF;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 0 4px 4px;">E-mail</a>
           </td>
         </tr>
       </table>
@@ -623,9 +623,9 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
 
   <!-- FOOTER -->
   <tr>
-    <td style="background:#0a0a0b;border-top:1px solid #1c1c1e;border-radius:0 0 16px 16px;padding:18px 40px;text-align:center;">
-      <p style="color:#3f3f46;font-size:11px;margin:0 0 4px;">Bu e-posta transferiniz hakkında bilgilendirme amaçlıdır.</p>
-      <p style="color:#27272a;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#3f3f46;text-decoration:none;">torviantransfer.com</a></p>
+    <td style="background:#f9fafb;border-top:1px solid #e5e7eb;border-radius:0 0 16px 16px;padding:18px 24px;text-align:center;">
+      <p style="color:#9ca3af;font-size:11px;margin:0 0 4px;">Bu e-posta transferiniz hakkında bilgilendirme amaçlıdır.</p>
+      <p style="color:#d1d5db;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#9ca3af;text-decoration:none;">torviantransfer.com</a></p>
     </td>
   </tr>
 

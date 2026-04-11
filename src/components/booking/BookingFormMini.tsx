@@ -115,8 +115,9 @@ export default function BookingFormMini() {
   }, []);
 
   const nameKey = `name_${locale}` as keyof Region;
+  const airportName = ({ tr: "Antalya Havalimanı (AYT)", en: "Antalya Airport (AYT)", de: "Flughafen Antalya (AYT)", pl: "Lotnisko Antalya (AYT)", ru: "Аэропорт Анталья (AYT)" } as Record<string, string>)[locale] ?? "Antalya Airport (AYT)";
   const getName = (slug: string) => {
-    if (slug === "antalya-airport") return "Antalya Havalimanı (AYT)";
+    if (slug === "antalya-airport") return airportName;
     const r = regions.find((r) => r.slug === slug);
     return r ? (r[nameKey] as string) || r.name_en : slug;
   };
@@ -178,12 +179,12 @@ export default function BookingFormMini() {
   const wk =
     locale === "tr" ? ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"]
     : locale === "de" ? ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
-    : locale === "ru" ? ["??", "??", "??", "??", "??", "??", "??"]
+    : locale === "ru" ? ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
     : locale === "pl" ? ["Nd", "Pn", "Wt", "Sr", "Cz", "Pt", "So"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const locItems = [
-    { type: "airport" as const, value: "antalya-airport", label: "Antalya Havalimanı (AYT)" },
+    { type: "airport" as const, value: "antalya-airport", label: airportName },
     ...regions.map((r) => ({
       type: "destination" as const,
       value: r.slug,
@@ -193,7 +194,7 @@ export default function BookingFormMini() {
 
   /* --- Location dropdown --- */
   const renderLocDrop = (field: "from" | "to") => (
-    <div className="absolute top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 py-1 left-0 right-0 lg:w-[280px] max-h-[280px] overflow-y-auto">
+    <div className={`absolute top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 py-1 max-h-[280px] overflow-y-auto min-w-[260px] ${field === "to" ? "right-0" : "left-0"} lg:left-0 lg:right-0 lg:w-[280px] lg:min-w-0`}>
       {locItems.map((l) => (
         <button
           key={l.value}
@@ -216,7 +217,11 @@ export default function BookingFormMini() {
 
   /* --- Calendar popup --- */
   const renderCalendar = () => (
-    <div className="absolute top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden left-1/2 -translate-x-1/2" style={{ width: 310 }}>
+    <>
+    <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setOpen(null)} />
+    <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl lg:absolute lg:inset-auto lg:bottom-auto lg:top-full lg:mt-1 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[310px] lg:rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+      {/* Mobile drag handle */}
+      <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
       <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
         <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
         <span className="font-semibold text-sm capitalize">{mName} {calMonth.getFullYear()}</span>
@@ -267,6 +272,7 @@ export default function BookingFormMini() {
         </div>
       </div>
     </div>
+    </>
   );
 
   /* --- Passenger popup --- */
@@ -340,7 +346,7 @@ export default function BookingFormMini() {
         {/* Return */}
         <div className="relative h-full shrink-0">
           {!hasRet ? (
-            <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1.5 px-4 h-full transition-colors border-r border-gray-200/60 ${depDate ? "bg-gray-800 hover:bg-gray-900" : "bg-gray-300 cursor-not-allowed"}`}>
+            <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1.5 px-4 h-full transition-colors border-r border-gray-200/60 ${depDate ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"}`}>
               <CornerDownLeft size={14} className="text-white" />
               <span className="text-[13px] font-semibold text-white whitespace-nowrap">{t("addReturn")}</span>
             </button>
@@ -414,7 +420,7 @@ export default function BookingFormMini() {
 
           <div className="relative shrink-0">
             {!hasRet ? (
-              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1 rounded-lg px-2.5 py-2.5 text-[12px] font-semibold ${depDate ? "text-white bg-gray-800" : "text-white bg-gray-300 cursor-not-allowed"}`}>
+              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1 rounded-lg px-2.5 py-2.5 text-[12px] font-semibold ${depDate ? "text-white bg-blue-600" : "text-white bg-gray-300 cursor-not-allowed"}`}>
                 <CornerDownLeft size={12} />{t("addReturn")}
               </button>
             ) : (

@@ -27,48 +27,48 @@ interface Props {
 }
 
 const appearance: StripeElementsOptions["appearance"] = {
-  theme: "night",
+  theme: "flat",
   variables: {
-    colorPrimary: "#F97316",
-    colorBackground: "#1d1d1f",
-    colorText: "#f5f5f7",
-    colorTextSecondary: "#86868b",
+    colorPrimary: "#007AFF",
+    colorBackground: "#FFFFFF",
+    colorText: "#1d1d1f",
+    colorTextSecondary: "#6b7280",
     colorDanger: "#ef4444",
     fontFamily: "Inter, system-ui, sans-serif",
     borderRadius: "12px",
     spacingUnit: "4px",
     fontSizeBase: "15px",
-    colorIcon: "#86868b",
+    colorIcon: "#6b7280",
   },
   rules: {
     ".Input": {
-      backgroundColor: "#2a2a2e",
-      border: "1px solid #3a3a3e",
+      backgroundColor: "#f9fafb",
+      border: "1px solid #e5e7eb",
       boxShadow: "none",
       padding: "12px 14px",
     },
     ".Input:focus": {
-      border: "1px solid #F97316",
-      boxShadow: "0 0 0 1px #F97316",
+      border: "1px solid #007AFF",
+      boxShadow: "0 0 0 1px #007AFF",
     },
     ".Label": {
-      color: "#6b7280",
+      color: "#374151",
       fontSize: "13px",
       fontWeight: "500",
       marginBottom: "6px",
     },
     ".Tab": {
-      backgroundColor: "#2a2a2e",
-      border: "1px solid #3a3a3e",
-      color: "#f5f5f7",
+      backgroundColor: "#f9fafb",
+      border: "1px solid #e5e7eb",
+      color: "#1d1d1f",
     },
     ".Tab--selected": {
-      backgroundColor: "#3a3a3e",
-      border: "1px solid #F97316",
-      color: "#F97316",
+      backgroundColor: "#eff6ff",
+      border: "1px solid #007AFF",
+      color: "#007AFF",
     },
     ".Tab:hover": {
-      backgroundColor: "#333338",
+      backgroundColor: "#f3f4f6",
     },
   },
 };
@@ -123,7 +123,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   return (
     <div className="space-y-5">
       {/* Order Summary Card */}
-      <div className="rounded-xl border border-[#2a2a2e] bg-[#1a1a1d] p-4">
+      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <MapPin size={16} className="text-blue-600" />
@@ -135,7 +135,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between pt-3 border-t border-[#2a2a2e]">
+        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
           <span className="text-gray-500 text-sm">Total</span>
           <span className="text-gray-900 text-xl font-bold">${totalPrice.toFixed(2)}</span>
         </div>
@@ -143,7 +143,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
 
       {/* Payment Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="rounded-xl border border-[#2a2a2e] bg-[#1d1d1f] p-5">
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
           {/* Card info header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </div>
             {/* Stripe logo */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-[#686872] tracking-wide">POWERED BY</span>
+              <span className="text-[10px] text-gray-400 tracking-wide">POWERED BY</span>
               <svg width="38" height="16" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M60 12.5C60 5.596 55.228 0 49.333 0H10.667C4.772 0 0 5.596 0 12.5S4.772 25 10.667 25h38.666C55.228 25 60 19.404 60 12.5z" fill="#635BFF"/>
                 <path d="M28.736 8.264c0-.927.763-1.284 2.026-1.284 1.812 0 4.1.549 5.912 1.528V3.406C34.811 2.614 33.006 2 30.762 2c-4.413 0-7.345 2.305-7.345 6.153 0 6.001 8.26 5.04 8.26 7.631 0 1.095-.954 1.452-2.289 1.452-1.98 0-4.516-.815-6.525-1.91v5.167C24.945 21.403 27.013 22 29.388 22c4.524 0 7.633-2.238 7.633-6.136-.017-6.477-8.285-5.32-8.285-7.6z" fill="#fff"/>
@@ -164,8 +164,8 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         </div>
 
         {error && (
-          <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="text-red-400">⚠</span>
+          <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
+            <span className="text-red-500">⚠</span>
             {error}
           </div>
         )}
@@ -174,8 +174,8 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="w-full py-4 rounded-xl font-bold text-gray-900 text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.99]"
-          style={{ backgroundColor: "#F97316" }}
+          className="w-full py-4 rounded-xl font-bold text-white text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.99]"
+          style={{ backgroundColor: "#007AFF" }}
         >
           {loading ? (
             <>
@@ -193,15 +193,15 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
 
       {/* Security Badges */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
+        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
           <Shield size={16} className="text-green-500" />
           <span className="text-[10px] text-gray-500 text-center leading-tight">SSL Encrypted</span>
         </div>
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
+        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
           <CheckCircle size={16} className="text-green-500" />
           <span className="text-[10px] text-gray-500 text-center leading-tight">PCI Compliant</span>
         </div>
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-[#2a2a2e] bg-[#1a1a1d] py-3 px-2">
+        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
           <Lock size={16} className="text-green-500" />
           <span className="text-[10px] text-gray-500 text-center leading-tight">3D Secure</span>
         </div>
@@ -215,7 +215,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           {/* Mastercard */}
           <svg width="28" height="18" viewBox="0 0 32 20" fill="none"><circle cx="11.5" cy="10" r="9" fill="#6B7280" opacity="0.6"/><circle cx="20.5" cy="10" r="9" fill="#6B7280" opacity="0.4"/></svg>
           {/* Amex */}
-          <div className="text-[9px] font-bold text-[#6B7280] border border-[#3a3a3e] rounded px-1.5 py-0.5">AMEX</div>
+          <div className="text-[9px] font-bold text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">AMEX</div>
         </div>
         <p className="text-[10px] text-gray-500 text-center">
           Your payment is securely processed. We never store your card details.
