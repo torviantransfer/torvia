@@ -150,7 +150,7 @@ export default async function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#111113]/80 to-transparent" />
               <div className="absolute bottom-6 left-6">
                 <p className="text-white font-bold text-lg">Mercedes Vito VIP</p>
-                <p className="text-gray-400 text-sm">Premium transfer experience</p>
+                <p className="text-gray-400 text-sm">{t("vehicleOverlay")}</p>
               </div>
             </div>
           </div>
@@ -161,20 +161,20 @@ export default async function AboutPage() {
           <div className="max-w-4xl mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">Our Story</p>
-                <h2 className="text-2xl font-bold text-white mb-5 tracking-tight">From Passion to Profession</h2>
+                <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">{t("ourStoryTag")}</p>
+                <h2 className="text-2xl font-bold text-white mb-5 tracking-tight">{t("ourStoryTitle")}</h2>
                 <div className="space-y-4 text-[#86868b] leading-relaxed">
-                  <p>TORVIAN Transfer was founded by a team of travel enthusiasts who were repeatedly disappointed by the quality of airport transfers in Antalya. We set out to build something better — a service that feels less like a taxi ride and more like a first-class welcome.</p>
-                  <p>Since 2022 we have completed over 15,000 transfers without a single missed pickup. Our drivers are professional, multilingual, and always on time — because we know your journey starts the moment you land.</p>
+                  <p>{t("ourStoryP1")}</p>
+                  <p>{t("ourStoryP2")}</p>
                 </div>
               </div>
               <div className="space-y-4">
                 {[
-                  { year: "2022", event: "Founded in Antalya — 3 vehicles, 1 vision." },
-                  { year: "2023", event: "Expanded to 12 vehicles and 5 languages of support." },
-                  { year: "2024", event: "Reached 10,000 successful transfers with 4.9★ rating." },
-                  { year: "2025", event: "Launched online booking platform with real-time tracking." },
-                ].map(({ year, event }) => (
+                  { year: "2022", eventKey: "timeline2022" },
+                  { year: "2023", eventKey: "timeline2023" },
+                  { year: "2024", eventKey: "timeline2024" },
+                  { year: "2025", eventKey: "timeline2025" },
+                ].map(({ year, eventKey }) => (
                   <div key={year} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-orange-400" style={{ backgroundColor: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.25)" }}>{year.slice(2)}</div>
@@ -182,7 +182,7 @@ export default async function AboutPage() {
                     </div>
                     <div className="pb-4">
                       <p className="text-xs text-orange-400 font-semibold mb-1">{year}</p>
-                      <p className="text-[#86868b] text-sm">{event}</p>
+                      <p className="text-[#86868b] text-sm">{t(eventKey)}</p>
                     </div>
                   </div>
                 ))}
@@ -195,36 +195,36 @@ export default async function AboutPage() {
         <section className="py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="max-w-4xl mx-auto px-4">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">Our Fleet</p>
-              <h2 className="text-2xl font-bold text-white tracking-tight">Premium Vehicles Only</h2>
-              <p className="text-[#86868b] mt-3 max-w-lg mx-auto">Every vehicle in our fleet is under 3 years old, fully maintained, and equipped with child seats, Wi-Fi, and complimentary water.</p>
+              <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">{t("fleetTag")}</p>
+              <h2 className="text-2xl font-bold text-white tracking-tight">{t("fleetTitle")}</h2>
+              <p className="text-[#86868b] mt-3 max-w-lg mx-auto">{t("fleetDesc")}</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
               {[
                 {
                   name: "Mercedes Vito VIP",
-                  capacity: "Up to 8 passengers",
-                  luggage: "8 large suitcases",
-                  features: ["Leather seats", "Climate control", "Free Wi-Fi", "Child seat available"],
+                  capacityKey: "vitoCapacity",
+                  luggageKey: "vitoLuggage",
+                  featureKeys: ["featLeather", "featClimate", "featWifi", "featChildSeat"],
                 },
                 {
                   name: "Mercedes Sprinter VIP",
-                  capacity: "Up to 16 passengers",
-                  luggage: "16 large suitcases",
-                  features: ["Panoramic windows", "Air conditioning", "USB charging", "Extra leg room"],
+                  capacityKey: "sprinterCapacity",
+                  luggageKey: "sprinterLuggage",
+                  featureKeys: ["featPanorama", "featAirCon", "featUsb", "featLegRoom"],
                 },
-              ].map(({ name, capacity, luggage, features }) => (
+              ].map(({ name, capacityKey, luggageKey, featureKeys }) => (
                 <div key={name} className="p-6 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   <h3 className="font-bold text-white text-lg mb-1">{name}</h3>
                   <div className="flex gap-3 mb-4">
-                    <span className="text-xs px-3 py-1 rounded-full font-medium text-orange-400" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>{capacity}</span>
-                    <span className="text-xs px-3 py-1 rounded-full font-medium text-[#86868b]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>{luggage}</span>
+                    <span className="text-xs px-3 py-1 rounded-full font-medium text-orange-400" style={{ backgroundColor: "rgba(249,115,22,0.1)" }}>{t(capacityKey)}</span>
+                    <span className="text-xs px-3 py-1 rounded-full font-medium text-[#86868b]" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>{t(luggageKey)}</span>
                   </div>
                   <ul className="space-y-2">
-                    {features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-[#86868b]">
+                    {featureKeys.map((fKey) => (
+                      <li key={fKey} className="flex items-center gap-2 text-sm text-[#86868b]">
                         <CheckCircle size={14} className="text-emerald-400 flex-shrink-0" strokeWidth={2} />
-                        {f}
+                        {t(fKey)}
                       </li>
                     ))}
                   </ul>

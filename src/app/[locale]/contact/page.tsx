@@ -34,7 +34,7 @@ export default async function ContactPage() {
     "@type": "LocalBusiness",
     name: "TORVIAN Transfer",
     url: "https://torviantransfer.com",
-    telephone: "+90-546-940-79-55",
+    telephone: "+90-850-840-13-27",
     email: "torviantransfer@gmail.com",
     address: {
       "@type": "PostalAddress",
@@ -82,18 +82,18 @@ export default async function ContactPage() {
           <div className="max-w-5xl mx-auto px-4 py-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { icon: Headphones, label: "24/7 Support", sub: "Always available" },
-                { icon: Clock, label: "< 30 min", sub: "Response time" },
-                { icon: Globe, label: "5 Languages", sub: "TR · EN · DE · PL · RU" },
-                { icon: Shield, label: "Fully Insured", sub: "Licensed & secure" },
-              ].map(({ icon: Icon, label, sub }) => (
-                <div key={label} className="flex items-center gap-3">
+                { icon: Headphones, labelKey: "stat1Label", subKey: "stat1Sub" },
+                { icon: Clock, labelKey: "stat2Label", subKey: "stat2Sub" },
+                { icon: Globe, labelKey: "stat3Label", subKey: "stat3Sub" },
+                { icon: Shield, labelKey: "stat4Label", subKey: "stat4Sub" },
+              ].map(({ icon: Icon, labelKey, subKey }) => (
+                <div key={labelKey} className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(249,115,22,0.12)" }}>
                     <Icon size={18} className="text-orange-400" strokeWidth={1.5} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">{label}</p>
-                    <p className="text-xs text-[#86868b]">{sub}</p>
+                    <p className="text-sm font-bold text-white">{t(labelKey)}</p>
+                    <p className="text-xs text-[#86868b]">{t(subKey)}</p>
                   </div>
                 </div>
               ))}
@@ -192,20 +192,20 @@ export default async function ContactPage() {
         {/* Languages section */}
         <section className="py-16" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">Multilingual Team</p>
-            <h2 className="text-2xl font-bold text-white mb-2">We Speak Your Language</h2>
-            <p className="text-[#86868b] mb-10 max-w-md mx-auto">Our team is fluent in 5 languages so you can communicate comfortably from your first inquiry to arrival.</p>
+            <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-3">{t("langTag")}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">{t("langTitle")}</h2>
+            <p className="text-[#86868b] mb-10 max-w-md mx-auto">{t("langDesc")}</p>
             <div className="flex flex-wrap justify-center gap-3">
               {[
-                { flag: "🇹🇷", lang: "Turkish" },
-                { flag: "🇬🇧", lang: "English" },
-                { flag: "🇩🇪", lang: "German" },
-                { flag: "🇵🇱", lang: "Polish" },
-                { flag: "🇷🇺", lang: "Russian" },
-              ].map(({ flag, lang }) => (
-                <div key={lang} className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                { flag: "🇹🇷", langKey: "langTurkish" },
+                { flag: "🇬🇧", langKey: "langEnglish" },
+                { flag: "🇩🇪", langKey: "langGerman" },
+                { flag: "🇵🇱", langKey: "langPolish" },
+                { flag: "🇷🇺", langKey: "langRussian" },
+              ].map(({ flag, langKey }) => (
+                <div key={langKey} className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium text-white" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <span className="text-xl">{flag}</span>
-                  <span>{lang}</span>
+                  <span>{t(langKey)}</span>
                 </div>
               ))}
             </div>
@@ -215,7 +215,7 @@ export default async function ContactPage() {
         {/* Map section */}
         <section className="pb-20">
           <div className="max-w-4xl mx-auto px-4">
-            <h2 className="text-xl font-bold text-white mb-4">Our Location</h2>
+            <h2 className="text-xl font-bold text-white mb-4">{t("mapTitle")}</h2>
             <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3189.784!2d30.8005!3d36.8987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14c385a94efb0e15%3A0x7aae38d6b3e6fbe4!2sAntalya+Airport!5e0!3m2!1sen!2str!4v1700000000000"
