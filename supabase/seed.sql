@@ -4,7 +4,7 @@
 
 -- Vehicle Category
 INSERT INTO vehicle_categories (id, name, slug, description, max_passengers, max_luggage, features, sort_order) VALUES
-  ('c0000000-0000-0000-0000-000000000001', 'VIP', 'vip', 'Mercedes-Benz Vito VIP Tourer with premium features', 7, 7, ARRAY['ac','wifi','water','leather','usb'], 1);
+  ('c0000000-0000-0000-0000-000000000001', 'VIP', 'vip', 'Mercedes-Benz Vito VIP Tourer with premium features', 5, 5, ARRAY['ac','wifi','water','leather','usb'], 1);
 
 -- Vehicles
 INSERT INTO vehicles (id, category_id, plate_number, brand, model, year, color) VALUES
@@ -14,9 +14,9 @@ INSERT INTO vehicles (id, category_id, plate_number, brand, model, year, color) 
 
 -- Drivers
 INSERT INTO drivers (id, full_name, phone, is_active) VALUES
-  ('d0000000-0000-0000-0000-000000000001', 'Driver 1', '+905001234501', true),
-  ('d0000000-0000-0000-0000-000000000002', 'Driver 2', '+905001234502', true),
-  ('d0000000-0000-0000-0000-000000000003', 'Driver 3', '+905001234503', true);
+  ('d0000000-0000-0000-0000-000000000001', 'Driver 1', '+908508401327', true),
+  ('d0000000-0000-0000-0000-000000000002', 'Driver 2', '+908508401327', true),
+  ('d0000000-0000-0000-0000-000000000003', 'Driver 3', '+908508401327', true);
 
 -- Regions (24 routes from Antalya Airport)
 INSERT INTO regions (id, slug, name_tr, name_en, name_de, name_pl, name_ru, distance_km, duration_minutes, is_popular, sort_order) VALUES
@@ -80,11 +80,11 @@ INSERT INTO exchange_rates (base_currency, target_currency, rate) VALUES
 -- Settings (simple numeric JSONB values - code reads via Number(value))
 INSERT INTO settings (key, value) VALUES
   ('night_surcharge_percent', '15'),
-  ('child_seat_fee', '0'),
+  ('child_seat_fee', '10'),
   ('welcome_sign_fee', '5'),
   ('company_name', '"TORVIAN Transfer"'),
   ('contact_email', '"torviantransfer@gmail.com"'),
-  ('whatsapp_number', '""'),
+  ('whatsapp_number', '"908508401327"'),
   ('cancellation_free_hours', '24');
 
 -- Test Coupon

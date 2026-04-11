@@ -209,7 +209,7 @@ export default function Footer() {
               <li className="pt-1">
                 <div className="flex items-start gap-2 text-gray-400 text-sm">
                   <MapPin size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>Kemera�z� Mah. Antalya Havaliman� D�� Hatlar, 07230 Muratpa�a/Antalya</span>
+                  <span>Kemerağzı Mah. Antalya Havalimanı Dış Hatlar, 07230 Muratpaşa/Antalya</span>
                 </div>
               </li>
             </ul>
@@ -219,7 +219,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-gray-400 text-xs">
-            � {currentYear} TORVIAN Transfer. {t("allRightsReserved")}
+            © {currentYear} TORVIAN Transfer. {t("allRightsReserved")}
           </p>
           <p className="text-gray-400 text-xs">
             {t("tagline")}

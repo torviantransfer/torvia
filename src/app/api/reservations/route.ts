@@ -76,6 +76,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Region not found" }, { status: 404 });
     }
 
+    // ─── Check date availability ───
+    const { data: blockedDate } = await supabase
+      .from("blocked_dates")
+      .select("id")
+      .eq("blocked_date", pickupDate)
+      .single();
+
+    if (blockedDate) {
+      return NextResponse.json(
+        { error: "This date is not available for booking" },
+        { status: 400 }
+      );
+    }
+
+    // Check max daily bookings
+    const { data: maxSetting } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "max_daily_bookings")
+      .single();
+
+    const maxDaily = maxSetting ? Number(maxSetting.value) : 3;
+
+    const { count: dateBookingCount } = await supabase
+      .from("reservations")
+      .select("id", { count: "exact", head: true })
+      .gte("pickup_datetime", `${pickupDate}T00:00:00`)
+      .lte("pickup_datetime", `${pickupDate}T23:59:59`)
+      .not("status", "in", '("cancelled")');
+
+    if ((dateBookingCount ?? 0) >= maxDaily) {
+      return NextResponse.json(
+        { error: "This date is fully booked" },
+        { status: 400 }
+      );
+    }
+
     // Fetch pricing
     const { data: pricing } = await supabase
       .from("pricing")

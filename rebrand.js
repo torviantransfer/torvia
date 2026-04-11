@@ -51,10 +51,14 @@ for (const file of allFiles) {
   const original = content;
   // Old phone variants -> new primary phone
   content = content
-    .replace(/905431451548/g, '905469407955')
-    .replace(/\+90 543 145 15 48/g, '+90 546 940 79 55')
-    .replace(/\+90-543-145-15-48/g, '+90-546-940-79-55')
-    .replace(/tel:\+905431451548/g, 'tel:+905469407955');
+    .replace(/905431451548/g, '908508401327')
+    .replace(/905469407955/g, '908508401327')
+    .replace(/\+90 543 145 15 48/g, '0850 840 1327')
+    .replace(/\+90 546 940 79 55/g, '0850 840 1327')
+    .replace(/\+90-543-145-15-48/g, '0850-840-1327')
+    .replace(/\+90-546-940-79-55/g, '0850-840-1327')
+    .replace(/tel:\+905431451548/g, 'tel:+908508401327')
+    .replace(/tel:\+905469407955/g, 'tel:+908508401327');
   // Email changes
   content = content
     .replace(/info@veloratransfer\.com/g, 'torviantransfer@gmail.com')
@@ -82,9 +86,12 @@ for (const rf of rootFiles) {
     .replace(/VELORA/g, 'TORVIAN')
     .replace(/Velora/g, 'Torvian')
     .replace(/velora/g, 'torvian')
-    .replace(/905431451548/g, '905469407955')
-    .replace(/\+90 543 145 15 48/g, '+90 546 940 79 55')
-    .replace(/\+90-543-145-15-48/g, '+90-546-940-79-55')
+    .replace(/905431451548/g, '908508401327')
+    .replace(/905469407955/g, '908508401327')
+    .replace(/\+90 543 145 15 48/g, '0850 840 1327')
+    .replace(/\+90 546 940 79 55/g, '0850 840 1327')
+    .replace(/\+90-543-145-15-48/g, '0850-840-1327')
+    .replace(/\+90-546-940-79-55/g, '0850-840-1327')
     .replace(/info@veloratransfer\.com/g, 'torviantransfer@gmail.com')
     .replace(/veloratransfer@gmail\.com/g, 'torviantransfer@gmail.com')
     .replace(/https:\/\/veloratransfer\.com/g, 'https://torviantransfer.com')
@@ -104,9 +111,12 @@ for (const file of appFiles) {
     .replace(/VELORA/g, 'TORVIAN')
     .replace(/Velora/g, 'Torvian')
     .replace(/velora/g, 'torvian')
-    .replace(/905431451548/g, '905469407955')
-    .replace(/\+90 543 145 15 48/g, '+90 546 940 79 55')
-    .replace(/\+90-543-145-15-48/g, '+90-546-940-79-55')
+    .replace(/905431451548/g, '908508401327')
+    .replace(/905469407955/g, '908508401327')
+    .replace(/\+90 543 145 15 48/g, '0850 840 1327')
+    .replace(/\+90 546 940 79 55/g, '0850 840 1327')
+    .replace(/\+90-543-145-15-48/g, '0850-840-1327')
+    .replace(/\+90-546-940-79-55/g, '0850-840-1327')
     .replace(/info@veloratransfer\.com/g, 'torviantransfer@gmail.com')
     .replace(/veloratransfer@gmail\.com/g, 'torviantransfer@gmail.com')
     .replace(/https:\/\/veloratransfer\.com/g, 'https://torviantransfer.com')

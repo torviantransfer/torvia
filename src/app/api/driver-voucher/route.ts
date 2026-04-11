@@ -488,7 +488,7 @@ export async function GET(request: NextRequest) {
     </div>
 
     <div class="footer">
-      <div class="support">24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com</div>
+      <div class="support">24/7 Support: 0850 840 1327 | torviantransfer@gmail.com</div>
       <div class="brand">TORVIAN VIP TRANSFER</div>
     </div>
   </div>

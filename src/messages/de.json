@@ -86,11 +86,12 @@
     "luggageCapacity": "Gepäck",
     "errorFillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
     "errorFillReturn": "Bitte füllen Sie Rückfahrtdatum und -zeit aus",
+    "dateUnavailable": "Dieses Datum ist ausgebucht. Bitte wählen Sie ein anderes Datum.",
     "errorGeneric": "Etwas ist schiefgelaufen",
     "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     "placeholderWelcomeName": "Name auf dem Willkommensschild",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "+90 555 123 4567",
+    "placeholderPhone": "0850 840 1327",
     "placeholderHotel": "Hotelname oder Abholadresse",
     "seoHeading": "Warum TORVIAN Transfer wählen?",
     "seoSubheading": "Sicherer, komfortabler und pünktlicher VIP-Flughafentransfer vom Flughafen Antalya zu allen Urlaubszielen.",
@@ -148,7 +149,7 @@
     "proDrivers": "Professionelle Fahrer",
     "fixedPrice": "Festpreis",
     "flightTracking": "Flugverfolgung",
-    "freeChildSeat": "Kindersitz Verfügbar",
+    "freeChildSeat": "Kindersitz ($10)",
     "meetGreet": "Meet & Greet"
   },
   "howItWorks": {
@@ -297,9 +298,9 @@
     "q3": "Was passiert, wenn mein Flug Verspätung hat?",
     "a3": "Wir verfolgen alle Flüge in Echtzeit. Bei Verspätung wartet Ihr Fahrer kostenlos.",
     "q4": "Welche Fahrzeuge werden eingesetzt?",
-    "a4": "Alle Transfers werden mit Mercedes Vito VIP-Fahrzeugen durchgeführt — mit Ledersitzen, WLAN, Klimaanlage und Platz für bis zu 7 Passagiere.",
+    "a4": "Alle Transfers werden mit Mercedes Vito VIP-Fahrzeugen durchgeführt — mit Ledersitzen, WLAN, Klimaanlage und Platz für bis zu 5 Passagiere.",
     "q5": "Sind die Preise pro Person?",
-    "a5": "Nein, unsere Preise gelten pro Fahrzeug. Bis zu 7 Passagiere können in einem Mercedes Vito zum gleichen Preis reisen.",
+    "a5": "Nein, unsere Preise gelten pro Fahrzeug. Bis zu 5 Passagiere können in einem Mercedes Vito zum gleichen Preis reisen.",
     "q6": "Gibt es kostenlose Stornierung?",
     "a6": "Ja, eine kostenlose Stornierung ist bis zu 24 Stunden vor der geplanten Abfahrt möglich.",
     "q7": "Sind Kindersitze verfügbar?",
@@ -339,7 +340,7 @@
     "freeFlightMonitoring": "Kostenlose Flugüberwachung & Wartezeit",
     "freeCancellation": "Kostenlose Stornierung bis 24 Std. vorher",
     "vehicleHeading": "Ihr VIP-Fahrzeug: Mercedes Vito",
-    "specPassengers": "Bis zu 7 Passagiere",
+    "specPassengers": "Bis zu 5 Passagiere",
     "specWifi": "Kostenloses WLAN",
     "specClimate": "Klimaanlage",
     "specLeather": "Lederausstattung",
@@ -361,7 +362,7 @@
     "faqQ7": "Kann ich für meinen {name} Flughafentransfer einen Kindersitz buchen?",
     "faqA7": "Ja, Kindersitze sind für 10 $ pro Buchung verfügbar. Wählen Sie die Kindersitz-Option bei der Buchung.",
     "faqQ8": "Wie viel Gepäck kann ich beim {name} Transfer mitnehmen?",
-    "faqA8": "Unsere Mercedes Vito VIP-Fahrzeuge bieten Platz für bis zu 7 große Koffer. Bei übergroßem Gepäck vermerken Sie dies bitte in den Buchungsnotizen.",
+    "faqA8": "Unsere Mercedes Vito VIP-Fahrzeuge bieten Platz für bis zu 5 große Koffer. Bei übergroßem Gepäck vermerken Sie dies bitte in den Buchungsnotizen.",
     "readyToBook": "Bereit, Ihren {name}-Transfer zu buchen?",
     "readyDesc": "Festpreis, professionelle Fahrer, Meet & Greet am Flughafen.",
     "bookNow": "Jetzt Buchen",
@@ -471,7 +472,7 @@
     "s2Title": "2. Buchung & Zahlung",
     "s2Items": "Alle Preise werden in USD angezeigt und gelten pro Fahrzeug, nicht pro Person|Die Zahlung ist zum Zeitpunkt der Buchung über sichere Online-Zahlung (Stripe) erforderlich|Nach erfolgreicher Zahlung wird eine Bestätigungs-E-Mail mit Buchungsdetails gesendet|Ihre Buchung wird erst nach Zahlungseingang bestätigt",
     "s3Title": "3. Fahrzeug & Passagiere",
-    "s3Items": "Maximal 7 Passagiere pro VIP Mercedes Vito|Maximal 7 Stück Standardgepäck|Kindersitze werden auf Anfrage kostenlos bereitgestellt|Passagiere müssen genaue Fluginformationen für Flughafenabholungen angeben",
+    "s3Items": "Maximal 5 Passagiere pro VIP Mercedes Vito|Maximal 5 Stück Standardgepäck|Kindersitze sind für $10 pro Buchung verfügbar|Passagiere müssen genaue Fluginformationen für Flughafenabholungen angeben",
     "s4Title": "4. Abholung & Wartezeit",
     "s4Items": "Bei Flughafenabholungen empfängt Sie unser Fahrer in der Ankunftshalle mit einem Namensschild|Wir verfolgen Ihren Flug und passen die Abholzeit bei früher/später Ankunft an|Kostenlose Wartezeit: 60 Minuten nach Fluglandung bei Flughafenabholungen|Bei Hotelabholungen wartet der Fahrer am angegebenen Ort",
     "s5Title": "5. Nachtzuschlag",
@@ -591,7 +592,7 @@
     "q4": "Welche Fahrzeuge werden eingesetzt?",
     "a4": "Wir bieten Mercedes Vito VIP-Fahrzeuge mit WLAN, Klimaanlage, USB-Ladung, Wasser und Ledersitzen.",
     "q5": "Bieten Sie Kindersitze an?",
-    "a5": "Ja, Sie können bei der Buchung einen Kindersitz anfordern. Dieser wird kostenlos bereitgestellt.",
+    "a5": "Ja, Sie können bei der Buchung einen Kindersitz anfordern. Die Gebühr beträgt $10 pro Buchung.",
     "q6": "Wie kann ich bezahlen?",
     "a6": "Sie können sicher online mit Kreditkarte bezahlen. Alle Karten werden über die Stripe-Zahlungsinfrastruktur akzeptiert."
   },
@@ -662,6 +663,6 @@
     "s6Title": "6. Datensicherheit",
     "s6Text": "Wir setzen geeignete technische und organisatorische Maßnahmen um, um Ihre personenbezogenen Daten vor unbefugtem Zugriff, Änderung, Offenlegung oder Vernichtung zu schützen. Alle Zahlungsdaten werden über die PCI-DSS-konforme Stripe-Infrastruktur verarbeitet.",
     "s7Title": "7. Kontakt",
-    "s7Text": "Bei Fragen zu Ihren personenbezogenen Daten oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an torviantransfer@gmail.com oder rufen Sie +90 546 940 79 55 an."
+    "s7Text": "Bei Fragen zu Ihren personenbezogenen Daten oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an torviantransfer@gmail.com oder rufen Sie 0850 840 1327 an."
   }
 }

@@ -122,11 +122,31 @@ export default function BookingWizard(props: Props) {
 
   // Dynamic regions from Supabase
   const [regions, setRegions] = useState<RegionItem[]>([]);
+  const [unavailableDates, setUnavailableDates] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     fetch("/api/regions")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setRegions(data);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch unavailable dates for next 6 months
+  useEffect(() => {
+    const today = new Date();
+    const from = today.toISOString().split("T")[0];
+    const future = new Date(today);
+    future.setMonth(future.getMonth() + 6);
+    const to = future.toISOString().split("T")[0];
+
+    fetch(`/api/availability?from=${from}&to=${to}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.unavailableDates) {
+          setUnavailableDates(new Set(data.unavailableDates.map((d: { date: string }) => d.date)));
+        }
       })
       .catch(() => {});
   }, []);
@@ -243,8 +263,18 @@ export default function BookingWizard(props: Props) {
         setError(t("errorFillRequired"));
         return;
       }
+      // Check if pickup date is unavailable
+      if (unavailableDates.has(pickupDate)) {
+        setError(t("dateUnavailable"));
+        return;
+      }
       if (tripType === "round_trip" && (!returnDate || !returnTime)) {
         setError(t("errorFillReturn"));
+        return;
+      }
+      // Check if return date is unavailable
+      if (tripType === "round_trip" && returnDate && unavailableDates.has(returnDate)) {
+        setError(t("dateUnavailable"));
         return;
       }
     }
@@ -452,9 +482,14 @@ export default function BookingWizard(props: Props) {
                         onChange={(e) => setPickupDate(e.target.value)}
                         min={today}
                         required
-                        className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        className={`w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none ${unavailableDates.has(pickupDate) ? "ring-2 ring-red-500" : ""}`} style={{ backgroundColor: "rgba(255,255,255,0.04)", border: unavailableDates.has(pickupDate) ? "1px solid rgba(239,68,68,0.5)" : "1px solid rgba(255,255,255,0.08)" }}
                       />
                     </div>
+                    {unavailableDates.has(pickupDate) && (
+                      <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                        <AlertCircle size={12} /> {t("dateUnavailable")}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-[#86868b] mb-1.5">
@@ -541,7 +576,7 @@ export default function BookingWizard(props: Props) {
                       onChange={(e) => setAdults(Number(e.target.value))}
                       className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                     >
-                      {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                      {[1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>
                           {n}
                         </option>
@@ -574,7 +609,7 @@ export default function BookingWizard(props: Props) {
                       onChange={(e) => setLuggage(Number(e.target.value))}
                       className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
                     >
-                      {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
+                      {[0, 1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>
                           {n}
                         </option>
@@ -693,8 +728,8 @@ export default function BookingWizard(props: Props) {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-emerald-400">
-                        {t("free")}
+                      <span className="text-sm font-semibold text-orange-400">
+                        +$10
                       </span>
                       <input
                         type="checkbox"
@@ -943,7 +978,7 @@ export default function BookingWizard(props: Props) {
 
           <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
             {/* Card header */}
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "linear-gradient(135deg, rgba(249,115,22,0.08) 0%, transparent 100%)" }}>
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%)" }}>
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-white">{t("totalPrice")}</h3>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full text-emerald-400" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
@@ -963,8 +998,8 @@ export default function BookingWizard(props: Props) {
             ) : priceData ? (
               <div className="space-y-3">
                 {/* Region info */}
-                <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.1)" }}>
-                  <p className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-1">{t("dropoff")}</p>
+                <div className="rounded-xl p-3 mb-1" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">{t("dropoff")}</p>
                   <p className="font-bold text-white text-sm">
                     {selectedRegion ? getRegionName(selectedRegion) : regionSlug}
                   </p>
@@ -987,7 +1022,7 @@ export default function BookingWizard(props: Props) {
                 {childSeat && (
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-[#86868b]">{t("childSeatFee")}</span>
-                    <span className="font-semibold text-emerald-400">{t("free")}</span>
+                    <span className="font-semibold text-orange-400">+$10</span>
                   </div>
                 )}
 
@@ -1012,10 +1047,10 @@ export default function BookingWizard(props: Props) {
                 )}
 
                 {/* Total */}
-                <div className="mt-2 p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.12) 0%, rgba(249,115,22,0.06) 100%)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                <div className="mt-2 p-4 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(52,211,153,0.1) 0%, rgba(16,185,129,0.06) 100%)", border: "1px solid rgba(52,211,153,0.2)" }}>
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-white text-sm">{t("totalPrice")}</span>
-                    <span className="text-2xl font-bold text-orange-400">
+                    <span className="text-2xl font-bold text-emerald-400">
                       {fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}
                     </span>
                   </div>

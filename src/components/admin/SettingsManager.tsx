@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Save, RefreshCw, Eye, EyeOff, CheckCircle2, XCircle, CreditCard, Mail, Send, Globe, Shield } from "lucide-react";
+import { Save, RefreshCw, Eye, EyeOff, CheckCircle2, XCircle, CreditCard, Mail, Send, Globe, Shield, Loader2 } from "lucide-react";
 
 interface Setting {
   key: string;
@@ -80,6 +80,21 @@ export default function SettingsManager({
   const [intVisible, setIntVisible] = useState<Record<string, boolean>>({});
   const [intEditing, setIntEditing] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<"general" | "integrations">("general");
+  const [sendingPriceList, setSendingPriceList] = useState(false);
+  const [priceListSent, setPriceListSent] = useState(false);
+
+  const handleSendPriceList = async () => {
+    setSendingPriceList(true);
+    setPriceListSent(false);
+    try {
+      const res = await fetch("/api/admin/telegram-price-list", { method: "POST" });
+      if (res.ok) {
+        setPriceListSent(true);
+        setTimeout(() => setPriceListSent(false), 3000);
+      }
+    } catch { /* ignore */ }
+    setSendingPriceList(false);
+  };
 
   useEffect(() => {
     fetch("/api/admin/integrations")
@@ -378,6 +393,25 @@ export default function SettingsManager({
                     );
                   })}
                 </div>
+
+                {/* Telegram Price List Button */}
+                {group === "Telegram Bildirim" && (
+                  <div className="mt-5 pt-4 border-t border-gray-100">
+                    <p className="text-xs text-gray-500 mb-3">Fiyat listesini Telegram grubuna gönderin ve sabitleyin.</p>
+                    <button
+                      onClick={handleSendPriceList}
+                      disabled={sendingPriceList}
+                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-medium"
+                    >
+                      {sendingPriceList ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Send size={14} />
+                      )}
+                      {priceListSent ? "✓ Gönderildi!" : sendingPriceList ? "Gönderiliyor..." : "Fiyat Listesini Telegram'a Gönder"}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

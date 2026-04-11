@@ -18,12 +18,14 @@ import {
   ChevronRight,
   FileText,
   Calendar,
+  CalendarOff,
 } from "lucide-react";
 
 const navDefs = [
   { path: "", label: "Kontrol Paneli", icon: LayoutDashboard },
   { path: "/reservations", label: "Rezervasyonlar", icon: CalendarCheck },
   { path: "/calendar", label: "Takvim", icon: Calendar },
+  { path: "/availability", label: "Tarih & Kapasite", icon: CalendarOff },
   { path: "/drivers", label: "Şoförler", icon: Users },
   { path: "/vehicles", label: "Araçlar", icon: Car },
   { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },

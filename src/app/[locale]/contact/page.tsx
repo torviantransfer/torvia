@@ -109,7 +109,7 @@ export default async function ContactPage() {
                 <h2 className="text-2xl font-bold text-white tracking-tight">{t("getInTouch")}</h2>
                 <div className="space-y-3">
                   <a
-                    href="https://wa.me/905469407955"
+                    href="https://wa.me/908508401327"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 p-4 rounded-2xl transition-colors"
@@ -141,7 +141,7 @@ export default async function ContactPage() {
 
                   {/* Second phone */}
                   <a
-                    href="tel:+905415952102"
+                    href="tel:+908508401327"
                     className="flex items-center gap-4 p-4 rounded-2xl transition-colors"
                     style={{ backgroundColor: "rgba(196,181,253,0.06)", border: "1px solid rgba(196,181,253,0.12)" }}
                   >
@@ -150,7 +150,7 @@ export default async function ContactPage() {
                     </div>
                     <div>
                       <p className="font-bold text-white">{t("phoneLabel")} 2</p>
-                      <p className="text-sm text-[#86868b]">+90 541 595 21 02</p>
+                      <p className="text-sm text-[#86868b]">0850 840 1327</p>
                     </div>
                   </a>
 

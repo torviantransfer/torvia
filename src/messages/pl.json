@@ -86,11 +86,12 @@
     "luggageCapacity": "Bagaż",
     "errorFillRequired": "Proszę wypełnić wszystkie wymagane pola",
     "errorFillReturn": "Proszę wypełnić datę i godzinę powrotu",
+    "dateUnavailable": "Ta data jest w pełni zarezerwowana. Proszę wybrać inną datę.",
     "errorGeneric": "Coś poszło nie tak",
     "errorNetwork": "Błąd sieci. Spróbuj ponownie.",
     "placeholderWelcomeName": "Imię na tabliczce powitalnej",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "+90 555 123 4567",
+    "placeholderPhone": "0850 840 1327",
     "placeholderHotel": "Nazwa hotelu lub adres odbioru",
     "seoHeading": "Dlaczego warto wybrać TORVIAN Transfer?",
     "seoSubheading": "Bezpieczny, komfortowy i punktualny transfer VIP z lotniska w Antalyi do wszystkich kurortów.",
@@ -148,7 +149,7 @@
     "proDrivers": "Profesjonalni Kierowcy",
     "fixedPrice": "Stała Cena",
     "flightTracking": "Śledzenie Lotu",
-    "freeChildSeat": "Fotelik Dostępny",
+    "freeChildSeat": "Fotelik ($10)",
     "meetGreet": "Powitanie na Lotnisku"
   },
   "howItWorks": {
@@ -471,7 +472,7 @@
     "s2Title": "2. Rezerwacja i płatność",
     "s2Items": "Wszystkie ceny podawane są w USD i dotyczą pojazdu, a nie osoby|Płatność jest wymagana w momencie rezerwacji za pośrednictwem bezpiecznej płatności online (Stripe)|Po udanej płatności zostanie wysłany e-mail potwierdzający ze szczegółami rezerwacji|Rezerwacja jest potwierdzana dopiero po otrzymaniu płatności",
     "s3Title": "3. Pojazd i pasażerowie",
-    "s3Items": "Maksymalnie 7 pasażerów na VIP Mercedes Vito|Maksymalnie 7 sztuk standardowego bagażu|Foteliki dziecięce dostępne bezpłatnie na życzenie|Pasażerowie muszą podać dokładne informacje o locie przy odbiorze z lotniska",
+    "s3Items": "Maksymalnie 5 pasażerów na VIP Mercedes Vito|Maksymalnie 5 sztuk standardowego bagażu|Foteliki dziecięce dostępne za $10 za rezerwację|Pasażerowie muszą podać dokładne informacje o locie przy odbiorze z lotniska",
     "s4Title": "4. Odbiór i oczekiwanie",
     "s4Items": "Przy odbiorze z lotniska nasz kierowca spotka się z Państwem w hali przylotów z tabliczką z nazwiskiem|Śledzimy lot i dostosowujemy czas odbioru w przypadku wcześniejszego/późniejszego przylotu|Bezpłatny czas oczekiwania: 60 minut po lądowaniu samolotu przy odbiorze z lotniska|Przy odbiorze z hotelu kierowca czeka w określonym miejscu",
     "s5Title": "5. Dopłata nocna",
@@ -591,7 +592,7 @@
     "q4": "Jakie pojazdy są używane?",
     "a4": "Oferujemy pojazdy Mercedes Vito VIP z Wi-Fi, klimatyzacją, ładowaniem USB, wodą i skórzanymi fotelami.",
     "q5": "Czy zapewniacie foteliki dziecięce?",
-    "a5": "Tak, możesz poprosić o fotelik dziecięcy podczas rezerwacji. Jest zapewniany bezpłatnie.",
+    "a5": "Tak, możesz poprosić o fotelik dziecięcy podczas rezerwacji. Opłata wynosi $10 za rezerwację.",
     "q6": "Jak mogę zapłacić?",
     "a6": "Możesz bezpiecznie zapłacić online kartą kredytową. Wszystkie karty są akceptowane przez system płatności Stripe."
   },
@@ -662,6 +663,6 @@
     "s6Title": "6. Bezpieczeństwo Danych",
     "s6Text": "Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony danych osobowych przed nieuprawnionym dostępem, zmianą, ujawnieniem lub zniszczeniem. Wszystkie dane płatności są przetwarzane przez zgodną z PCI-DSS infrastrukturę Stripe.",
     "s7Title": "7. Kontakt",
-    "s7Text": "W przypadku pytań dotyczących danych osobowych lub chęci skorzystania z praw, skontaktuj się z nami pod adresem torviantransfer@gmail.com lub zadzwoń +90 546 940 79 55."
+    "s7Text": "W przypadku pytań dotyczących danych osobowych lub chęci skorzystania z praw, skontaktuj się z nami pod adresem torviantransfer@gmail.com lub zadzwoń 0850 840 1327."
   }
 }

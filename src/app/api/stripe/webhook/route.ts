@@ -2,7 +2,7 @@
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
-import { notifyNewPayment } from "@/lib/telegram";
+import { notifyNewPayment, sendDriverVoucherToTelegram } from "@/lib/telegram";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       // Send confirmation email to customer
       const { data: resData } = await supabase
         .from("reservations")
-        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, slug), customers(id, email, first_name, last_name, auth_user_id), vehicle_categories(name)")
+        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, slug, distance_km, duration_minutes), customers(id, email, first_name, last_name, auth_user_id, phone), vehicle_categories(name)")
         .eq("id", reservationId)
         .single();
 
@@ -149,6 +149,33 @@ export async function POST(request: NextRequest) {
         email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
         region: String(resData.regions?.name_en ?? ""),
       }).catch(() => {});
+
+      // Send driver voucher (without price) to Telegram
+      if (resData) {
+        const regionObj = resData.regions as Record<string, unknown> | null;
+        sendDriverVoucherToTelegram({
+          reservationCode: resData.reservation_code,
+          customerFirstName: resData.customers?.first_name ?? "",
+          customerLastName: resData.customers?.last_name ?? "",
+          customerPhone: (resData.customers as Record<string, string> | null)?.phone,
+          tripType: resData.trip_type,
+          pickupDatetime: resData.pickup_datetime,
+          returnDatetime: resData.return_datetime,
+          flightCode: resData.flight_code,
+          hotelName: resData.hotel_name,
+          hotelAddress: resData.hotel_address,
+          regionName: String(regionObj?.name_en ?? ""),
+          distanceKm: regionObj?.distance_km as number | undefined,
+          durationMinutes: regionObj?.duration_minutes as number | undefined,
+          adults: resData.adults ?? 1,
+          children: resData.children ?? 0,
+          luggageCount: resData.luggage_count ?? 0,
+          childSeat: resData.child_seat ?? false,
+          welcomeSign: resData.welcome_sign ?? false,
+          welcomeName: resData.welcome_name,
+          notes: resData.notes,
+        }).catch(() => {});
+      }
     }
   }
 

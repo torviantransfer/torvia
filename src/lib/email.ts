@@ -85,7 +85,7 @@ const i18n: Record<string, Record<string, string>> = {
     imp1: "Your driver will track your flight — no need to worry about delays.",
     imp2: "The driver will wait for you at the airport exit with a name sign.",
     imp3: "Free waiting time: 60 min for flights, 15 min for hotels.",
-    imp4: "Free child seat & booster on request.",
+    imp4: "Child seat & booster available for $10 per booking.",
     contact: "Need help? We're available 24/7",
     footer: "This e-mail serves as your official transfer voucher.",
   },
@@ -128,7 +128,7 @@ const i18n: Record<string, Record<string, string>> = {
     imp1: "Şoförünüz uçuşunuzu takip eder — rötar konusunda endişelenmeyin.",
     imp2: "Şoför sizi havalimanı çıkışında isim tabelasıyla bekleyecektir.",
     imp3: "Ücretsiz bekleme: Uçuşlarda 60 dk, otellerden 15 dk.",
-    imp4: "Talep üzerine ücretsiz çocuk koltuğu ve yükseltici.",
+    imp4: "Talep üzerine 10$ karşılığında çocuk koltuğu ve yükseltici.",
     contact: "Yardım mı lazım? 7/24 ulaşabilirsiniz",
     footer: "Bu e-posta resmi transfer voucherınız olarak geçerlidir.",
   },
@@ -171,7 +171,7 @@ const i18n: Record<string, Record<string, string>> = {
     imp1: "Ihr Fahrer verfolgt Ihren Flug — keine Sorge bei Verspätungen.",
     imp2: "Der Fahrer erwartet Sie am Flughafenausgang mit einem Namensschild.",
     imp3: "Kostenlose Wartezeit: 60 Min für Flüge, 15 Min für Hotels.",
-    imp4: "Kostenloser Kindersitz auf Anfrage.",
+    imp4: "Kindersitz für $10 pro Buchung verfügbar.",
     contact: "Brauchen Sie Hilfe? Wir sind 24/7 erreichbar",
     footer: "Diese E-Mail dient als Ihr offizieller Transfer-Voucher.",
   },
@@ -214,7 +214,7 @@ const i18n: Record<string, Record<string, string>> = {
     imp1: "Kierowca śledzi Twój lot — nie martw się opóźnieniami.",
     imp2: "Kierowca będzie czekał na Ciebie przy wyjściu z lotniska z tabliczką.",
     imp3: "Bezpłatny czas oczekiwania: 60 min dla lotów, 15 min dla hoteli.",
-    imp4: "Bezpłatny fotelik dziecięcy na życzenie.",
+    imp4: "Fotelik dziecięcy dostępny za $10 za rezerwację.",
     contact: "Potrzebujesz pomocy? Jesteśmy dostępni 24/7",
     footer: "Ten e-mail służy jako oficjalny voucher transferowy.",
   },
@@ -257,7 +257,7 @@ const i18n: Record<string, Record<string, string>> = {
     imp1: "Водитель отслеживает ваш рейс — не переживайте из-за задержек.",
     imp2: "Водитель встретит вас на выходе из аэропорта с табличкой.",
     imp3: "Бесплатное ожидание: 60 мин для рейсов, 15 мин для отелей.",
-    imp4: "Бесплатное детское кресло по запросу.",
+    imp4: "Детское кресло доступно за $10 за бронирование.",
     contact: "Нужна помощь? Мы доступны 24/7",
     footer: "Это письмо является вашим официальным ваучером на трансфер.",
   },
@@ -277,7 +277,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   const loc = data.locale;
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
 
   const passengerParts: string[] = [];
   if (data.adults > 0) passengerParts.push(`${data.adults} ${data.adults === 1 ? t(loc, "adult") : t(loc, "adults")}`);

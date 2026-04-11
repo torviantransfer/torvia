@@ -86,11 +86,12 @@
     "luggageCapacity": "Luggage",
     "errorFillRequired": "Please fill all required fields",
     "errorFillReturn": "Please fill return date and time",
+    "dateUnavailable": "This date is fully booked. Please select another date.",
     "errorGeneric": "Something went wrong",
     "errorNetwork": "Network error. Please try again.",
     "placeholderWelcomeName": "Name on welcome sign",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "+90 555 123 4567",
+    "placeholderPhone": "0850 840 1327",
     "placeholderHotel": "Hotel name or pickup address",
     "seoHeading": "Why Choose TORVIAN Transfer?",
     "seoSubheading": "Safe, comfortable, and punctual VIP airport transfer from Antalya Airport to all resort destinations.",
@@ -148,7 +149,7 @@
     "proDrivers": "Professional Drivers",
     "fixedPrice": "Fixed Price",
     "flightTracking": "Flight Tracking",
-    "freeChildSeat": "Child Seat Available",
+    "freeChildSeat": "Child Seat ($10)",
     "meetGreet": "Meet & Greet"
   },
   "howItWorks": {
@@ -299,7 +300,7 @@
     "q4": "What vehicles do you use?",
     "a4": "All our transfers are made with Mercedes Vito VIP vehicles featuring leather seats, Wi-Fi, climate control, and capacity for up to 5 passengers.",
     "q5": "Are prices per person?",
-    "a5": "No, our prices are per vehicle. Up to 7 passengers can travel in a single Mercedes Vito at the same price.",
+    "a5": "No, our prices are per vehicle. Up to 5 passengers can travel in a single Mercedes Vito at the same price.",
     "q6": "Is there free cancellation?",
     "a6": "Yes, free cancellation is available up to 24 hours before your scheduled departure time.",
     "q7": "Are child seats available?",
@@ -339,7 +340,7 @@
     "freeFlightMonitoring": "Free flight monitoring & waiting",
     "freeCancellation": "Free cancellation up to 24h before",
     "vehicleHeading": "Your VIP Vehicle: Mercedes Vito",
-    "specPassengers": "Up to 7 Passengers",
+    "specPassengers": "Up to 5 Passengers",
     "specWifi": "Free Wi-Fi",
     "specClimate": "Climate Control",
     "specLeather": "Leather Interior",
@@ -349,7 +350,7 @@
     "faqQ1": "How long is the transfer from Antalya Airport to {name}?",
     "faqA1": "The transfer from Antalya Airport to {name} takes approximately {duration} minutes ({distance} km).",
     "faqQ2": "What vehicle is used for the {name} transfer?",
-    "faqA2": "We use Mercedes Vito VIP vehicles with leather interior, Wi-Fi, climate control, and space for up to 7 passengers.",
+    "faqA2": "We use Mercedes Vito VIP vehicles with leather interior, Wi-Fi, climate control, and space for up to 5 passengers.",
     "faqQ3": "Can I cancel my {name} transfer booking?",
     "faqA3": "Yes, free cancellation is available up to 24 hours before your transfer. After that, a 50% fee applies.",
     "faqQ4": "How will my driver find me at the airport?",
@@ -591,7 +592,7 @@
     "q4": "What vehicles are used for transfers?",
     "a4": "We serve with Mercedes Vito VIP vehicles equipped with Wi-Fi, AC, USB charging, complimentary water and leather seats.",
     "q5": "Do you provide child seats?",
-    "a5": "Yes, you can request a child seat during booking. It is provided free of charge.",
+    "a5": "Yes, you can request a child seat during booking. The fee is $10 per booking.",
     "q6": "How can I pay?",
     "a6": "You can pay securely online with a credit card. All cards are accepted through Stripe payment infrastructure."
   },
@@ -662,6 +663,6 @@
     "s6Title": "6. Data Security",
     "s6Text": "We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. All payment data is processed through PCI-DSS compliant Stripe infrastructure.",
     "s7Title": "7. Contact",
-    "s7Text": "For questions regarding your personal data or to exercise your rights, please contact us at torviantransfer@gmail.com or call +90 546 940 79 55."
+    "s7Text": "For questions regarding your personal data or to exercise your rights, please contact us at torviantransfer@gmail.com or call 0850 840 1327."
   }
 }
