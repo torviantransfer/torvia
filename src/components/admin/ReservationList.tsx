@@ -45,6 +45,8 @@ interface Reservation {
     id: string;
     status: string;
     link_token: string;
+    leg: string;
+    pickup_time: string | null;
     drivers: { full_name: string; phone: string } | null;
   }>;
 }
@@ -79,8 +81,10 @@ export default function ReservationList({
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [assigningLeg, setAssigningLeg] = useState<"outbound" | "return">("outbound");
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState("");
+  const [returnPickupTime, setReturnPickupTime] = useState("");
   const [conflicts, setConflicts] = useState<Array<{ type: string; reservation_code: string; pickup: string; region: string }>>([]);
   const [checkingConflicts, setCheckingConflicts] = useState(false);
   const [forceAssign, setForceAssign] = useState(false);
@@ -139,6 +143,8 @@ export default function ReservationList({
         reservationId,
         driverId: selectedDriver,
         vehicleId: selectedVehicle,
+        leg: assigningLeg,
+        ...(assigningLeg === "return" && returnPickupTime ? { pickupTime: returnPickupTime } : {}),
       }),
     });
 
@@ -159,25 +165,6 @@ export default function ReservationList({
     await navigator.clipboard.writeText(text);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const buildWhatsAppUrl = (r: Reservation) => {
-    const da = r.driver_assignments?.[0];
-    if (!da?.link_token || !da?.drivers?.phone) return null;
-    const driverLink = `${window.location.origin}/driver/${da.link_token}`;
-    const pickupDate = new Date(r.pickup_datetime);
-    const voucherLink = `${window.location.origin}/api/driver-voucher?token=${da.link_token}`;
-    const msg = encodeURIComponent(
-      `🚗 TORVIAN — New Transfer Assignment\n\n` +
-      `📋 Code: ${r.reservation_code}\n` +
-      `👤 Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
-      `📍 Destination: ${r.regions?.name_en}\n` +
-      `📅 Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n\n` +
-      `🔗 Driver Panel:\n${driverLink}\n\n` +
-      `📄 Voucher:\n${voucherLink}`
-    );
-    const phone = da.drivers.phone.replace(/[^0-9]/g, "");
-    return `https://wa.me/${phone}?text=${msg}`;
   };
 
   return (
@@ -405,143 +392,210 @@ export default function ReservationList({
                       </div>
                     </div>
                   )}
-                  {r.driver_assignments?.length > 0 ? (
+                  {r.driver_assignments?.length > 0 && (
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-xs font-medium text-gray-400">
-                          Şoför:
-                        </span>
-                        <span className="font-medium text-sm">
-                          {r.driver_assignments[0].drivers?.full_name}
-                        </span>
-                        <a
-                          href={`tel:${r.driver_assignments[0].drivers?.phone}`}
-                          className="text-blue-600 text-sm flex items-center gap-1"
-                        >
-                          <Phone size={12} />
-                          {r.driver_assignments[0].drivers?.phone}
-                        </a>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[r.driver_assignments[0].status] || "bg-gray-100 text-gray-600"}`}
-                        >
-                          {r.driver_assignments[0].status}
-                        </span>
-                      </div>
-                      {/* Driver link actions */}
-                      {r.driver_assignments[0].link_token && (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <a
-                            href={buildWhatsAppUrl(r) || "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-medium"
-                          >
-                            <MessageCircle size={13} />
-                            WhatsApp ile Gönder
-                          </a>
-                          <button
-                            onClick={() => copyToClipboard(`${window.location.origin}/driver/${r.driver_assignments[0].link_token}`)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
-                          >
-                            {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
-                            {copiedLink ? "Kopyalandı!" : "Linki Kopyala"}
-                          </button>
-                          <a
-                            href={`/driver/${r.driver_assignments[0].link_token}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
-                          >
-                            <ExternalLink size={13} />
-                            Şoför Sayfası
-                          </a>
-                        </div>
-                      )}
+                      {r.driver_assignments.map((da) => {
+                        const legLabel = da.leg === "return" ? "Dönüş" : "Gidiş";
+                        const waUrl = da.link_token && da.drivers?.phone
+                          ? (() => {
+                              const driverLink = `${window.location.origin}/driver/${da.link_token}`;
+                              const voucherLink = `${window.location.origin}/api/driver-voucher?token=${da.link_token}`;
+                              const pickupDate = new Date(r.pickup_datetime);
+                              const msg = encodeURIComponent(
+                                `🚗 TORVIAN — New Transfer Assignment (${legLabel})\n\n` +
+                                `📋 Code: ${r.reservation_code}\n` +
+                                `👤 Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
+                                `📍 Destination: ${r.regions?.name_en}\n` +
+                                `📅 Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n` +
+                                (da.leg === "return" && da.pickup_time ? `⏰ Pickup: ${da.pickup_time}\n` : "") +
+                                `\n🔗 Driver Panel:\n${driverLink}\n\n` +
+                                `📄 Voucher:\n${voucherLink}`
+                              );
+                              const phone = da.drivers!.phone.replace(/[^0-9]/g, "");
+                              return `https://wa.me/${phone}?text=${msg}`;
+                            })()
+                          : null;
+                        return (
+                          <div key={da.id} className="p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3 flex-wrap mb-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${da.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                                {legLabel}
+                              </span>
+                              <span className="text-xs font-medium text-gray-400">Şoför:</span>
+                              <span className="font-medium text-sm">{da.drivers?.full_name}</span>
+                              <a href={`tel:${da.drivers?.phone}`} className="text-blue-600 text-sm flex items-center gap-1">
+                                <Phone size={12} />
+                                {da.drivers?.phone}
+                              </a>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[da.status] || "bg-gray-100 text-gray-600"}`}>
+                                {da.status}
+                              </span>
+                              {da.pickup_time && (
+                                <span className="text-xs text-orange-600 font-medium">Alış: {da.pickup_time}</span>
+                              )}
+                            </div>
+                            {da.link_token && (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {waUrl && (
+                                  <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-medium">
+                                    <MessageCircle size={13} />
+                                    WhatsApp
+                                  </a>
+                                )}
+                                <button
+                                  onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
+                                >
+                                  {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
+                                  {copiedLink ? "Kopyalandı!" : "Linki Kopyala"}
+                                </button>
+                                <a href={`/driver/${da.link_token}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium">
+                                  <ExternalLink size={13} />
+                                  Şoför Sayfası
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  ) : r.status === "paid" ? (
-                    assigningId === r.id ? (
-                      <div>
-                      <div className="flex items-center gap-3">
-                        <select
-                          value={selectedDriver}
-                          onChange={(e) => setSelectedDriver(e.target.value)}
-                          className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
-                        >
-                          <option value="">Şoför Seçin</option>
-                          {drivers.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {d.full_name}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={selectedVehicle}
-                          onChange={(e) => setSelectedVehicle(e.target.value)}
-                          className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
-                        >
-                          <option value="">Araç Seçin</option>
-                          {vehicles.map((v) => (
-                            <option key={v.id} value={v.id}>
-                              {v.plate_number} — {v.brand} {v.model}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => assignDriver(r.id)}
-                          disabled={!selectedDriver || !selectedVehicle || checkingConflicts}
-                          className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-40 flex items-center gap-1"
-                        >
-                          <Send size={14} />
-                          {checkingConflicts ? "Kontrol ediliyor..." : "Ata ve Link Gönder"}
-                        </button>
-                        <button
-                          onClick={() => { setAssigningId(null); setConflicts([]); setForceAssign(false); }}
-                          className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          İptal
-                        </button>
-                      </div>
-                      {/* Conflict warning */}
-                      {conflicts.length > 0 && assigningId === r.id && (
-                        <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle size={14} className="text-amber-600" />
-                            <p className="text-xs font-semibold text-amber-800">Zamanlama Çakışması Tespit Edildi</p>
+                  )}
+                  {/* Assign buttons per leg */}
+                  {(r.status === "paid" || r.status === "driver_assigned") && (() => {
+                    const outboundAssigned = r.driver_assignments?.some(da => da.leg === "outbound" && ["assigned", "picked_up"].includes(da.status));
+                    const returnAssigned = r.driver_assignments?.some(da => da.leg === "return" && ["assigned", "picked_up"].includes(da.status));
+                    const canAssignOutbound = !outboundAssigned;
+                    const canAssignReturn = r.trip_type === "round_trip" && !returnAssigned;
+
+                    if (!canAssignOutbound && !canAssignReturn) return null;
+
+                    if (assigningId === r.id) {
+                      return (
+                        <div className="mt-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <select
+                              value={assigningLeg}
+                              onChange={(e) => setAssigningLeg(e.target.value as "outbound" | "return")}
+                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg font-medium"
+                            >
+                              {canAssignOutbound && <option value="outbound">Gidiş</option>}
+                              {canAssignReturn && <option value="return">Dönüş</option>}
+                            </select>
+                            <select
+                              value={selectedDriver}
+                              onChange={(e) => setSelectedDriver(e.target.value)}
+                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                            >
+                              <option value="">Şoför Seçin</option>
+                              {drivers.map((d) => (
+                                <option key={d.id} value={d.id}>{d.full_name}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={selectedVehicle}
+                              onChange={(e) => setSelectedVehicle(e.target.value)}
+                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                            >
+                              <option value="">Araç Seçin</option>
+                              {vehicles.map((v) => (
+                                <option key={v.id} value={v.id}>{v.plate_number} — {v.brand} {v.model}</option>
+                              ))}
+                            </select>
                           </div>
-                          <div className="space-y-1 mb-3">
-                            {conflicts.map((c) => (
-                              <p key={c.reservation_code} className="text-xs text-amber-700">
-                                <span className="font-mono font-semibold">{c.reservation_code}</span>
-                                {" — "}{c.region} — {new Date(c.pickup).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                                {" "}({c.type})
-                              </p>
-                            ))}
+                          {assigningLeg === "return" && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <label className="text-xs font-medium text-gray-500">Dönüş Alış Saati:</label>
+                              <input
+                                type="time"
+                                value={returnPickupTime}
+                                onChange={(e) => setReturnPickupTime(e.target.value)}
+                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                              />
+                            </div>
+                          )}
+                          <div className="mt-2 flex items-center gap-2">
+                            <button
+                              onClick={() => assignDriver(r.id)}
+                              disabled={!selectedDriver || !selectedVehicle || checkingConflicts}
+                              className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-40 flex items-center gap-1"
+                            >
+                              <Send size={14} />
+                              {checkingConflicts ? "Kontrol ediliyor..." : `${assigningLeg === "return" ? "Dönüş" : "Gidiş"} Şoför Ata`}
+                            </button>
+                            <button
+                              onClick={() => { setAssigningId(null); setConflicts([]); setForceAssign(false); setReturnPickupTime(""); }}
+                              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+                            >
+                              İptal
+                            </button>
                           </div>
-                          <button
-                            onClick={() => { setForceAssign(true); setTimeout(() => assignDriver(r.id), 50); }}
-                            className="px-3 py-1.5 text-xs bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
-                          >
-                            Yine de Ata
-                          </button>
+                          {/* Conflict warning */}
+                          {conflicts.length > 0 && (
+                            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <div className="flex items-center gap-2 mb-2">
+                                <AlertTriangle size={14} className="text-amber-600" />
+                                <p className="text-xs font-semibold text-amber-800">Zamanlama Çakışması Tespit Edildi</p>
+                              </div>
+                              <div className="space-y-1 mb-3">
+                                {conflicts.map((c) => (
+                                  <p key={c.reservation_code} className="text-xs text-amber-700">
+                                    <span className="font-mono font-semibold">{c.reservation_code}</span>
+                                    {" — "}{c.region} — {new Date(c.pickup).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                    {" "}({c.type})
+                                  </p>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() => { setForceAssign(true); setTimeout(() => assignDriver(r.id), 50); }}
+                                className="px-3 py-1.5 text-xs bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
+                              >
+                                Yine de Ata
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      );
+                    }
+
+                    return (
+                      <div className="mt-3 flex items-center gap-2">
+                        {canAssignOutbound && (
+                          <button
+                            onClick={() => {
+                              setAssigningId(r.id);
+                              setAssigningLeg("outbound");
+                              setSelectedDriver("");
+                              setSelectedVehicle("");
+                              setConflicts([]);
+                              setForceAssign(false);
+                              setReturnPickupTime("");
+                            }}
+                            className="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
+                          >
+                            <UserPlus size={14} />
+                            Gidiş Şoför Ata
+                          </button>
+                        )}
+                        {canAssignReturn && (
+                          <button
+                            onClick={() => {
+                              setAssigningId(r.id);
+                              setAssigningLeg("return");
+                              setSelectedDriver("");
+                              setSelectedVehicle("");
+                              setConflicts([]);
+                              setForceAssign(false);
+                              setReturnPickupTime("");
+                            }}
+                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                          >
+                            <UserPlus size={14} />
+                            Dönüş Şoför Ata
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setAssigningId(r.id);
-                          setSelectedDriver("");
-                          setSelectedVehicle("");
-                          setConflicts([]);
-                          setForceAssign(false);
-                        }}
-                        className="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
-                      >
-                        <UserPlus size={14} />
-                        Şoför Ata
-                      </button>
-                    )
-                  ) : null}
+                    );
+                  })()}
                 </div>
               </div>
             )}

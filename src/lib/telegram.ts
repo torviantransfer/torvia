@@ -237,8 +237,6 @@ export interface DriverVoucherData {
   children: number;
   luggageCount: number;
   childSeat: boolean;
-  welcomeSign: boolean;
-  welcomeName?: string;
   notes?: string;
 }
 

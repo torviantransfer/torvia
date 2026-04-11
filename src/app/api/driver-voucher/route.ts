@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
        reservations(
          reservation_code, trip_type, pickup_datetime, return_datetime,
          flight_code, adults, children, luggage_count, child_seat,
-         welcome_sign, welcome_name, hotel_name, hotel_address, notes,
+         hotel_name, hotel_address, notes,
          status,
          customers(first_name, last_name, phone, email),
          regions(name_en, name_tr, distance_km, duration_minutes)
@@ -95,8 +95,6 @@ export async function GET(request: NextRequest) {
 
   const extras: string[] = [];
   if (res.child_seat) extras.push("🪑 Child Seat");
-  if (res.welcome_sign) extras.push(`📋 Welcome Sign: ${esc(String(res.welcome_name || customer?.first_name || ""))}`);
-
   const extrasHtml = extras.length > 0
     ? `<div class="detail-row">
         <div class="detail-icon">✨</div>

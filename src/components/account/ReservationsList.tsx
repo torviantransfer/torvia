@@ -138,46 +138,53 @@ export default function ReservationsList({
     r.exchange_rate_eur ? (r.total_price / r.exchange_rate_eur).toFixed(2) : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-2xl font-bold text-white">{t.title[locale] ?? t.title.en}</h1>
-        <span className="text-sm text-gray-500">{filtered.length} / {reservations.length}</span>
+      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-6 backdrop-blur-sm overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-2xl font-bold text-white">{t.title[locale] ?? t.title.en}</h1>
+          <span className="text-xs text-gray-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 font-mono">{filtered.length} / {reservations.length}</span>
+        </div>
       </div>
 
       {/* Search + Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input
-            type="text"
-            placeholder={t.search[locale] ?? t.search.en}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-orange-500/50"
-          />
-        </div>
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Filter size={14} className="text-gray-500 mr-1" />
-          {FILTER_STATUSES.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                statusFilter === s
-                  ? "bg-orange-500/20 border-orange-500/40 text-orange-400"
-                  : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
-              }`}
-            >
-              {t[s]?.[locale] ?? t[s]?.en ?? s}
-            </button>
-          ))}
+      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-5 backdrop-blur-sm overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input
+              type="text"
+              placeholder={t.search[locale] ?? t.search.en}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Filter size={14} className="text-gray-500 mr-1" />
+            {FILTER_STATUSES.map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`text-xs px-3.5 py-2 rounded-xl border transition-all font-medium ${
+                  statusFilter === s
+                    ? "bg-orange-500/15 border-orange-500/30 text-orange-400"
+                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {t[s]?.[locale] ?? t[s]?.en ?? s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Reservation Cards */}
       {filtered.length === 0 ? (
-        <div className="bg-white/5 rounded-xl border border-white/10 p-10 text-center">
+        <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-12 text-center backdrop-blur-sm overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
           <p className="text-gray-500 text-sm">{t.noResults[locale] ?? t.noResults.en}</p>
         </div>
       ) : (
@@ -187,12 +194,13 @@ export default function ReservationsList({
             return (
               <div
                 key={r.id}
-                className="bg-white/5 rounded-xl border border-white/10 overflow-hidden transition-colors hover:border-white/15"
+                className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden transition-all hover:border-white/15 backdrop-blur-sm"
               >
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                 {/* Summary row */}
                 <button
                   onClick={() => setExpandedId(expanded ? null : r.id)}
-                  className="w-full flex items-center gap-4 px-4 py-3.5 text-left"
+                  className="w-full flex items-center gap-4 px-5 py-4 text-left"
                 >
                   {/* Status badge */}
                   <span className={`shrink-0 text-[10px] font-semibold uppercase px-2.5 py-1 rounded-full border ${STATUS_BADGE[r.status] ?? STATUS_BADGE.pending}`}>
@@ -227,7 +235,7 @@ export default function ReservationsList({
 
                 {/* Expanded details */}
                 {expanded && (
-                  <div className="px-4 pb-4 border-t border-white/5 pt-3 space-y-4">
+                  <div className="px-5 pb-5 border-t border-white/5 pt-4 space-y-4">
                     {/* Mobile: code + price */}
                     <div className="sm:hidden flex items-center justify-between">
                       <span className="text-xs font-mono text-orange-400">{r.reservation_code}</span>
@@ -307,7 +315,7 @@ export default function ReservationsList({
                           href={`/api/voucher?code=${r.reservation_code}&locale=${locale}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-orange-500/20"
                         >
                           <Download size={14} />
                           {t.downloadVoucher[locale] ?? t.downloadVoucher.en}
@@ -318,7 +326,7 @@ export default function ReservationsList({
                       {CANCELLABLE.includes(cancelledIds.has(r.id) ? "" : r.status) && (
                         <button
                           onClick={() => setCancelId(r.id)}
-                          className="inline-flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-semibold px-5 py-2.5 rounded-xl transition-all"
                         >
                           <XCircle size={14} />
                           {t.cancelBtn[locale] ?? t.cancelBtn.en}
@@ -342,8 +350,9 @@ export default function ReservationsList({
 
       {/* Cancel Modal */}
       {cancelId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-[#1a1a1d] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+          <div className="relative bg-gradient-to-b from-[#1e1e22] to-[#16161a] border border-white/10 rounded-2xl w-full max-w-md p-6 sm:p-8 space-y-5 overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-white">{t.cancelTitle[locale] ?? t.cancelTitle.en}</h3>
               <button onClick={() => { setCancelId(null); setCancelReason(""); }} className="text-gray-500 hover:text-white">
@@ -356,7 +365,7 @@ export default function ReservationsList({
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder={t.cancelReason[locale] ?? t.cancelReason.en}
               rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-1 focus:ring-red-500/50 resize-none"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none transition-all"
             />
             <div className="flex items-center gap-3 justify-end">
               <button
@@ -368,7 +377,7 @@ export default function ReservationsList({
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                className="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-red-500/20"
               >
                 {t.cancelSubmit[locale] ?? t.cancelSubmit.en}
               </button>

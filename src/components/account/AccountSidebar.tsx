@@ -42,18 +42,24 @@ export default function AccountSidebar({ locale, userEmail, userName }: Props) {
   const basePath = `/${locale}/account`;
 
   return (
-    <div className="lg:w-64 flex-shrink-0">
+    <div className="lg:w-72 flex-shrink-0">
       {/* User info */}
-      <div className="bg-white/5 rounded-xl border border-white/10 p-4 mb-4">
-        <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mb-3">
-          <User size={18} className="text-orange-500" />
+      <div className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 p-5 mb-4 backdrop-blur-sm overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <span className="text-white font-bold text-lg">{userName.charAt(0).toUpperCase()}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-white font-semibold text-sm truncate">{userName}</p>
+            <p className="text-gray-500 text-xs truncate">{userEmail}</p>
+          </div>
         </div>
-        <p className="text-white font-medium text-sm truncate">{userName}</p>
-        <p className="text-gray-500 text-xs truncate">{userEmail}</p>
       </div>
 
       {/* Navigation */}
-      <nav className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+      <nav className="relative bg-gradient-to-b from-white/[0.07] to-white/[0.03] rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm">
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         {menuItems.map((item) => {
           const fullPath = `${basePath}${item.href}`;
           const isActive = item.href === "" ? pathname === basePath : pathname.startsWith(fullPath);
@@ -63,13 +69,13 @@ export default function AccountSidebar({ locale, userEmail, userName }: Props) {
             <a
               key={item.key}
               href={fullPath}
-              className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+              className={`flex items-center gap-3 px-5 py-3.5 text-sm transition-all ${
                 isActive
-                  ? "bg-orange-500/10 text-orange-500 font-medium border-l-2 border-orange-500"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  ? "bg-orange-500/10 text-orange-400 font-semibold border-l-2 border-orange-500"
+                  : "text-gray-400 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
               }`}
             >
-              <Icon size={16} />
+              <Icon size={17} />
               {labels[item.key]?.[locale] ?? labels[item.key]?.en}
             </a>
           );
@@ -77,9 +83,9 @@ export default function AccountSidebar({ locale, userEmail, userName }: Props) {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-red-400 hover:bg-white/5 transition-colors border-t border-white/5"
+          className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all border-t border-white/5 border-l-2 border-l-transparent"
         >
-          <LogOut size={16} />
+          <LogOut size={17} />
           {labels.logout[locale] ?? labels.logout.en}
         </button>
       </nav>

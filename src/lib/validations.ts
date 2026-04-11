@@ -58,6 +58,8 @@ export const assignDriverSchema = z.object({
   reservationId: z.string().uuid(),
   driverId: z.string().uuid(),
   vehicleId: z.string().uuid(),
+  leg: z.enum(["outbound", "return"]).default("outbound"),
+  pickupTime: z.string().optional(),
 });
 
 export type ReservationInput = z.infer<typeof reservationSchema>;

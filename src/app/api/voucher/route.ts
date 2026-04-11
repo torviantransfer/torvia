@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
   const basePriceEur = eurRate > 0 ? res.base_price / eurRate : res.base_price;
   const nightEur = eurRate > 0 ? res.night_surcharge / eurRate : res.night_surcharge;
   const childSeatEur = eurRate > 0 ? res.child_seat_fee / eurRate : res.child_seat_fee;
-  const welcomeEur = eurRate > 0 ? res.welcome_sign_fee / eurRate : res.welcome_sign_fee;
   const rtDiscountEur = eurRate > 0 ? res.round_trip_discount / eurRate : res.round_trip_discount;
   const couponDiscountEur = eurRate > 0 ? res.coupon_discount / eurRate : res.coupon_discount;
 
@@ -56,15 +55,12 @@ export async function GET(request: NextRequest) {
     children: res.children ?? 0,
     luggageCount: res.luggage_count ?? 0,
     childSeat: res.child_seat ?? false,
-    welcomeSign: res.welcome_sign ?? false,
-    welcomeName: res.welcome_name,
     hotelName: res.hotel_name,
     flightCode: res.flight_code,
     vehicleName: res.vehicle_categories?.name,
     basePrice: basePriceEur,
     nightSurcharge: nightEur,
     childSeatFee: childSeatEur,
-    welcomeSignFee: welcomeEur,
     roundTripDiscount: rtDiscountEur,
     couponDiscount: couponDiscountEur,
     totalEur,

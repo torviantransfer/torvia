@@ -106,7 +106,6 @@ export async function POST(request: NextRequest) {
         const basePriceEur = eurRate > 0 ? resData.base_price / eurRate : resData.base_price;
         const nightEur = eurRate > 0 ? resData.night_surcharge / eurRate : resData.night_surcharge;
         const childSeatEur = eurRate > 0 ? resData.child_seat_fee / eurRate : resData.child_seat_fee;
-        const welcomeEur = eurRate > 0 ? resData.welcome_sign_fee / eurRate : resData.welcome_sign_fee;
         const rtDiscountEur = eurRate > 0 ? resData.round_trip_discount / eurRate : resData.round_trip_discount;
         const couponDiscountEur = eurRate > 0 ? resData.coupon_discount / eurRate : resData.coupon_discount;
 
@@ -125,15 +124,12 @@ export async function POST(request: NextRequest) {
           children: resData.children ?? 0,
           luggageCount: resData.luggage_count ?? 0,
           childSeat: resData.child_seat ?? false,
-          welcomeSign: resData.welcome_sign ?? false,
-          welcomeName: resData.welcome_name,
           hotelName: resData.hotel_name,
           flightCode: resData.flight_code,
           vehicleName: resData.vehicle_categories?.name,
           basePrice: basePriceEur,
           nightSurcharge: nightEur,
           childSeatFee: childSeatEur,
-          welcomeSignFee: welcomeEur,
           roundTripDiscount: rtDiscountEur,
           couponDiscount: couponDiscountEur,
           totalEur,
@@ -171,8 +167,6 @@ export async function POST(request: NextRequest) {
           children: resData.children ?? 0,
           luggageCount: resData.luggage_count ?? 0,
           childSeat: resData.child_seat ?? false,
-          welcomeSign: resData.welcome_sign ?? false,
-          welcomeName: resData.welcome_name,
           notes: resData.notes,
         }).catch(() => {});
       }

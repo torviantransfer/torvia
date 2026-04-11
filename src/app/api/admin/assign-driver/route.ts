@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
 import { assignDriverSchema } from "@/lib/validations";
+import { sendDriverAssignmentEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -20,12 +21,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reservationId, driverId, vehicleId } = parsed.data;
+    const { reservationId, driverId, vehicleId, leg, pickupTime } = parsed.data;
 
     // Verify reservation exists and is paid
     const { data: reservation } = await supabase
       .from("reservations")
-      .select("id, reservation_code, status, total_price, pickup_datetime, regions(name_en), customers(first_name, last_name, phone)")
+      .select("id, reservation_code, status, total_price, pickup_datetime, return_datetime, trip_type, regions(name_en), customers(first_name, last_name, phone, email)")
       .eq("id", reservationId)
       .single();
 
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     // Verify vehicle exists
     const { data: vehicleCheck } = await supabase
       .from("vehicles")
-      .select("id")
+      .select("id, plate_number, brand, model")
       .eq("id", vehicleId)
       .single();
 
@@ -58,17 +59,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
     }
 
-    // Check for existing active assignment on this reservation
+    // Check for existing active assignment on this reservation FOR THIS LEG
     const { data: existingAssignment } = await supabase
       .from("driver_assignments")
       .select("id")
       .eq("reservation_id", reservationId)
+      .eq("leg", leg)
       .in("status", ["assigned", "picked_up"])
       .single();
 
     if (existingAssignment) {
       return NextResponse.json(
-        { error: "This reservation already has an active driver assignment" },
+        { error: `This reservation already has an active ${leg} driver assignment` },
         { status: 409 }
       );
     }
@@ -85,6 +87,8 @@ export async function POST(request: NextRequest) {
         vehicle_id: vehicleId,
         link_token: linkToken,
         status: "assigned",
+        leg,
+        pickup_time: pickupTime || null,
       })
       .select()
       .single();
@@ -117,16 +121,18 @@ export async function POST(request: NextRequest) {
     const region = reservation.regions as unknown as Record<string, string> | null;
     const customer = reservation.customers as unknown as Record<string, string> | null;
     const pickupDate = new Date(reservation.pickup_datetime);
+    const legLabel = leg === "return" ? "DÖNÜŞ" : "GİDİŞ";
     // Driver voucher link
     const voucherLink = `${process.env.NEXT_PUBLIC_SITE_URL}/api/driver-voucher?token=${linkToken}`;
 
     const waMessage = encodeURIComponent(
-      `🚗 TORVIAN — New Transfer Assignment\n\n` +
+      `🚗 TORVIAN — New Transfer Assignment (${legLabel})\n\n` +
         `📋 Code: ${reservation.reservation_code}\n` +
         `👤 Customer: ${customer?.first_name} ${customer?.last_name}\n` +
         `📍 Destination: ${region?.name_en}\n` +
-        `📅 Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n\n` +
-        `🔗 Driver Panel:\n${driverLink}\n\n` +
+        `📅 Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n` +
+        (leg === "return" && pickupTime ? `⏰ Pickup Time: ${pickupTime}\n` : "") +
+        `\n🔗 Driver Panel:\n${driverLink}\n\n` +
         `📄 Voucher:\n${voucherLink}`
     );
 
@@ -139,6 +145,24 @@ export async function POST(request: NextRequest) {
       destination: region?.name_en ?? "?",
       date: pickupDate.toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
     }).catch(() => {});
+
+    // Send driver assignment email to customer
+    const customerEmail = (reservation.customers as unknown as Record<string, string>)?.email;
+    if (customerEmail) {
+      sendDriverAssignmentEmail({
+        to: customerEmail,
+        customerFirstName: customer?.first_name ?? "",
+        reservationCode: reservation.reservation_code,
+        leg,
+        driverName: driver?.full_name ?? "",
+        driverPhone: driver?.phone ?? "",
+        vehicleInfo: `${vehicleCheck.brand} ${vehicleCheck.model} — ${vehicleCheck.plate_number}`,
+        pickupTime: pickupTime || undefined,
+        regionName: region?.name_en ?? "",
+        pickupDatetime: reservation.pickup_datetime,
+        returnDatetime: reservation.return_datetime,
+      }).catch(() => {});
+    }
 
     return NextResponse.json({
       assignment,

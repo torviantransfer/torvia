@@ -195,6 +195,21 @@ export default function BookingWizard(props: Props) {
       couponCode, couponApplied, firstName, lastName, email, phone, hotelName,
       hotelAddress, notes]);
 
+  // Auto-fill return date/time when switching to round trip
+  useEffect(() => {
+    if (tripType === "round_trip" && !returnDate && pickupDate) {
+      const nextDay = new Date(pickupDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const yyyy = nextDay.getFullYear();
+      const mm = String(nextDay.getMonth() + 1).padStart(2, "0");
+      const dd = String(nextDay.getDate()).padStart(2, "0");
+      setReturnDate(`${yyyy}-${mm}-${dd}`);
+    }
+    if (tripType === "round_trip" && !returnTime && pickupTime) {
+      setReturnTime(pickupTime);
+    }
+  }, [tripType, returnDate, returnTime, pickupDate, pickupTime]);
+
   // Price calculation result
   const [priceData, setPriceData] = useState<{
     calculation: PriceCalculation;
@@ -350,35 +365,60 @@ export default function BookingWizard(props: Props) {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       {/* Step indicator */}
-      <div className="flex items-center justify-center gap-2 mb-10">
+      <div className="flex items-center justify-center mb-10">
+        <div className="flex items-center gap-1 sm:gap-0 px-3 py-2 sm:px-4 sm:py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
         {[1, 2, 3, 4].map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                s < step
-                  ? "bg-green-500 text-white"
-                  : s === step
-                    ? "bg-orange-500 text-white shadow-lg"
-                    : "text-[#555]" + " " + "bg-[#1c1c1e]"
-              }`}
+          <div key={s} className="flex items-center">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-xl transition-all"
+              style={s === step ? { background: "linear-gradient(135deg, #f97316, #ea580c)", boxShadow: "0 4px 15px rgba(249,115,22,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
             >
-              {s < step ? <Check size={18} /> : s}
-            </div>
-            <span
-              className={`hidden sm:inline text-sm font-medium ${
-                s === step ? "text-white" : "text-[#555]"
-              }`}
-            >
-              {t(`step${s}`)}
-            </span>
-            {s < 4 && (
               <div
-                className={`w-12 h-0.5 mx-1 ${s < step ? "bg-green-500" : "bg-[#333]"}`}
-              />
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  s < step
+                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                    : s === step
+                      ? "bg-white/20 text-white"
+                      : "bg-white/5 text-[#555] ring-1 ring-white/10"
+                }`}
+              >
+                {s < step ? <Check size={14} strokeWidth={3} /> : s}
+              </div>
+              <span
+                className={`hidden sm:inline text-xs font-semibold whitespace-nowrap ${
+                  s < step ? "text-emerald-400" : s === step ? "text-white" : "text-[#555]"
+                }`}
+              >
+                {t(`step${s}`)}
+              </span>
+            </div>
+            {s < 4 && (
+              <div className="w-4 sm:w-8 flex items-center justify-center">
+                <div className={`w-full h-px ${s < step ? "bg-emerald-500/40" : "bg-white/10"}`} />
+              </div>
             )}
           </div>
         ))}
+        </div>
       </div>
+
+      {/* Mobile price bar — visible only on small screens */}
+      {priceData && (
+        <div className="lg:hidden mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <div>
+              <p className="text-xs text-[#86868b] font-medium">{selectedRegion ? getRegionName(selectedRegion) : regionSlug}</p>
+              <p className="text-xs text-[#86868b] mt-0.5">
+                {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
+                {priceData.region.distance_km && <> · {priceData.region.distance_km} km</>}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-bold text-emerald-400">{fmt(priceData.calculation.totalPrice, priceData.exchangeRates)}</p>
+              <p className="text-[10px] text-[#86868b]">{t("totalPrice")}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left: Form */}
@@ -400,14 +440,14 @@ export default function BookingWizard(props: Props) {
                 </h2>
 
                 {/* Trip type */}
-                <div className="flex rounded-lg p-1" style={{ backgroundColor: "rgba(255,255,255,0.04)" }}>
+                <div className="flex rounded-xl p-1" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <button
                     type="button"
                     onClick={() => setTripType("one_way")}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all ${
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
                       tripType === "one_way"
-                        ? "bg-white/10 text-white shadow-sm"
-                        : "text-[#86868b]"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
+                        : "text-[#86868b] hover:text-white/70"
                     }`}
                   >
                     {t("oneWay")}
@@ -415,10 +455,10 @@ export default function BookingWizard(props: Props) {
                   <button
                     type="button"
                     onClick={() => setTripType("round_trip")}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                       tripType === "round_trip"
-                        ? "bg-white/10 text-white shadow-sm"
-                        : "text-[#86868b]"
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
+                        : "text-[#86868b] hover:text-white/70"
                     }`}
                   >
                     <ArrowLeftRight size={14} />
@@ -518,26 +558,38 @@ export default function BookingWizard(props: Props) {
                       <label className="block text-sm font-medium text-[#86868b] mb-1.5">
                         {t("returnDate")} *
                       </label>
-                      <input
-                        type="date"
-                        value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        min={pickupDate || today}
-                        required
-                        className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                      />
+                      <div className="relative">
+                        <Calendar
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
+                        />
+                        <input
+                          type="date"
+                          value={returnDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          min={pickupDate || today}
+                          required
+                          className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }}
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[#86868b] mb-1.5">
                         {t("returnTime")} *
                       </label>
-                      <input
-                        type="time"
-                        value={returnTime}
-                        onChange={(e) => setReturnTime(e.target.value)}
-                        required
-                        className="w-full px-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-                      />
+                      <div className="relative">
+                        <Clock
+                          size={16}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#555]"
+                        />
+                        <input
+                          type="time"
+                          value={returnTime}
+                          onChange={(e) => setReturnTime(e.target.value)}
+                          required
+                          className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500 outline-none" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -638,39 +690,42 @@ export default function BookingWizard(props: Props) {
                 </h2>
 
                 {/* Vehicle card */}
-                <div className="border-2 border-orange-500 rounded-xl overflow-hidden" style={{ backgroundColor: "rgba(249,115,22,0.06)" }}>
-                  {/* Vehicle image */}
-                  <div className="relative w-full h-48 bg-gradient-to-b from-[#1a1a1a] to-[#111]">
-                    <Image
-                      src={priceData?.vehicle?.image_url || "/images/vehicles/mercedes-vito-vip.png"}
-                      alt={priceData?.vehicle?.name || "VIP Transfer"}
-                      fill
-                      className="object-contain p-4"
-                      sizes="(max-width: 768px) 100vw, 500px"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">
-                          {priceData?.vehicle?.name || "VIP"}
-                        </span>
-                        <h3 className="text-lg font-bold text-white">
-                          Mercedes-Benz Vito Tourer
-                        </h3>
-                        {priceData?.vehicle?.description && (
-                          <p className="text-xs text-[#86868b] mt-1">{priceData.vehicle.description}</p>
-                        )}
-                      </div>
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shrink-0">
-                        <Check size={16} className="text-white" />
-                      </div>
+                <div className="relative border-2 border-orange-500 rounded-2xl overflow-hidden" style={{ backgroundColor: "rgba(249,115,22,0.06)" }}>
+                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/60 to-transparent" />
+                  <div className="flex flex-col sm:flex-row">
+                    {/* Vehicle image — left side */}
+                    <div className="relative w-full sm:w-[45%] h-48 sm:h-auto sm:min-h-[220px] bg-gradient-to-br from-[#1a1a1a] to-[#111] flex-shrink-0">
+                      <Image
+                        src={priceData?.vehicle?.image_url || "/images/vehicles/mercedes-vito-vip.png"}
+                        alt={priceData?.vehicle?.name || "VIP Transfer"}
+                        fill
+                        className="object-contain p-4"
+                        sizes="(max-width: 768px) 100vw, 300px"
+                      />
                     </div>
+                    {/* Info — right side */}
+                    <div className="flex-1 p-5 sm:p-6 flex flex-col justify-center">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <span className="text-[10px] font-bold text-orange-500 uppercase tracking-[0.15em]">
+                            {priceData?.vehicle?.name || "VIP"}
+                          </span>
+                          <h3 className="text-lg font-bold text-white mt-0.5">
+                            Mercedes-Benz Vito Tourer
+                          </h3>
+                          {priceData?.vehicle?.description && (
+                            <p className="text-xs text-[#86868b] mt-1">{priceData.vehicle.description}</p>
+                          )}
+                        </div>
+                        <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/20">
+                          <Check size={16} className="text-white" />
+                        </div>
+                      </div>
 
-                    {/* Features */}
-                    {(priceData?.vehicle?.features?.length ?? 0) > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {priceData!.vehicle!.features.map((f) => {
+                      {/* Features */}
+                      {(priceData?.vehicle?.features?.length ?? 0) > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {priceData!.vehicle!.features.map((f) => {
                           const label: Record<string, string> = {
                             ac: "A/C",
                             wifi: "Wi-Fi",
@@ -702,6 +757,7 @@ export default function BookingWizard(props: Props) {
                         })}
                       </div>
                     )}
+                    </div>
                   </div>
                 </div>
 
@@ -1019,10 +1075,12 @@ export default function BookingWizard(props: Props) {
                 </div>
 
                 {/* Child seat */}
-                {childSeat && (
+                {childSeat && priceData.calculation.childSeatFee > 0 && (
                   <div className="flex justify-between items-center text-sm py-1">
                     <span className="text-[#86868b]">{t("childSeatFee")}</span>
-                    <span className="font-semibold text-orange-400">+$10</span>
+                    <span className="font-semibold text-orange-400">
+                      +{fmt(priceData.calculation.childSeatFee, priceData.exchangeRates)}
+                    </span>
                   </div>
                 )}
 

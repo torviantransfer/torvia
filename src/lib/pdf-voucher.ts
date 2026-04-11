@@ -24,13 +24,11 @@ const labels: Record<string, Record<string, string>> = {
     pieces: "pcs",
     extras: "Extras",
     childSeat: "Child Seat",
-    welcomeSign: "Welcome Sign",
     customer: "Customer",
     priceSummary: "PRICE SUMMARY",
     base: "Base Price",
     nightCharge: "Night Surcharge",
     childSeatFee: "Child Seat Fee",
-    welcomeSignFee: "Welcome Sign Fee",
     rtDiscount: "Round Trip Discount",
     couponDiscount: "Coupon Discount",
     total: "TOTAL PAID",
@@ -40,8 +38,9 @@ const labels: Record<string, Record<string, string>> = {
     imp2: "The driver will wait at the airport exit with a name sign.",
     imp3: "Free waiting: 60 min for flights, 15 min for hotels.",
     imp4: "Free child seat & booster on request.",
+    imp5: "Do not contact the driver directly for future bookings.",
     footer: "This document serves as your official transfer voucher.",
-    contact: "24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com",
+    contact: "24/7 Support: 0850 840 1327 | torviantransfer@gmail.com",
     paid: "PAID & CONFIRMED",
   },
   tr: {
@@ -65,13 +64,11 @@ const labels: Record<string, Record<string, string>> = {
     pieces: "adet",
     extras: "Ekstralar",
     childSeat: "Çocuk Koltuğu",
-    welcomeSign: "Karşılama Tabelası",
     customer: "Müşteri",
     priceSummary: "FİYAT ÖZETİ",
     base: "Taban Fiyat",
     nightCharge: "Gece Tarifesi",
     childSeatFee: "Çocuk Koltuğu",
-    welcomeSignFee: "Karşılama Tabelası",
     rtDiscount: "Gidiş-Dönüş İndirimi",
     couponDiscount: "Kupon İndirimi",
     total: "TOPLAM ÖDENEN",
@@ -81,8 +78,9 @@ const labels: Record<string, Record<string, string>> = {
     imp2: "Şoför havalimanı çıkışında isim tabelasıyla bekleyecektir.",
     imp3: "Ücretsiz bekleme: Uçuşlarda 60 dk, otellerden 15 dk.",
     imp4: "Talep üzerine ücretsiz çocuk koltuğu.",
+    imp5: "Bir sonraki taşımalarda şoför ile doğrudan iletişime geçmeyiniz.",
     footer: "Bu belge resmi transfer voucherınız olarak geçerlidir.",
-    contact: "7/24 Destek: +90 546 940 79 55 | torviantransfer@gmail.com",
+    contact: "7/24 Destek: 0850 840 1327 | torviantransfer@gmail.com",
     paid: "ÖDENDİ & ONAYLANDI",
   },
   de: {
@@ -106,13 +104,11 @@ const labels: Record<string, Record<string, string>> = {
     pieces: "Stk",
     extras: "Extras",
     childSeat: "Kindersitz",
-    welcomeSign: "Namensschild",
     customer: "Kunde",
     priceSummary: "PREISÜBERSICHT",
     base: "Grundpreis",
     nightCharge: "Nachtzuschlag",
     childSeatFee: "Kindersitz",
-    welcomeSignFee: "Namensschild",
     rtDiscount: "Hin-/Rückfahrt-Rabatt",
     couponDiscount: "Gutschein-Rabatt",
     total: "GESAMT BEZAHLT",
@@ -122,8 +118,9 @@ const labels: Record<string, Record<string, string>> = {
     imp2: "Der Fahrer erwartet Sie am Ausgang mit einem Namensschild.",
     imp3: "Kostenlose Wartezeit: 60 Min Flüge, 15 Min Hotels.",
     imp4: "Kostenloser Kindersitz auf Anfrage.",
+    imp5: "Kontaktieren Sie den Fahrer nicht direkt für zukünftige Buchungen.",
     footer: "Dieses Dokument dient als Ihr offizieller Transfer-Voucher.",
-    contact: "24/7 Support: +90 546 940 79 55 | torviantransfer@gmail.com",
+    contact: "24/7 Support: 0850 840 1327 | torviantransfer@gmail.com",
     paid: "BEZAHLT & BESTÄTIGT",
   },
   pl: {
@@ -147,13 +144,11 @@ const labels: Record<string, Record<string, string>> = {
     pieces: "szt",
     extras: "Dodatki",
     childSeat: "Fotelik dziecięcy",
-    welcomeSign: "Tabliczka powitalna",
     customer: "Klient",
     priceSummary: "PODSUMOWANIE CENY",
     base: "Cena podstawowa",
     nightCharge: "Dopłata nocna",
     childSeatFee: "Fotelik dziecięcy",
-    welcomeSignFee: "Tabliczka powitalna",
     rtDiscount: "Rabat w obie strony",
     couponDiscount: "Rabat kuponowy",
     total: "ZAPŁACONO ŁĄCZNIE",
@@ -163,8 +158,9 @@ const labels: Record<string, Record<string, string>> = {
     imp2: "Kierowca będzie czekał przy wyjściu z tabliczką.",
     imp3: "Bezpłatne oczekiwanie: 60 min loty, 15 min hotele.",
     imp4: "Bezpłatny fotelik dziecięcy na życzenie.",
+    imp5: "Nie kontaktuj się bezpośrednio z kierowcą w sprawie przyszłych rezerwacji.",
     footer: "Ten dokument służy jako oficjalny voucher transferowy.",
-    contact: "24/7 Wsparcie: +90 546 940 79 55 | torviantransfer@gmail.com",
+    contact: "24/7 Wsparcie: 0850 840 1327 | torviantransfer@gmail.com",
     paid: "OPŁACONO I POTWIERDZONE",
   },
   ru: {
@@ -188,13 +184,11 @@ const labels: Record<string, Record<string, string>> = {
     pieces: "шт",
     extras: "Дополнительно",
     childSeat: "Детское кресло",
-    welcomeSign: "Табличка с именем",
     customer: "Клиент",
     priceSummary: "СВОДКА ПО ЦЕНЕ",
     base: "Базовая цена",
     nightCharge: "Ночная надбавка",
     childSeatFee: "Детское кресло",
-    welcomeSignFee: "Табличка с именем",
     rtDiscount: "Скидка туда-обратно",
     couponDiscount: "Скидка по купону",
     total: "ИТОГО ОПЛАЧЕНО",
@@ -204,8 +198,9 @@ const labels: Record<string, Record<string, string>> = {
     imp2: "Водитель встретит вас у выхода с табличкой.",
     imp3: "Бесплатное ожидание: 60 мин рейсы, 15 мин отели.",
     imp4: "Бесплатное детское кресло по запросу.",
+    imp5: "Не связывайтесь с водителем напрямую для будущих бронирований.",
     footer: "Этот документ является вашим официальным ваучером на трансфер.",
-    contact: "24/7 Поддержка: +90 546 940 79 55 | torviantransfer@gmail.com",
+    contact: "24/7 Поддержка: 0850 840 1327 | torviantransfer@gmail.com",
     paid: "ОПЛАЧЕНО И ПОДТВЕРЖДЕНО",
   },
 };
@@ -348,7 +343,6 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   const extras: string[] = [];
   if (data.childSeat) extras.push(t(loc, "childSeat"));
-  if (data.welcomeSign) extras.push(t(loc, "welcomeSign"));
   if (extras.length > 0) rightCol.push({ label: t(loc, "extras"), value: extras.join(", ") });
 
   const maxRows = Math.max(leftCol.length, rightCol.length);
@@ -423,7 +417,6 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   priceLines.push({ label: t(loc, "base"), value: `€${data.basePrice.toFixed(2)}` });
   if (data.nightSurcharge > 0) priceLines.push({ label: t(loc, "nightCharge"), value: `€${data.nightSurcharge.toFixed(2)}` });
   if (data.childSeatFee > 0) priceLines.push({ label: t(loc, "childSeatFee"), value: `€${data.childSeatFee.toFixed(2)}` });
-  if (data.welcomeSignFee > 0) priceLines.push({ label: t(loc, "welcomeSignFee"), value: `€${data.welcomeSignFee.toFixed(2)}` });
   if (data.roundTripDiscount > 0) priceLines.push({ label: t(loc, "rtDiscount"), value: `-€${data.roundTripDiscount.toFixed(2)}`, isGreen: true });
   if (data.couponDiscount > 0) priceLines.push({ label: t(loc, "couponDiscount"), value: `-€${data.couponDiscount.toFixed(2)}`, isGreen: true });
 
@@ -490,9 +483,9 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
 
   // ─── IMPORTANT INFO ───
   doc.setFillColor(254, 252, 232); // warm yellow bg
-  doc.roundedRect(margin, y, contentW, 32, 2, 2, "F");
+  doc.roundedRect(margin, y, contentW, 37, 2, 2, "F");
   doc.setDrawColor(253, 224, 71);
-  doc.roundedRect(margin, y, contentW, 32, 2, 2, "S");
+  doc.roundedRect(margin, y, contentW, 37, 2, 2, "S");
 
   doc.setTextColor(161, 98, 7);
   doc.setFontSize(7.5);
@@ -502,14 +495,14 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setTextColor(120, 53, 15);
   doc.setFontSize(7);
   doc.setFont("helvetica", "normal");
-  const infoItems = [t(loc, "imp1"), t(loc, "imp2"), t(loc, "imp3"), t(loc, "imp4")];
+  const infoItems = [t(loc, "imp1"), t(loc, "imp2"), t(loc, "imp3"), t(loc, "imp4"), t(loc, "imp5")];
   let iy = y + 12;
   for (const item of infoItems) {
     doc.text(`•  ${item}`, margin + 5, iy);
     iy += 5;
   }
 
-  y += 40;
+  y += 45;
 
   // ─── FOOTER ───
   doc.setDrawColor(...lineGray);

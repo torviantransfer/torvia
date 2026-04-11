@@ -26,6 +26,11 @@ export default function BookingFormMini() {
   nextHour.setMinutes(0, 0, 0);
   const defaultTime = `${String(nextHour.getHours()).padStart(2, "0")}:00`;
 
+  // Default return date = tomorrow, return time = same
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const defaultReturnDate = tomorrow.toISOString().split("T")[0];
+  const defaultReturnTime = defaultTime;
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
@@ -46,25 +51,26 @@ export default function BookingFormMini() {
   };
 
   return (
-    <div className="rounded-2xl p-6 lg:p-7" style={{ backgroundColor: "#1d1d1f", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="relative rounded-2xl p-6 lg:p-7 backdrop-blur-sm overflow-hidden" style={{ backgroundColor: "#1d1d1f", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent" />
       {/* Form header with airport note */}
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-semibold text-white">{t("title")}</h2>
-        <span className="flex items-center gap-1 text-[11px] text-gray-500">
+        <span className="flex items-center gap-1.5 text-[10px] text-gray-500 bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
           <Plane size={10} className="text-orange-400" />
           Antalya Airport (AYT)
         </span>
       </div>
 
       {/* Trip type toggle */}
-      <div role="group" aria-label="Trip type" className="flex rounded-lg p-0.5 mb-5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
+      <div role="group" aria-label="Trip type" className="flex rounded-xl p-0.5 mb-5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
         <button
           type="button"
           onClick={() => setTripType("one_way")}
           aria-pressed={tripType === "one_way"}
-          className={`flex-1 py-2.5 text-xs font-medium rounded-md transition-all ${
+          className={`flex-1 py-2.5 text-xs font-semibold rounded-lg transition-all ${
             tripType === "one_way"
-              ? "bg-white text-black"
+              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
               : "text-gray-400 hover:text-white"
           }`}
         >
@@ -74,9 +80,9 @@ export default function BookingFormMini() {
           type="button"
           onClick={() => setTripType("round_trip")}
           aria-pressed={tripType === "round_trip"}
-          className={`flex-1 py-2.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-2.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
             tripType === "round_trip"
-              ? "bg-white text-black"
+              ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20"
               : "text-gray-400 hover:text-white"
           }`}
         >
@@ -187,29 +193,44 @@ export default function BookingFormMini() {
               <label htmlFor="mini-return-date" className="block text-xs font-medium text-gray-300 mb-1.5">
                 {t("returnDate")}
               </label>
-              <input
-                id="mini-return-date"
-                type="date"
-                name="returnDate"
-                required
-                min={new Date().toISOString().split("T")[0]}
-                placeholder="YYYY-MM-DD"
-                className="w-full px-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
-              />
+              <div className="relative">
+                <Calendar
+                  size={14}
+                  aria-hidden="true"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                />
+                <input
+                  id="mini-return-date"
+                  type="date"
+                  name="returnDate"
+                  required
+                  defaultValue={defaultReturnDate}
+                  min={defaultDate}
+                  className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                  style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
+                />
+              </div>
             </div>
             <div>
               <label htmlFor="mini-return-time" className="block text-xs font-medium text-gray-300 mb-1.5">
                 {t("returnTime")}
               </label>
-              <input
-                id="mini-return-time"
-                type="time"
-                name="returnTime"
-                required
-                className="w-full px-3 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
-              />
+              <div className="relative">
+                <Clock
+                  size={14}
+                  aria-hidden="true"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                />
+                <input
+                  id="mini-return-time"
+                  type="time"
+                  name="returnTime"
+                  required
+                  defaultValue={defaultReturnTime}
+                  className="w-full pl-9 pr-2 py-3 rounded-lg text-sm text-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                  style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", colorScheme: "dark" }}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -311,8 +332,7 @@ export default function BookingFormMini() {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full py-3.5 text-white font-semibold rounded-xl transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 text-sm"
-          style={{ backgroundColor: '#F97316' }}
+          className="w-full py-3.5 text-white font-bold rounded-xl transition-all hover:brightness-110 active:scale-[0.98] flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg shadow-orange-500/25"
         >
           {t("next")}
           <ArrowRight size={16} aria-hidden="true" />
