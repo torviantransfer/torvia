@@ -14,9 +14,9 @@ INSERT INTO vehicles (id, category_id, plate_number, brand, model, year, color) 
 
 -- Drivers
 INSERT INTO drivers (id, full_name, phone, is_active) VALUES
-  ('d0000000-0000-0000-0000-000000000001', 'Driver 1', '+908508401327', true),
-  ('d0000000-0000-0000-0000-000000000002', 'Driver 2', '+908508401327', true),
-  ('d0000000-0000-0000-0000-000000000003', 'Driver 3', '+908508401327', true);
+  ('d0000000-0000-0000-0000-000000000001', 'Driver 1', '+08508401327', true),
+  ('d0000000-0000-0000-0000-000000000002', 'Driver 2', '+08508401327', true),
+  ('d0000000-0000-0000-0000-000000000003', 'Driver 3', '+08508401327', true);
 
 -- Regions (24 routes from Antalya Airport)
 INSERT INTO regions (id, slug, name_tr, name_en, name_de, name_pl, name_ru, distance_km, duration_minutes, is_popular, sort_order) VALUES
@@ -84,7 +84,7 @@ INSERT INTO settings (key, value) VALUES
   ('welcome_sign_fee', '5'),
   ('company_name', '"TORVIAN Transfer"'),
   ('contact_email', '"torviantransfer@gmail.com"'),
-  ('whatsapp_number', '"908508401327"'),
+  ('whatsapp_number', '"08508401327"'),
   ('cancellation_free_hours', '24');
 
 -- Test Coupon

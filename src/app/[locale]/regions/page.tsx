@@ -91,7 +91,7 @@ export default async function RegionsPage({
             name: `${(r as Record<string, string>)[`name_${locale}`] || r.name_en} Transfer`,
           })),
         }) }} />
-        <section className="relative py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)" }}>
+        <section className="relative pb-14 sm:pb-18 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
@@ -104,6 +104,10 @@ export default async function RegionsPage({
 
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4">
+            {/* SEO Intro */}
+            <p className="text-gray-500 text-base leading-relaxed text-center max-w-3xl mx-auto mb-10">
+              {t("seoIntro")}
+            </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {(regions ?? []).map((region: Record<string, unknown>) => {
                 const name = (region[`name_${locale}`] ?? region.name_en) as string;

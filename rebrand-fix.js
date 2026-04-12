@@ -51,13 +51,15 @@ for (const file of files) {
   content = content.replace(/https:\/\/torviantransfer\.com/g, 'https://torviantransfer.com');
   
   // Fix any remaining old phone numbers
-  content = content.replace(/905431451548/g, '908508401327');
-  content = content.replace(/905469407955/g, '908508401327');
+  content = content.replace(/905431451548/g, '08508401327');
+  content = content.replace(/905469407955/g, '08508401327');
+  content = content.replace(/908508401327/g, '08508401327');
   content = content.replace(/\+90 543 145 15 48/g, '0850 840 1327');
   content = content.replace(/\+90 546 940 79 55/g, '0850 840 1327');
   content = content.replace(/\+90-543-145-15-48/g, '0850-840-1327');
-  content = content.replace(/tel:\+905431451548/g, 'tel:+908508401327');
-  content = content.replace(/tel:\+905469407955/g, 'tel:+908508401327');
+  content = content.replace(/tel:\+905431451548/g, 'tel:08508401327');
+  content = content.replace(/tel:\+905469407955/g, 'tel:08508401327');
+  content = content.replace(/tel:\+908508401327/g, 'tel:08508401327');
 
   // Fix any remaining old emails
   content = content.replace(/info@veloratransfer\.com/g, 'torviantransfer@gmail.com');

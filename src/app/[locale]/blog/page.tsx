@@ -51,29 +51,14 @@ export default async function BlogPage({
       <Header />
       <main className="flex-1">
         {/* Hero */}
-        <section
-          className="relative py-24 overflow-hidden"
-          style={{
-            background:
-              "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
-          }}
-        >
+        <section className="relative pb-14 sm:pb-18 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]"
-              style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
-            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">
-              {t("title")}
-            </p>
-            <h1 className="text-3xl lg:text-5xl font-bold mb-5 tracking-tight text-gray-900">
-              {t("heading")}
-            </h1>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              {t("subtitle")}
-            </p>
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("title")}</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">{t("heading")}</h1>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t("subtitle")}</p>
           </div>
         </section>
 

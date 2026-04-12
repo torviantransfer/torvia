@@ -233,7 +233,7 @@ export default async function RegionPage({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
 
         {/* Hero */}
-        <section className="relative py-20 overflow-hidden" style={{ background: "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)" }}>
+        <section className="relative pb-16 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
@@ -358,8 +358,8 @@ export default async function RegionPage({
 
                 <Link
                   href={`/booking?region=${slug}`}
-                  className="w-full py-4 text-gray-900 font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:brightness-110 shadow-lg"
-                  style={{ backgroundColor: '#F97316', boxShadow: '0 8px 25px rgba(249,115,22,0.25)' }}
+                  className="w-full py-4 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:brightness-110 shadow-lg"
+                  style={{ backgroundColor: '#2563EB', boxShadow: '0 8px 25px rgba(37,99,235,0.25)' }}
                 >
                   {bt("title")} <ArrowRight size={18} />
                 </Link>
@@ -551,8 +551,8 @@ export default async function RegionPage({
             <p className="text-gray-500 mb-8">{t("readyDesc")}</p>
             <Link
               href={`/booking?region=${slug}`}
-              className="inline-flex items-center gap-2 px-8 py-4 text-gray-900 font-bold rounded-xl transition-all hover:brightness-110 shadow-lg"
-              style={{ backgroundColor: '#F97316', boxShadow: '0 8px 25px rgba(249,115,22,0.25)' }}
+              className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-xl transition-all hover:brightness-110 shadow-lg"
+              style={{ backgroundColor: '#2563EB', boxShadow: '0 8px 25px rgba(37,99,235,0.25)' }}
             >
               {t("bookNow")} <ArrowRight size={18} />
             </Link>

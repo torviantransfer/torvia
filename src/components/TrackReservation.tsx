@@ -232,22 +232,22 @@ export default function TrackReservation() {
       {/* Search Form */}
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 backdrop-blur-sm"
+        className="bg-white rounded-2xl p-7 sm:p-9"
+        style={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 32px rgba(0,0,0,0.06)" }}
       >
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#eff6ff" }}>
             <Shield size={20} className="text-blue-600" />
           </div>
           <div>
-            <h3 className="text-gray-900 font-semibold text-lg">{t("title")}</h3>
-            <p className="text-gray-500 text-xs">{t("subtitle")}</p>
+            <h3 className="text-gray-900 font-bold text-lg tracking-tight">{t("title")}</h3>
+            <p className="text-gray-500 text-sm mt-0.5">{t("subtitle")}</p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               {t("codeLabel")}
             </label>
             <input
@@ -256,11 +256,12 @@ export default function TrackReservation() {
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="VL-ABC123"
               required
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600/50 tracking-wider font-mono text-lg transition-all"
+              className="w-full px-4 py-3.5 rounded-xl text-gray-900 placeholder-gray-400 font-mono text-lg tracking-wider outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+              style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" }}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               {t("emailLabel")}
             </label>
             <input
@@ -269,19 +270,21 @@ export default function TrackReservation() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email@example.com"
               required
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600/50 transition-all"
+              className="w-full px-4 py-3.5 rounded-xl text-gray-900 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+              style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" }}
             />
           </div>
           {error && (
-            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-xl">
-              <AlertTriangle size={16} />
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm text-red-700" style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}>
+              <AlertTriangle size={15} className="flex-shrink-0" />
               {error}
             </div>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 shadow-lg shadow-blue-500/20"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-50"
+            style={{ boxShadow: "0 4px 20px rgba(37,99,235,0.25)" }}
           >
             <Search size={18} />
             {loading ? t("searching") : t("searchButton")}
@@ -302,8 +305,7 @@ export default function TrackReservation() {
         <div className="mt-8 space-y-4">
 
           {/* Header Card */}
-          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 4px 32px rgba(0,0,0,0.06)" }}>
 
             <div className="p-6">
               <div className="flex items-start justify-between flex-wrap gap-4">
@@ -343,7 +345,7 @@ export default function TrackReservation() {
             </div>
 
             {/* Price Bar */}
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
               <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t("total")}</span>
               <span className="text-xl font-bold text-gray-900">
                 €{totalEur.toFixed(2)}
@@ -352,15 +354,15 @@ export default function TrackReservation() {
           </div>
 
           {/* Transfer Details Card */}
-          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <p className="text-xs text-gray-400 uppercase tracking-[0.15em] font-semibold">{t("transferDetails")}</p>
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #e2e8f0" }}>
+              <p className="text-xs text-gray-500 uppercase tracking-[0.15em] font-semibold">{t("transferDetails")}</p>
             </div>
 
             <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* Route */}
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#eff6ff" }}>
                   <MapPin size={16} className="text-blue-600" />
                 </div>
                 <div>
@@ -375,8 +377,8 @@ export default function TrackReservation() {
 
               {/* Pickup */}
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Calendar size={16} className="text-blue-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#eff6ff" }}>
+                  <Calendar size={16} className="text-blue-500" />
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("pickup")}</p>
@@ -396,8 +398,8 @@ export default function TrackReservation() {
 
               {/* Passengers */}
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users size={16} className="text-emerald-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#f0fdf4" }}>
+                  <Users size={16} className="text-emerald-600" />
                 </div>
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("passengers")}</p>
@@ -414,8 +416,8 @@ export default function TrackReservation() {
               {/* Vehicle */}
               {reservation.vehicle_categories && (
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-violet-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Car size={16} className="text-violet-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#f5f3ff" }}>
+                  <Car size={16} className="text-violet-600" />
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("vehicle")}</p>
@@ -429,8 +431,8 @@ export default function TrackReservation() {
               {/* Hotel */}
               {reservation.hotel_name && (
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-cyan-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Hotel size={16} className="text-cyan-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#ecfeff" }}>
+                  <Hotel size={16} className="text-cyan-600" />
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("hotel")}</p>
@@ -445,8 +447,8 @@ export default function TrackReservation() {
               {/* Flight */}
               {reservation.flight_code && (
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-sky-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Plane size={16} className="text-sky-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#f0f9ff" }}>
+                  <Plane size={16} className="text-sky-600" />
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("flight")}</p>
@@ -458,8 +460,8 @@ export default function TrackReservation() {
               {/* Extras */}
               {reservation.child_seat && (
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 bg-pink-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Baby size={16} className="text-pink-400" />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#fdf2f8" }}>
+                  <Baby size={16} className="text-pink-600" />
                   </div>
                   <div>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("extras")}</p>
@@ -472,9 +474,9 @@ export default function TrackReservation() {
 
           {/* Driver Info Card */}
           {reservation.driver_assignments && reservation.driver_assignments.length > 0 && (
-            <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <p className="text-xs text-gray-400 uppercase tracking-[0.15em] font-semibold">{t("driverInfo")}</p>
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
+              <div className="px-6 py-4" style={{ borderBottom: "1px solid #e2e8f0" }}>
+                <p className="text-xs text-gray-500 uppercase tracking-[0.15em] font-semibold">{t("driverInfo")}</p>
               </div>
 
               <div className="p-6 space-y-3">
@@ -528,7 +530,7 @@ export default function TrackReservation() {
           )}
 
           {/* Actions Card */}
-          <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
             <div className="p-6 flex flex-wrap gap-3">
               {reservation.status !== "cancelled" &&
                 reservation.status !== "cancel_requested" && (
@@ -536,7 +538,8 @@ export default function TrackReservation() {
                     href={`/api/voucher?code=${encodeURIComponent(reservation.reservation_code)}&locale=${locale}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-sm shadow-lg shadow-blue-500/20"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-sm"
+                    style={{ boxShadow: "0 4px 20px rgba(37,99,235,0.25)" }}
                   >
                     <Download size={16} />
                     {t("downloadVoucher")}
@@ -544,7 +547,7 @@ export default function TrackReservation() {
               )}
 
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}?text=${encodeURIComponent(`Reservation: ${reservation.reservation_code}`)}`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}?text=${encodeURIComponent(`Reservation: ${reservation.reservation_code}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#25D366]/90 text-white font-semibold rounded-xl hover:bg-[#20BD5A] transition-colors text-sm"
@@ -557,7 +560,8 @@ export default function TrackReservation() {
               {CANCELLABLE.includes(reservation.status) && !showCancel && (
                 <button
                   onClick={() => setShowCancel(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 font-semibold rounded-xl hover:bg-red-500/20 transition-all text-sm"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-red-600 font-semibold rounded-xl text-sm transition-colors hover:bg-red-50"
+                  style={{ border: "1px solid #fecaca" }}
                 >
                   <XCircle size={16} />
                   {t("cancelReservation")}
@@ -568,9 +572,9 @@ export default function TrackReservation() {
             {/* Cancel Confirmation */}
             {showCancel && (
               <div className="px-6 pb-6">
-                <div className="p-5 bg-red-500/5 border border-red-500/15 rounded-xl space-y-4">
+                <div className="p-5 rounded-xl space-y-4" style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}>
                   <div className="flex items-start gap-3">
-                    <AlertTriangle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
                     <p className="text-red-500 text-sm font-medium">{t("cancelConfirm")}</p>
                   </div>
                   <textarea
@@ -579,7 +583,8 @@ export default function TrackReservation() {
                     placeholder={t("cancelReason")}
                     rows={2}
                     maxLength={500}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none"
+                    className="w-full px-4 py-2.5 rounded-lg text-gray-900 text-sm placeholder-gray-400 outline-none focus:ring-2 focus:ring-red-400/20 resize-none"
+                  style={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }}
                   />
                   {cancelError && (
                     <p className="text-red-400 text-xs">{cancelError}</p>
@@ -588,13 +593,13 @@ export default function TrackReservation() {
                     <button
                       onClick={handleCancel}
                       disabled={cancelling}
-                      className="px-5 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors text-sm disabled:opacity-50"
+                      className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-50"
                     >
                       {cancelling ? t("cancelling") : t("cancelSubmit")}
                     </button>
                     <button
                       onClick={() => { setShowCancel(false); setCancelError(""); }}
-                      className="px-5 py-2 bg-white border border-gray-200 text-gray-600 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      className="px-5 py-2 text-gray-600 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm" style={{ border: "1px solid #e2e8f0" }}
                     >
                       {t("cancelBack")}
                     </button>
@@ -606,11 +611,10 @@ export default function TrackReservation() {
 
           {/* Review Card – only for completed reservations */}
           {reservation.status === "completed" && !reviewSuccess && (
-            <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden backdrop-blur-sm">
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#fffbeb" }}>
                     <Star size={20} className="text-amber-400" />
                   </div>
                   <div>
@@ -647,7 +651,8 @@ export default function TrackReservation() {
                   placeholder={t("rateComment")}
                   rows={3}
                   maxLength={1000}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 text-sm placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none"
+                  className="w-full px-4 py-3 rounded-xl text-gray-900 text-sm placeholder-gray-400 outline-none focus:ring-2 focus:ring-amber-400/20 resize-none"
+                  style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" }}
                 />
 
                 {reviewError && (
@@ -657,7 +662,8 @@ export default function TrackReservation() {
                 <button
                   onClick={handleReview}
                   disabled={rating === 0 || submittingReview}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all text-sm disabled:opacity-40 shadow-lg shadow-blue-500/20"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-sm disabled:opacity-40"
+                  style={{ boxShadow: "0 4px 20px rgba(37,99,235,0.25)" }}
                 >
                   {submittingReview ? t("rateSubmitting") : t("rateSubmit")}
                 </button>
@@ -667,16 +673,16 @@ export default function TrackReservation() {
 
           {/* Review Success */}
           {reviewSuccess && (
-            <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 px-5 py-4 rounded-xl">
-              <CheckCircle size={20} className="text-emerald-400 flex-shrink-0" />
-              <p className="text-emerald-600 text-sm font-medium">{t("rateSuccess")}</p>
+            <div className="flex items-center gap-3 px-5 py-4 rounded-xl" style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+              <CheckCircle size={20} className="text-emerald-600 flex-shrink-0" />
+              <p className="text-emerald-700 text-sm font-medium">{t("rateSuccess")}</p>
             </div>
           )}
 
           {/* Contact Support Footer */}
-          <div className="text-center py-4">
-            <p className="text-[10px] text-gray-600 uppercase tracking-[0.2em]">{t("contactSupport")}</p>
-            <p className="text-xs text-gray-500 mt-1">0850 840 1327 · torviantransfer@gmail.com</p>
+          <div className="text-center py-6">
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{t("contactSupport")}</p>
+            <p className="text-sm text-gray-600 font-medium">0850 840 1327 · torviantransfer@gmail.com</p>
           </div>
         </div>
       )}

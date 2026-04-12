@@ -152,3 +152,32 @@ Vercel Environment Variables olarak eklenmeli:
 | Dil/Çeviri | — | 3 | 2 |
 | Kod/Güvenlik | 1 | 1 | 6 |
 | **TOPLAM** | **5** | **6** | **13** |
+
+---
+
+## 🔄 12 Nisan 2026 Güncelleme Notu
+
+Bu rapora ek olarak, canlı UI ve rezervasyon akışında aşağıdaki eksikler tespit edildi:
+
+1. Booking akışında (bölge seçimi sonrası) navbar görünmüyordu.  
+2. Booking hero ve ana sayfa hero alanlarında metinler fixed navbar altına kayıyordu.  
+3. Mobil booking adımlarında buton/metin taşmaları ve sıkışmalar vardı.  
+4. "Bu tarih dolu" uyarı kartı genel tasarım dilinden kopuktu.  
+5. Marka/iletişim tutarlılığı için telefon/WhatsApp alanlarında tek numara standardı gerekliydi.  
+6. Voucher/e-posta içeriklerinde isim tabelası ifadesi geçen metinler operasyonla uyumsuzdu.  
+7. Gece tarifesi metinlerinde "uygulanmaz" tarzı ifadeler farklı sayfalarda tutarsızlık üretiyordu.
+
+### Uygulanan Düzeltmeler (Faz-1)
+
+- Navbar, booking sayfasında tüm akışta görünür hale getirildi.
+- Hero alanlarındaki navbar çakışması düzeltildi.
+- Booking step 2 mobil düzeni iyileştirildi (buton boyutları, satır taşmaları, padding/stack).
+- Tarih doluluk uyarısı kartı, sitenin mavi tasarım diline uygun hale getirildi.
+- Voucher/e-posta metinlerinde isim tabelası referansları "belirlenen buluşma noktası" ifadesine çekildi.
+- Numara standardı 08508401327 olacak şekilde güncellendi.
+- TR/EN metinlerinde gece tarifesi ifadeleri daha nötr ve tutarlı hale getirildi.
+
+### Devam Eden / Sonraki Faz
+
+- Kalan dil dosyalarında (DE/PL/RU) karşılama tabelası ve gece tarifesi metinlerinin aynı politika ile tamamen hizalanması.
+- Mobil breakpoint testlerinin cihaz bazlı doğrulaması (özellikle 320px ve 360px genişlik).

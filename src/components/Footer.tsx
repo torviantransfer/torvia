@@ -77,7 +77,7 @@ export default function Footer() {
             <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-gray-900" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-600 hover:text-emerald-700" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
+            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-600 hover:text-emerald-700" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
               <MessageCircle size={18} aria-hidden="true" />
             </a>
           </div>
@@ -181,7 +181,7 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+908508401327" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
+                <a href="tel:+08508401327" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
                   <Phone size={14} />
                   0850 840 1327
                 </a>
@@ -194,7 +194,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327"}`}
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors"

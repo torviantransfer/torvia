@@ -40,11 +40,12 @@ export default async function BookingPage({
 
   return (
     <>
-      {/* Header + Hero only when no region selected */}
+      <Header />
+
+      {/* Hero shown only when no region selected */}
       {!hasRegion && (
         <>
-          <Header />
-          <section className="relative -mt-16 min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center">
+          <section className="relative min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center pt-16">
             <Image
               src="/images/havaalani-vip-transfer.jpg"
               alt="Antalya Airport VIP Transfer"
@@ -54,7 +55,7 @@ export default async function BookingPage({
               quality={80}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-28 pb-10">
+            <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-16 sm:pt-20 pb-10">
               <div className="text-center mb-8">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg">
                   {t("title")}
@@ -83,20 +84,24 @@ export default async function BookingPage({
           serviceType: "Airport Transfer",
         }) }} />
 
-        {/* When region IS selected, full-page wizard (no header/hero) */}
+        {/* When region is selected, keep navbar and show wizard directly */}
         {hasRegion && (
-          <BookingWizardClient
-            initialRegion={sp.region}
-            initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
-            initialDate={sp.date}
-            initialTime={sp.time}
-            initialReturnDate={sp.returnDate}
-            initialReturnTime={sp.returnTime}
-            initialFlight={sp.flight}
-            initialAdults={sp.adults ? parseInt(sp.adults) : 2}
-            initialChildren={sp.children ? parseInt(sp.children) : 0}
-            initialLuggage={sp.luggage ? parseInt(sp.luggage) : 2}
-          />
+          <section className="pt-20 sm:pt-24 pb-6">
+            <div className="max-w-6xl mx-auto px-4">
+              <BookingWizardClient
+                initialRegion={sp.region}
+                initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
+                initialDate={sp.date}
+                initialTime={sp.time}
+                initialReturnDate={sp.returnDate}
+                initialReturnTime={sp.returnTime}
+                initialFlight={sp.flight}
+                initialAdults={sp.adults ? parseInt(sp.adults) : 2}
+                initialChildren={sp.children ? parseInt(sp.children) : 0}
+                initialLuggage={sp.luggage ? parseInt(sp.luggage) : 2}
+              />
+            </div>
+          </section>
         )}
 
         {/* SEO Trust Section */}

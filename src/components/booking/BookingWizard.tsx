@@ -85,8 +85,8 @@ function BookingWizardInner(props: Props) {
   const pickupTime = props.initialTime ?? "12:00";
   const returnDate = props.initialReturnDate ?? "";
   const returnTime = props.initialReturnTime ?? "";
-  const adults = props.initialAdults ?? 2;
-  const children = props.initialChildren ?? 0;
+  const [adults, setAdults] = useState(props.initialAdults ?? 2);
+  const [children, setChildren] = useState(props.initialChildren ?? 0);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -97,7 +97,7 @@ function BookingWizardInner(props: Props) {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
   const [regionData, setRegionData] = useState<RegionData | null>(null);
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
-  const [settingsData, setSettingsData] = useState<{ childSeatFee: number; welcomeSignFee: number }>({ childSeatFee: 10, welcomeSignFee: 5 });
+  const [settingsData, setSettingsData] = useState<{ childSeatFee: number }>({ childSeatFee: 10 });
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -107,15 +107,14 @@ function BookingWizardInner(props: Props) {
   const [hotelName, setHotelName] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [luggage, setLuggage] = useState(props.initialLuggage ?? 0);
   const [childSeat, setChildSeat] = useState(false);
-  const [welcomeSign, setWelcomeSign] = useState(false);
-  const [welcomeName, setWelcomeName] = useState("");
   const [couponCode, setCouponCode] = useState("");
+
   const [couponApplied, setCouponApplied] = useState(false);
-
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [reservationCode, setReservationCode] = useState<string | null>(null);
 
+  const [reservationCode, setReservationCode] = useState<string | null>(null);
   const [dateAvailable, setDateAvailable] = useState(true);
   const [suggestedDates, setSuggestedDates] = useState<string[]>([]);
   const [suggestedVehicles, setSuggestedVehicles] = useState<Record<string, { name: string; slug: string; max_passengers: number }[]>>({});
@@ -125,9 +124,8 @@ function BookingWizardInner(props: Props) {
     let total = selectedVehicle.calculation.basePrice;
     // roundTripDiscount is informational only — basePrice is already the round trip price
     if (childSeat) total += settingsData.childSeatFee;
-    if (welcomeSign) total += settingsData.welcomeSignFee;
     return total;
-  }, [selectedVehicle, childSeat, welcomeSign, settingsData]);
+  }, [selectedVehicle, childSeat, settingsData]);
 
   const getRegionName = (r: RegionData) => r[`name_${locale}`] || r.name_en;
 
@@ -186,8 +184,8 @@ function BookingWizardInner(props: Props) {
           regionSlug, categorySlug: selectedVehicle.slug, tripType, pickupDate, pickupTime,
           returnDate: tripType === "round_trip" ? returnDate : undefined,
           returnTime: tripType === "round_trip" ? returnTime : undefined,
-          flightCode: flightCode || undefined, adults, children, luggage: props.initialLuggage ?? 0,
-          childSeat, welcomeSign, welcomeName: welcomeSign ? welcomeName : undefined,
+          flightCode: flightCode || undefined, adults, children, luggage,
+          childSeat,
           firstName, lastName, email, phone, hotelName: hotelName || undefined,
           notes: notes || undefined, couponCode: couponApplied ? couponCode : undefined, locale,
         }),
@@ -211,7 +209,12 @@ function BookingWizardInner(props: Props) {
     leather: <Armchair size={13} />, usb: <Plug size={13} />, tv: <Tv size={13} />, minibar: <GlassWater size={13} />,
   };
   const featureLabel: Record<string, string> = {
-    ac: "A/C", wifi: "Wi-Fi", water: "Water", leather: "Leather", usb: "USB", tv: "TV", minibar: "Minibar",
+    ac: t("featureAc"), wifi: t("featureWifi"), water: t("featureWater"),
+    leather: t("featureLeather"), usb: t("featureUsb"), tv: t("featureTv"), minibar: t("featureMinibar"),
+  };
+  const vehicleDesc = (slug: string, fallback: string | null) => {
+    const key = `vehicleDesc${slug.charAt(0).toUpperCase() + slug.slice(1)}` as never;
+    try { const v = t(key); return v !== key ? v : (fallback ?? ""); } catch { return fallback ?? ""; }
   };
 
   const formatDate = (dateStr: string) => {
@@ -222,7 +225,7 @@ function BookingWizardInner(props: Props) {
 
   const stepLabels = [t("step2"), t("step3"), t("step4")];
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {/* Step indicator */}
       <div className="flex items-center justify-center mb-6">
         <div className="flex items-center gap-0 px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
@@ -234,7 +237,7 @@ function BookingWizardInner(props: Props) {
                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
                   {s < step ? <Check size={12} strokeWidth={3} /> : s}
                 </div>
-                <span className={`text-[9px] sm:text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                <span className={`hidden sm:inline text-xs font-semibold ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
                   {stepLabels[s - 1]}
                 </span>
               </div>
@@ -279,52 +282,39 @@ function BookingWizardInner(props: Props) {
             <Car size={22} className="text-blue-600" />{t("step2")}
           </h2>
 
-          {/* Date unavailability warning with suggestions */}
+          {/* Date unavailability warning */}
           {!dateAvailable && (
-            <div className="mb-6 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(239,68,68,0.2)" }}>
-              <div className="px-5 py-4 flex items-center gap-3" style={{ backgroundColor: "rgba(239,68,68,0.06)" }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(239,68,68,0.12)" }}>
-                  <AlertCircle size={20} className="text-red-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-red-700 text-sm">{t("dateUnavailable")}</p>
-                  <p className="text-xs text-red-500 mt-0.5">{formatDate(pickupDate)}</p>
-                </div>
+            <div className="mb-4 flex items-center gap-3 px-4 py-4 rounded-2xl" style={{ backgroundColor: "#fef2f2", border: "1px solid #fca5a5" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#fee2e2" }}>
+                <AlertCircle size={18} className="text-red-500" strokeWidth={2} />
               </div>
-              {suggestedDates.length > 0 && (
-                <div className="px-5 py-4" style={{ backgroundColor: "rgba(52,211,153,0.04)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                  <p className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    <CalendarCheck size={16} className="text-emerald-600" />
-                    {t("suggestedDates")}
-                  </p>
-                  <div className="space-y-3">
-                    {suggestedDates.map((date) => (
-                      <a
-                        key={date}
-                        href={`?region=${regionSlug}&trip=${tripType}&date=${date}&time=${pickupTime}&adults=${adults}&children=${children}${returnDate ? `&returnDate=${returnDate}&returnTime=${returnTime}` : ""}`}
-                        className="block px-4 py-3 rounded-xl transition-all hover:shadow-md"
-                        style={{ backgroundColor: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.2)" }}
-                      >
-                        <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 mb-1">
-                          <Calendar size={14} />
-                          {formatDate(date)}
-                        </div>
-                        {suggestedVehicles[date] && suggestedVehicles[date].length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            {suggestedVehicles[date].map((v) => (
-                              <span key={v.slug} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] text-gray-600 bg-white/80" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                                <Car size={10} className="text-blue-600" />
-                                {v.name}
-                                <span className="text-gray-400">({v.max_passengers}p)</span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div>
+                <p className="font-semibold text-red-800 text-sm">{t("dateUnavailable")}</p>
+                <p className="text-xs text-red-500 mt-0.5 font-medium">{formatDate(pickupDate)}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Suggested dates */}
+          {!dateAvailable && suggestedDates.length > 0 && (
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <CalendarCheck size={13} className="text-emerald-600" />
+                {t("suggestedDates")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {suggestedDates.map((date) => (
+                  <a
+                    key={date}
+                    href={`?region=${regionSlug}&trip=${tripType}&date=${date}&time=${pickupTime}&adults=${adults}&children=${children}${returnDate ? `&returnDate=${returnDate}&returnTime=${returnTime}` : ""}`}
+                    className="inline-flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all hover:shadow-sm group"
+                    style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}
+                  >
+                    <p className="text-sm font-semibold text-emerald-800">{formatDate(date)}</p>
+                    <ArrowRight size={14} className="text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                  </a>
+                ))}
+              </div>
             </div>
           )}
           {loading ? (
@@ -342,13 +332,13 @@ function BookingWizardInner(props: Props) {
               {vehicles.map((vehicle) => (
                 <div key={vehicle.categoryId} className="group rounded-2xl overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
                   <div className="flex flex-col sm:flex-row">
-                    <div className="relative w-full sm:w-[280px] h-48 sm:h-auto sm:min-h-[200px] bg-gradient-to-br from-gray-50 to-gray-100 flex-shrink-0">
-                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className="object-contain p-6 group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 280px" />
+                    <div className="relative w-full sm:w-[300px] h-64 sm:h-auto sm:min-h-[220px] bg-gray-50 flex-shrink-0 overflow-hidden">
+                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className="object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 300px" />
                     </div>
                     <div className="flex-1 p-5 sm:p-6 flex flex-col">
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
-                        {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicle.description}</p>}
+                        {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicleDesc(vehicle.slug, vehicle.description)}</p>}
                         <div className="flex flex-wrap gap-3 mt-3 mb-4">
                           <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
                           <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
@@ -382,7 +372,7 @@ function BookingWizardInner(props: Props) {
                             {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (<p key={i}>{line}</p>))}
                           </div>
                         </div>
-                        <button type="button" onClick={() => selectVehicle(vehicle)} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30">
+                        <button type="button" onClick={() => selectVehicle(vehicle)} className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30">
                           {t("selectVehicle")}<ArrowRight size={16} />
                         </button>
                       </div>
@@ -396,9 +386,9 @@ function BookingWizardInner(props: Props) {
       )}
       {/* STEP 2: Passenger Info + Extras */}
       {step === 2 && selectedVehicle && (
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
           <div className="lg:col-span-2">
-            <div className="rounded-2xl p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
+            <div className="rounded-2xl p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
                 <Users size={20} className="text-blue-600" />{t("step3")}
               </h2>
@@ -406,22 +396,22 @@ function BookingWizardInner(props: Props) {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
-                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("lastName")} *</label>
-                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("email")} *</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
                     <PhoneInput international defaultCountry="TR" value={phone} onChange={(val) => setPhone(val ?? "")} placeholder={t("placeholderPhone")}
-                      className="phone-input-dark w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="phone-input-dark w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
                       style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
                       flagComponent={({ country, countryName }) => {
                         const Flag = flags[country as keyof typeof flags];
@@ -430,29 +420,62 @@ function BookingWizardInner(props: Props) {
                     />
                   </div>
                 </div>
+                {/* Passenger + Luggage counters */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("passengers")}</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* Adults */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-xs text-gray-500 font-medium">{t("adult")}</span>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setAdults((v) => Math.max(1, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <span className="text-base font-bold text-gray-900 w-5 text-center">{adults}</span>
+                        <button type="button" onClick={() => setAdults((v) => Math.min(selectedVehicle?.max_passengers ?? 8, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                      </div>
+                    </div>
+                    {/* Children */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-xs text-gray-500 font-medium">{t("child")}</span>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setChildren((v) => Math.max(0, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <span className="text-base font-bold text-gray-900 w-5 text-center">{children}</span>
+                        <button type="button" onClick={() => setChildren((v) => Math.min(6, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                      </div>
+                    </div>
+                    {/* Luggage */}
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className="text-xs text-gray-500 font-medium">{t("luggageCapacity")}</span>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setLuggage((v) => Math.max(0, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <span className="text-base font-bold text-gray-900 w-5 text-center">{luggage}</span>
+                        <button type="button" onClick={() => setLuggage((v) => Math.min(selectedVehicle?.max_luggage ?? 10, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
                     <div className="relative">
                       <Plane size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="text" value={flightCode} onChange={(e) => setFlightCode(e.target.value.toUpperCase())} placeholder={t("flightCodePlaceholder")} className="w-full pl-10 pr-3 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                      <input type="text" value={flightCode} onChange={(e) => setFlightCode(e.target.value.toUpperCase())} placeholder={t("flightCodePlaceholder")} className="w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                    <input type="text" value={hotelName} onChange={(e) => setHotelName(e.target.value)} placeholder={t("placeholderHotel")} className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <input type="text" value={hotelName} onChange={(e) => setHotelName(e.target.value)} placeholder={t("placeholderHotel")} className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("notes")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={t("notesPlaceholder")} className="w-full px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={t("notesPlaceholder")} className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                 </div>
 
                 {/* Extras */}
                 <div className="pt-2">
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t("extras")}</h3>
-                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer mb-2 transition-colors" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
-                    <div className="flex items-center gap-3">
+                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer mb-2 transition-colors gap-3" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="flex items-center gap-3 min-w-0">
                       <Baby size={20} className="text-gray-700" />
                       <div><p className="font-medium text-gray-900 text-sm">{t("childSeat")}</p><p className="text-xs text-gray-500">{t("childSeatNeeded")}</p></div>
                     </div>
@@ -466,18 +489,18 @@ function BookingWizardInner(props: Props) {
                 {/* Coupon */}
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("couponCode")}</label>
-                  <div className="flex gap-2">
-                    <input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponApplied(false); }} placeholder={t("placeholderCoupon")} className="flex-1 px-4 py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
-                    <button type="button" onClick={() => setCouponApplied(true)} disabled={!couponCode.trim()} className="px-5 py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all" style={{ backgroundColor: "rgba(0,0,0,0.06)" }}>{t("applyCoupon")}</button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponApplied(false); }} placeholder={t("placeholderCoupon")} className="flex-1 px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <button type="button" onClick={() => setCouponApplied(true)} disabled={!couponCode.trim()} className="px-5 py-2.5 sm:py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all whitespace-nowrap" style={{ backgroundColor: "rgba(0,0,0,0.06)" }}>{t("applyCoupon")}</button>
                   </div>
                 </div>
 
                 {/* Navigation */}
-                <div className="flex gap-3 pt-4">
-                  <button type="button" onClick={goBack} className="flex-1 py-3.5 font-medium rounded-lg text-gray-600 transition-colors flex items-center justify-center gap-2" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button type="button" onClick={goBack} className="flex-1 py-3 font-medium rounded-lg text-gray-600 transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
                     <ArrowLeft size={16} />{t("back")}
                   </button>
-                  <button type="button" onClick={handleSubmit} disabled={submitting} className="flex-1 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-blue-600/20">
+                  <button type="button" onClick={handleSubmit} disabled={submitting} className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-60 shadow-lg shadow-blue-600/20">
                     {submitting ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>) : (<><CreditCard size={18} />{t("pay")}</>)}
                   </button>
                 </div>
@@ -486,7 +509,7 @@ function BookingWizardInner(props: Props) {
           </div>
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-20 z-10">
+            <div className="sticky top-24 z-10">
               <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
                 {/* Header */}
                 <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
@@ -553,7 +576,7 @@ function BookingWizardInner(props: Props) {
                   <div className="p-3.5 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.12)" }}>
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-gray-900 text-xs">{t("totalPrice")}</span>
-                      <span className="text-xl font-bold text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
+                      <span className="text-lg sm:text-xl font-bold text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
                     </div>
                     <div className="mt-1.5 text-[11px] text-right space-y-0.5">
                       {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}

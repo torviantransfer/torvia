@@ -69,7 +69,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Child Seat",
     priceSummary: "Price Summary",
     base: "Base Price",
-    nightCharge: "Night Surcharge",
+    nightCharge: "Additional Fee",
     childSeatFee: "Child Seat Fee",
     rtDiscount: "Round Trip Discount",
     couponDiscount: "Coupon Discount",
@@ -78,7 +78,7 @@ const i18n: Record<string, Record<string, string>> = {
     qrInfo: "Show this QR code to your driver for instant verification.",
     importantTitle: "Important Information",
     imp1: "Your driver will track your flight — no need to worry about delays.",
-    imp2: "The driver will wait for you at the airport exit with a name sign.",
+    imp2: "Your driver will meet you at the airport designated meeting point.",
     imp3: "Free waiting time: 60 min for flights, 15 min for hotels.",
     imp4: "Child seat & booster available for $10 per booking.",
     imp5: "Do not contact the driver directly for future bookings. Our company is not responsible for any issues that may arise.",
@@ -111,7 +111,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Çocuk Koltuğu",
     priceSummary: "Fiyat Özeti",
     base: "Taban Fiyat",
-    nightCharge: "Gece Tarifesi",
+    nightCharge: "Ek Ücret",
     childSeatFee: "Çocuk Koltuğu",
     rtDiscount: "Gidiş-Dönüş İndirimi",
     couponDiscount: "Kupon İndirimi",
@@ -120,7 +120,7 @@ const i18n: Record<string, Record<string, string>> = {
     qrInfo: "Bu QR kodu anında doğrulama için şoförünüze gösterin.",
     importantTitle: "Önemli Bilgiler",
     imp1: "Şoförünüz uçuşunuzu takip eder — rötar konusunda endişelenmeyin.",
-    imp2: "Şoför sizi havalimanı çıkışında isim tabelasıyla bekleyecektir.",
+    imp2: "Şoförünüz sizi havalimanındaki belirlenen buluşma noktasında karşılayacaktır.",
     imp3: "Ücretsiz bekleme: Uçuşlarda 60 dk, otellerden 15 dk.",
     imp4: "Talep üzerine 10$ karşılığında çocuk koltuğu ve yükseltici.",
     imp5: "Bir sonraki taşımalarda şoför ile doğrudan iletişime geçmeyiniz. Yaşanan olumsuzluklardan firmamız sorumlu değildir.",
@@ -153,7 +153,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Kindersitz",
     priceSummary: "Preisübersicht",
     base: "Grundpreis",
-    nightCharge: "Nachtzuschlag",
+    nightCharge: "Zusatzgebühr",
     childSeatFee: "Kindersitz",
     rtDiscount: "Hin-/Rückfahrt-Rabatt",
     couponDiscount: "Gutschein-Rabatt",
@@ -162,7 +162,7 @@ const i18n: Record<string, Record<string, string>> = {
     qrInfo: "Zeigen Sie diesen QR-Code Ihrem Fahrer zur sofortigen Verifizierung.",
     importantTitle: "Wichtige Informationen",
     imp1: "Ihr Fahrer verfolgt Ihren Flug — keine Sorge bei Verspätungen.",
-    imp2: "Der Fahrer erwartet Sie am Flughafenausgang mit einem Namensschild.",
+    imp2: "Ihr Fahrer erwartet Sie am festgelegten Treffpunkt am Flughafen.",
     imp3: "Kostenlose Wartezeit: 60 Min für Flüge, 15 Min für Hotels.",
     imp4: "Kindersitz für $10 pro Buchung verfügbar.",
     imp5: "Kontaktieren Sie den Fahrer nicht direkt für zukünftige Buchungen. Unser Unternehmen übernimmt keine Verantwortung für mögliche Probleme.",
@@ -195,7 +195,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Fotelik dziecięcy",
     priceSummary: "Podsumowanie ceny",
     base: "Cena podstawowa",
-    nightCharge: "Dopłata nocna",
+    nightCharge: "Dodatkowa opłata",
     childSeatFee: "Fotelik dziecięcy",
     rtDiscount: "Rabat w obie strony",
     couponDiscount: "Rabat kuponowy",
@@ -204,7 +204,7 @@ const i18n: Record<string, Record<string, string>> = {
     qrInfo: "Pokaż ten kod QR kierowcy w celu natychmiastowej weryfikacji.",
     importantTitle: "Ważne informacje",
     imp1: "Kierowca śledzi Twój lot — nie martw się opóźnieniami.",
-    imp2: "Kierowca będzie czekał na Ciebie przy wyjściu z lotniska z tabliczką.",
+    imp2: "Kierowca będzie czekał na Ciebie w wyznaczonym punkcie spotkania na lotnisku.",
     imp3: "Bezpłatny czas oczekiwania: 60 min dla lotów, 15 min dla hoteli.",
     imp4: "Fotelik dziecięcy dostępny za $10 za rezerwację.",
     imp5: "Nie kontaktuj się bezpośrednio z kierowcą w sprawie przyszłych rezerwacji. Nasza firma nie ponosi odpowiedzialności za ewentualne problemy.",
@@ -237,7 +237,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Детское кресло",
     priceSummary: "Сводка по цене",
     base: "Базовая цена",
-    nightCharge: "Ночная надбавка",
+    nightCharge: "Доп. сбор"
     childSeatFee: "Детское кресло",
     rtDiscount: "Скидка туда-обратно",
     couponDiscount: "Скидка по купону",
@@ -246,7 +246,7 @@ const i18n: Record<string, Record<string, string>> = {
     qrInfo: "Покажите этот QR-код водителю для мгновенной верификации.",
     importantTitle: "Важная информация",
     imp1: "Водитель отслеживает ваш рейс — не переживайте из-за задержек.",
-    imp2: "Водитель встретит вас на выходе из аэропорта с табличкой.",
+    imp2: "Водитель встретит вас в назначенной точке встречи в аэропорту.",
     imp3: "Бесплатное ожидание: 60 мин для рейсов, 15 мин для отелей.",
     imp4: "Детское кресло доступно за $10 за бронирование.",
     imp5: "Не связывайтесь с водителем напрямую для будущих бронирований. Наша компания не несёт ответственности за возможные проблемы.",
@@ -269,7 +269,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   const loc = data.locale;
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327";
 
   const passengerParts: string[] = [];
   if (data.adults > 0) passengerParts.push(`${data.adults} ${data.adults === 1 ? t(loc, "adult") : t(loc, "adults")}`);
@@ -512,7 +512,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       </tr>`
     : "";
 
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
 
   const html = `

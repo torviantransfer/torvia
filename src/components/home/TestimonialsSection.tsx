@@ -107,8 +107,11 @@ export default function TestimonialsSection() {
                 key={i}
                 type="button"
                 onClick={() => scrollTo(i)}
-                className={`h-2 rounded-full transition-all ${i === current ? "bg-gray-900 w-6" : "bg-gray-300 w-2"}`}
-              />
+                aria-label={`Go to testimonial ${i + 1}`}
+                className={`relative h-8 flex items-center justify-center px-1`}
+              >
+                <span className={`h-2 rounded-full transition-all block ${i === current ? "bg-gray-900 w-6" : "bg-gray-300 w-2"}`} />
+              </button>
             ))}
           </div>
         </div>

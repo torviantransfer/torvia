@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       welcomeSign,
       couponDiscountPercent,
       couponDiscountFixed,
-      nightSurchargePercent: 0, // Gece tarifesi yok
+      nightSurchargePercent: 0, // No extra hourly surcharge
       childSeatFee: settingsMap.child_seat_fee ?? 10,
       welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
     });

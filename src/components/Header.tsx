@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Menu,
   X,
@@ -24,6 +24,7 @@ export default function Header() {
   const t = useTranslations("nav");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -37,7 +38,8 @@ export default function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Pages with dark hero images get transparent navbar
-  const isHeroPage = pathname === "/" || pathname === "/booking";
+  // On booking page, only when NO region is selected (hero is shown)
+  const isHeroPage = pathname === "/" || (pathname === "/booking" && !searchParams.get("region"));
   // On non-hero pages, always show dark text (light bg). On hero pages, depends on scroll.
   const showDarkNav = scrolled || !isHeroPage;
 

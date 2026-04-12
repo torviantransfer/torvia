@@ -157,7 +157,11 @@ export default function RouteMap({
 
         // Fit map to show both markers + route
         const bounds = L.latLngBounds([from, to]);
-        map.fitBounds(bounds, { padding: [40, 40] });
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] });
+          }
+        }, 400);
       } else {
         // Fallback: straight line
         drawStraightLine(from, to, layer, map);
@@ -182,7 +186,11 @@ export default function RouteMap({
     }).addTo(layer);
 
     const bounds = L.latLngBounds([from, to]);
-    map.fitBounds(bounds, { padding: [40, 40] });
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] });
+      }
+    }, 400);
   }
 
   return (

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 
 export default function WhatsAppButton() {
   const t = useTranslations("common");
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327";
   const message = encodeURIComponent(t("whatsappMessage"));
 
   return (

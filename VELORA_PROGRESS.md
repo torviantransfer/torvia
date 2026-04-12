@@ -251,7 +251,7 @@ torvian/
 | Resend | v6.10.0 |
 | next-intl | v4.9.0 |
 | Diller | tr, en, de, pl, ru |
-| WhatsApp | 905469407955 (env var) |
+| WhatsApp | 08508401327 (env var) |
 | E-posta | torviantransfer@gmail.com |
 | Tema | Dark (#111113 bg — public), Light (#F1F5F9 — admin) |
 | URL Pattern | /{locale}/{slug}-transfer |

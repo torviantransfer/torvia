@@ -38,7 +38,7 @@ export default async function PrivacyPage() {
       <main className="flex-1">
         {/* Hero */}
         <section
-          className="relative py-14 sm:py-18 overflow-hidden"
+          className="relative pb-14 sm:pb-18 pt-24 overflow-hidden"
           style={{
             background:
               "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",

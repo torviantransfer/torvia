@@ -40,7 +40,7 @@ export function calculatePrice(input: PriceCalcInput): PriceCalculation {
     basePrice = oneWayPrice;
   }
 
-  // Night surcharge (22:00 - 06:00)
+  // Time-based additional fee calculation (currently set by config)
   const hour = parseInt(pickupTime.split(":")[0], 10);
   const isNight = hour >= 22 || hour < 6;
   const nightSurcharge = isNight

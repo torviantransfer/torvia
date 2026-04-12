@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       "Hotel": r.hotel_name ?? "",
       "Flight Code": r.flight_code ?? "",
       "Base Price": r.base_price,
-      "Night Surcharge": r.night_surcharge,
+      "Additional Fee": r.night_surcharge,
       "Child Seat Fee": r.child_seat_fee,
       "Welcome Sign Fee": r.welcome_sign_fee,
       "Round Trip Discount": r.round_trip_discount,

@@ -54,46 +54,61 @@ export default function ContactForm() {
     );
   }
 
+  const inputClass = "w-full px-4 py-3.5 rounded-xl text-sm text-gray-900 placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400";
+  const inputStyle = { backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("firstNamePlaceholder")}</label>
+          <input
+            name="firstName"
+            type="text"
+            required
+            placeholder="John"
+            className={inputClass}
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("lastNamePlaceholder")}</label>
+          <input
+            name="lastName"
+            type="text"
+            required
+            placeholder="Doe"
+            className={inputClass}
+            style={inputStyle}
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("emailPlaceholder")}</label>
         <input
-          name="firstName"
-          type="text"
+          name="email"
+          type="email"
           required
-          placeholder={t("firstNamePlaceholder")}
-          className="px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
-          style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
-        />
-        <input
-          name="lastName"
-          type="text"
-          required
-          placeholder={t("lastNamePlaceholder")}
-          className="px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
-          style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
+          placeholder="john@example.com"
+          className={inputClass}
+          style={inputStyle}
         />
       </div>
-      <input
-        name="email"
-        type="email"
-        required
-        placeholder={t("emailPlaceholder")}
-        className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"
-        style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
-      />
-      <textarea
-        name="message"
-        rows={5}
-        required
-        placeholder={t("messagePlaceholder")}
-        className="w-full px-4 py-3 rounded-xl text-sm text-gray-900 placeholder-gray-400 resize-none transition-all"
-        style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
-      />
+      <div>
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t("messagePlaceholder")}</label>
+        <textarea
+          name="message"
+          rows={5}
+          required
+          placeholder="..."
+          className={`${inputClass} resize-none`}
+          style={inputStyle}
+        />
+      </div>
 
       {status === "error" && (
-        <div className="flex items-center gap-2 text-red-400 text-sm">
-          <AlertCircle size={16} />
+        <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-red-700" style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}>
+          <AlertCircle size={15} className="flex-shrink-0" />
           {errorMsg}
         </div>
       )}
@@ -101,7 +116,8 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 disabled:opacity-50"
+        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-50"
+        style={{ boxShadow: "0 4px 20px rgba(37,99,235,0.25)" }}
       >
         {status === "loading" ? (
           <Loader2 size={16} className="animate-spin" />
