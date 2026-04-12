@@ -392,7 +392,7 @@ export default function BookingFormMini() {
             </button>
             {open === "from" && renderLocDrop("from")}
           </div>
-          <button type="button" onClick={swap} aria-label="Swap pickup and dropoff" className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow">  
+          <button type="button" onClick={swap} className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow">
             <ArrowLeftRight size={11} className="text-white" />
           </button>
           <div className="relative flex-1 min-w-0">
@@ -404,37 +404,36 @@ export default function BookingFormMini() {
           </div>
         </div>
 
-        {/* Row 2: Date (full width) */}
-        <div className="relative mb-2">
-          <button type="button" onClick={() => openCal("dep")} className="w-full flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-2.5 min-w-0">
-            <Calendar size={14} className="text-green-600 shrink-0" />
-            {depFmt ? (
-              <span className="text-[12px] font-semibold text-gray-900 truncate">{depFmt.text} · <span className="text-blue-600">{depFmt.time}</span></span>
-            ) : (
-              <span className="text-[12px] text-gray-400">{t("departureDate")}</span>
-            )}
-          </button>
-          {open === "cal" && calFor === "dep" && renderCalendar()}
-        </div>
-
-        {/* Row 3: Return + Passengers */}
+        {/* Row 2: Date + Return + Passengers */}
         <div className="flex items-center gap-1.5 mb-2">
           <div className="relative flex-1 min-w-0">
+            <button type="button" onClick={() => openCal("dep")} className="w-full flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-2.5 min-w-0">
+              <Calendar size={14} className="text-green-600 shrink-0" />
+              {depFmt ? (
+                <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
+              ) : (
+                <span className="text-[12px] text-gray-400">{t("departureDate")}</span>
+              )}
+            </button>
+            {open === "cal" && calFor === "dep" && renderCalendar()}
+          </div>
+
+          <div className="relative shrink-0">
             {!hasRet ? (
-              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`w-full flex items-center justify-center gap-1 rounded-lg px-2.5 py-2.5 text-[12px] font-semibold ${depDate ? "text-white bg-blue-600" : "text-white bg-gray-300 cursor-not-allowed"}`}>
+              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1 rounded-lg px-2.5 py-2.5 text-[12px] font-semibold ${depDate ? "text-white bg-blue-600" : "text-white bg-gray-300 cursor-not-allowed"}`}>
                 <CornerDownLeft size={12} />{t("addReturn")}
               </button>
             ) : (
-              <div className="flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-2.5 min-w-0">
-                <button type="button" onClick={() => openCal("ret")} className="flex items-center gap-1 min-w-0">
-                  <CornerDownLeft size={12} className="text-green-600 shrink-0" />
+              <div className="flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-2.5">
+                <button type="button" onClick={() => openCal("ret")} className="flex items-center gap-1">
+                  <CornerDownLeft size={12} className="text-green-600" />
                   {retFmt ? (
-                    <span className="text-[12px] font-semibold text-gray-900 truncate">{retFmt.text} · <span className="text-blue-600">{retFmt.time}</span></span>
+                    <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{retFmt.text} &middot; <span className="text-blue-600">{retFmt.time}</span></span>
                   ) : (
                     <span className="text-[12px] text-gray-400">{t("returnDate")}</span>
                   )}
                 </button>
-                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} className="text-red-400 shrink-0 ml-auto"><X size={11} /></button>
+                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} className="text-red-400"><X size={11} /></button>
               </div>
             )}
             {open === "cal" && calFor === "ret" && renderCalendar()}
