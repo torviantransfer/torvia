@@ -189,7 +189,7 @@ const labels: Record<string, Record<string, string>> = {
     customer: "Клиент",
     priceSummary: "СВОДКА ПО ЦЕНЕ",
     base: "Базовая цена",
-    nightCharge: "Доп. сбор"
+    nightCharge: "Доп. сбор",
     childSeatFee: "Детское кресло",
     rtDiscount: "Скидка туда-обратно",
     couponDiscount: "Скидка по купону",

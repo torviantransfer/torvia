@@ -237,7 +237,7 @@ const i18n: Record<string, Record<string, string>> = {
     childSeatLabel: "Детское кресло",
     priceSummary: "Сводка по цене",
     base: "Базовая цена",
-    nightCharge: "Доп. сбор"
+    nightCharge: "Доп. сбор",
     childSeatFee: "Детское кресло",
     rtDiscount: "Скидка туда-обратно",
     couponDiscount: "Скидка по купону",
