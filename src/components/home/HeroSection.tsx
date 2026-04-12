@@ -9,7 +9,7 @@ export default function HeroSection() {
   const t = useTranslations("hero");
 
   return (
-    <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col justify-between pt-16">
+    <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col justify-between -mt-16">
       {/* Full-width background image */}
       <div className="absolute inset-0 overflow-hidden">
         <Image
@@ -25,7 +25,7 @@ export default function HeroSection() {
       </div>
 
       {/* Top content — Title + subtitle */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-4 sm:px-6 pt-12 lg:pt-16">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-4 sm:px-6 pt-28 lg:pt-32">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] tracking-tight text-white text-center mb-4">
           {t("title")}
         </h1>
