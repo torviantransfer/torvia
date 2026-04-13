@@ -65,6 +65,7 @@ export default function BookingFormMini() {
   const [adults, setAdults] = useState(2);
   const [kids, setKids] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
+  const [dateError, setDateError] = useState(false);
   const [calMonth, setCalMonth] = useState(new Date());
   const [calFor, setCalFor] = useState<"dep" | "ret">("dep");
 
@@ -116,10 +117,12 @@ export default function BookingFormMini() {
 
   const nameKey = `name_${locale}` as keyof Region;
   const airportName = ({ tr: "Antalya Havalimanı (AYT)", en: "Antalya Airport (AYT)", de: "Flughafen Antalya (AYT)", pl: "Lotnisko Antalya (AYT)", ru: "Аэропорт Анталья (AYT)" } as Record<string, string>)[locale] ?? "Antalya Airport (AYT)";
+  const REGION_NAME_OVERRIDES: Record<string, string> = { "kundu-lara": "Kundu" };
+  const getRegionLabel = (r: Region) => REGION_NAME_OVERRIDES[r.slug] ?? ((r[nameKey] as string) || r.name_en);
   const getName = (slug: string) => {
     if (slug === "antalya-airport") return airportName;
     const r = regions.find((r) => r.slug === slug);
-    return r ? (r[nameKey] as string) || r.name_en : slug;
+    return r ? getRegionLabel(r) : slug;
   };
 
   const fmtDate = (d: Date | null, h: number, m: number) => {
@@ -154,6 +157,8 @@ export default function BookingFormMini() {
     // Determine actual region: use whichever is NOT the airport
     const region = to === "antalya-airport" ? from : to;
     if (!region || region === "antalya-airport") return;
+    if (!depDate) { setDateError(true); setOpen("cal"); setCalFor("dep"); setCalMonth(new Date()); return; }
+    setDateError(false);
     const p = new URLSearchParams();
     if (from) p.set("from", from);
     p.set("region", region);
@@ -188,7 +193,7 @@ export default function BookingFormMini() {
     ...regions.map((r) => ({
       type: "destination" as const,
       value: r.slug,
-      label: (r[nameKey] as string) || r.name_en,
+      label: getRegionLabel(r),
     })),
   ];
 
@@ -332,12 +337,12 @@ export default function BookingFormMini() {
 
         {/* Dep date */}
         <div className="relative h-full shrink-0">
-          <button type="button" onClick={() => openCal("dep")} className="flex items-center gap-2 px-4 h-full text-left hover:bg-gray-50/80 transition-colors border-r border-gray-200/60">
-            <Calendar size={16} className="text-green-600 shrink-0" />
+          <button type="button" onClick={() => { setDateError(false); openCal("dep"); }} className={`flex items-center gap-2 px-4 h-full text-left hover:bg-gray-50/80 transition-colors border-r ${dateError ? "border-red-400 bg-red-50" : "border-gray-200/60"}`}>
+            <Calendar size={16} className={dateError ? "text-red-500 shrink-0" : "text-green-600 shrink-0"} />
             {depFmt ? (
               <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
             ) : (
-              <span className="text-[13px] text-gray-400 whitespace-nowrap">{t("departureDate")}</span>
+              <span className={`text-[13px] whitespace-nowrap ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? "Tarih seçiniz!" : t("departureDate")}</span>
             )}
           </button>
           {open === "cal" && calFor === "dep" && renderCalendar()}
@@ -407,12 +412,12 @@ export default function BookingFormMini() {
         {/* Row 2: Date + Return + Passengers */}
         <div className="flex items-center gap-1.5 mb-2">
           <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => openCal("dep")} className="w-full flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-2.5 min-w-0">
-              <Calendar size={14} className="text-green-600 shrink-0" />
+            <button type="button" onClick={() => { setDateError(false); openCal("dep"); }} className={`w-full flex items-center gap-1.5 border rounded-lg px-2.5 py-2.5 min-w-0 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}>
+              <Calendar size={14} className={dateError ? "text-red-500 shrink-0" : "text-green-600 shrink-0"} />
               {depFmt ? (
                 <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
               ) : (
-                <span className="text-[12px] text-gray-400">{t("departureDate")}</span>
+                <span className={`text-[12px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? "Tarih seçiniz!" : t("departureDate")}</span>
               )}
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}

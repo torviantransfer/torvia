@@ -90,6 +90,7 @@
     "passengers": "Пассажиры",
     "luggageCapacity": "Багаж",
     "errorFillRequired": "Пожалуйста, заполните все обязательные поля",
+    "errorSelectDate": "Пожалуйста, выберите дату прибытия перед выбором транспорта",
     "errorFillReturn": "Пожалуйста, укажите дату и время обратного рейса",
     "dateUnavailable": "Эта дата полностью забронирована. Пожалуйста, выберите другую дату.",
     "suggestedDates": "Автомобили доступны на эти даты:",
@@ -645,7 +646,9 @@
     "whatsappSupport": "Поддержка WhatsApp",
     "emailSupport": "Поддержка по Email",
     "downloadVoucher": "Скачать PDF Ваучер",
-    "trackReservation": "Отследить Бронирование"
+    "trackReservation": "Отследить Бронирование",
+    "backToHome": "На Главную",
+    "needHelp": "Нужна помощь?"
   },
   "bookingCancel": {
     "title": "Оплата Отменена",

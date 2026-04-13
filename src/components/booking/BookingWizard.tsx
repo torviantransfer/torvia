@@ -116,6 +116,7 @@ function BookingWizardInner(props: Props) {
 
   const [reservationCode, setReservationCode] = useState<string | null>(null);
   const [dateAvailable, setDateAvailable] = useState(true);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [suggestedDates, setSuggestedDates] = useState<string[]>([]);
   const [suggestedVehicles, setSuggestedVehicles] = useState<Record<string, { name: string; slug: string; max_passengers: number }[]>>({});
 
@@ -127,7 +128,17 @@ function BookingWizardInner(props: Props) {
     return total;
   }, [selectedVehicle, childSeat, settingsData]);
 
-  const getRegionName = (r: RegionData) => r[`name_${locale}`] || r.name_en;
+  const getRegionName = (r: RegionData) => {
+    const name = r[`name_${locale}`] || r.name_en;
+    // Slug-based display name overrides (e.g. "kundu-lara" shows as "Kundu")
+    if (r.slug === "kundu-lara") return "Kundu";
+    return name;
+  };
+
+  // Correct coordinates for regions that have wrong data in DB
+  const COORD_OVERRIDES: Record<string, { latitude: number; longitude: number }> = {
+    "kundu-lara": { latitude: 36.8490, longitude: 30.9110 },
+  };
 
   useEffect(() => {
     const params = new URLSearchParams({ region: regionSlug, trip: tripType, time: pickupTime });
@@ -136,7 +147,12 @@ function BookingWizardInner(props: Props) {
       .then((data) => {
         if (data.vehicles) {
           setVehicles(data.vehicles);
-          setRegionData(data.region);
+          const region = data.region;
+          if (region && COORD_OVERRIDES[region.slug]) {
+            setRegionData({ ...region, ...COORD_OVERRIDES[region.slug] });
+          } else {
+            setRegionData(region);
+          }
           setExchangeRates(data.exchangeRates);
           if (data.settings) setSettingsData(data.settings);
         }
@@ -147,7 +163,8 @@ function BookingWizardInner(props: Props) {
 
   // Check date availability
   useEffect(() => {
-    if (!pickupDate) return;
+    if (!pickupDate) { setDateAvailable(true); setCheckingAvailability(false); return; }
+    setCheckingAvailability(true);
     const from = pickupDate;
     const toDate = new Date(pickupDate + "T00:00:00");
     toDate.setDate(toDate.getDate() + 60);
@@ -162,10 +179,13 @@ function BookingWizardInner(props: Props) {
           setSuggestedVehicles(data.suggestedVehicles ?? {});
         }
       })
-      .catch(() => {});
+      .catch(() => { setDateAvailable(true); })
+      .finally(() => setCheckingAvailability(false));
   }, [pickupDate]);
 
   const selectVehicle = (vehicle: VehicleOption) => {
+    if (!pickupDate) { setError(t("errorSelectDate")); return; }
+    if (!dateAvailable) { setError(t("dateUnavailable")); return; }
     setSelectedVehicle(vehicle);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -173,6 +193,7 @@ function BookingWizardInner(props: Props) {
 
   const handleSubmit = async () => {
     setError(null);
+    if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!firstName || !lastName || !email || !phone) { setError(t("errorFillRequired")); return; }
     if (!selectedVehicle) return;
     setSubmitting(true);
@@ -372,8 +393,14 @@ function BookingWizardInner(props: Props) {
                             {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (<p key={i}>{line}</p>))}
                           </div>
                         </div>
-                        <button type="button" onClick={() => selectVehicle(vehicle)} className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30">
-                          {t("selectVehicle")}<ArrowRight size={16} />
+                        <button
+                          type="button"
+                          onClick={() => selectVehicle(vehicle)}
+                          disabled={checkingAvailability}
+                          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30"
+                        >
+                          {checkingAvailability ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                          {t("selectVehicle")}
                         </button>
                       </div>
                     </div>

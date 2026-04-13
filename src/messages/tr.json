@@ -90,6 +90,7 @@
     "passengers": "Yolcu",
     "luggageCapacity": "Bagaj",
     "errorFillRequired": "Lütfen tüm zorunlu alanları doldurun",
+    "errorSelectDate": "Araç seçmeden önce lütfen bir alış tarihi seçin",
     "errorFillReturn": "Lütfen dönüş tarih ve saatini doldurun",
     "dateUnavailable": "Seçilen tarih için hizmetimiz mevcut değildir.",
     "suggestedDates": "Müsait yakın tarihler:",
@@ -645,7 +646,9 @@
     "whatsappSupport": "WhatsApp Destek",
     "emailSupport": "E-posta Destek",
     "downloadVoucher": "PDF Voucher İndir",
-    "trackReservation": "Rezervasyonu Takip Et"
+    "trackReservation": "Rezervasyonu Takip Et",
+    "backToHome": "Ana Sayfaya Dön",
+    "needHelp": "Yardıma mı ihtiyacınız var?"
   },
   "bookingCancel": {
     "title": "Ödeme İptal Edildi",

@@ -90,6 +90,7 @@
     "passengers": "Pasażerowie",
     "luggageCapacity": "Bagaż",
     "errorFillRequired": "Proszę wypełnić wszystkie wymagane pola",
+    "errorSelectDate": "Proszę wybrać datę odbioru przed wybraniem pojazdu",
     "errorFillReturn": "Proszę wypełnić datę i godzinę powrotu",
     "dateUnavailable": "Ta data jest w pełni zarezerwowana. Proszę wybrać inną datę.",
     "suggestedDates": "Pojazdy dostępne w tych terminach:",
@@ -645,7 +646,9 @@
     "whatsappSupport": "Wsparcie WhatsApp",
     "emailSupport": "Wsparcie E-mail",
     "downloadVoucher": "Pobierz voucher PDF",
-    "trackReservation": "Śledź Rezerwację"
+    "trackReservation": "Śledź Rezerwację",
+    "backToHome": "Powrót do Strony Głównej",
+    "needHelp": "Potrzebujesz pomocy?"
   },
   "bookingCancel": {
     "title": "Płatność Anulowana",

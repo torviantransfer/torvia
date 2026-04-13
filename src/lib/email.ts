@@ -1,5 +1,6 @@
 ﻿import { Resend } from "resend";
 import { getConfig } from "@/lib/config";
+import { generatePDFVoucher } from "@/lib/pdf-voucher";
 
 let _resend: Resend | null = null;
 let _resendKey: string = "";
@@ -264,6 +265,9 @@ function generateQRUrl(text: string): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(text)}&color=1B2E4B&bgcolor=FFFFFF&margin=10`;
 }
 
+// Exported alias for use in download endpoint
+export const generateQRUrlForDownload = generateQRUrl;
+
 // ─── Build voucher HTML (shared by email & PDF) ───
 export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string): string {
   const loc = data.locale;
@@ -451,12 +455,25 @@ export async function sendReservationEmail(data: ReservationEmailData) {
   const subject = t(data.locale, "subject");
   const html = buildVoucherHTML(data, qrDataUrl);
 
+  let pdfBuffer: Buffer | undefined;
+  try {
+    pdfBuffer = await generatePDFVoucher(data);
+  } catch {
+    // If PDF generation fails, still send the HTML email
+  }
+
   try {
     await resend.emails.send({
       from: "TORVIAN Transfer <noreply@torviantransfer.com>",
       to: data.to,
       subject,
       html,
+      ...(pdfBuffer ? {
+        attachments: [{
+          filename: `TORVIAN-Voucher-${data.reservationCode}.pdf`,
+          content: pdfBuffer,
+        }],
+      } : {}),
     });
   } catch (err) {
     console.error("Failed to send reservation email:", err);

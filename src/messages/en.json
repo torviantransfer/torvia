@@ -90,6 +90,7 @@
     "passengers": "Passengers",
     "luggageCapacity": "Luggage",
     "errorFillRequired": "Please fill all required fields",
+    "errorSelectDate": "Please select a pickup date before choosing a vehicle",
     "errorFillReturn": "Please fill return date and time",
     "dateUnavailable": "This date is fully booked. Please select another date.",
     "suggestedDates": "Vehicles available on these dates:",
@@ -645,7 +646,9 @@
     "whatsappSupport": "WhatsApp Support",
     "emailSupport": "Email Support",
     "downloadVoucher": "Download PDF Voucher",
-    "trackReservation": "Track Your Reservation"
+    "trackReservation": "Track Your Reservation",
+    "backToHome": "Back to Home",
+    "needHelp": "Need help?"
   },
   "bookingCancel": {
     "title": "Payment Cancelled",

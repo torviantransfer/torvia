@@ -11,7 +11,7 @@ export default function RegionsPreview() {
     { slug: "side", name: "Side", descKey: "sideDesc", image: "/images/regions/side-ancient.jpg" },
     { slug: "alanya", name: "Alanya", descKey: "alanyaDesc", image: "/images/regions/alanya-castle.jpg" },
     { slug: "kemer", name: "Kemer", descKey: "kemerDesc", image: "/images/regions/kemer-coast.webp" },
-    { slug: "kundu", name: "Kundu · Lara", descKey: "kunduDesc", image: "/images/regions/kundu-lara.jpg" },
+    { slug: "kundu", name: "Kundu", descKey: "kunduDesc", image: "/images/regions/kundu-lara.jpg" },
     { slug: "kas", name: "Kaş", descKey: "kasDesc", image: "/images/regions/kas-beach.webp" },
   ];
 

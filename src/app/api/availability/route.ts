@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       .eq("key", "max_daily_bookings")
       .single();
 
-    const maxDaily = setting ? Number(setting.value) : 3;
+    const maxDaily = setting ? Number(setting.value) : 2;
 
     // Get manually blocked dates
     const { data: blockedDates } = await supabase
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         today.setHours(0, 0, 0, 0);
 
         // Search forward and backward for available dates
-        for (let offset = 1; offset <= 30 && suggestedDates.length < 3; offset++) {
+        for (let offset = 1; offset <= 30 && suggestedDates.length < 4; offset++) {
           // Check date after
           const after = new Date(baseDate);
           after.setDate(after.getDate() + offset);
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
           }
 
           // Check date before
-          if (suggestedDates.length < 3) {
+          if (suggestedDates.length < 4) {
             const before = new Date(baseDate);
             before.setDate(before.getDate() - offset);
             const beforeStr = before.toISOString().split("T")[0];
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
           const diffB = Math.abs(new Date(b).getTime() - baseDate.getTime());
           return diffA - diffB;
         });
-        suggestedDates = suggestedDates.slice(0, 3);
+        suggestedDates = suggestedDates.slice(0, 4);
 
         // Fetch available vehicles for suggested dates
         if (suggestedDates.length > 0) {

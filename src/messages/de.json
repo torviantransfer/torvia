@@ -90,6 +90,7 @@
     "passengers": "Passagiere",
     "luggageCapacity": "Gepäck",
     "errorFillRequired": "Bitte füllen Sie alle Pflichtfelder aus",
+    "errorSelectDate": "Bitte wählen Sie ein Abholdatum, bevor Sie ein Fahrzeug auswählen",
     "errorFillReturn": "Bitte füllen Sie Rückfahrtdatum und -zeit aus",
     "dateUnavailable": "Dieses Datum ist ausgebucht. Bitte wählen Sie ein anderes Datum.",
     "suggestedDates": "An diesen Terminen sind Fahrzeuge verfügbar:",
@@ -645,7 +646,9 @@
     "whatsappSupport": "WhatsApp Support",
     "emailSupport": "E-Mail Support",
     "downloadVoucher": "PDF Voucher Herunterladen",
-    "trackReservation": "Buchung Verfolgen"
+    "trackReservation": "Buchung Verfolgen",
+    "backToHome": "Zur Startseite",
+    "needHelp": "Brauchen Sie Hilfe?"
   },
   "bookingCancel": {
     "title": "Zahlung Abgebrochen",

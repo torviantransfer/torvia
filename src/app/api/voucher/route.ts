@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generatePDFVoucher } from "@/lib/pdf-voucher";
+import { buildVoucherHTML, generateQRUrlForDownload } from "@/lib/email";
 import type { ReservationEmailData } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
@@ -68,13 +68,15 @@ export async function GET(request: NextRequest) {
     locale,
   };
 
-  const pdfBuffer = await generatePDFVoucher(emailData);
-  const uint8 = new Uint8Array(pdfBuffer);
+  const qrDataUrl = emailData.qrCodeToken
+    ? generateQRUrlForDownload(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${emailData.qrCodeToken}`)
+    : "";
 
-  return new NextResponse(uint8, {
+  const html = buildVoucherHTML(emailData, qrDataUrl);
+
+  return new NextResponse(html, {
     headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="TORVIAN-Voucher-${code}.pdf"`,
+      "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "private, max-age=3600",
     },
   });
