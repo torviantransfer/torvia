@@ -36,6 +36,14 @@ const nextConfig: NextConfig = {
         });
       }
     }
+    // Land of Legends alternative URL forms
+    for (const locale of locales) {
+      rules.push(
+        { source: `/${locale}/land-of-legends`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
+        { source: `/${locale}/landoflegends-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
+        { source: `/${locale}/land-of-legends-belek`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
+      );
+    }
     return rules;
   },
 

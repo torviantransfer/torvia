@@ -46,14 +46,16 @@ export async function generateMetadata({
   if (!post) return { title: "Not Found" };
 
   const title = post[`title_${loc}`] || post.title_en || "Blog";
-  const content = post[`content_${loc}`] || post.content_en || "";
-  const description = content.replace(/<[^>]*>/g, "").slice(0, 160);
+  const rawContent = post[`content_${loc}`] || post.content_en || "";
+  const rawText = rawContent.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  const description = post[`excerpt_${loc}`] || post.excerpt_en || rawText.slice(0, 155) + (rawText.length > 155 ? "..." : "");
 
   return {
-    title: `${title} | TORVIAN Transfer Blog`,
+    title,
     description,
     alternates: seoAlternates(locale, `/blog/${slug}`),
     openGraph: seoOpenGraph(locale, `/blog/${slug}`, title, description, post.image_url || undefined),
+    twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
   };
 }
 

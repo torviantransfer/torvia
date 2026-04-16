@@ -19,7 +19,7 @@ export async function generateMetadata({
   const supabase = createAdminClient();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "blog" });
-  const title = `${t("heading")} | TORVIAN Transfer`;
+  const title = t("heading");
   const description = t("subtitle");
   return {
     title,

@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "faq", priority: 0.7 },
     { path: "regions", priority: 0.9 },
     { path: "blog", priority: 0.7 },
+    { path: "land-of-legends-transfer", priority: 0.9 },
     { path: "privacy", priority: 0.3 },
     { path: "terms", priority: 0.3 },
     { path: "cookies", priority: 0.2 },
