@@ -146,7 +146,7 @@ export default async function BlogPostPage({
       <Header />
       <main>
         <section
-          className="relative py-16 lg:py-20 overflow-hidden"
+          className="relative pt-28 pb-16 lg:py-20 overflow-hidden"
           style={{
             background:
               "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
