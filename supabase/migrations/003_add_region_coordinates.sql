@@ -5,15 +5,15 @@ ALTER TABLE regions ADD COLUMN IF NOT EXISTS longitude NUMERIC(9,6);
 -- Antalya Airport coordinates: 36.8987, 30.7933
 
 -- Update all 26 seeded regions with real coordinates
-UPDATE regions SET latitude = 36.8615, longitude = 30.6908 WHERE slug = 'kundu';
-UPDATE regions SET latitude = 36.8525, longitude = 30.6053 WHERE slug = 'lara';
-UPDATE regions SET latitude = 36.8583, longitude = 30.8217 WHERE slug = 'belek';
-UPDATE regions SET latitude = 36.7609, longitude = 31.0440 WHERE slug = 'side';
-UPDATE regions SET latitude = 36.5965, longitude = 30.5549 WHERE slug = 'kemer';
-UPDATE regions SET latitude = 36.5444, longitude = 32.0008 WHERE slug = 'alanya';
+UPDATE regions SET latitude = 36.8648, longitude = 30.9278 WHERE slug = 'kundu';
+UPDATE regions SET latitude = 36.8493, longitude = 30.8007 WHERE slug = 'lara';
+UPDATE regions SET latitude = 36.8572, longitude = 30.9878 WHERE slug = 'belek';
+UPDATE regions SET latitude = 36.7683, longitude = 31.3860 WHERE slug = 'side';
+UPDATE regions SET latitude = 36.5980, longitude = 30.5574 WHERE slug = 'kemer';
+UPDATE regions SET latitude = 36.5440, longitude = 32.0005 WHERE slug = 'alanya';
 UPDATE regions SET latitude = 36.3074, longitude = 30.5571 WHERE slug = 'kas';
-UPDATE regions SET latitude = 36.6218, longitude = 31.8089 WHERE slug = 'manavgat';
-UPDATE regions SET latitude = 36.8795, longitude = 30.7278 WHERE slug = 'konyaalti';
+UPDATE regions SET latitude = 36.7862, longitude = 31.4339 WHERE slug = 'manavgat';
+UPDATE regions SET latitude = 36.8857, longitude = 30.6337 WHERE slug = 'konyaalti';
 UPDATE regions SET latitude = 36.6489, longitude = 30.4773 WHERE slug = 'beldibi';
 UPDATE regions SET latitude = 36.6283, longitude = 30.5172 WHERE slug = 'goynuk';
 UPDATE regions SET latitude = 36.5229, longitude = 30.5614 WHERE slug = 'tekirova';

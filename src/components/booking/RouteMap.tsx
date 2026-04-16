@@ -155,8 +155,8 @@ export default function RouteMap({
           min: Math.round(route.duration / 60),
         });
 
-        // Fit map to show both markers + route
-        const bounds = L.latLngBounds([from, to]);
+        // Fit map to show full route (not just start/end)
+        const bounds = L.latLngBounds(coords);
         setTimeout(() => {
           if (mapInstanceRef.current) {
             mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] });

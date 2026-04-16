@@ -137,7 +137,13 @@ function BookingWizardInner(props: Props) {
 
   // Correct coordinates for regions that have wrong data in DB
   const COORD_OVERRIDES: Record<string, { latitude: number; longitude: number }> = {
-    "kundu-lara": { latitude: 36.8490, longitude: 30.9110 },
+    "kundu-lara": { latitude: 36.8570, longitude: 30.8643 },
+    "kundu": { latitude: 36.8648, longitude: 30.9278 },
+    "lara": { latitude: 36.8493, longitude: 30.8007 },
+    "belek": { latitude: 36.8572, longitude: 30.9878 },
+    "side": { latitude: 36.7683, longitude: 31.3860 },
+    "manavgat": { latitude: 36.7862, longitude: 31.4339 },
+    "konyaalti": { latitude: 36.8857, longitude: 30.6337 },
   };
 
   useEffect(() => {
