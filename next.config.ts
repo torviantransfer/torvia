@@ -15,6 +15,30 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    const locales = ["tr", "en", "de", "pl", "ru"];
+    // Known region slugs — redirect bare slug to slug-transfer
+    const regionSlugs = [
+      "belek", "side", "alanya", "kemer", "konyaalti", "kundu", "lara",
+      "kundu-lara", "manavgat", "kas", "kalkan", "fethiye", "marmaris",
+      "beldibi", "goynuk", "tekirova", "camyuva", "olympos", "adrasan",
+      "demre", "finike", "kumluca", "gazipasa", "okurcalar", "turkler",
+      "avsallar", "konakli", "mahmutlar", "kestel", "antalya-city-center",
+      "kadriye", "bogazkent", "evrenseki", "kizilagac", "kargicak", "kiris",
+    ];
+    const rules: { source: string; destination: string; permanent: boolean }[] = [];
+    for (const locale of locales) {
+      for (const slug of regionSlugs) {
+        rules.push({
+          source: `/${locale}/${slug}`,
+          destination: `/${locale}/${slug}-transfer`,
+          permanent: true,
+        });
+      }
+    }
+    return rules;
+  },
+
   async headers() {
     return [
       {

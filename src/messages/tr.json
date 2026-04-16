@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "Antalya Havalimanı VIP Transfer | TORVIAN Transfer",
-    "description": "Antalya Havalimanı (AYT) özel VIP transfer — Belek, Side, Alanya, Kemer, Kaş, Fethiye ve tüm Türk Rivierası destinasyonlarına sabit fiyatlı lüks transferler. 7/24 hizmet, Mercedes Vito, ücretsiz iptal. Online rezervasyon."
+    "title": "Antalya Havalimanı Özel Transfer | Belek, Side, Alanya, Kemer | TORVIAN",
+    "description": "Antalya Havalimanı (AYT) özel VIP transfer. Belek 30dk 35km, Side 75dk 65km, Alanya 2,5sa 130km, Kemer 45dk. Sabit fiyat, Mercedes Vito, uçuş takibi, 7/24 hizmet. Online rezervasyon."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -36,8 +36,8 @@
     "trustNoHidden": "Gizli ücret yok"
   },
   "booking": {
-    "title": "Transfer Rezervasyonu",
-    "subtitle": "VIP havalimanı transferinizi 3 kolay adımda rezerve edin.",
+    "title": "Antalya Havalimanı Transfer Rezervasyonu | Sabit Fiyat, Anında Onay",
+    "subtitle": "Antalya Havalimanı'ndan özel VIP transferinizi dakikalar içinde rezerve edin. Sabit fiyat, gizli ücret yok, 24 saat öncesine kadar ücretsiz iptal.",
     "tripType": "Transfer Tipi",
     "oneWay": "Tek Yön",
     "roundTrip": "Gidiş-Dönüş",
@@ -243,8 +243,8 @@
     "contactUs": "Bize Ulaşın"
   },
   "regions": {
-    "title": "Antalya Havalimanı Transfer Bölgeleri",
-    "subtitle": "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer, Kaş, Fethiye, Marmaris ve 25+ destinasyona sabit fiyatlı VIP özel transfer.",
+    "title": "Antalya Havalimanı Transfer Bölgeleri | Mesafe ve Süre",
+    "subtitle": "Antalya transferleri: Belek ~30dk 35km, Side ~75dk 65km, Alanya ~2,5sa 130km, Kemer ~45dk 45km. Sabit fiyatlı VIP özel transfer, Mercedes Vito, 25+ destinasyon.",
     "seoIntro": "TORVIAN Transfer, Antalya Havalimanı'ndan (AYT) Türk Rivierası'ndaki tüm popüler tatil beldelerine sabit fiyatlı VIP özel transfer hizmeti sunmaktadır. Mercedes Vito VIP araçlarımız, profesyonel şoförlerimiz ve 7/24 müşteri desteğimizle Belek, Side, Alanya, Kemer, Kaş, Fethiye ve Marmaris dahil 25'ten fazla destinasyona kapıdan kapıya havalimanı transferi garanti ediyoruz.",
     "popularHeading": "Popüler destinasyonlar.",
     "allRegions": "Tüm bölgeler",
@@ -364,9 +364,9 @@
     "mapTitle": "Konumumuz"
   },
   "faq": {
-    "title": "Antalya Havalimanı Transfer SSS",
+    "title": "Antalya Havalimanı Transfer SSS | Transfer Süresi, Mesafe ve Fiyatlar",
     "heading": "Sık Sorulan Sorular",
-    "subtitle": "Antalya havalimanı özel transfer hakkında: fiyatlar, Mercedes Vito, uçuş takibi, iptal koşulları, çocuk koltuk ve daha fazlası.",
+    "subtitle": "Antalya Havalimanı'ndan Alanya, Side, Belek veya Kemer'e transfer ne kadar sürer? Fiyatlar, Mercedes Vito, uçuş takibi, iptal koşulları — tüm cevaplar burada.",
     "q1": "Nasıl rezervasyon yapabilirim?",
     "a1": "Web sitemiz üzerinden bölge, tarih ve saatinizi seçerek saniyeler içinde online rezervasyon yapabilirsiniz. Ödeme güvenli olarak Stripe ile işlenir.",
     "q2": "Havalimanında şoförüm beni nasıl bulacak?",

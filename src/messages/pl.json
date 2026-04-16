@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "VIP Transfer z Lotniska Antalya | TORVIAN Transfer",
-    "description": "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer, Kas, Fethiye i całej Riwiery Tureckiej. Stała cena, Mercedes Vito, serwis 24/7, bezpłatna anulacja. Rezerwacja online."
+    "title": "Transfer z Lotniska Antalya | Belek, Side, Alanya, Kemer | TORVIAN",
+    "description": "Prywatny transfer VIP z lotniska Antalya (AYT). Belek 30min 35km, Side 75min 65km, Alanya 2,5h 130km, Kemer 45min. Stała cena, Mercedes Vito, śledzenie lotu, serwis 24/7. Rezerwacja online."
   },
   "nav": {
     "home": "Strona Główna",
@@ -36,8 +36,8 @@
     "trustNoHidden": "Brak ukrytych opłat"
   },
   "booking": {
-    "title": "Zarezerwuj Transfer",
-    "subtitle": "Zarezerwuj swój VIP transfer lotniskowy w 3 prostych krokach.",
+    "title": "Zarezerwuj Transfer z Lotniska Antalya | Stała Cena, Natychmiastowe Potwierdzenie",
+    "subtitle": "Zarezerwuj prywatny transfer VIP z lotniska Antalya w kilka minut. Stała cena, brak ukrytych opłat, bezpłatna anulacja 24h wcześniej.",
     "tripType": "Typ Transferu",
     "oneWay": "W Jedną Stronę",
     "roundTrip": "W Obie Strony",
@@ -243,8 +243,8 @@
     "contactUs": "Kontakt"
   },
   "regions": {
-    "title": "Destynacje Transfer z Lotniska Antalya",
-    "subtitle": "VIP transfer z lotniska Antalya do Belek, Side, Alanya, Kemer, Kas, Fethiye, Marmaris i 25+ destynacji. Stała cena, Mercedes Vito.",
+    "title": "Destynacje Transfer z Lotniska Antalya | Odległość i Czas Jazdy",
+    "subtitle": "Transfer z Antalya: Belek ~30min 35km, Side ~75min 65km, Alanya ~2,5h 130km, Kemer ~45min 45km. Stała cena, Mercedes Vito, 25+ destynacji.",
     "seoIntro": "TORVIAN Transfer oferuje prywatne transfery VIP z lotniska Antalya (AYT) do wszystkich popularnych kurortów nad Turecką Riwierą w stałych cenach. Naszymi samochodami Mercedes Vito VIP, profesjonalnymi kierowcami i wsparciem 24/7 gwarantujemy transport od drzwi do drzwi do ponad 25 destynacji, w tym Belek, Side, Alanya, Kemer, Kaş, Fethiye i Marmaris.",
     "popularHeading": "Popularne destynacje.",
     "allRegions": "Wszystkie regiony",
@@ -364,9 +364,9 @@
     "mapTitle": "Nasza Lokalizacja"
   },
   "faq": {
-    "title": "FAQ Transfer z Lotniska Antalya",
+    "title": "FAQ Transfer z Lotniska Antalya | Czas Jazdy, Odległość i Ceny",
     "heading": "Najczęściej Zadawane Pytania",
-    "subtitle": "Wszystko o prywatnym transferze z lotniska Antalya: ceny, Mercedes Vito, śledzenie lotu, anulacja, fotelik i więcej.",
+    "subtitle": "Ile trwa transfer z lotniska Antalya do Alanya, Side, Belek lub Kemer? Ceny, Mercedes Vito, śledzenie lotu, anulacja — wszystkie odpowiedzi tutaj.",
     "q1": "Jak mogę dokonać rezerwacji?",
     "a1": "Możesz dokonać rezerwacji online w kilka sekund, wybierając region, datę i godzinę na naszej stronie. Płatność realizowana bezpiecznie przez Stripe.",
     "q2": "Jak kierowca mnie znajdzie na lotnisku?",

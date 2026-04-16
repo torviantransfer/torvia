@@ -78,6 +78,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
+  if (!regionParam.endsWith("-transfer")) return {};
   const slug = regionParam.replace("-transfer", "");
 
   const { data: region } = await supabase
@@ -91,14 +92,20 @@ export async function generateMetadata({
   const name = region[`name_${locale}`] || region.name_en;
   const metaTitle =
     region[`meta_title_${locale}`] ||
-    `${name} Transfer | TORVIAN Antalya Airport VIP Transfer`;
+    `Antalya Airport to ${name} Transfer | ~${region.duration_minutes ? Math.round(region.duration_minutes / 60) + "h " + (region.duration_minutes % 60) + "min" : ""} ${region.distance_km ? region.distance_km + "km" : ""} | TORVIAN`;
+
+  const km = region.distance_km ? `${region.distance_km} km` : "";
+  const dur = region.duration_minutes
+    ? `~${Math.floor(region.duration_minutes / 60)}h ${region.duration_minutes % 60}min`
+    : "";
+  const info = km && dur ? ` ${dur}, ${km}.` : "";
 
   const fallbackDesc: Record<string, string> = {
-    tr: `Antalya Havalimanı'ndan ${name}'a VIP özel transfer. Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
-    en: `VIP private transfer from Antalya Airport to ${name}. Fixed price, professional drivers, 24/7 service. Book online.`,
-    de: `VIP Privattransfer vom Flughafen Antalya nach ${name}. Festpreis, professionelle Fahrer, 24/7 Service.`,
-    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}. Stała cena, profesjonalni kierowcy, serwis 24/7.`,
-    ru: `ВИП трансфер из аэропорта Анталья в ${name}. Фиксированная цена, профессиональные водители, круглосуточный сервис.`,
+    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
+    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, professional drivers, 24/7 service. Book online.`,
+    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis, professionelle Fahrer, 24/7 Service. Jetzt buchen.`,
+    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, profesjonalni kierowcy, serwis 24/7.`,
+    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, профессиональные водители, 24/7.`,
   };
   const metaDesc =
     region[`meta_description_${locale}`] || fallbackDesc[locale] || fallbackDesc.en;
@@ -143,6 +150,8 @@ export default async function RegionPage({
 }) {
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
+  // Enforce -transfer suffix — bare slugs should be redirected by next.config.ts
+  if (!regionParam.endsWith("-transfer")) notFound();
   const slug = regionParam.replace("-transfer", "");
   const t = await getTranslations({ locale, namespace: "regionDetail" });
   const bt = await getTranslations({ locale, namespace: "booking" });
