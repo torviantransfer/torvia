@@ -92,7 +92,7 @@ export async function generateMetadata({
   const name = region[`name_${locale}`] || region.name_en;
   const metaTitle =
     region[`meta_title_${locale}`] ||
-    `Antalya Airport to ${name} Transfer | ~${region.duration_minutes ? Math.round(region.duration_minutes / 60) + "h " + (region.duration_minutes % 60) + "min" : ""} ${region.distance_km ? region.distance_km + "km" : ""} | TORVIAN`;
+    `Antalya Airport to ${name} Transfer | ~${region.duration_minutes ? Math.round(region.duration_minutes / 60) + "h " + (region.duration_minutes % 60) + "min" : ""} ${region.distance_km ? region.distance_km + "km" : ""}`;
 
   const km = region.distance_km ? `${region.distance_km} km` : "";
   const dur = region.duration_minutes

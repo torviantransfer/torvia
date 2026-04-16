@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about" });
-  const title = `${t("heading")} | Antalya Airport VIP Transfer Service`;
+  const title = `${t("title")} | Antalya Airport VIP Transfer`;
   const description = t("subtitle");
   return {
     title,
