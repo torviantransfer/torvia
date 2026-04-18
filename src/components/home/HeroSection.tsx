@@ -14,7 +14,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 overflow-hidden">
         <Image
           src="/images/5312.jpg"
-          alt=""
+          alt="Antalya airport VIP transfer service - luxury vehicle on highway"
           fill
           className="object-cover object-center"
           sizes="100vw"

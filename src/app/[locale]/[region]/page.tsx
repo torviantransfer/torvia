@@ -204,7 +204,7 @@ export default async function RegionPage({
     "@context": "https://schema.org",
     "@type": "Service",
     name: `TORVIAN ${name} Transfer`,
-    description: t("defaultDesc", { name }),
+    description: description || t("defaultDesc", { name }),
     provider: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
@@ -214,6 +214,7 @@ export default async function RegionPage({
       "@type": "Place",
       name: name,
     },
+    serviceType: "Airport Transfer",
     offers: pricing
       ? {
           "@type": "Offer",
@@ -233,6 +234,16 @@ export default async function RegionPage({
     } : {}),
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "TORVIAN Transfer", item: `https://torviantransfer.com/${locale}` },
+      { "@type": "ListItem", position: 2, name: nt("regions"), item: `https://torviantransfer.com/${locale}/regions` },
+      { "@type": "ListItem", position: 3, name: `${name} Transfer`, item: `https://torviantransfer.com/${locale}/${slug}-transfer` },
+    ],
+  };
+
   const price = pricing?.one_way_price ?? 0;
 
   return (
@@ -240,6 +251,7 @@ export default async function RegionPage({
       <Header />
       <main className="flex-1">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
         {/* Hero */}
         <section className="relative pb-16 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>

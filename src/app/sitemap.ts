@@ -4,12 +4,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const BASE_URL = "https://torviantransfer.com";
 const locales = ["tr", "en", "de", "pl", "ru"];
 
+// Primary locales get full priority, secondary locales get reduced priority
+const primaryLocales = ["en", "tr", "de"];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug")
+    .select("slug, is_popular")
     .eq("is_active", true);
 
   const { data: blogPosts } = await supabase
@@ -53,26 +56,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Region pages — highest SEO value
+  // Region pages — popular regions get higher priority, primary locales first
   for (const locale of locales) {
+    const isPrimary = primaryLocales.includes(locale);
     for (const region of regions ?? []) {
+      const isPopular = region.is_popular === true;
       entries.push({
         url: `${BASE_URL}/${locale}/${region.slug}-transfer`,
         lastModified: new Date(),
         changeFrequency: "weekly",
-        priority: 0.9,
+        priority: isPopular && isPrimary ? 0.9 : isPopular ? 0.7 : isPrimary ? 0.6 : 0.4,
       });
     }
   }
 
-  // Blog posts
+  // Blog posts — primary locales get higher priority
   for (const locale of locales) {
+    const isPrimary = primaryLocales.includes(locale);
     for (const post of blogPosts ?? []) {
       entries.push({
         url: `${BASE_URL}/${locale}/blog/${post.slug}`,
         lastModified: post.published_at ? new Date(post.published_at) : new Date(),
         changeFrequency: "monthly",
-        priority: 0.7,
+        priority: isPrimary ? 0.7 : 0.5,
       });
     }
   }

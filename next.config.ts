@@ -52,6 +52,15 @@ const nextConfig: NextConfig = {
         { source: `/${locale}/land-of-legends-belek`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
       );
     }
+    // Redirect bare (locale-less) blog/page paths to default locale
+    rules.push(
+      { source: "/blog", destination: "/en/blog", permanent: true },
+      { source: "/blog/:slug*", destination: "/en/blog/:slug*", permanent: true },
+      { source: "/faq", destination: "/en/faq", permanent: true },
+      { source: "/about", destination: "/en/about", permanent: true },
+      { source: "/contact", destination: "/en/contact", permanent: true },
+      { source: "/regions", destination: "/en/regions", permanent: true },
+    );
     return rules;
   },
 

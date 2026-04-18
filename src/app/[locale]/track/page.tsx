@@ -4,6 +4,26 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import TrackReservation from "@/components/TrackReservation";
 import { Shield, Clock, MapPin } from "lucide-react";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "track" });
+  const title = `${t("title")} | TORVIAN Transfer`;
+  const description = t("subtitle");
+  return {
+    title,
+    description,
+    alternates: seoAlternates(locale, "/track"),
+    openGraph: seoOpenGraph(locale, "/track", title, description),
+    twitter: seoTwitter(title, description),
+  };
+}
 
 export default async function TrackPage() {
   const t = await getTranslations("track");
