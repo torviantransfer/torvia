@@ -417,12 +417,18 @@ export default async function RegionPage({
             <div className="grid lg:grid-cols-5 gap-10">
               <div className="lg:col-span-3">
                 <h2 className="text-2xl font-bold text-gray-900 mb-5 tracking-tight">{t("aboutRegion", { name })}</h2>
-                <p className="text-gray-500 leading-relaxed mb-6">
-                  {t("aboutDescDefault", { name, duration: region.duration_minutes })}
-                </p>
-                {description && (
+                {description ? (
+                  <div className="space-y-4">
+                    <p className="text-gray-600 leading-relaxed text-[15px]">
+                      {description}
+                    </p>
+                    <p className="text-gray-500 leading-relaxed">
+                      {t("aboutDescDefault", { name, duration: region.duration_minutes })}
+                    </p>
+                  </div>
+                ) : (
                   <p className="text-gray-500 leading-relaxed">
-                    {description}
+                    {t("aboutDescDefault", { name, duration: region.duration_minutes })}
                   </p>
                 )}
               </div>
