@@ -537,7 +537,7 @@ export default async function RegionPage({
                   return (
                     <Link
                       key={r.slug}
-                      href={`/${r.slug}-transfer`}
+                      href={`/${r.slug.endsWith("-transfer") ? r.slug : `${r.slug}-transfer`}`}
                       className="group rounded-xl overflow-hidden transition-all hover:scale-[1.02]"
                       style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
                     >

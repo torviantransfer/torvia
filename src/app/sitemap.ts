@@ -61,8 +61,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const isPrimary = primaryLocales.includes(locale);
     for (const region of regions ?? []) {
       const isPopular = region.is_popular === true;
+      const regionPath = region.slug.endsWith("-transfer") ? region.slug : `${region.slug}-transfer`;
       entries.push({
-        url: `${BASE_URL}/${locale}/${region.slug}-transfer`,
+        url: `${BASE_URL}/${locale}/${regionPath}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
         priority: isPopular && isPrimary ? 0.9 : isPopular ? 0.7 : isPrimary ? 0.6 : 0.4,

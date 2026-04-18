@@ -148,7 +148,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {popularRegions.slice(0, 8).map((region) => (
                 <li key={region.slug}>
-                  <Link href={`/${region.slug}-transfer`} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+                  <Link href={`/${region.slug.endsWith("-transfer") ? region.slug : `${region.slug}-transfer`}`} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
                     {region[`name_${locale}`] || region.name_en}
                   </Link>
                 </li>

@@ -14,7 +14,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "faq" });
-  const title = `${t("title")} | TORVIAN Transfer`;
+  const title = t("title");
   const description = t("subtitle");
   return {
     title,
