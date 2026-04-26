@@ -42,6 +42,11 @@ const nextConfig: NextConfig = {
           destination: `/${locale}/${slug}-transfer`,
           permanent: true,
         });
+        rules.push({
+          source: `/${locale}/${slug}-transfer-transfer`,
+          destination: `/${locale}/${slug}-transfer`,
+          permanent: true,
+        });
       }
     }
     // Land of Legends alternative URL forms
