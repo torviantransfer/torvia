@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
         { source: `/${locale}/land-of-legends`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
         { source: `/${locale}/landoflegends-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
         { source: `/${locale}/land-of-legends-belek`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
+        { source: `/${locale}/land-of-legends-transfer-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
       );
     }
     // Redirect bare (locale-less) blog/page paths to default locale

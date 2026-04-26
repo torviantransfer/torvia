@@ -1,7 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -52,6 +52,38 @@ const regionImages: Record<string, string> = {
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
+function normalizeRegionPath(slug: string) {
+  return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
+}
+
+function stripTransferSuffix(regionPath: string) {
+  return regionPath.replace(/-transfer$/, "");
+}
+
+async function findRegionByPath(supabase: ReturnType<typeof createAdminClient>, regionPath: string) {
+  const baseSlug = stripTransferSuffix(regionPath);
+
+  let { data: region } = await supabase
+    .from("regions")
+    .select("*")
+    .eq("slug", baseSlug)
+    .single();
+
+  if (!region) {
+    const suffixedSlug = normalizeRegionPath(baseSlug);
+    if (suffixedSlug !== baseSlug) {
+      const { data: fallbackRegion } = await supabase
+        .from("regions")
+        .select("*")
+        .eq("slug", suffixedSlug)
+        .single();
+      region = fallbackRegion;
+    }
+  }
+
+  return region;
+}
+
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
@@ -65,7 +97,7 @@ export async function generateStaticParams() {
 
   for (const locale of locales) {
     for (const region of regions ?? []) {
-      params.push({ locale, region: `${region.slug}-transfer` });
+      params.push({ locale, region: normalizeRegionPath(region.slug) });
     }
   }
   return params;
@@ -79,15 +111,13 @@ export async function generateMetadata({
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
   if (!regionParam.endsWith("-transfer")) return {};
-  const slug = regionParam.replace("-transfer", "");
-
-  const { data: region } = await supabase
-    .from("regions")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
+  const region = await findRegionByPath(supabase, normalizedRegionPath);
 
   if (!region) return {};
+
+  const regionPath = normalizeRegionPath(region.slug);
+  const regionSlugBase = stripTransferSuffix(regionPath);
 
   const name = region[`name_${locale}`] || region.name_en;
   const metaTitle =
@@ -110,26 +140,26 @@ export async function generateMetadata({
   const metaDesc =
     region[`meta_description_${locale}`] || fallbackDesc[locale] || fallbackDesc.en;
 
-  const regionImg = `https://torviantransfer.com/images/regions/${slug}.jpg`;
+  const regionImg = `https://torviantransfer.com/images/regions/${regionSlugBase}.jpg`;
 
   return {
     title: metaTitle,
     description: metaDesc,
     alternates: {
-      canonical: `https://torviantransfer.com/${locale}/${slug}-transfer`,
+      canonical: `https://torviantransfer.com/${locale}/${regionPath}`,
       languages: {
-        "x-default": `https://torviantransfer.com/en/${slug}-transfer`,
-        tr: `https://torviantransfer.com/tr/${slug}-transfer`,
-        en: `https://torviantransfer.com/en/${slug}-transfer`,
-        de: `https://torviantransfer.com/de/${slug}-transfer`,
-        pl: `https://torviantransfer.com/pl/${slug}-transfer`,
-        ru: `https://torviantransfer.com/ru/${slug}-transfer`,
+        "x-default": `https://torviantransfer.com/en/${regionPath}`,
+        tr: `https://torviantransfer.com/tr/${regionPath}`,
+        en: `https://torviantransfer.com/en/${regionPath}`,
+        de: `https://torviantransfer.com/de/${regionPath}`,
+        pl: `https://torviantransfer.com/pl/${regionPath}`,
+        ru: `https://torviantransfer.com/ru/${regionPath}`,
       },
     },
     openGraph: {
       title: metaTitle,
       description: metaDesc,
-      url: `https://torviantransfer.com/${locale}/${slug}-transfer`,
+      url: `https://torviantransfer.com/${locale}/${regionPath}`,
       type: "website",
       siteName: "TORVIAN Transfer",
       images: [{ url: regionImg, width: 1200, height: 630, alt: `${name} Transfer` }],
@@ -150,21 +180,24 @@ export default async function RegionPage({
 }) {
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
-  // Enforce -transfer suffix — bare slugs should be redirected by next.config.ts
-  if (!regionParam.endsWith("-transfer")) notFound();
-  const slug = regionParam.replace("-transfer", "");
+  // Keep a single canonical suffix and immediately redirect malformed variants.
+  if (!regionParam.endsWith("-transfer")) {
+    redirect(`/${locale}/${normalizeRegionPath(regionParam)}`);
+  }
+  const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
+  if (normalizedRegionPath !== regionParam) {
+    redirect(`/${locale}/${normalizedRegionPath}`);
+  }
   const t = await getTranslations({ locale, namespace: "regionDetail" });
   const bt = await getTranslations({ locale, namespace: "booking" });
   const nt = await getTranslations({ locale, namespace: "nav" });
 
-  const { data: region } = await supabase
-    .from("regions")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .single();
+  const region = await findRegionByPath(supabase, normalizedRegionPath);
 
-  if (!region) notFound();
+  if (!region || region.is_active !== true) notFound();
+
+  const regionPath = normalizeRegionPath(region.slug);
+  const slug = stripTransferSuffix(regionPath);
 
   // Fetch pricing
   const { data: pricing } = await supabase
@@ -185,7 +218,7 @@ export default async function RegionPage({
     .from("regions")
     .select("slug, name_tr, name_en, name_de, name_pl, name_ru, duration_minutes, distance_km, is_popular")
     .eq("is_active", true)
-    .neq("slug", slug)
+    .neq("slug", region.slug)
     .eq("is_popular", true)
     .order("sort_order", { ascending: true })
     .limit(6);
@@ -240,7 +273,7 @@ export default async function RegionPage({
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "TORVIAN Transfer", item: `https://torviantransfer.com/${locale}` },
       { "@type": "ListItem", position: 2, name: nt("regions"), item: `https://torviantransfer.com/${locale}/regions` },
-      { "@type": "ListItem", position: 3, name: `${name} Transfer`, item: `https://torviantransfer.com/${locale}/${slug}-transfer` },
+      { "@type": "ListItem", position: 3, name: `${name} Transfer`, item: `https://torviantransfer.com/${locale}/${regionPath}` },
     ],
   };
 
@@ -533,7 +566,7 @@ export default async function RegionPage({
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {otherRegions.map((r) => {
                   const rName = r[`name_${locale as Locale}`] || r.name_en;
-                  const rImage = regionImages[r.slug];
+                  const rImage = regionImages[stripTransferSuffix(r.slug)];
                   return (
                     <Link
                       key={r.slug}

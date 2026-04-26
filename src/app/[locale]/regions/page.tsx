@@ -39,6 +39,14 @@ const regionImages: Record<string, string> = {
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
+function normalizeRegionPath(slug: string) {
+  return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
+}
+
+function stripTransferSuffix(regionPath: string) {
+  return regionPath.replace(/-transfer$/, "");
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -87,7 +95,7 @@ export default async function RegionsPage({
           itemListElement: (regions ?? []).map((r: Record<string, unknown>, i: number) => ({
             "@type": "ListItem",
             position: i + 1,
-            url: `https://torviantransfer.com/${locale}/${r.slug}-transfer`,
+            url: `https://torviantransfer.com/${locale}/${normalizeRegionPath(r.slug as string)}`,
             name: `${(r as Record<string, string>)[`name_${locale}`] || r.name_en} Transfer`,
           })),
         }) }} />
@@ -112,13 +120,14 @@ export default async function RegionsPage({
               {(regions ?? []).map((region: Record<string, unknown>) => {
                 const name = (region[`name_${locale}`] ?? region.name_en) as string;
                 const slug = region.slug as string;
-                const img = regionImages[slug];
+                const regionPath = normalizeRegionPath(slug);
+                const img = regionImages[stripTransferSuffix(regionPath)];
                 const pricingData = region.pricing as { one_way_price?: number } | null;
 
                 return (
                   <Link
                     key={region.id as string}
-                    href={`/${slug}-transfer`}
+                    href={`/${regionPath}`}
                     className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                     style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
                   >

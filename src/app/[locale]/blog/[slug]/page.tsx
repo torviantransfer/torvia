@@ -13,6 +13,10 @@ import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
+function normalizeRegionPath(slug: string) {
+  return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
+}
+
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
@@ -328,10 +332,11 @@ export default async function BlogPostPage({
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {popularRegions.map((r) => {
                   const rName = r[`name_${loc}`] || r.name_en;
+                  const regionPath = normalizeRegionPath(r.slug);
                   return (
                     <Link
                       key={r.slug}
-                      href={`/${r.slug}-transfer`}
+                      href={`/${regionPath}`}
                       className="group rounded-xl p-4 text-center transition-all hover:-translate-y-0.5"
                       style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
                     >
