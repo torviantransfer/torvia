@@ -224,7 +224,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
             {filteredPayments.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-5 py-3 text-gray-500">
-                  {new Date(p.created_at).toLocaleDateString()}
+                  {new Date(p.created_at).toLocaleDateString("tr-TR")}
                 </td>
                 <td className="px-5 py-3 font-medium">
                   {p.drivers?.full_name}

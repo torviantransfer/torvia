@@ -280,7 +280,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 </td>
                 <td className="px-5 py-3 text-gray-600">
                   {c.valid_until
-                    ? new Date(c.valid_until).toLocaleDateString()
+                    ? new Date(c.valid_until).toLocaleDateString("tr-TR")
                     : "Süresi yok"}
                 </td>
                 <td className="px-5 py-3">

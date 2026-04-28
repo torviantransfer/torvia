@@ -339,7 +339,7 @@ export default function BlogManager({ initialPosts }: Props) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center text-gray-500">
-                  {new Date(post.created_at).toLocaleDateString()}
+                  {new Date(post.created_at).toLocaleDateString("tr-TR")}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">

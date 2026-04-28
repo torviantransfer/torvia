@@ -224,7 +224,7 @@ export default async function AdminDashboard({
                     <td className="px-6 py-3.5 text-slate-500 text-[13px]">
                       {new Date(
                         r.pickup_datetime as string
-                      ).toLocaleDateString()}
+                      ).toLocaleDateString("tr-TR")}
                     </td>
                     <td className="px-6 py-3.5 font-semibold text-slate-800 text-[13px]">
                       ${(r.total_price as number).toFixed(2)}

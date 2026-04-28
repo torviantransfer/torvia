@@ -201,7 +201,7 @@ export default function CalendarView() {
                         >
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
                           <span className="truncate">
-                            {new Date(ev.pickup).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} {ev.region}
+                            {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} {ev.region}
                           </span>
                         </button>
                       );
@@ -253,7 +253,7 @@ export default function CalendarView() {
                   </div>
                   <p className="text-xs font-medium text-slate-700 flex items-center gap-1">
                     <Clock size={11} className="text-slate-400" />
-                    {new Date(ev.pickup).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
                     <span className="text-slate-400 mx-1">→</span>
                     {ev.region}
                   </p>

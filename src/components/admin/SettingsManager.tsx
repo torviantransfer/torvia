@@ -262,7 +262,7 @@ export default function SettingsManager({
                     </p>
                     <p className="text-xs text-gray-400">
                       Güncelleme:{" "}
-                      {new Date(rate.last_updated).toLocaleString()}
+                      {new Date(rate.last_updated).toLocaleString("tr-TR")}
                     </p>
                   </div>
                   <span className="text-2xl">
