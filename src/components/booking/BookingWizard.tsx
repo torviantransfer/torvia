@@ -218,7 +218,17 @@ function BookingWizardInner(props: Props) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? t("errorGeneric")); return; }
+      if (!res.ok) {
+        // Show first field-level error if available, otherwise show generic error
+        if (data.details) {
+          const firstField = Object.keys(data.details)[0];
+          const firstMsg = firstField && data.details[firstField]?.[0];
+          setError(firstMsg ? `${firstField}: ${firstMsg}` : (data.error ?? t("errorGeneric")));
+        } else {
+          setError(data.error ?? t("errorGeneric"));
+        }
+        return;
+      }
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);

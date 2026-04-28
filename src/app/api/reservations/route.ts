@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = reservationSchema.safeParse(body);
     if (!parsed.success) {
+      console.error("Reservation validation failed:", JSON.stringify(parsed.error.flatten().fieldErrors));
       return NextResponse.json(
         { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
         { status: 400 }
