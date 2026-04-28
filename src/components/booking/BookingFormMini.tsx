@@ -164,11 +164,13 @@ export default function BookingFormMini() {
     p.set("region", region);
     p.set("trip", hasRet ? "round_trip" : "one_way");
     if (depDate) {
-      p.set("date", depDate.toISOString().split("T")[0]);
+      const dep = `${depDate.getFullYear()}-${String(depDate.getMonth() + 1).padStart(2, "0")}-${String(depDate.getDate()).padStart(2, "0")}`;
+      p.set("date", dep);
       p.set("time", `${String(depH).padStart(2, "0")}:${String(depM).padStart(2, "0")}`);
     }
     if (hasRet && retDate) {
-      p.set("returnDate", retDate.toISOString().split("T")[0]);
+      const ret = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, "0")}-${String(retDate.getDate()).padStart(2, "0")}`;
+      p.set("returnDate", ret);
       p.set("returnTime", `${String(retH).padStart(2, "0")}:${String(retM).padStart(2, "0")}`);
     }
     p.set("adults", String(adults));
