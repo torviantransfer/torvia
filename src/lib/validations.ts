@@ -26,9 +26,10 @@ export const reservationSchema = z.object({
   locale: z.enum(["tr", "en", "de", "pl", "ru"]).default("en"),
 }).refine(
   (data) => {
-    const pickup = new Date(`${data.pickupDate}T${data.pickupTime}`);
+    // Parse as Turkey time (UTC+3) since all transfers are Antalya-based
+    const pickup = new Date(`${data.pickupDate}T${data.pickupTime}:00+03:00`);
     const now = new Date();
-    now.setHours(now.getHours() - 1); // 1h grace
+    now.setTime(now.getTime() - 60 * 60 * 1000); // 1h grace
     return pickup > now;
   },
   { message: "Pickup date must be in the future", path: ["pickupDate"] }

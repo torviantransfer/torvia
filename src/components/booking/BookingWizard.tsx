@@ -223,7 +223,11 @@ function BookingWizardInner(props: Props) {
         if (data.details) {
           const firstField = Object.keys(data.details)[0];
           const firstMsg = firstField && data.details[firstField]?.[0];
-          setError(firstMsg ? `${firstField}: ${firstMsg}` : (data.error ?? t("errorGeneric")));
+          if (firstMsg?.includes("future") || firstField === "pickupDate") {
+            setError(t("errorPastDate") || "Seçilen tarih/saat geçmişte kalmış. Lütfen ilerleyen bir saat seçin.");
+          } else {
+            setError(firstMsg ? `${firstField}: ${firstMsg}` : (data.error ?? t("errorGeneric")));
+          }
         } else {
           setError(data.error ?? t("errorGeneric"));
         }
