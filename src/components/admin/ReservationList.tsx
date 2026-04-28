@@ -291,8 +291,8 @@ export default function ReservationList({
                   ${r.total_price.toFixed(2)}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {new Date(r.pickup_datetime).toLocaleDateString()}{" "}
-                  {new Date(r.pickup_datetime).toLocaleTimeString([], {
+                  {new Date(r.pickup_datetime).toLocaleDateString("tr-TR")}{" "}
+                  {new Date(r.pickup_datetime).toLocaleTimeString("tr-TR", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -350,7 +350,7 @@ export default function ReservationList({
                     </p>
                     <p className="text-gray-500">
                       Rezervasyon:{" "}
-                      {new Date(r.created_at).toLocaleDateString()}
+                      {new Date(r.created_at).toLocaleDateString("tr-TR")}
                     </p>
                   </div>
                 </div>
