@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { pixelContact } from "@/lib/pixel";
 
 export default function ContactForm() {
   const t = useTranslations("contact");
@@ -34,6 +35,7 @@ export default function ContactForm() {
         throw new Error(body.error || t("errorSendFailed"));
       }
 
+      pixelContact();
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch (err) {

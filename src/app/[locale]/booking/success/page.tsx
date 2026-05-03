@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CheckCircle, Download, Home, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
+import PixelPurchaseFire from "@/components/booking/PixelPurchaseFire";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -23,6 +24,7 @@ export default async function BookingSuccessPage({
   return (
     <>
       <Header />
+      <PixelPurchaseFire reservationCode={code} />
       <main className="flex-1 bg-white">
         <div className="max-w-xl mx-auto px-4 py-16 text-center">
 

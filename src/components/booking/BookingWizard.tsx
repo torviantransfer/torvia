@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
+import { pixelInitiateCheckout, pixelAddPaymentInfo } from "@/lib/pixel";
 
 interface Props {
   initialRegion?: string;
@@ -193,6 +194,7 @@ function BookingWizardInner(props: Props) {
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!dateAvailable) { setError(t("dateUnavailable")); return; }
     setSelectedVehicle(vehicle);
+    pixelInitiateCheckout(vehicle.oneWayPrice);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -236,6 +238,7 @@ function BookingWizardInner(props: Props) {
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);
+        pixelAddPaymentInfo(selectedVehicle.oneWayPrice);
         setStep(3);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }

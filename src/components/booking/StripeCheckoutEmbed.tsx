@@ -9,6 +9,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { Loader2, Lock, Shield, CreditCard, CheckCircle, MapPin, Plane } from "lucide-react";
+import { pixelPurchase } from "@/lib/pixel";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -116,6 +117,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
       }
     }
 
+    pixelPurchase(reservationCode, totalPrice, "USD", regionName);
     onSuccess();
     setLoading(false);
   };
