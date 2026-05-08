@@ -235,26 +235,49 @@ export default async function RegionPage({
 
   const schemaData = {
     "@context": "https://schema.org",
-    "@type": "Service",
+    "@type": "TaxiService",
     name: `TORVIAN ${name} Transfer`,
     description: description || t("defaultDesc", { name }),
     provider: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
       url: "https://torviantransfer.com",
+      telephone: "+90-850-840-13-27",
     },
     areaServed: {
       "@type": "Place",
       name: name,
     },
     serviceType: "Airport Transfer",
+    availableChannel: {
+      "@type": "ServiceChannel",
+      serviceUrl: `https://torviantransfer.com/${locale}/${regionPath}`,
+      servicePhone: "+90-850-840-13-27",
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+    },
     offers: pricing
-      ? {
-          "@type": "Offer",
-          price: pricing.one_way_price,
-          priceCurrency: "USD",
-          availability: "https://schema.org/InStock",
-        }
+      ? [
+          {
+            "@type": "Offer",
+            name: `${name} One-Way Transfer`,
+            price: pricing.one_way_price,
+            priceCurrency: "USD",
+            availability: "https://schema.org/InStock",
+            url: `https://torviantransfer.com/${locale}/${regionPath}`,
+          },
+          ...(pricing.round_trip_price
+            ? [
+                {
+                  "@type": "Offer",
+                  name: `${name} Round-Trip Transfer`,
+                  price: pricing.round_trip_price,
+                  priceCurrency: "USD",
+                  availability: "https://schema.org/InStock",
+                  url: `https://torviantransfer.com/${locale}/${regionPath}`,
+                },
+              ]
+            : []),
+        ]
       : undefined,
     ...(avgRating && reviews ? {
       aggregateRating: {

@@ -20,8 +20,8 @@
     "signOut": "Abmelden"
   },
   "hero": {
-    "title": "VIP Flughafentransfer Antalya",
-    "subtitle": "Starten Sie Ihren Urlaub mit einem luxuriösen, sicheren und professionellen Transferservice.",
+    "title": "Antalya Flughafen Transfer — Festpreis, Sofortbuchung",
+    "subtitle": "Privater VIP Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und alle Urlaubsorte. Mercedes Vito, Flugverfolgung, 24/7 Support.",
     "badge": "24/7 Service",
     "exploreRegions": "Regionen entdecken >",
     "startingFrom": "ab",
@@ -33,7 +33,9 @@
     "licensedInsured": "Sicherer & Zuverlässiger Transfer",
     "trustStripe": "Sichere Zahlung über Stripe",
     "trustCancel": "Kostenlose Stornierung 24h vor Abfahrt",
-    "trustNoHidden": "Keine versteckten Gebühren"
+    "trustNoHidden": "Keine versteckten Gebühren",
+    "callNow": "Jetzt Anrufen",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Flughafen Antalya Transfer Buchen | Festpreis, Sofortbestätigung",

@@ -20,8 +20,8 @@
     "signOut": "Wyloguj"
   },
   "hero": {
-    "title": "VIP Transfer z Lotniska Antalya",
-    "subtitle": "Rozpocznij wakacje luksusowym, bezpiecznym i profesjonalnym transferem.",
+    "title": "Transfer z Lotniska Antalya — Stała cena, natychmiastowa rezerwacja",
+    "subtitle": "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Mercedes Vito, śledzenie lotu, wsparcie 24/7.",
     "badge": "Usługa 24/7",
     "exploreRegions": "Odkryj regiony >",
     "startingFrom": "od",
@@ -33,7 +33,9 @@
     "licensedInsured": "Bezpieczny i niezawodny transfer",
     "trustStripe": "Bezpieczna płatność przez Stripe",
     "trustCancel": "Bezpłatne anulowanie 24h przed",
-    "trustNoHidden": "Brak ukrytych opłat"
+    "trustNoHidden": "Brak ukrytych opłat",
+    "callNow": "Zadzwoń",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Zarezerwuj Transfer z Lotniska Antalya | Stała Cena, Natychmiastowe Potwierdzenie",

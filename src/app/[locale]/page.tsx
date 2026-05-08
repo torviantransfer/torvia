@@ -128,29 +128,8 @@ export default async function HomePage({
         closes: "23:59",
       },
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      reviewCount: "1250",
-      bestRating: "5",
-      worstRating: "1",
-    },
-    review: [
-      {
-        "@type": "Review",
-        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        author: { "@type": "Person", name: "Thomas M." },
-        datePublished: "2025-06-15",
-        reviewBody: "Excellent VIP transfer service from Antalya Airport. Professional driver, clean Mercedes Vito, and very punctual.",
-      },
-      {
-        "@type": "Review",
-        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        author: { "@type": "Person", name: "Anna K." },
-        datePublished: "2025-07-22",
-        reviewBody: "Best airport transfer in Antalya. The driver was waiting with a welcome sign, and the vehicle was spotless.",
-      },
-    ],
+    // NOTE: AggregateRating & Review removed — only add when real verified
+    // reviews exist (Google penalizes fabricated review counts).
   };
 
   const webSiteSchema = {
@@ -168,23 +147,38 @@ export default async function HomePage({
 
   const serviceSchema = {
     "@context": "https://schema.org",
-    "@type": "Service",
+    "@type": "TaxiService",
     name: "Antalya Airport VIP Transfer",
     provider: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
+      telephone: "+90-850-840-13-27",
+      url: BASE_URL,
     },
-    areaServed: {
-      "@type": "Place",
-      name: "Antalya, Turkey",
-    },
+    areaServed: [
+      { "@type": "City", name: "Antalya" },
+      { "@type": "City", name: "Belek" },
+      { "@type": "City", name: "Side" },
+      { "@type": "City", name: "Alanya" },
+      { "@type": "City", name: "Kemer" },
+      { "@type": "City", name: "Kaş" },
+      { "@type": "City", name: "Kalkan" },
+      { "@type": "City", name: "Fethiye" },
+    ],
     serviceType: "Airport Transfer",
     description: "Premium VIP transfer service from Antalya Airport to all resort destinations including Belek, Side, Alanya, Kemer, and more.",
+    availableChannel: {
+      "@type": "ServiceChannel",
+      serviceUrl: `${BASE_URL}/${locale}/booking`,
+      servicePhone: "+90-850-840-13-27",
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+    },
     offers: {
       "@type": "AggregateOffer",
       lowPrice: "35",
       highPrice: "180",
       priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
     },
   };
 
