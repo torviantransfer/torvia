@@ -82,9 +82,8 @@ export function pixelPurchase(
     content_name: regionName ?? "Airport Transfer",
     order_id: reservationCode,
   });
-  // Google Ads conversion
-  gtag("event", "conversion", {
-    send_to: `${GOOGLE_ADS_ID}/booking_purchase`,
+  // Google Ads conversion (event name from Google Ads dashboard)
+  gtag("event", "ads_conversion_Satın_alma_i_lemi_1", {
     value,
     currency,
     transaction_id: reservationCode,
