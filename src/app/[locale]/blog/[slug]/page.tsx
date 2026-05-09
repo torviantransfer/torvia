@@ -1,8 +1,8 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
-import { notFound } from "next/navigation";
+import { seoAlternates, seoOpenGraph, normalizeSlug, hasNonAsciiSlug } from "@/lib/seo";
+import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
 import Header from "@/components/Header";
@@ -12,9 +12,48 @@ import { Link } from "@/i18n/routing";
 import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru"];
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
+}
+
+/**
+ * Determine which locales actually have a translated title + content.
+ * Used to build hreflang alternates only for translated languages,
+ * preventing GSC "duplicate without canonical" reports.
+ */
+function getTranslatedLocales(post: Record<string, unknown>): Locale[] {
+  return ALL_LOCALES.filter((l) => {
+    const title = (post[`title_${l}`] as string | null | undefined) ?? "";
+    const content = (post[`content_${l}`] as string | null | undefined) ?? "";
+    return title.trim().length > 0 && content.trim().length > 0;
+  });
+}
+
+/**
+ * Find a blog post by slug. Falls back to a normalized-slug match so
+ * that ASCII URLs work even if the DB row stores a Turkish-char slug.
+ */
+async function findPost(
+  supabase: ReturnType<typeof createAdminClient>,
+  requestedSlug: string
+) {
+  const { data: direct } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("slug", requestedSlug)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (direct) return direct;
+
+  // Fallback: scan published posts and match by normalized slug.
+  const { data: all } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("is_published", true);
+  const wanted = normalizeSlug(requestedSlug);
+  return (all ?? []).find((p) => normalizeSlug(p.slug as string) === wanted) ?? null;
 }
 
 export async function generateStaticParams() {
@@ -26,8 +65,10 @@ export async function generateStaticParams() {
     .eq("is_published", true);
 
   const locales: Locale[] = ["tr", "en", "de", "pl", "ru"];
+  // Always emit the normalized (ASCII) slug so Google indexes the
+  // clean URL. The page redirects non-ASCII URLs to the normalized one.
   return (posts ?? []).flatMap((post) =>
-    locales.map((locale) => ({ locale, slug: post.slug }))
+    locales.map((locale) => ({ locale, slug: normalizeSlug(post.slug) }))
   );
 }
 
@@ -40,14 +81,13 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const loc = locale as Locale;
 
-  const { data: post } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
+  const post = await findPost(supabase, slug);
 
-  if (!post) return { title: "Not Found" };
+  if (!post) return { title: "Not Found", robots: { index: false, follow: false } };
+
+  const canonicalSlug = normalizeSlug(post.slug as string);
+  const translatedLocales = getTranslatedLocales(post);
+  const isTranslated = translatedLocales.includes(loc);
 
   const title = post[`title_${loc}`] || post.title_en || "Blog";
   const rawContent = post[`content_${loc}`] || post.content_en || "";
@@ -57,8 +97,15 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: seoAlternates(locale, `/blog/${slug}`),
-    openGraph: seoOpenGraph(locale, `/blog/${slug}`, title, description, post.image_url || undefined),
+    // Hreflang alternates: only locales that actually have content.
+    alternates: seoAlternates(locale, `/blog/${canonicalSlug}`, translatedLocales),
+    // If this locale isn't translated (we're falling back to English content),
+    // tell Google not to index this URL — prevents "duplicate without canonical"
+    // and "alternate page with proper canonical" reports.
+    robots: isTranslated
+      ? undefined
+      : { index: false, follow: true },
+    openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
     twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
   };
 }
@@ -73,14 +120,15 @@ export default async function BlogPostPage({
   const loc = locale as Locale;
   const t = await getTranslations({ locale, namespace: "blog" });
 
-  const { data: post } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .single();
+  const post = await findPost(supabase, slug);
 
   if (!post) notFound();
+
+  // 301 redirect non-ASCII URLs to the clean canonical slug.
+  const canonicalSlug = normalizeSlug(post.slug as string);
+  if (slug !== canonicalSlug && (hasNonAsciiSlug(slug) || slug !== canonicalSlug)) {
+    permanentRedirect(`/${locale}/blog/${canonicalSlug}`);
+  }
 
   const title = post[`title_${loc}`] || post.title_en || "Untitled";
   const rawContent = post[`content_${loc}`] || post.content_en || "";
@@ -137,7 +185,7 @@ export default async function BlogPostPage({
       name: "TORVIAN Transfer",
       logo: { "@type": "ImageObject", url: "https://torviantransfer.com/images/logo.png" },
     },
-    mainEntityOfPage: `https://torviantransfer.com/${locale}/blog/${slug}`,
+    mainEntityOfPage: `https://torviantransfer.com/${locale}/blog/${canonicalSlug}`,
     wordCount: wordCount,
   };
 

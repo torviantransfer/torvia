@@ -1,7 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter, normalizeSlug } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -82,7 +82,7 @@ export default async function BlogPage({
                   return (
                     <Link
                       key={post.id}
-                      href={`/blog/${post.slug}`}
+                      href={`/blog/${normalizeSlug(post.slug)}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
