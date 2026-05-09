@@ -47,6 +47,17 @@ export default function RootLayout({
   return (
     <>
       {children}
+      <Script
+        id="google-ads-gtag"
+        src="https://www.googletagmanager.com/gtag/js?id=AW-18125256328"
+        strategy="afterInteractive"
+      />
+      <Script id="google-ads-config" strategy="afterInteractive">
+        {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'AW-18125256328');`}
+      </Script>
       <Script id="meta-pixel" strategy="afterInteractive">
         {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

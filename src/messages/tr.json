@@ -20,8 +20,8 @@
     "signOut": "Çıkış Yap"
   },
   "hero": {
-    "title": "Antalya Havalimanı VIP Transfer",
-    "subtitle": "Konforlu, güvenli ve profesyonel transfer hizmeti ile tatilinize lüks bir başlangıç yapın.",
+    "title": "Antalya Havalimanı Transfer — Sabit Fiyat, Anında Rezervasyon",
+    "subtitle": "Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine VIP özel transfer. Mercedes Vito, uçuş takibi, 7/24 destek.",
     "badge": "7/24 Hizmet",
     "exploreRegions": "Bölgeleri Keşfet >",
     "startingFrom": "'den başlayan fiyatlar",
@@ -33,7 +33,9 @@
     "licensedInsured": "Güvenli & Güvenilir Taşıma",
     "trustStripe": "Stripe ile güvenli ödeme",
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
-    "trustNoHidden": "Gizli ücret yok"
+    "trustNoHidden": "Gizli ücret yok",
+    "callNow": "Hemen Ara",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Antalya Havalimanı Transfer Rezervasyonu | Sabit Fiyat, Anında Onay",
@@ -454,7 +456,44 @@
     "highlightMeetGreet": "Havalimanında isimlikle karşılama",
     "otherDestinations": "Diğer Popüler Destinasyonlar",
     "viewTransfer": "Transfer Detayı",
-    "imageAlt": "Antalya Havalimanı'ndan {name}'e VIP transfer"
+    "imageAlt": "Antalya Havalimanı'ndan {name}'e VIP transfer",
+    "callNow": "Ara",
+    "whatsappNow": "WhatsApp",
+    "whatsappRegionMessage": "Merhaba! Antalya Havalimanı → {name} transfer rezervasyonu yapmak istiyorum."
+  },
+  "compare": {
+    "heading": "Neden Torvian Transfer?",
+    "subheading": "{name} transferinizde diğer seçeneklerle karşılaştırma",
+    "torvian": "Torvian Transfer",
+    "havas": "Havas Shuttle",
+    "taxi": "Sarı Taksi",
+    "uber": "Uber / BiTaksi",
+    "recommended": "Önerilen",
+    "yes": "Evet",
+    "no": "Hayır",
+    "naBlank": "—",
+    "rowPrice": "Fiyat",
+    "rowMeetGreet": "Karşılama Hizmeti",
+    "rowFlightTracking": "Uçuş Takibi",
+    "rowDoorToDoor": "Kapıdan Kapıya",
+    "rowVehicle": "Araç Tipi",
+    "rowWaitTime": "Bekleme Süresi",
+    "rowCancellation": "Ücretsiz İptal",
+    "fixed": "Sabit",
+    "havasShared": "Paylaşımlı",
+    "taxiMeter": "Taksimetre",
+    "uberSurge": "Değişken",
+    "havasStops": "Toplu duraklar",
+    "torvianVehicle": "Özel VIP araç",
+    "havasVehicle": "Otobüs / minibüs",
+    "taxiVehicle": "Standart taksi",
+    "uberVehicle": "Müsait olan",
+    "torvianWait": "60 dk ücretsiz",
+    "havasWait": "Yok",
+    "taxiWait": "Ücretli",
+    "uberWait": "Ücretli",
+    "torvianCancel": "24 saat öncesine kadar",
+    "uberCancel": "Kısıtlı"
   },
   "footer": {
     "company": "Şirket",

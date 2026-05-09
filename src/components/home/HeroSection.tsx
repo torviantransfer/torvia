@@ -2,11 +2,16 @@
 
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Shield, Clock, CheckCircle2 } from "lucide-react";
+import { Shield, Clock, CheckCircle2, Phone, MessageCircle } from "lucide-react";
 import BookingFormMini from "@/components/booking/BookingFormMini";
+
+const CONTACT_PHONE = "08508401327";
+const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
 
 export default function HeroSection() {
   const t = useTranslations("hero");
+  const c = useTranslations("common");
+  const whatsappHref = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(c("whatsappMessage"))}`;
 
   return (
     <section className="relative min-h-[70vh] sm:min-h-[75vh] flex flex-col justify-between -mt-16">
@@ -34,7 +39,7 @@ export default function HeroSection() {
         </p>
 
         {/* Mini trust tags */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-8">
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-6">
           <span className="flex items-center gap-1.5 text-[13px] sm:text-sm text-white/90">
             <Shield size={14} className="text-green-400" />
             {t("fixedPrice")}
@@ -49,6 +54,28 @@ export default function HeroSection() {
             <CheckCircle2 size={14} className="text-green-400" />
             {t("trustCancel")}
           </span>
+        </div>
+
+        {/* Quick contact CTAs (mobile-first conversion) */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8">
+          <a
+            href={`tel:${CONTACT_PHONE}`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 hover:bg-white text-gray-900 text-sm font-semibold shadow-lg transition"
+            aria-label={t("callNow")}
+          >
+            <Phone size={16} className="text-blue-600" aria-hidden="true" />
+            {t("callNow")}
+          </a>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/95 hover:bg-emerald-500 text-white text-sm font-semibold shadow-lg transition"
+            aria-label={t("whatsappNow")}
+          >
+            <MessageCircle size={16} aria-hidden="true" />
+            {t("whatsappNow")}
+          </a>
         </div>
       </div>
 

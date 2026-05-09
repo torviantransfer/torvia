@@ -20,8 +20,8 @@
     "signOut": "Wyloguj"
   },
   "hero": {
-    "title": "VIP Transfer z Lotniska Antalya",
-    "subtitle": "Rozpocznij wakacje luksusowym, bezpiecznym i profesjonalnym transferem.",
+    "title": "Transfer z Lotniska Antalya — Stała cena, natychmiastowa rezerwacja",
+    "subtitle": "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Mercedes Vito, śledzenie lotu, wsparcie 24/7.",
     "badge": "Usługa 24/7",
     "exploreRegions": "Odkryj regiony >",
     "startingFrom": "od",
@@ -33,7 +33,9 @@
     "licensedInsured": "Bezpieczny i niezawodny transfer",
     "trustStripe": "Bezpieczna płatność przez Stripe",
     "trustCancel": "Bezpłatne anulowanie 24h przed",
-    "trustNoHidden": "Brak ukrytych opłat"
+    "trustNoHidden": "Brak ukrytych opłat",
+    "callNow": "Zadzwoń",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Zarezerwuj Transfer z Lotniska Antalya | Stała Cena, Natychmiastowe Potwierdzenie",
@@ -454,7 +456,44 @@
     "highlightMeetGreet": "Pomoc w punkcie spotkania na lotnisku",
     "otherDestinations": "Inne popularne kierunki",
     "viewTransfer": "Zobacz transfer",
-    "imageAlt": "VIP transfer z lotniska Antalya do {name}"
+    "imageAlt": "VIP transfer z lotniska Antalya do {name}",
+    "callNow": "Zadzwoń",
+    "whatsappNow": "WhatsApp",
+    "whatsappRegionMessage": "Witam! Chciałbym zarezerwować transfer Lotnisko Antalya → {name}."
+  },
+  "compare": {
+    "heading": "Dlaczego Torvian Transfer?",
+    "subheading": "Porównaj opcje transferu do {name}",
+    "torvian": "Torvian Transfer",
+    "havas": "Havas Shuttle",
+    "taxi": "Żółta taksówka",
+    "uber": "Uber / BiTaksi",
+    "recommended": "Polecane",
+    "yes": "Tak",
+    "no": "Nie",
+    "naBlank": "—",
+    "rowPrice": "Cena",
+    "rowMeetGreet": "Powitanie",
+    "rowFlightTracking": "Śledzenie lotu",
+    "rowDoorToDoor": "Od drzwi do drzwi",
+    "rowVehicle": "Typ pojazdu",
+    "rowWaitTime": "Czas oczekiwania",
+    "rowCancellation": "Darmowa anulacja",
+    "fixed": "Stała",
+    "havasShared": "Wspólny",
+    "taxiMeter": "Taksometr",
+    "uberSurge": "Zmienna cena",
+    "havasStops": "Wiele przystanków",
+    "torvianVehicle": "Prywatny pojazd VIP",
+    "havasVehicle": "Autobus / minibus",
+    "taxiVehicle": "Standardowa taksówka",
+    "uberVehicle": "Co dostępne",
+    "torvianWait": "60 min za darmo",
+    "havasWait": "Brak",
+    "taxiWait": "Płatne",
+    "uberWait": "Płatne",
+    "torvianCancel": "Do 24h przed",
+    "uberCancel": "Ograniczona"
   },
   "footer": {
     "company": "Firma",

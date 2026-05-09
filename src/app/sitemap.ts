@@ -1,5 +1,6 @@
 ﻿import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizeSlug } from "@/lib/seo";
 
 const BASE_URL = "https://torviantransfer.com";
 const locales = ["tr", "en", "de", "pl", "ru"];
@@ -17,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: blogPosts } = await supabase
     .from("blog_posts")
-    .select("slug, published_at")
+    .select("slug, published_at, title_tr, title_en, title_de, title_pl, title_ru, content_tr, content_en, content_de, content_pl, content_ru")
     .eq("is_published", true);
 
   const entries: MetadataRoute.Sitemap = [];
@@ -71,12 +72,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Blog posts — primary locales get higher priority
+  // Blog posts — only emit URLs for locales that actually have a translated
+  // title + content. This prevents Search Console "duplicate without
+  // canonical" reports caused by untranslated posts. Slugs are normalized
+  // to ASCII for clean canonical URLs.
   for (const locale of locales) {
     const isPrimary = primaryLocales.includes(locale);
     for (const post of blogPosts ?? []) {
+      const title = (post[`title_${locale}` as keyof typeof post] as string | null) ?? "";
+      const content = (post[`content_${locale}` as keyof typeof post] as string | null) ?? "";
+      if (!title.trim() || !content.trim()) continue;
       entries.push({
-        url: `${BASE_URL}/${locale}/blog/${post.slug}`,
+        url: `${BASE_URL}/${locale}/blog/${normalizeSlug(post.slug)}`,
         lastModified: post.published_at ? new Date(post.published_at) : new Date(),
         changeFrequency: "monthly",
         priority: isPrimary ? 0.7 : 0.5,

@@ -20,8 +20,8 @@
     "signOut": "Sign Out"
   },
   "hero": {
-    "title": "Antalya Airport VIP Transfer",
-    "subtitle": "Start your holiday with a luxurious, safe, and professional transfer service.",
+    "title": "Antalya Airport Transfer — Fixed Price, Instant Booking",
+    "subtitle": "Private VIP transfer from Antalya Airport (AYT) to Belek, Side, Alanya, Kemer and all resorts. Mercedes Vito, flight tracking, 24/7 support.",
     "badge": "24/7 Service",
     "exploreRegions": "Explore Regions >",
     "startingFrom": "starting from",
@@ -33,7 +33,9 @@
     "licensedInsured": "Safe & Reliable Transfer",
     "trustStripe": "Secure payment via Stripe",
     "trustCancel": "Free cancellation 24h before",
-    "trustNoHidden": "No hidden fees"
+    "trustNoHidden": "No hidden fees",
+    "callNow": "Call Now",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Book Antalya Airport Transfer | Fixed Price, Instant Confirmation",
@@ -454,7 +456,44 @@
     "highlightMeetGreet": "Airport meeting point assistance",
     "otherDestinations": "Other Popular Destinations",
     "viewTransfer": "View Transfer",
-    "imageAlt": "VIP transfer from Antalya Airport to {name}"
+    "imageAlt": "VIP transfer from Antalya Airport to {name}",
+    "callNow": "Call",
+    "whatsappNow": "WhatsApp",
+    "whatsappRegionMessage": "Hello! I would like to book an Antalya Airport → {name} transfer."
+  },
+  "compare": {
+    "heading": "Why Torvian Transfer?",
+    "subheading": "Compare your {name} transfer options",
+    "torvian": "Torvian Transfer",
+    "havas": "Havas Shuttle",
+    "taxi": "Yellow Taxi",
+    "uber": "Uber / BiTaksi",
+    "recommended": "Recommended",
+    "yes": "Yes",
+    "no": "No",
+    "naBlank": "—",
+    "rowPrice": "Price",
+    "rowMeetGreet": "Meet & Greet",
+    "rowFlightTracking": "Flight Tracking",
+    "rowDoorToDoor": "Door-to-Door",
+    "rowVehicle": "Vehicle Type",
+    "rowWaitTime": "Wait Time",
+    "rowCancellation": "Free Cancellation",
+    "fixed": "Fixed",
+    "havasShared": "Shared",
+    "taxiMeter": "Meter",
+    "uberSurge": "Surge pricing",
+    "havasStops": "Multiple stops",
+    "torvianVehicle": "Private VIP vehicle",
+    "havasVehicle": "Bus / minibus",
+    "taxiVehicle": "Standard taxi",
+    "uberVehicle": "Whatever available",
+    "torvianWait": "60 min free",
+    "havasWait": "None",
+    "taxiWait": "Charged",
+    "uberWait": "Charged",
+    "torvianCancel": "Up to 24h before",
+    "uberCancel": "Limited"
   },
   "footer": {
     "company": "Company",

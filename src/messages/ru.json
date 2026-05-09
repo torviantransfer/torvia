@@ -20,8 +20,8 @@
     "signOut": "Выйти"
   },
   "hero": {
-    "title": "ВИП Трансфер из Аэропорта Анталии",
-    "subtitle": "Начните отпуск с роскошного, безопасного и профессионального трансфера.",
+    "title": "Трансфер из Аэропорта Анталии — Фиксированная цена, мгновенное бронирование",
+    "subtitle": "Частный ВИП-трансфер из аэропорта Анталья в Белек, Сиде, Аланью, Кемер и все курорты. Mercedes Vito, отслеживание рейса, поддержка 24/7.",
     "badge": "Сервис 24/7",
     "exploreRegions": "Регионы >",
     "startingFrom": "от",
@@ -33,7 +33,9 @@
     "licensedInsured": "Безопасный и надёжный трансфер",
     "trustStripe": "Безопасная оплата через Stripe",
     "trustCancel": "Бесплатная отмена за 24ч",
-    "trustNoHidden": "Без скрытых платежей"
+    "trustNoHidden": "Без скрытых платежей",
+    "callNow": "Позвонить",
+    "whatsappNow": "WhatsApp"
   },
   "booking": {
     "title": "Забронировать Трансфер из Аэропорта Анталья | Фиксированная цена",
@@ -454,7 +456,44 @@
     "highlightMeetGreet": "Помощь в месте встречи в аэропорту",
     "otherDestinations": "Другие популярные направления",
     "viewTransfer": "Подробнее",
-    "imageAlt": "VIP трансфер из аэропорта Анталии в {name}"
+    "imageAlt": "VIP трансфер из аэропорта Анталии в {name}",
+    "callNow": "Позвонить",
+    "whatsappNow": "WhatsApp",
+    "whatsappRegionMessage": "Здравствуйте! Хочу забронировать трансфер Аэропорт Анталии → {name}."
+  },
+  "compare": {
+    "heading": "Почему Torvian Transfer?",
+    "subheading": "Сравните варианты трансфера в {name}",
+    "torvian": "Torvian Transfer",
+    "havas": "Havas Shuttle",
+    "taxi": "Жёлтое такси",
+    "uber": "Uber / BiTaksi",
+    "recommended": "Рекомендуется",
+    "yes": "Да",
+    "no": "Нет",
+    "naBlank": "—",
+    "rowPrice": "Цена",
+    "rowMeetGreet": "Встреча",
+    "rowFlightTracking": "Отслеживание рейса",
+    "rowDoorToDoor": "От двери до двери",
+    "rowVehicle": "Тип авто",
+    "rowWaitTime": "Время ожидания",
+    "rowCancellation": "Бесплатная отмена",
+    "fixed": "Фиксированная",
+    "havasShared": "Общий",
+    "taxiMeter": "Счётчик",
+    "uberSurge": "Динамическая",
+    "havasStops": "Много остановок",
+    "torvianVehicle": "Частный VIP авто",
+    "havasVehicle": "Автобус / микроавтобус",
+    "taxiVehicle": "Обычное такси",
+    "uberVehicle": "Какое есть",
+    "torvianWait": "60 мин бесплатно",
+    "havasWait": "Нет",
+    "taxiWait": "Платно",
+    "uberWait": "Платно",
+    "torvianCancel": "До 24ч до",
+    "uberCancel": "Ограниченная"
   },
   "footer": {
     "company": "Компания",

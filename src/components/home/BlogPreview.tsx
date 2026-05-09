@@ -2,6 +2,7 @@
 import { Link } from "@/i18n/routing";
 import { ArrowRight, BookOpen, Calendar } from "lucide-react";
 import Image from "next/image";
+import { normalizeSlug } from "@/lib/seo";
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 
@@ -82,7 +83,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
             return (
               <Link
                 key={post.slug}
-                href={`/blog/${post.slug}`}
+                href={`/blog/${normalizeSlug(post.slug)}`}
                 className="group rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]"
                 style={{
                   backgroundColor: "#F5F5F7",
