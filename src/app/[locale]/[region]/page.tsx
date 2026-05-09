@@ -6,6 +6,8 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import RegionStickyBar from "@/components/region/RegionStickyBar";
+import RegionCompareTable from "@/components/region/RegionCompareTable";
 import PriceTag from "@/components/PriceTag";
 import { Link } from "@/i18n/routing";
 import {
@@ -582,6 +584,8 @@ export default async function RegionPage({
         </section>
 
         {/* Other Popular Destinations */}
+        <RegionCompareTable regionName={name} torvianPrice={price} />
+
         {otherRegions && otherRegions.length > 0 && (
           <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
             <div className="max-w-7xl mx-auto px-4">
@@ -644,6 +648,7 @@ export default async function RegionPage({
       </main>
       <Footer />
       <WhatsAppButton />
+      <RegionStickyBar regionSlug={slug} whatsappMessage={t("whatsappRegionMessage", { name })} />
     </>
   );
 }
