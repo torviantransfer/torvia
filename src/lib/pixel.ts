@@ -4,16 +4,25 @@ declare global {
   interface Window {
     fbq?: (...args: any[]) => void;
     _fbq?: (...args: any[]) => void;
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
   }
 }
 
 export const PIXEL_ID = "970302365960353";
+export const GOOGLE_ADS_ID = "AW-18125256328";
 
 // ─── Core helper ────────────────────────────────────────────────────────────
 
 function fbq(...args: any[]) {
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
     window.fbq(...args);
+  }
+}
+
+function gtag(...args: any[]) {
+  if (typeof window !== "undefined" && typeof window.gtag === "function") {
+    window.gtag(...args);
   }
 }
 
@@ -72,6 +81,13 @@ export function pixelPurchase(
     content_ids: ["transfer"],
     content_name: regionName ?? "Airport Transfer",
     order_id: reservationCode,
+  });
+  // Google Ads conversion
+  gtag("event", "conversion", {
+    send_to: `${GOOGLE_ADS_ID}/booking_purchase`,
+    value,
+    currency,
+    transaction_id: reservationCode,
   });
 }
 
