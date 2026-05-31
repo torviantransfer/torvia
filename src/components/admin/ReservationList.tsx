@@ -97,6 +97,8 @@ export default function ReservationList({
   const [emailSendingId, setEmailSendingId] = useState<string | null>(null);
   const [emailMessage, setEmailMessage] = useState<string | null>(null);
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
+  const [editModal, setEditModal] = useState<{ assignmentId?: string; reservationId?: string; field?: string; value?: string } | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ reservationId?: string } | null>(null);
 
   const filtered = reservations.filter((r) => {
     const matchesSearch =
@@ -555,39 +557,13 @@ export default function ReservationList({
                                   {emailSendingId === da.id ? "Gönderiliyor..." : "E-posta Gönder"}
                                 </button>
                                 <button
-                                  onClick={async () => {
-                                    const confirmDel = window.confirm("Bu rezervasyonu silmek veya iptal etmek istiyor musunuz? (Kayıt soft-delete olur)");
-                                    if (!confirmDel) return;
-                                    try {
-                                      const res = await fetch("/api/admin/delete-reservation", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ reservationId: r.id }),
-                                      });
-                                      if (res.ok) window.location.reload();
-                                      else alert("Rezervasyon silinemedi.");
-                                    } catch (e) { console.error(e); alert("Hata oluştu."); }
-                                  }}
+                                  onClick={() => setDeleteModal({ reservationId: r.id })}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
                                 >
                                   Sil
                                 </button>
                                 <button
-                                  onClick={async () => {
-                                    const fields = prompt("Düzenlemek için JSON girin (ör: { \"flight_code\": \"TK123\" })");
-                                    if (!fields) return;
-                                    try {
-                                      const body = JSON.parse(fields);
-                                      body.reservationId = r.id;
-                                      const res = await fetch("/api/admin/edit-reservation", {
-                                        method: "POST",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify(body),
-                                      });
-                                      if (res.ok) window.location.reload();
-                                      else alert("Güncelleme başarısız.");
-                                    } catch (e) { console.error(e); alert("Geçersiz JSON veya hata."); }
-                                  }}
+                                  onClick={() => setEditModal({ reservationId: r.id })}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-xs font-medium"
                                 >
                                   Düzenle
@@ -759,6 +735,122 @@ export default function ReservationList({
           </div>
         )}
       </div>
+
+      {/* Edit Reservation Modal */}
+      {editModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Rezervasyonu Düzenle</h3>
+              <button onClick={() => setEditModal(null)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={18} className="text-gray-400" />
+              </button>
+            </div>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div>
+                <label className="text-xs font-bold text-gray-700 uppercase">Uçuş Kodu</label>
+                <input
+                  type="text"
+                  placeholder="TK123"
+                  onChange={(e) => setEditModal({ ...editModal, field: "flight_code", value: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 uppercase">Otel Adı</label>
+                <input
+                  type="text"
+                  placeholder="REGNUN CARYA"
+                  onChange={(e) => setEditModal({ ...editModal, field: "hotel_name", value: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-700 uppercase">Notlar</label>
+                <textarea
+                  placeholder="Lütfen zamanında gelin"
+                  onChange={(e) => setEditModal({ ...editModal, field: "notes", value: e.target.value })}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1 resize-none"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={async () => {
+                  if (!editModal.reservationId) return;
+                  const body: any = { reservationId: editModal.reservationId };
+                  if (editModal.field && editModal.value) {
+                    body[editModal.field] = editModal.value;
+                  }
+                  const res = await fetch("/api/admin/edit-reservation", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                  });
+                  if (res.ok) {
+                    window.location.reload();
+                  } else {
+                    alert("Güncelleme başarısız.");
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
+              >
+                Kaydet
+              </button>
+              <button
+                onClick={() => setEditModal(null)}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Reservation Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Rezervasyonu Sil</h3>
+              <button onClick={() => setDeleteModal(null)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <X size={18} className="text-gray-400" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Bu işlem geri alınamaz. Rezervasyon iptal edilecek (soft-delete). Emin misiniz?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  if (!deleteModal.reservationId) return;
+                  const res = await fetch("/api/admin/delete-reservation", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reservationId: deleteModal.reservationId }),
+                  });
+                  if (res.ok) {
+                    window.location.reload();
+                  } else {
+                    alert("Rezervasyon silinemedi.");
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm"
+              >
+                Sil
+              </button>
+              <button
+                onClick={() => setDeleteModal(null)}
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
+              >
+                İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -45,11 +45,9 @@ export async function POST(request: NextRequest) {
       .from("driver_assignments")
       .select("id")
       .eq("reservation_id", assignment.reservation_id)
-      .in("status", ["assigned", "picked_up"])
-      .limit(1)
-      .single();
+      .in("status", ["assigned", "picked_up"]);
 
-    if (!remainingError && !remainingActive) {
+    if (!remainingError && (!remainingActive || remainingActive.length === 0)) {
       await supabase
         .from("reservations")
         .update({ status: "paid" })
