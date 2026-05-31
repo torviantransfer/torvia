@@ -106,8 +106,11 @@ export async function POST(request: NextRequest) {
       .update({ status: "driver_assigned" })
       .eq("id", reservationId);
 
-    // Generate the one-time driver link
-    const driverLink = `${process.env.NEXT_PUBLIC_SITE_URL}/driver/${linkToken}`;
+    // Generate the one-time driver link. Prefer NEXT_PUBLIC_SITE_URL, fallback to request host/proto.
+    const proto = (request.headers.get("x-forwarded-proto") || request.headers.get("referer")?.split(":")[0] || "https");
+    const host = request.headers.get("host") || "";
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${proto}://${host}` : undefined);
+    const driverLink = origin ? `${origin.replace(/\/$/, "")}/driver/${linkToken}` : `/driver/${linkToken}`;
 
     // Fetch driver details for WhatsApp message
     const { data: driver } = await supabase

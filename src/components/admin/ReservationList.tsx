@@ -112,6 +112,16 @@ export default function ReservationList({
     return matchesSearch && matchesStatus;
   });
 
+    const statusLabels: Record<string, string> = {
+      pending: "Beklemede",
+      paid: "Ödendi",
+      driver_assigned: "Şoför Atandı",
+      passenger_picked_up: "Alındı",
+      completed: "Tamamlandı",
+      cancelled: "İptal Edildi",
+      cancel_requested: "İptal Talep Edildi",
+    };
+
   const assignDriver = async (reservationId: string) => {
     console.log('assignDriver called', { reservationId, selectedDriver, selectedVehicle, assigningLeg, forceAssign });
     if (!selectedDriver || !selectedVehicle) return;
@@ -352,7 +362,7 @@ export default function ReservationList({
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[r.status]}`}
                   >
-                    {r.status.replace("_", " ")}
+                    {statusLabels[r.status] ?? r.status.replace("_", " ")}
                   </span>
                   {r.trip_type === "round_trip" && (
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
@@ -543,6 +553,44 @@ export default function ReservationList({
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium"
                                 >
                                   {emailSendingId === da.id ? "Gönderiliyor..." : "E-posta Gönder"}
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    const confirmDel = window.confirm("Bu rezervasyonu silmek veya iptal etmek istiyor musunuz? (Kayıt soft-delete olur)");
+                                    if (!confirmDel) return;
+                                    try {
+                                      const res = await fetch("/api/admin/delete-reservation", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ reservationId: r.id }),
+                                      });
+                                      if (res.ok) window.location.reload();
+                                      else alert("Rezervasyon silinemedi.");
+                                    } catch (e) { console.error(e); alert("Hata oluştu."); }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
+                                >
+                                  Sil
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    const fields = prompt("Düzenlemek için JSON girin (ör: { \"flight_code\": \"TK123\" })");
+                                    if (!fields) return;
+                                    try {
+                                      const body = JSON.parse(fields);
+                                      body.reservationId = r.id;
+                                      const res = await fetch("/api/admin/edit-reservation", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify(body),
+                                      });
+                                      if (res.ok) window.location.reload();
+                                      else alert("Güncelleme başarısız.");
+                                    } catch (e) { console.error(e); alert("Geçersiz JSON veya hata."); }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-xs font-medium"
+                                >
+                                  Düzenle
                                 </button>
                                 <button
                                   onClick={() => unassignDriver(da.id)}
