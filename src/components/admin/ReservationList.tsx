@@ -84,7 +84,7 @@ export default function ReservationList({
   vehicles,
 }: Props) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [assigningLeg, setAssigningLeg] = useState<"outbound" | "return">("outbound");
@@ -116,7 +116,9 @@ export default function ReservationList({
       r.customers?.email.toLowerCase().includes(search.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || r.status === statusFilter;
+      statusFilter === "all" ||
+      (statusFilter === "active" && !["pending", "cancelled"].includes(r.status)) ||
+      r.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -368,6 +370,7 @@ export default function ReservationList({
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
         >
+          <option value="active">Aktif (varsayılan)</option>
           <option value="all">Tüm Durumlar</option>
           <option value="pending">Beklemede</option>
           <option value="paid">Ödendi</option>

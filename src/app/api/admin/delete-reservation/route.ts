@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
+const HARD_DELETE_STATUSES = ["pending", "cancelled"];
+
 export async function POST(request: NextRequest) {
   const { error: authError } = await requireAdmin();
   if (authError) return authError;
@@ -14,15 +16,40 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
-    // Soft-delete: set status to cancelled
-    const { error } = await supabase
-      .from("reservations")
-      .update({ status: "cancelled" })
-      .eq("id", reservationId);
 
-    if (error) {
-      console.error("Delete reservation error:", error.message);
-      return NextResponse.json({ error: "Failed to delete reservation" }, { status: 500 });
+    // Fetch current status first
+    const { data: existing } = await supabase
+      .from("reservations")
+      .select("status")
+      .eq("id", reservationId)
+      .single();
+
+    if (!existing) {
+      return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
+    }
+
+    if (HARD_DELETE_STATUSES.includes(existing.status)) {
+      // Hard delete — cascade handles driver_assignments, reviews, notification_log
+      const { error } = await supabase
+        .from("reservations")
+        .delete()
+        .eq("id", reservationId);
+
+      if (error) {
+        console.error("Hard delete error:", error.message);
+        return NextResponse.json({ error: "Failed to delete reservation" }, { status: 500 });
+      }
+    } else {
+      // Paid/active reservations: soft-cancel only (preserve audit trail)
+      const { error } = await supabase
+        .from("reservations")
+        .update({ status: "cancelled" })
+        .eq("id", reservationId);
+
+      if (error) {
+        console.error("Soft cancel error:", error.message);
+        return NextResponse.json({ error: "Failed to cancel reservation" }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ ok: true });
