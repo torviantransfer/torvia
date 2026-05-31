@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
     const vehicle = Array.isArray(assignment.vehicles) ? assignment.vehicles[0] : assignment.vehicles;
     const region = Array.isArray(reservation.regions) ? reservation.regions[0] : reservation.regions;
 
-    const customer = reservation?.customers;
+    const customer = Array.isArray(reservation?.customers)
+      ? reservation.customers[0]
+      : reservation?.customers;
+
     if (!customer?.email) {
       return NextResponse.json({ error: "Customer email not available" }, { status: 400 });
     }

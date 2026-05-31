@@ -117,8 +117,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     // Build WhatsApp message for driver
-    const region = reservation.regions as unknown as Record<string, string> | null;
-    const customer = reservation.customers as unknown as Record<string, string> | null;
+    const region = Array.isArray(reservation.regions)
+      ? reservation.regions[0]
+      : reservation.regions;
+    const customer = Array.isArray(reservation.customers)
+      ? reservation.customers[0]
+      : reservation.customers;
     const pickupDate = new Date(reservation.pickup_datetime);
     const legLabel = leg === "return" ? "DÖNÜŞ" : "GİDİŞ";
     // Driver voucher link
