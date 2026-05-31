@@ -122,15 +122,18 @@ export async function generateMetadata({
   const regionSlugBase = stripTransferSuffix(regionPath);
 
   const name = region[`name_${locale}`] || region.name_en;
-  const metaTitle =
-    region[`meta_title_${locale}`] ||
-    `Antalya Airport to ${name} Transfer | ~${region.duration_minutes ? Math.round(region.duration_minutes / 60) + "h " + (region.duration_minutes % 60) + "min" : ""} ${region.distance_km ? region.distance_km + "km" : ""}`;
 
   const km = region.distance_km ? `${region.distance_km} km` : "";
   const dur = region.duration_minutes
     ? `~${Math.floor(region.duration_minutes / 60)}h ${region.duration_minutes % 60}min`
     : "";
   const info = km && dur ? ` ${dur}, ${km}.` : "";
+
+  // Priority: locale-specific column → shared meta_title column (set by migration 006) → generic template
+  const metaTitle =
+    (region[`meta_title_${locale}`] as string | null) ||
+    (region.meta_title as string | null) ||
+    `Antalya Airport to ${name} Transfer | ${dur} ${km}`.trim();
 
   const fallbackDesc: Record<string, string> = {
     tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
@@ -139,8 +142,11 @@ export async function generateMetadata({
     pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, profesjonalni kierowcy, serwis 24/7.`,
     ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, профессиональные водители, 24/7.`,
   };
+  // Priority: locale-specific → shared meta_description → locale fallback
   const metaDesc =
-    region[`meta_description_${locale}`] || fallbackDesc[locale] || fallbackDesc.en;
+    (region[`meta_description_${locale}`] as string | null) ||
+    (region.meta_description as string | null) ||
+    fallbackDesc[locale] || fallbackDesc.en;
 
   const regionImg = `https://torviantransfer.com/images/regions/${regionSlugBase}.jpg`;
 

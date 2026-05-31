@@ -64,11 +64,24 @@ export async function generateStaticParams() {
     .select("slug")
     .eq("is_published", true);
 
+  // Fetch full post data to check which locales have actual translations
+  const { data: fullPosts } = await supabase
+    .from("blog_posts")
+    .select("slug, title_tr, title_en, title_de, title_pl, title_ru, content_tr, content_en, content_de, content_pl, content_ru")
+    .eq("is_published", true);
+
   const locales: Locale[] = ["tr", "en", "de", "pl", "ru"];
-  // Always emit the normalized (ASCII) slug so Google indexes the
-  // clean URL. The page redirects non-ASCII URLs to the normalized one.
-  return (posts ?? []).flatMap((post) =>
-    locales.map((locale) => ({ locale, slug: normalizeSlug(post.slug) }))
+  // Only generate static params for locales that have actual translated content.
+  // This prevents empty/duplicate pages (e.g. /en/blog/turkish-slug-post) when
+  // no English translation exists — those 404 instead of getting flagged as duplicates.
+  return (fullPosts ?? []).flatMap((post) =>
+    locales
+      .filter((l) => {
+        const title = ((post as Record<string, unknown>)[`title_${l}`] as string | null) ?? "";
+        const content = ((post as Record<string, unknown>)[`content_${l}`] as string | null) ?? "";
+        return title.trim().length > 0 && content.trim().length > 0;
+      })
+      .map((locale) => ({ locale, slug: normalizeSlug(post.slug as string) }))
   );
 }
 
@@ -94,17 +107,21 @@ export async function generateMetadata({
   const rawText = rawContent.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
   const description = post[`excerpt_${loc}`] || post.excerpt_en || rawText.slice(0, 155) + (rawText.length > 155 ? "..." : "");
 
+  // Primary locale = first locale that has a translation (usually "tr")
+  const primaryLocale = translatedLocales[0] ?? "tr";
+  const BASE = "https://torviantransfer.com";
+
   return {
     title,
     description,
-    // Hreflang alternates: only locales that actually have content.
-    alternates: seoAlternates(locale, `/blog/${canonicalSlug}`, translatedLocales),
-    // If this locale isn't translated (we're falling back to English content),
-    // tell Google not to index this URL — prevents "duplicate without canonical"
-    // and "alternate page with proper canonical" reports.
-    robots: isTranslated
-      ? undefined
-      : { index: false, follow: true },
+    alternates: isTranslated
+      ? seoAlternates(locale, `/blog/${canonicalSlug}`, translatedLocales)
+      : {
+          // Non-translated page: canonical points to the primary locale to
+          // eliminate "duplicate without user-selected canonical" GSC errors.
+          canonical: `${BASE}/${primaryLocale}/blog/${canonicalSlug}`,
+        },
+    robots: isTranslated ? undefined : { index: false, follow: true },
     openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
     twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
   };
