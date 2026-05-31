@@ -139,29 +139,56 @@ export default function ReservationList({
       setCheckingConflicts(false);
     }
 
-    // Step 2: Assign
-    const res = await fetch("/api/admin/assign-driver", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        reservationId,
-        driverId: selectedDriver,
-        vehicleId: selectedVehicle,
-        leg: assigningLeg,
-        ...(assigningLeg === "return" && returnPickupTime ? { pickupTime: returnPickupTime } : {}),
-      }),
-    });
+    // Step 2: Assign (robust handling)
+    try {
+      const res = await fetch("/api/admin/assign-driver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reservationId,
+          driverId: selectedDriver,
+          vehicleId: selectedVehicle,
+          leg: assigningLeg,
+          ...(assigningLeg === "return" && returnPickupTime ? { pickupTime: returnPickupTime } : {}),
+        }),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
+      console.log('assign-driver response status', res.status);
+
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (e) {
+        console.error('assign-driver invalid JSON response', text);
+      }
+
+      if (!res.ok) {
+        console.error('assign-driver failed', res.status, data || text);
+        alert((data && data.error) || `Atama başarısız (kod ${res.status})`);
+        setAssigningId(null);
+        return;
+      }
+
+      if (!data || !data.driverLink) {
+        console.error('assign-driver missing fields', data);
+        alert('Atama başarılı ama sunucudan beklenen veri gelmedi. Konsolu kontrol et.');
+        setAssigningId(null);
+        return;
+      }
+
       setDriverLinkModal({
         driverLink: data.driverLink,
         whatsappUrl: data.whatsappUrl,
-        driverName: drivers.find(d => d.id === selectedDriver)?.full_name || "Driver",
+        driverName: drivers.find((d) => d.id === selectedDriver)?.full_name || "Driver",
       });
       setAssigningId(null);
       setConflicts([]);
       setForceAssign(false);
+    } catch (err) {
+      console.error('assign-driver exception', err);
+      alert('Atama sırasında bir hata oluştu. Konsolu kontrol et.');
+      setAssigningId(null);
     }
   };
 
