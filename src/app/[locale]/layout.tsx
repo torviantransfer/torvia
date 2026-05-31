@@ -5,7 +5,6 @@ import { Inter, Montserrat } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import CookieConsent from "@/components/CookieConsent";
 import Script from "next/script";
-import "../globals.css";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
