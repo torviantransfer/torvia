@@ -68,10 +68,10 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: string }> = {
-  assigned: { color: "text-yellow-800", bg: "bg-yellow-50 border-yellow-200", label: "Awaiting Acceptance", icon: "🔔" },
-  accepted: { color: "text-blue-800", bg: "bg-blue-50 border-blue-200", label: "Transfer Accepted", icon: "✅" },
-  picked_up: { color: "text-purple-800", bg: "bg-purple-50 border-purple-200", label: "Passenger Picked Up", icon: "🚗" },
-  completed: { color: "text-green-800", bg: "bg-green-50 border-green-200", label: "Completed", icon: "🏁" },
+  assigned: { color: "text-yellow-800", bg: "bg-yellow-50 border-yellow-200", label: "Atama Bekleniyor", icon: "🔔" },
+  accepted: { color: "text-blue-800", bg: "bg-blue-50 border-blue-200", label: "Transfer Kabul Edildi", icon: "✅" },
+  picked_up: { color: "text-purple-800", bg: "bg-purple-50 border-purple-200", label: "Müşteri Alındı", icon: "🚗" },
+  completed: { color: "text-green-800", bg: "bg-green-50 border-green-200", label: "Tamamlandı", icon: "🏁" },
 };
 
 export default function DriverPanel({ assignment, token }: Props) {
@@ -82,6 +82,7 @@ export default function DriverPanel({ assignment, token }: Props) {
   const res = assignment.reservations;
   const customer = res?.customers;
   const region = res?.regions;
+  const regionName = region?.name_tr || region?.name_en || "—";
   const vehicle = assignment.vehicles;
 
   const updateStatus = async (newStatus: string) => {
@@ -112,9 +113,9 @@ export default function DriverPanel({ assignment, token }: Props) {
     const code = res?.reservation_code ?? "";
 
     const messages: Record<string, string> = {
-      accepted: `✅ TORVIAN Transfer\n\nYour transfer ${code} has been accepted.\nYour driver: ${assignment.drivers?.full_name ?? "—"}\nVehicle: ${vehicle?.brand ?? ""} ${vehicle?.model ?? ""} (${vehicle?.plate_number ?? ""})\n\nWe'll be at the airport on time! 🚗`,
-      picked_up: `🚗 TORVIAN Transfer\n\nYour driver has confirmed pickup for transfer ${code}.\nYou're on your way! Enjoy the ride. 🌟`,
-      completed: `🏁 TORVIAN Transfer\n\nTransfer ${code} is complete.\nThank you for choosing TORVIAN! We hope you had a great experience.\n\n⭐ Rate us: torviantransfer.com`,
+      accepted: `✅ TORVIAN Transfer\n\nTransferiniz ${code} kabul edildi.\nŞoförünüz: ${assignment.drivers?.full_name ?? "—"}\nAraç: ${vehicle?.brand ?? ""} ${vehicle?.model ?? ""} (${vehicle?.plate_number ?? ""})\n\nHavalimanında zamanında olacağız! 🚗`,
+      picked_up: `🚗 TORVIAN Transfer\n\nŞoförünüz transfer ${code} için yolcuyu aldığını doğruladı.\nYola çıktık! Keyifli yolculuklar. 🌟`,
+      completed: `🏁 TORVIAN Transfer\n\nTransfer ${code} tamamlandı.\nTORVIAN'i tercih ettiğiniz için teşekkür ederiz.\n\n⭐ Bizi değerlendirin: torviantransfer.com`,
     };
 
     const text = messages[newStatus];
@@ -152,12 +153,12 @@ export default function DriverPanel({ assignment, token }: Props) {
       {/* Countdown / time highlight */}
       {!isCompleted && (
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 text-center text-white">
-          <p className="text-xs opacity-80 mb-1">Pickup Time</p>
+          <p className="text-xs opacity-80 mb-1">Alış Saati</p>
           <p className="text-2xl font-bold">
             {pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </p>
           <p className="text-xs opacity-80 mt-1">
-            {pickupDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            {pickupDate.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
           </p>
         </div>
       )}
@@ -165,7 +166,7 @@ export default function DriverPanel({ assignment, token }: Props) {
       {/* Reservation info card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">Transfer Details</h2>
+          <h2 className="font-bold text-gray-900">Transfer Detayları</h2>
           <span className="font-mono text-sm font-bold text-slate-900">
             {res.reservation_code}
           </span>
@@ -177,10 +178,10 @@ export default function DriverPanel({ assignment, token }: Props) {
             <MapPin size={16} className="text-orange-500 mt-0.5" />
             <div>
               <p className="font-medium">
-                Antalya Airport → {region?.name_en}
+                Antalya Havalimanı → {regionName}
               </p>
               <p className="text-xs text-gray-400">
-                ~{region?.duration_minutes} min • {region?.distance_km} km
+                ~{region?.duration_minutes} dk • {region?.distance_km} km
               </p>
             </div>
           </div>
@@ -218,8 +219,7 @@ export default function DriverPanel({ assignment, token }: Props) {
           <div className="flex items-center gap-3">
             <Users size={16} className="text-gray-400" />
             <p>
-              {res.adults} adults, {res.children} children, {res.luggage_count}{" "}
-              luggage
+              {res.adults} yetişkin, {res.children} çocuk, {res.luggage_count} bagaj
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export default function DriverPanel({ assignment, token }: Props) {
           {res.child_seat && (
             <div className="flex items-center gap-3">
               <Baby size={16} className="text-green-500" />
-              <p className="text-green-700">Child seat required</p>
+              <p className="text-green-700">Çocuk koltuğu gerekli</p>
             </div>
           )}
 
@@ -236,7 +236,7 @@ export default function DriverPanel({ assignment, token }: Props) {
             <div className="flex items-center gap-3">
               <Tag size={16} className="text-blue-500" />
               <p className="text-blue-700">
-                Welcome sign: {res.welcome_name || "Customer name"}
+                Karşılama tabelası: {res.welcome_name || "İsim belirtilmedi"}
               </p>
             </div>
           )}
@@ -264,8 +264,8 @@ export default function DriverPanel({ assignment, token }: Props) {
           {/* Return trip */}
           {res.trip_type === "round_trip" && res.return_datetime && (
             <div className="p-3 bg-blue-50 rounded-lg text-blue-800 text-xs">
-              🔄 Return:{" "}
-              {new Date(res.return_datetime).toLocaleDateString("en-GB")}{" "}
+              🔄 Dönüş: {new Date(res.return_datetime).toLocaleDateString("tr-TR")} {" "}
+              {new Date(res.return_datetime).toLocaleDateString("tr-TR")}{" "}
               {new Date(res.return_datetime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -277,7 +277,7 @@ export default function DriverPanel({ assignment, token }: Props) {
 
       {/* Customer contact card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h3 className="font-bold text-gray-900 mb-3">Customer</h3>
+        <h3 className="font-bold text-gray-900 mb-3">Müşteri</h3>
         <div className="space-y-2">
           <p className="font-medium text-gray-800">
             {customer?.first_name} {customer?.last_name}
@@ -288,7 +288,7 @@ export default function DriverPanel({ assignment, token }: Props) {
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 text-sm rounded-lg font-medium"
             >
               <Phone size={14} />
-              Call
+              Ara
             </a>
             <a
               href={`https://wa.me/${customer?.phone?.replace(/[^0-9]/g, "")}`}
@@ -305,7 +305,7 @@ export default function DriverPanel({ assignment, token }: Props) {
 
       {/* Vehicle info */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h3 className="font-bold text-gray-900 mb-2">Vehicle</h3>
+        <h3 className="font-bold text-gray-900 mb-2">Araç</h3>
         <p className="text-sm">
           {vehicle?.brand} {vehicle?.model} —{" "}
           <span className="font-mono font-bold">{vehicle?.plate_number}</span>
@@ -314,12 +314,18 @@ export default function DriverPanel({ assignment, token }: Props) {
 
       {/* QR Scanner — show when accepted (so driver can verify passenger) */}
       {(status === "accepted" || status === "picked_up") && !qrVerified && (
-        <QRScanner token={token} onVerified={onQrVerified} />
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm font-semibold text-blue-800 mb-2">Müşteri QR Kodunu Okutun</p>
+          <p className="text-xs text-blue-600 mb-4">
+            Lütfen transferi onaylamadan önce müşterinin QR kodunu okutun.
+          </p>
+          <QRScanner token={token} onVerified={onQrVerified} />
+        </div>
       )}
 
       {qrVerified && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center text-sm font-bold text-green-700">
-          ✅ Passenger QR verified successfully
+          ✅ Müşteri QR kodu doğrulandı.
         </div>
       )}
 
@@ -328,10 +334,10 @@ export default function DriverPanel({ assignment, token }: Props) {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
           <h3 className="font-bold text-gray-900 mb-2">
             <QrCode size={16} className="inline mr-2" />
-            Verification QR Code
+            Doğrulama QR Kodu
           </h3>
           <p className="text-xs text-gray-400 mb-3">
-            Show this to verify the transfer
+            Bu QR kodu müşteriye göstererek transfer doğrulaması yapabilirsiniz.
           </p>
           <div className="inline-block p-4 bg-gray-50 rounded-lg">
             <QRCodeCanvas value={res.qr_code_token} size={192} />
@@ -347,7 +353,7 @@ export default function DriverPanel({ assignment, token }: Props) {
         className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
       >
         <Download size={16} />
-        View / Print Voucher
+        Voucher Görüntüle / Yazdır
       </a>
 
       {/* Action buttons */}
@@ -364,14 +370,14 @@ export default function DriverPanel({ assignment, token }: Props) {
               ) : (
                 <CheckCircle size={18} />
               )}
-              Accept Transfer
+              Transferi Kabul Et
             </button>
           )}
 
           {status === "accepted" && (
             <button
               onClick={() => updateStatus("picked_up")}
-              disabled={loading}
+              disabled={loading || !qrVerified}
               className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
             >
               {loading ? (
@@ -379,7 +385,7 @@ export default function DriverPanel({ assignment, token }: Props) {
               ) : (
                 <Navigation size={18} />
               )}
-              Passenger Picked Up
+              Müşteriyi Aldım
             </button>
           )}
 
@@ -394,7 +400,7 @@ export default function DriverPanel({ assignment, token }: Props) {
               ) : (
                 <CheckCircle size={18} />
               )}
-              Transfer Completed
+              Transferi Tamamla
             </button>
           )}
 
@@ -407,7 +413,7 @@ export default function DriverPanel({ assignment, token }: Props) {
               className="w-full py-3 bg-gray-800 text-white font-medium rounded-xl flex items-center justify-center gap-2"
             >
               <Navigation size={16} />
-              Navigate to Destination
+              Varışa Navigasyon
             </a>
           )}
         </div>
@@ -417,9 +423,9 @@ export default function DriverPanel({ assignment, token }: Props) {
         <div className="text-center py-8">
           <CheckCircle size={48} className="text-green-500 mx-auto mb-3" />
           <p className="text-lg font-bold text-green-800">
-            Transfer Completed!
+            Transfer Tamamlandı!
           </p>
-          <p className="text-sm text-gray-400">Thank you for your service.</p>
+          <p className="text-sm text-gray-400">Hizmetiniz için teşekkür ederiz.</p>
         </div>
       )}
     </div>

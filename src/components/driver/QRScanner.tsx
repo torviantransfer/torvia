@@ -67,7 +67,7 @@ export default function QRScanner({ token, onVerified }: Props) {
 
       if (response.ok && data.verified) {
         setResult("success");
-        setMessage(data.message ?? "QR verified — passenger confirmed!");
+        setMessage(data.message ?? "QR başarıyla doğrulandı — müşteri onaylandı!");
         setTimeout(() => {
           setOpen(false);
           setResult("idle");
@@ -75,11 +75,11 @@ export default function QRScanner({ token, onVerified }: Props) {
         }, 2000);
       } else {
         setResult("error");
-        setMessage(data.error ?? "Invalid QR code.");
+        setMessage(data.error ?? "Geçersiz QR kodu.");
       }
     } catch {
       setResult("error");
-      setMessage("Connection error. Please try again.");
+      setMessage("Bağlantı hatası. Lütfen tekrar deneyin.");
     }
   };
 
@@ -90,7 +90,7 @@ export default function QRScanner({ token, onVerified }: Props) {
         className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
       >
         <Camera size={18} />
-        Scan Passenger QR Code
+        Yolcu QR Kodunu Tara
       </button>
     );
   }
@@ -100,7 +100,7 @@ export default function QRScanner({ token, onVerified }: Props) {
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h3 className="font-bold text-gray-900 flex items-center gap-2">
           <Camera size={16} className="text-indigo-600" />
-          QR Scanner
+          QR Tarayıcı
         </h3>
         <button
           onClick={() => { setOpen(false); setResult("idle"); }}
@@ -114,7 +114,7 @@ export default function QRScanner({ token, onVerified }: Props) {
         <>
           <div id="qr-reader" ref={scannerRef} className="w-full" />
           <p className="text-center text-xs text-gray-400 p-3">
-            Point camera at the passenger&apos;s QR code
+            Kamerayı yolcunun QR koduna doğrultun
           </p>
         </>
       )}
@@ -141,7 +141,7 @@ export default function QRScanner({ token, onVerified }: Props) {
             onClick={() => { setOpen(false); setTimeout(() => setOpen(true), 100); setResult("idle"); }}
             className="mt-2 px-4 py-2 bg-gray-800 text-white rounded-lg text-sm"
           >
-            Try Again
+            Tekrar Dene
           </button>
         </div>
       )}

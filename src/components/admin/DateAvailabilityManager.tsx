@@ -161,26 +161,25 @@ export default function DateAvailabilityManager() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
           <Calendar size={20} className="text-orange-500" />
           Tarih & Kapasite Yönetimi
         </h2>
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
           <Users size={14} />
-          Günlük Max: <span className="font-bold text-white">{maxDaily}</span> rezervasyon
+          Günlük Max: <span className="font-bold text-slate-900">{maxDaily}</span> rezervasyon
         </div>
       </div>
 
       {/* Month selector */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={() => {
             const [y, m] = month.split("-").map(Number);
             const prev = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
             setMonth(prev);
           }}
-          className="px-3 py-2 rounded-lg text-gray-400 hover:text-white transition-colors"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          className="px-3 py-2 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
         >
           ◀
         </button>
@@ -188,7 +187,7 @@ export default function DateAvailabilityManager() {
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="px-4 py-2 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-orange-500"
+          className="px-4 py-2 rounded-lg text-sm text-slate-900 bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
         />
         <button
           onClick={() => {
@@ -196,62 +195,59 @@ export default function DateAvailabilityManager() {
             const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
             setMonth(next);
           }}
-          className="px-3 py-2 rounded-lg text-gray-400 hover:text-white transition-colors"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          className="px-3 py-2 rounded-lg text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
         >
           ▶
         </button>
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs">
+      <div className="flex flex-wrap gap-4 text-xs text-slate-600">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: "rgba(52,211,153,0.15)", border: "1px solid rgba(52,211,153,0.3)" }} />
-          <span className="text-gray-400">Müsait (Rez. var)</span>
+          <div className="w-4 h-4 rounded bg-emerald-100 border border-emerald-200" />
+          <span>Müsait (Rez. var)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.3)" }} />
-          <span className="text-gray-400">Dolu (Max kapasiteye ulaşıldı)</span>
+          <div className="w-4 h-4 rounded bg-orange-100 border border-orange-200" />
+          <span>Dolu (Max kapasiteye ulaşıldı)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }} />
-          <span className="text-gray-400">Manuel Kapalı</span>
+          <div className="w-4 h-4 rounded bg-red-100 border border-red-200" />
+          <span>Manuel Kapalı</span>
         </div>
       </div>
 
       {/* Calendar Grid */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Yükleniyor...</div>
+        <div className="text-center py-12 text-slate-500">Yükleniyor...</div>
       ) : (
-        <div className="grid grid-cols-7 gap-1.5">
-          {renderCalendar()}
-        </div>
+        <div className="grid grid-cols-7 gap-1.5">{renderCalendar()}</div>
       )}
 
       {/* Block date form */}
-      <div className="rounded-xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-        <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-          <Lock size={14} className="text-red-400" />
+      <div className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <Lock size={14} className="text-red-500" />
           Tarihi Manuel Kapat
         </h3>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             type="date"
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
-            className="px-4 py-2.5 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-orange-500"
+            className="px-4 py-2.5 rounded-lg text-slate-900 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
           <input
             type="text"
             value={newReason}
             onChange={(e) => setNewReason(e.target.value)}
             placeholder="Sebep (opsiyonel)"
-            className="flex-1 px-4 py-2.5 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:outline-none focus:border-orange-500 placeholder-gray-600"
+            className="flex-1 px-4 py-2.5 rounded-lg text-slate-900 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
           />
           <button
             onClick={blockDate}
             disabled={!newDate}
-            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-40 transition flex items-center gap-2"
           >
             <Plus size={14} />
             Kapat
@@ -261,25 +257,25 @@ export default function DateAvailabilityManager() {
 
       {/* Blocked dates list */}
       {blockedDates.length > 0 && (
-        <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <AlertCircle size={14} className="text-red-400" />
+        <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+          <div className="px-5 py-3 border-b border-slate-200">
+            <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+              <AlertCircle size={14} className="text-red-500" />
               Kapalı Tarihler
             </h3>
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-slate-100">
             {blockedDates.map((bd) => (
               <div key={bd.id} className="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-semibold text-red-400">{bd.blocked_date}</span>
+                  <span className="text-sm font-semibold text-slate-900">{bd.blocked_date}</span>
                   {bd.reason && (
-                    <span className="text-xs text-gray-500 ml-3">{bd.reason}</span>
+                    <span className="text-xs text-slate-500 ml-3">{bd.reason}</span>
                   )}
                 </div>
                 <button
                   onClick={() => unblockDate(bd.blocked_date)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-50 transition flex items-center gap-1"
                 >
                   <Unlock size={12} />
                   Aç

@@ -69,13 +69,13 @@ export async function GET(request: NextRequest) {
   const vehicle = assignment.vehicles as Record<string, string> | null;
 
   const pickupDate = new Date(res.pickup_datetime as string);
-  const pickupDateStr = pickupDate.toLocaleDateString("en-GB", {
+  const pickupDateStr = pickupDate.toLocaleDateString("tr-TR", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-  const pickupTimeStr = pickupDate.toLocaleTimeString("en-GB", {
+  const pickupTimeStr = pickupDate.toLocaleTimeString("tr-TR", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -87,14 +87,14 @@ export async function GET(request: NextRequest) {
       <div class="detail-row">
         <div class="detail-icon">🔄</div>
         <div>
-          <div class="detail-label">Return</div>
-          <div class="detail-value">${esc(retDate.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }))} — ${esc(retDate.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }))}</div>
+          <div class="detail-label">Dönüş</div>
+          <div class="detail-value">${esc(retDate.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" }))} — ${esc(retDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }))}</div>
         </div>
       </div>`;
   }
 
   const extras: string[] = [];
-  if (res.child_seat) extras.push("🪑 Child Seat");
+  if (res.child_seat) extras.push("🪑 Çocuk Koltuğu");
   const extrasHtml = extras.length > 0
     ? `<div class="detail-row">
         <div class="detail-icon">✨</div>
@@ -369,37 +369,36 @@ export async function GET(request: NextRequest) {
   <div class="voucher">
     <div class="header">
       <h1>TORVIAN</h1>
-      <div class="subtitle">Driver Transfer Voucher</div>
-      <div class="status-badge">TRANSFER ASSIGNMENT</div>
+      <div class="subtitle">Şoför Transfer Belgesi</div>
+      <div class="status-badge">TRANSFER BİLGİSİ</div>
     </div>
 
     <div class="code-bar">
       <span class="code">${esc(String(res.reservation_code))}</span>
-      <span class="trip-type">${res.trip_type === "round_trip" ? "Round Trip" : "One Way"}</span>
+      <span class="trip-type">${res.trip_type === "round_trip" ? "Gidiş-Dönüş" : "Tek Yön"}</span>
     </div>
 
     <div class="route-banner">
       <div class="from-to">
-        ANTALYA AIRPORT (AYT) <span class="arrow">→</span> ${esc(region?.name_en as string ?? "—")}
+        ANTALYA HAVALİMANI (AYT) <span class="arrow">→</span> ${esc(region?.name_tr as string || region?.name_en as string || "—")}
       </div>
-      ${region?.distance_km ? `<div class="distance">~${region.distance_km} km • ${region.duration_minutes} min</div>` : ""}
+      ${region?.distance_km ? `<div class="distance">~${region.distance_km} km • ${region.duration_minutes} dk</div>` : ""}
     </div>
-
     <div class="body">
       <!-- Pickup Details -->
       <div class="section">
-        <div class="section-title">Pickup Details</div>
+        <div class="section-title">Alış Detayları</div>
         <div class="detail-row">
           <div class="detail-icon">📅</div>
           <div>
-            <div class="detail-label">Date</div>
+            <div class="detail-label">Tarih</div>
             <div class="detail-value">${pickupDateStr}</div>
           </div>
         </div>
         <div class="detail-row">
           <div class="detail-icon">⏰</div>
           <div>
-            <div class="detail-label">Time</div>
+            <div class="detail-label">Saat</div>
             <div class="detail-value highlight">${pickupTimeStr}</div>
           </div>
         </div>
@@ -407,7 +406,7 @@ export async function GET(request: NextRequest) {
         <div class="detail-row">
           <div class="detail-icon">✈️</div>
           <div>
-            <div class="detail-label">Flight</div>
+            <div class="detail-label">Uçuş</div>
             <div class="detail-value">${esc(String(res.flight_code))}</div>
           </div>
         </div>` : ""}
@@ -416,19 +415,19 @@ export async function GET(request: NextRequest) {
 
       <!-- Passengers -->
       <div class="section">
-        <div class="section-title">Passengers</div>
+        <div class="section-title">Yolcular</div>
         <div class="detail-row">
           <div class="detail-icon">👥</div>
           <div>
-            <div class="detail-label">Count</div>
-            <div class="detail-value">${res.adults} Adults${(res.children as number) > 0 ? `, ${res.children} Children` : ""}</div>
+            <div class="detail-label">Kişi</div>
+            <div class="detail-value">${res.adults} Yetişkin${(res.children as number) > 0 ? `, ${res.children} Çocuk` : ""}</div>
           </div>
         </div>
         <div class="detail-row">
           <div class="detail-icon">🧳</div>
           <div>
-            <div class="detail-label">Luggage</div>
-            <div class="detail-value">${res.luggage_count ?? 0} pcs</div>
+            <div class="detail-label">Bagaj</div>
+            <div class="detail-value">${res.luggage_count ?? 0} adet</div>
           </div>
         </div>
         ${extrasHtml}
@@ -436,7 +435,7 @@ export async function GET(request: NextRequest) {
 
       <!-- Customer -->
       <div class="section">
-        <div class="section-title">Customer</div>
+        <div class="section-title">Müşteri</div>
         <div class="customer-card">
           <div class="name">${esc(customer?.first_name)} ${esc(customer?.last_name)}</div>
           <div class="contact">
@@ -448,11 +447,11 @@ export async function GET(request: NextRequest) {
       ${res.hotel_name ? `
       <!-- Hotel -->
       <div class="section">
-        <div class="section-title">Destination</div>
+        <div class="section-title">Varış</div>
         <div class="detail-row">
           <div class="detail-icon">🏨</div>
           <div>
-            <div class="detail-label">Hotel</div>
+            <div class="detail-label">Otel</div>
             <div class="detail-value">${esc(String(res.hotel_name))}</div>
             ${res.hotel_address ? `<div style="font-size:12px;color:#888;margin-top:2px">${esc(String(res.hotel_address))}</div>` : ""}
           </div>
@@ -465,7 +464,7 @@ export async function GET(request: NextRequest) {
 
       <!-- Vehicle & Driver -->
       <div class="section">
-        <div class="section-title">Vehicle & Driver</div>
+        <div class="section-title">Araç & Şoför</div>
         <div class="vehicle-card">
           <div class="icon">🚗</div>
           <div class="info">
@@ -477,7 +476,7 @@ export async function GET(request: NextRequest) {
         <div class="detail-row" style="margin-top:12px">
           <div class="detail-icon">👤</div>
           <div>
-            <div class="detail-label">Driver</div>
+            <div class="detail-label">Şoför</div>
             <div class="detail-value">${esc(driver.full_name)}</div>
             <div style="font-size:12px;color:#888;margin-top:2px">${esc(driver.phone)}</div>
           </div>
@@ -486,21 +485,21 @@ export async function GET(request: NextRequest) {
     </div>
 
     <div class="footer">
-      <div class="support">24/7 Support: 0850 840 1327 | torviantransfer@gmail.com</div>
+      <div class="support">7/24 Destek: 0850 840 1327 | torviantransfer@gmail.com</div>
       <div class="brand">TORVIAN VIP TRANSFER</div>
     </div>
   </div>
 
   <div class="btn-row">
-    <button class="save-btn" onclick="saveAsImage()">📷 Save as Image</button>
-    <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+    <button class="save-btn" onclick="saveAsImage()">📷 Görüntü Kaydet</button>
+    <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     async function saveAsImage() {
       const btn = document.querySelector('.save-btn');
-      btn.textContent = '⏳ Generating...';
+      btn.textContent = '⏳ Oluşturuluyor...';
       btn.disabled = true;
       try {
         const el = document.querySelector('.voucher');
@@ -513,10 +512,10 @@ export async function GET(request: NextRequest) {
         link.download = 'TORVIAN-voucher-${res.reservation_code}.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
-        btn.textContent = '✅ Saved!';
-        setTimeout(() => { btn.textContent = '📷 Save as Image'; btn.disabled = false; }, 2000);
+        btn.textContent = '✅ Kaydedildi!';
+        setTimeout(() => { btn.textContent = '📷 Görüntü Kaydet'; btn.disabled = false; }, 2000);
       } catch(e) {
-        btn.textContent = '📷 Save as Image';
+        btn.textContent = '📷 Görüntü Kaydet';
         btn.disabled = false;
         alert('Error saving image. Try screenshot instead.');
       }

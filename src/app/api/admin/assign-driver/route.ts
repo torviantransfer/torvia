@@ -4,7 +4,6 @@ import crypto from "crypto";
 import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
 import { assignDriverSchema } from "@/lib/validations";
-import { sendDriverAssignmentEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -145,24 +144,6 @@ export async function POST(request: NextRequest) {
       destination: region?.name_en ?? "?",
       date: pickupDate.toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
     }).catch(() => {});
-
-    // Send driver assignment email to customer
-    const customerEmail = (reservation.customers as unknown as Record<string, string>)?.email;
-    if (customerEmail) {
-      sendDriverAssignmentEmail({
-        to: customerEmail,
-        customerFirstName: customer?.first_name ?? "",
-        reservationCode: reservation.reservation_code,
-        leg,
-        driverName: driver?.full_name ?? "",
-        driverPhone: driver?.phone ?? "",
-        vehicleInfo: `${vehicleCheck.brand} ${vehicleCheck.model} — ${vehicleCheck.plate_number}`,
-        pickupTime: pickupTime || undefined,
-        regionName: region?.name_en ?? "",
-        pickupDatetime: reservation.pickup_datetime,
-        returnDatetime: reservation.return_datetime,
-      }).catch(() => {});
-    }
 
     return NextResponse.json({
       assignment,

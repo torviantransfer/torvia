@@ -94,6 +94,8 @@ export default function ReservationList({
     driverName: string;
   } | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [emailSendingId, setEmailSendingId] = useState<string | null>(null);
+  const [emailMessage, setEmailMessage] = useState<string | null>(null);
 
   const filtered = reservations.filter((r) => {
     const matchesSearch =
@@ -165,6 +167,27 @@ export default function ReservationList({
     await navigator.clipboard.writeText(text);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const sendDriverAssignmentEmail = async (assignmentId: string) => {
+    setEmailSendingId(assignmentId);
+    setEmailMessage(null);
+
+    const res = await fetch("/api/admin/send-driver-assignment-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignmentId }),
+    });
+
+    if (res.ok) {
+      setEmailMessage("E-posta müşteriye başarıyla gönderildi.");
+    } else {
+      const data = await res.json().catch(() => null);
+      setEmailMessage(data?.error ?? "E-posta gönderilemedi.");
+    }
+
+    setEmailSendingId(null);
+    setTimeout(() => setEmailMessage(null), 4000);
   };
 
   return (
@@ -442,18 +465,33 @@ export default function ReservationList({
                                     WhatsApp
                                   </a>
                                 )}
+                                <a
+                                  href={`/api/driver-voucher?token=${da.link_token}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-medium"
+                                >
+                                  <ExternalLink size={13} />
+                                  Voucher Aç
+                                </a>
                                 <button
                                   onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-medium"
                                 >
                                   {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
                                   {copiedLink ? "Kopyalandı!" : "Linki Kopyala"}
                                 </button>
-                                <a href={`/driver/${da.link_token}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-xs font-medium">
-                                  <ExternalLink size={13} />
-                                  Şoför Sayfası
-                                </a>
+                                <button
+                                  onClick={() => sendDriverAssignmentEmail(da.id)}
+                                  disabled={emailSendingId === da.id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium"
+                                >
+                                  {emailSendingId === da.id ? "Gönderiliyor..." : "E-posta Gönder"}
+                                </button>
                               </div>
+                            )}
+                            {emailMessage && emailSendingId === null && (
+                              <p className="mt-2 text-xs text-slate-500">{emailMessage}</p>
                             )}
                           </div>
                         );
