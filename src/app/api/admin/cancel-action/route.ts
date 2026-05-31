@@ -34,12 +34,12 @@ export async function POST(req: NextRequest) {
   const newStatus = action === "approve" ? "cancelled" : "paid";
 
   if (action === "approve") {
-    // Cancel active driver assignments for this reservation so drivers become free again.
+    // Close active driver assignments for this reservation so drivers become free again.
     const { error: assignmentError } = await admin
       .from("driver_assignments")
-      .update({ status: "cancelled" })
+      .update({ status: "completed", completed_at: new Date().toISOString() })
       .eq("reservation_id", reservation_id)
-      .in("status", ["assigned", "picked_up"]);
+      .in("status", ["assigned", "accepted", "picked_up"]);
 
     if (assignmentError) {
       console.error("Cancel action assignment update error:", assignmentError.message);

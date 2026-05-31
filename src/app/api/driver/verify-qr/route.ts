@@ -21,12 +21,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
     }
 
-    // Reject if link is expired (2h after completion)
-    if (assignment.status === "completed" && assignment.completed_at) {
-      const elapsed = Date.now() - new Date(assignment.completed_at).getTime();
-      if (elapsed > 2 * 60 * 60 * 1000) {
-        return NextResponse.json({ error: "This link has expired" }, { status: 403 });
-      }
+    if (assignment.status === "completed") {
+      return NextResponse.json({ error: "This link has expired" }, { status: 403 });
+    }
+
+    if (assignment.status !== "accepted" && assignment.status !== "picked_up") {
+      return NextResponse.json(
+        { verified: false, error: "Transfer must be accepted before QR verification." },
+        { status: 409 }
+      );
     }
 
     // Extract QR token from the scanned value

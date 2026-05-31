@@ -15,7 +15,12 @@ import {
   FileText,
   XCircle,
   X,
+  Phone,
+  MessageCircle,
+  QrCode,
+  ShieldCheck,
 } from "lucide-react";
+import QRCodeCanvas from "@/components/QRCodeCanvas";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "My Reservations", tr: "Rezervasyonlarım", de: "Meine Buchungen", pl: "Moje rezerwacje", ru: "Мои бронирования" },
@@ -78,6 +83,14 @@ interface Reservation {
   qr_code_token: string | null;
   regions: { name_en: string; name_tr: string; name_de: string; name_pl: string; name_ru: string } | null;
   vehicle_categories: { name: string } | null;
+  driver_assignments: Array<{
+    id: string;
+    leg: string;
+    pickup_time: string | null;
+    status: string;
+    drivers: { full_name: string; phone: string } | null;
+    vehicles: { plate_number: string; brand: string; model: string } | null;
+  }>;
 }
 
 export default function ReservationsList({
@@ -198,6 +211,9 @@ export default function ReservationsList({
         <div className="space-y-3">
           {filtered.map((r) => {
             const expanded = expandedId === r.id;
+            const activeAssignments = (r.driver_assignments ?? []).filter((da) =>
+              ["assigned", "accepted", "picked_up"].includes(da.status)
+            );
             return (
               <div
                 key={r.id}
@@ -313,6 +329,84 @@ export default function ReservationsList({
                         </span>
                       </div>
                     </div>
+
+                    {activeAssignments.length > 0 && (
+                      <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+                        <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-blue-950">
+                          <ShieldCheck size={16} />
+                          Şoför ve Araç Bilgileri
+                        </h3>
+                        <div className="space-y-3">
+                          {activeAssignments.map((da) => {
+                            const driverPhone = da.drivers?.phone?.replace(/[^0-9]/g, "");
+                            return (
+                              <div key={da.id} className="rounded-xl border border-blue-100 bg-white p-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold uppercase text-blue-700">
+                                    {da.leg === "return" ? "Dönüş" : "Gidiş"}
+                                  </span>
+                                  <span className="text-xs font-semibold text-blue-700">
+                                    {da.status === "accepted" ? "Şoför işi kabul etti" : da.status === "picked_up" ? "Yolculuk başladı" : "Şoför atandı"}
+                                  </span>
+                                </div>
+                                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                  <div>
+                                    <p className="text-xs font-bold uppercase text-gray-400">Şoför</p>
+                                    <p className="font-semibold text-gray-950">{da.drivers?.full_name || "—"}</p>
+                                    {da.drivers?.phone && (
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        <a
+                                          href={`tel:${da.drivers.phone}`}
+                                          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700"
+                                        >
+                                          <Phone size={13} />
+                                          Ara
+                                        </a>
+                                        <a
+                                          href={`https://wa.me/${driverPhone}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white"
+                                        >
+                                          <MessageCircle size={13} />
+                                          WhatsApp
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold uppercase text-gray-400">Araç</p>
+                                    <p className="font-semibold text-gray-950">
+                                      {da.vehicles ? `${da.vehicles.brand} ${da.vehicles.model}` : "—"}
+                                    </p>
+                                    <p className="font-mono text-sm font-bold text-gray-700">
+                                      {da.vehicles?.plate_number || "—"}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {r.qr_code_token && ["paid", "driver_assigned", "passenger_picked_up"].includes(r.status) && (
+                      <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                        <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-950">
+                          <QrCode size={16} />
+                          Transfer QR Kodu
+                        </h3>
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                          <div className="inline-flex rounded-xl bg-gray-50 p-3">
+                            <QRCodeCanvas value={`/verify/${r.qr_code_token}`} size={132} />
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            Şoför yolculuğu başlatmadan önce bu QR kodu okutacaktır.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex flex-wrap items-center gap-2">

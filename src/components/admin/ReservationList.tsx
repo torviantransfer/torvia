@@ -3,9 +3,7 @@
 import { useState } from "react";
 import {
   Search,
-  Filter,
   UserPlus,
-  Eye,
   Phone,
   Send,
   ChevronDown,
@@ -15,6 +13,14 @@ import {
   MessageCircle,
   ExternalLink,
   X,
+  CalendarClock,
+  Mail,
+  MapPin,
+  Plane,
+  Trash2,
+  Pencil,
+  Users,
+  Hotel,
 } from "lucide-react";
 
 interface Reservation {
@@ -99,6 +105,7 @@ export default function ReservationList({
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
   const [editModal, setEditModal] = useState<{ assignmentId?: string; reservationId?: string; field?: string; value?: string } | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ reservationId?: string } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filtered = reservations.filter((r) => {
     const matchesSearch =
@@ -123,6 +130,36 @@ export default function ReservationList({
       cancelled: "İptal Edildi",
       cancel_requested: "İptal Talep Edildi",
     };
+
+  const formatPickupDate = (date: string) =>
+    new Date(date).toLocaleDateString("tr-TR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const formatPickupTime = (date: string) =>
+    new Date(date).toLocaleTimeString("tr-TR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const deleteReservation = async (reservationId: string) => {
+    setDeletingId(reservationId);
+    const res = await fetch("/api/admin/delete-reservation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reservationId }),
+    });
+
+    if (res.ok) {
+      window.location.reload();
+      return;
+    }
+
+    setDeletingId(null);
+    alert("Rezervasyon silinemedi.");
+  };
 
   const assignDriver = async (reservationId: string) => {
     console.log('assignDriver called', { reservationId, selectedDriver, selectedVehicle, assigningLeg, forceAssign });
@@ -168,10 +205,10 @@ export default function ReservationList({
       console.log('assign-driver response status', res.status);
 
       const text = await res.text();
-      let data: any = null;
+      let data: Record<string, string> | null = null;
       try {
-        data = text ? JSON.parse(text) : null;
-      } catch (e) {
+        data = text ? (JSON.parse(text) as Record<string, string>) : null;
+      } catch {
         console.error('assign-driver invalid JSON response', text);
       }
 
@@ -347,103 +384,169 @@ export default function ReservationList({
         {filtered.map((r) => (
           <div
             key={r.id}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
+            className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
+              r.status === "pending" ? "border-yellow-200" : "border-gray-100"
+            }`}
           >
             {/* Summary row */}
             <div
-              className="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50"
+              className="p-4 cursor-pointer hover:bg-gray-50"
               onClick={() =>
                 setExpandedId(expandedId === r.id ? null : r.id)
               }
             >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono font-bold text-slate-900 text-sm">
-                    {r.reservation_code}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[r.status]}`}
-                  >
-                    {statusLabels[r.status] ?? r.status.replace("_", " ")}
-                  </span>
-                  {r.trip_type === "round_trip" && (
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                      Gidiş-Dönüş
+              <div className="flex items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className="font-mono font-bold text-slate-900 text-sm tracking-wide">
+                      {r.reservation_code}
                     </span>
-                  )}
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[r.status]}`}
+                    >
+                      {statusLabels[r.status] ?? r.status.replace("_", " ")}
+                    </span>
+                    {r.trip_type === "round_trip" && (
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                        Gidiş-Dönüş
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-base font-semibold text-gray-950 truncate">
+                    {r.customers?.first_name} {r.customers?.last_name}
+                    <span className="mx-2 text-gray-300">→</span>
+                    {r.regions?.name_en}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarClock size={13} />
+                      {formatPickupDate(r.pickup_datetime)} {formatPickupTime(r.pickup_datetime)}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Users size={13} />
+                      {r.adults} yetişkin, {r.children} çocuk
+                    </span>
+                    {r.flight_code && (
+                      <span className="inline-flex items-center gap-1">
+                        <Plane size={13} />
+                        {r.flight_code}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">
-                  {r.customers?.first_name} {r.customers?.last_name} →{" "}
-                  {r.regions?.name_en}
-                </p>
+
+                <div className="flex items-start gap-2">
+                  <div className="text-right min-w-[84px]">
+                    <p className="text-lg font-bold text-gray-950">
+                      ${r.total_price.toFixed(2)}
+                    </p>
+                    <p className="text-xs font-medium text-gray-400">
+                      {r.status === "pending" ? "Tahsilat bekliyor" : statusLabels[r.status] ?? r.status}
+                    </p>
+                  </div>
+                  {r.status === "pending" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteModal({ reservationId: r.id });
+                      }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                      title="Bekleyen rezervasyonu sil"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                  <ChevronDown
+                    size={18}
+                    className={`mt-2 text-gray-400 transition-transform ${expandedId === r.id ? "rotate-180" : ""}`}
+                  />
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-gray-900">
-                  ${r.total_price.toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {new Date(r.pickup_datetime).toLocaleDateString("tr-TR")}{" "}
-                  {new Date(r.pickup_datetime).toLocaleTimeString("tr-TR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-              <ChevronDown
-                size={18}
-                className={`text-gray-400 transition-transform ${expandedId === r.id ? "rotate-180" : ""}`}
-              />
             </div>
 
             {/* Expanded detail */}
             {expandedId === r.id && (
               <div className="px-4 pb-4 border-t border-gray-100 pt-4">
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs font-medium text-gray-400 mb-1">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 text-sm">
+                  <section>
+                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
+                      <Users size={14} />
                       Müşteri
-                    </p>
-                    <p className="font-medium">
+                    </div>
+                    <p className="font-semibold text-gray-950">
                       {r.customers?.first_name} {r.customers?.last_name}
                     </p>
-                    <p className="text-gray-500">{r.customers?.email}</p>
-                    <p className="text-gray-500">{r.customers?.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-400 mb-1">
-                      Transfer
+                    <p className="mt-2 flex items-center gap-2 text-gray-600 break-all">
+                      <Mail size={14} className="text-gray-400 shrink-0" />
+                      {r.customers?.email || "—"}
                     </p>
-                    <p>Havalimanı → {r.regions?.name_en}</p>
-                    <p className="text-gray-500">
+                    <p className="mt-1 flex items-center gap-2 text-gray-600">
+                      <Phone size={14} className="text-gray-400 shrink-0" />
+                      {r.customers?.phone || "—"}
+                    </p>
+                  </section>
+
+                  <section>
+                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
+                      <MapPin size={14} />
+                      Transfer
+                    </div>
+                    <p className="font-semibold text-gray-950">Havalimanı → {r.regions?.name_en}</p>
+                    <p className="mt-2 flex items-center gap-2 text-gray-600">
+                      <Plane size={14} className="text-gray-400 shrink-0" />
                       Uçuş: {r.flight_code || "—"}
                     </p>
-                    <p className="text-gray-500">
+                    <p className="mt-1 flex items-center gap-2 text-gray-600">
+                      <Users size={14} className="text-gray-400 shrink-0" />
                       {r.adults} yetişkin, {r.children} çocuk
                     </p>
                     {r.child_seat && (
-                      <p className="text-green-600 text-xs">
+                      <p className="mt-2 text-green-600 text-xs font-medium">
                         Çocuk koltuğu istendi
                       </p>
                     )}
                     {r.welcome_sign && (
-                      <p className="text-blue-600 text-xs">
+                      <p className="mt-1 text-blue-600 text-xs font-medium">
                         Karşılama tabelası istendi
                       </p>
                     )}
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-400 mb-1">
+                  </section>
+
+                  <section>
+                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
+                      <Hotel size={14} />
                       Detaylar
-                    </p>
-                    <p>Otel: {r.hotel_name || "—"}</p>
-                    <p className="text-gray-500">
+                    </div>
+                    <p className="font-semibold text-gray-950">Otel: {r.hotel_name || "—"}</p>
+                    <p className="mt-2 text-gray-600">
                       Notlar: {r.notes || "—"}
                     </p>
-                    <p className="text-gray-500">
+                    <p className="mt-1 text-gray-500">
                       Rezervasyon:{" "}
-                      {new Date(r.created_at).toLocaleDateString("tr-TR")}
+                      {formatPickupDate(r.created_at)}
                     </p>
-                  </div>
+                  </section>
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
+                  <button
+                    onClick={() => setEditModal({ reservationId: r.id })}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-xs font-semibold"
+                  >
+                    <Pencil size={13} />
+                    Düzenle
+                  </button>
+                  {r.status === "pending" && (
+                    <button
+                      onClick={() => setDeleteModal({ reservationId: r.id })}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-xs font-semibold"
+                    >
+                      <Trash2 size={13} />
+                      Bekleyen Rezervasyonu Sil
+                    </button>
+                  )}
                 </div>
 
                 {/* Driver assignment */}
@@ -560,12 +663,14 @@ export default function ReservationList({
                                   onClick={() => setDeleteModal({ reservationId: r.id })}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
                                 >
+                                  <Trash2 size={13} />
                                   Sil
                                 </button>
                                 <button
                                   onClick={() => setEditModal({ reservationId: r.id })}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-xs font-medium"
                                 >
+                                  <Pencil size={13} />
                                   Düzenle
                                 </button>
                                 <button
@@ -587,8 +692,8 @@ export default function ReservationList({
                   )}
                   {/* Assign buttons per leg */}
                   {(r.status === "paid" || r.status === "driver_assigned") && (() => {
-                    const outboundAssigned = r.driver_assignments?.some(da => da.leg === "outbound" && ["assigned", "picked_up"].includes(da.status));
-                    const returnAssigned = r.driver_assignments?.some(da => da.leg === "return" && ["assigned", "picked_up"].includes(da.status));
+                    const outboundAssigned = r.driver_assignments?.some(da => da.leg === "outbound" && ["assigned", "accepted", "picked_up"].includes(da.status));
+                    const returnAssigned = r.driver_assignments?.some(da => da.leg === "return" && ["assigned", "accepted", "picked_up"].includes(da.status));
                     const canAssignOutbound = !outboundAssigned;
                     const canAssignReturn = r.trip_type === "round_trip" && !returnAssigned;
 
@@ -779,7 +884,7 @@ export default function ReservationList({
               <button
                 onClick={async () => {
                   if (!editModal.reservationId) return;
-                  const body: any = { reservationId: editModal.reservationId };
+                  const body: Record<string, string> = { reservationId: editModal.reservationId };
                   if (editModal.field && editModal.value) {
                     body[editModal.field] = editModal.value;
                   }
@@ -820,26 +925,18 @@ export default function ReservationList({
               </button>
             </div>
             <p className="text-sm text-gray-600 mb-6">
-              Bu işlem geri alınamaz. Rezervasyon iptal edilecek (soft-delete). Emin misiniz?
+              Bu rezervasyon panelde iptal edilmiş olarak işaretlenecek. Emin misiniz?
             </p>
             <div className="flex gap-3">
               <button
-                onClick={async () => {
+                onClick={() => {
                   if (!deleteModal.reservationId) return;
-                  const res = await fetch("/api/admin/delete-reservation", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ reservationId: deleteModal.reservationId }),
-                  });
-                  if (res.ok) {
-                    window.location.reload();
-                  } else {
-                    alert("Rezervasyon silinemedi.");
-                  }
+                  deleteReservation(deleteModal.reservationId);
                 }}
-                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm"
+                disabled={deletingId === deleteModal.reservationId}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium text-sm"
               >
-                Sil
+                {deletingId === deleteModal.reservationId ? "Siliniyor..." : "Sil"}
               </button>
               <button
                 onClick={() => setDeleteModal(null)}

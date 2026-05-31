@@ -36,12 +36,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Reject if link is expired (2h after completion)
-    if (assignment.status === "completed" && assignment.completed_at) {
-      const elapsed = Date.now() - new Date(assignment.completed_at as string).getTime();
-      if (elapsed > 2 * 60 * 60 * 1000) {
-        return NextResponse.json({ error: "This link has expired" }, { status: 403 });
-      }
+    if (assignment.status === "completed") {
+      return NextResponse.json({ error: "This link has expired" }, { status: 403 });
+    }
+
+    const allowedTransitions: Record<string, string[]> = {
+      assigned: ["accepted"],
+      accepted: ["picked_up"],
+      picked_up: ["completed"],
+    };
+
+    if (!allowedTransitions[assignment.status]?.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status transition from ${assignment.status} to ${status}` },
+        { status: 409 }
+      );
     }
 
     // Update assignment status + timestamps

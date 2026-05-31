@@ -42,24 +42,19 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Assignment not found", { status: 404 });
   }
 
-  // Expire voucher 2 hours after transfer completion
-  if (assignment.status === "completed" && assignment.completed_at) {
-    const completedAt = new Date(assignment.completed_at).getTime();
-    const now = Date.now();
-    const twoHours = 2 * 60 * 60 * 1000;
-    if (now - completedAt > twoHours) {
-      return new NextResponse(
-        `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Link Expired</title></head><body style="font-family:system-ui;background:#f5f5f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
-        <div style="background:#fff;border-radius:20px;padding:40px;text-align:center;max-width:400px;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
-        <div style="font-size:48px;margin-bottom:16px">🔒</div>
-        <h1 style="font-size:24px;margin:0 0 8px;color:#1d1d1f">Link Expired</h1>
-        <p style="color:#888;font-size:14px">This voucher link has expired. Transfer links are deactivated 2 hours after completion.</p>
-        <p style="color:#ccc;font-size:11px;margin-top:24px;letter-spacing:2px">TORVIAN VIP TRANSFER</p>
-        </div></body></html>`,
-        { headers: { "Content-Type": "text/html; charset=utf-8" } }
-      );
-    }
+  // Driver voucher follows the same single-use operational rule as the driver panel.
+  if (assignment.status === "completed") {
+    return new NextResponse(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Transfer Completed</title></head><body style="font-family:system-ui;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;text-align:center;max-width:420px;box-shadow:0 4px 24px rgba(15,23,42,0.08)">
+      <div style="width:56px;height:56px;border-radius:999px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px">✓</div>
+      <h1 style="font-size:24px;margin:0 0 8px;color:#020617">Transfer Tamamlandı</h1>
+      <p style="color:#64748b;font-size:14px">Bu voucher linki tamamlanan transfer için artık kullanılamaz.</p>
+      <p style="color:#94a3b8;font-size:11px;margin-top:24px;letter-spacing:2px;font-weight:700">TORVIAN</p>
+      </div></body></html>`,
+      { headers: { "Content-Type": "text/html; charset=utf-8" } }
+    );
   }
 
   const res = assignment.reservations as Record<string, unknown>;

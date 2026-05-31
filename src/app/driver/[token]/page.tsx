@@ -33,41 +33,43 @@ export default async function DriverPage({
     notFound();
   }
 
-  // Expire link 2 hours after transfer completion
-  if (assignment.status === "completed" && assignment.completed_at) {
-    const completedAt = new Date(assignment.completed_at).getTime();
-    const now = Date.now();
-    const twoHours = 2 * 60 * 60 * 1000;
-    if (now - completedAt > twoHours) {
-      return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-          <div className="max-w-md w-full text-center">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <div className="text-5xl mb-4">🔒</div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Link Süresi Doldu</h1>
-              <p className="text-gray-500 text-sm mb-6">
-                Bu şoför linkinin süresi doldu. Transfer linkleri transfer tamamlandıktan
-                sonra otomatik olarak 2 saat içinde devre dışı bırakılır.
-              </p>
-              <div className="text-xs text-gray-400">
-                TORVIAN VIP Transfer
-              </div>
+  // The driver link is single-use for operations: once the transfer is completed,
+  // the panel is no longer available.
+  if (assignment.status === "completed") {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+              <span className="text-2xl">✓</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-950 mb-2">Transfer Tamamlandı</h1>
+            <p className="text-slate-500 text-sm mb-6">
+              Bu şoför linki tamamlanan transfer için artık kullanılamaz.
+            </p>
+            <div className="text-xs font-semibold tracking-[0.2em] text-slate-400">
+              TORVIAN
             </div>
           </div>
         </div>
-      );
-    }
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-wide text-slate-950">
             TORVIAN
-          </h1>
-          <p className="text-sm text-gray-400">Şoför Paneli</p>
+            </h1>
+            <p className="text-sm font-medium text-slate-500">Şoför Paneli</p>
+          </div>
+          <div className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">
+            Transfer Operasyonu
+          </div>
         </div>
 
         <DriverPanel

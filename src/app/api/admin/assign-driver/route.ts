@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       .select("id")
       .eq("reservation_id", reservationId)
       .eq("leg", leg)
-      .in("status", ["assigned", "picked_up"])
+      .in("status", ["assigned", "accepted", "picked_up"])
       .single();
 
     if (existingAssignment) {

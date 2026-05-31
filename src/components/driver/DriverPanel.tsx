@@ -1,32 +1,36 @@
-﻿"use client";
+"use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import type { ReactNode } from "react";
 import {
-  MapPin,
-  Calendar,
-  Clock,
-  Users,
-  Plane,
-  Phone,
-  Hotel,
   Baby,
-  Tag,
-  Navigation,
+  CalendarClock,
+  Car,
   CheckCircle,
-  Loader2,
-  QrCode,
-  FileText,
-  ChevronDown,
-  MessageCircle,
+  Circle,
+  Clock,
   Download,
+  Hotel,
+  Loader2,
+  Luggage,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Phone,
+  Plane,
+  QrCode,
+  Route,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
-import QRCodeCanvas from "@/components/QRCodeCanvas";
 import QRScanner from "@/components/driver/QRScanner";
 
 interface Props {
   assignment: {
     id: string;
     status: string;
+    leg: "outbound" | "return";
+    pickup_time: string | null;
     reservations: {
       reservation_code: string;
       trip_type: string;
@@ -67,41 +71,49 @@ interface Props {
   token: string;
 }
 
-const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; icon: string }> = {
-  assigned: { color: "text-yellow-800", bg: "bg-yellow-50 border-yellow-200", label: "Atama Bekleniyor", icon: "🔔" },
-  accepted: { color: "text-blue-800", bg: "bg-blue-50 border-blue-200", label: "Transfer Kabul Edildi", icon: "✅" },
-  picked_up: { color: "text-purple-800", bg: "bg-purple-50 border-purple-200", label: "Müşteri Alındı", icon: "🚗" },
-  completed: { color: "text-green-800", bg: "bg-green-50 border-green-200", label: "Tamamlandı", icon: "🏁" },
+const STATUS_CONFIG: Record<string, { label: string; tone: string; step: number }> = {
+  assigned: { label: "Atama Bekliyor", tone: "border-amber-200 bg-amber-50 text-amber-800", step: 1 },
+  accepted: { label: "Şoför Kabul Etti", tone: "border-blue-200 bg-blue-50 text-blue-800", step: 2 },
+  picked_up: { label: "Yolculuk Başladı", tone: "border-indigo-200 bg-indigo-50 text-indigo-800", step: 3 },
+  completed: { label: "Tamamlandı", tone: "border-emerald-200 bg-emerald-50 text-emerald-800", step: 4 },
 };
+
+const STEPS = ["Kabul", "QR", "Yolculuk", "Bitiş"];
 
 export default function DriverPanel({ assignment, token }: Props) {
   const [status, setStatus] = useState(assignment.status);
   const [loading, setLoading] = useState(false);
-  const [qrVerified, setQrVerified] = useState(false);
+  const [qrVerified, setQrVerified] = useState(status === "picked_up" || status === "completed");
+  const [error, setError] = useState("");
 
   const res = assignment.reservations;
   const customer = res?.customers;
   const region = res?.regions;
   const regionName = region?.name_tr || region?.name_en || "—";
   const vehicle = assignment.vehicles;
+  const statusConf = STATUS_CONFIG[status] ?? STATUS_CONFIG.assigned;
+  const isReturn = assignment.leg === "return";
 
   const updateStatus = async (newStatus: string) => {
     setLoading(true);
+    setError("");
     try {
       const response = await fetch("/api/driver/update-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, status: newStatus }),
       });
-      if (response.ok) {
-        setStatus(newStatus);
-        // Send WhatsApp notification to customer
-        if (customer?.phone) {
-          sendWhatsAppNotify(newStatus);
-        }
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        setError(data?.error ?? "Durum güncellenemedi.");
+        return;
       }
+
+      setStatus(newStatus);
+      if (newStatus === "picked_up") setQrVerified(true);
+      if (customer?.phone) sendWhatsAppNotify(newStatus);
     } catch {
-      // Silently fail
+      setError("Bağlantı hatası. Lütfen tekrar deneyin.");
     } finally {
       setLoading(false);
     }
@@ -111,17 +123,16 @@ export default function DriverPanel({ assignment, token }: Props) {
     if (!customer?.phone) return;
     const phone = customer.phone.replace(/[^0-9]/g, "");
     const code = res?.reservation_code ?? "";
+    const vehicleText = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.plate_number})` : "—";
 
     const messages: Record<string, string> = {
-      accepted: `✅ TORVIAN Transfer\n\nTransferiniz ${code} kabul edildi.\nŞoförünüz: ${assignment.drivers?.full_name ?? "—"}\nAraç: ${vehicle?.brand ?? ""} ${vehicle?.model ?? ""} (${vehicle?.plate_number ?? ""})\n\nHavalimanında zamanında olacağız! 🚗`,
-      picked_up: `🚗 TORVIAN Transfer\n\nŞoförünüz transfer ${code} için yolcuyu aldığını doğruladı.\nYola çıktık! Keyifli yolculuklar. 🌟`,
-      completed: `🏁 TORVIAN Transfer\n\nTransfer ${code} tamamlandı.\nTORVIAN'i tercih ettiğiniz için teşekkür ederiz.\n\n⭐ Bizi değerlendirin: torviantransfer.com`,
+      accepted: `TORVIAN Transfer\n\n${code} numaralı transferiniz şoför tarafından kabul edildi.\nŞoför: ${assignment.drivers?.full_name ?? "—"}\nAraç: ${vehicleText}`,
+      picked_up: `TORVIAN Transfer\n\n${code} numaralı transferiniz başladı. Keyifli yolculuklar dileriz.`,
+      completed: `TORVIAN Transfer\n\n${code} numaralı transferiniz tamamlandı. Bizi tercih ettiğiniz için teşekkür ederiz.`,
     };
 
     const text = messages[newStatus];
-    if (text) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
-    }
+    if (text) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
   };
 
   const onQrVerified = useCallback(() => {
@@ -130,304 +141,309 @@ export default function DriverPanel({ assignment, token }: Props) {
 
   if (!res) {
     return (
-      <div className="text-center py-12 text-gray-400">
-        Reservation data not found
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+        Rezervasyon verisi bulunamadı.
       </div>
     );
   }
 
-  const pickupDate = new Date(res.pickup_datetime);
-  const isCompleted = status === "completed";
-  const statusConf = STATUS_CONFIG[status] ?? STATUS_CONFIG.assigned;
+  const pickupDate = new Date(isReturn && res.return_datetime ? res.return_datetime : res.pickup_datetime);
+  const pickupTime =
+    isReturn && assignment.pickup_time
+      ? assignment.pickup_time
+      : pickupDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  const routeText = isReturn
+    ? `${regionName} → Antalya Havalimanı`
+    : `Antalya Havalimanı → ${regionName}`;
+  const canStartRide = status === "accepted" && qrVerified;
 
   return (
     <div className="space-y-4">
-      {/* Status banner */}
-      <div className={`rounded-xl p-4 text-center border ${statusConf.bg}`}>
-        <span className="text-lg mr-2">{statusConf.icon}</span>
-        <span className={`text-sm font-bold uppercase ${statusConf.color}`}>
-          {statusConf.label}
-        </span>
-      </div>
-
-      {/* Countdown / time highlight */}
-      {!isCompleted && (
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 text-center text-white">
-          <p className="text-xs opacity-80 mb-1">Alış Saati</p>
-          <p className="text-2xl font-bold">
-            {pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </p>
-          <p className="text-xs opacity-80 mt-1">
-            {pickupDate.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-        </div>
-      )}
-
-      {/* Reservation info card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-gray-900">Transfer Detayları</h2>
-          <span className="font-mono text-sm font-bold text-slate-900">
-            {res.reservation_code}
-          </span>
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 bg-slate-950 px-5 py-5 text-white">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-mono text-sm font-bold text-orange-300">{res.reservation_code}</p>
+              <h2 className="mt-1 text-xl font-black">{routeText}</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                {region?.duration_minutes ? `~${region.duration_minutes} dk` : "Süre —"}
+                {region?.distance_km ? ` • ${region.distance_km} km` : ""}
+              </p>
+            </div>
+            <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold ${statusConf.tone}`}>
+              {statusConf.label}
+            </span>
+          </div>
         </div>
 
-        <div className="space-y-3 text-sm">
-          {/* Route */}
-          <div className="flex items-start gap-3">
-            <MapPin size={16} className="text-orange-500 mt-0.5" />
-            <div>
-              <p className="font-medium">
-                Antalya Havalimanı → {regionName}
-              </p>
-              <p className="text-xs text-gray-400">
-                ~{region?.duration_minutes} dk • {region?.distance_km} km
-              </p>
-            </div>
-          </div>
-
-          {/* Date */}
-          <div className="flex items-center gap-3">
-            <Calendar size={16} className="text-gray-400" />
-            <div>
-              <p className="font-medium">
-                {pickupDate.toLocaleDateString("en-GB", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
-              <p className="text-orange-500 font-bold">
-                {pickupDate.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Flight */}
-          {res.flight_code && (
-            <div className="flex items-center gap-3">
-              <Plane size={16} className="text-gray-400" />
-              <p className="font-medium">{res.flight_code}</p>
-            </div>
-          )}
-
-          {/* Passengers */}
-          <div className="flex items-center gap-3">
-            <Users size={16} className="text-gray-400" />
-            <p>
-              {res.adults} yetişkin, {res.children} çocuk, {res.luggage_count} bagaj
+        <div className="grid grid-cols-2 border-b border-slate-100">
+          <div className="p-5">
+            <p className="text-xs font-bold uppercase text-slate-400">Alış Tarihi</p>
+            <p className="mt-1 font-bold text-slate-950">
+              {pickupDate.toLocaleDateString("tr-TR", { weekday: "long", day: "2-digit", month: "long" })}
             </p>
           </div>
-
-          {/* Child seat */}
-          {res.child_seat && (
-            <div className="flex items-center gap-3">
-              <Baby size={16} className="text-green-500" />
-              <p className="text-green-700">Çocuk koltuğu gerekli</p>
-            </div>
-          )}
-
-          {/* Welcome sign */}
-          {res.welcome_sign && (
-            <div className="flex items-center gap-3">
-              <Tag size={16} className="text-blue-500" />
-              <p className="text-blue-700">
-                Karşılama tabelası: {res.welcome_name || "İsim belirtilmedi"}
-              </p>
-            </div>
-          )}
-
-          {/* Hotel */}
-          {res.hotel_name && (
-            <div className="flex items-start gap-3">
-              <Hotel size={16} className="text-gray-400 mt-0.5" />
-              <div>
-                <p className="font-medium">{res.hotel_name}</p>
-                {res.hotel_address && (
-                  <p className="text-xs text-gray-400">{res.hotel_address}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Notes */}
-          {res.notes && (
-            <div className="p-3 bg-yellow-50 rounded-lg text-yellow-800 text-xs">
-              📝 {res.notes}
-            </div>
-          )}
-
-          {/* Return trip */}
-          {res.trip_type === "round_trip" && res.return_datetime && (
-            <div className="p-3 bg-blue-50 rounded-lg text-blue-800 text-xs">
-              🔄 Dönüş: {new Date(res.return_datetime).toLocaleDateString("tr-TR")} {" "}
-              {new Date(res.return_datetime).toLocaleDateString("tr-TR")}{" "}
-              {new Date(res.return_datetime).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Customer contact card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h3 className="font-bold text-gray-900 mb-3">Müşteri</h3>
-        <div className="space-y-2">
-          <p className="font-medium text-gray-800">
-            {customer?.first_name} {customer?.last_name}
-          </p>
-          <div className="flex gap-2">
-            <a
-              href={`tel:${customer?.phone}`}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 text-sm rounded-lg font-medium"
-            >
-              <Phone size={14} />
-              Ara
-            </a>
-            <a
-              href={`https://wa.me/${customer?.phone?.replace(/[^0-9]/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#25D366] text-white text-sm rounded-lg font-medium"
-            >
-              <MessageCircle size={14} />
-              WhatsApp
-            </a>
+          <div className="border-l border-slate-100 p-5">
+            <p className="text-xs font-bold uppercase text-slate-400">Alış Saati</p>
+            <p className="mt-1 text-3xl font-black text-orange-600">{pickupTime}</p>
           </div>
         </div>
-      </div>
 
-      {/* Vehicle info */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h3 className="font-bold text-gray-900 mb-2">Araç</h3>
-        <p className="text-sm">
-          {vehicle?.brand} {vehicle?.model} —{" "}
-          <span className="font-mono font-bold">{vehicle?.plate_number}</span>
-        </p>
-      </div>
+        <div className="grid gap-3 p-5 sm:grid-cols-4">
+          {STEPS.map((step, index) => {
+            const done = statusConf.step > index + 1 || (index === 1 && qrVerified);
+            const active = statusConf.step === index + 1 || (index === 1 && status === "accepted" && !qrVerified);
+            return (
+              <div
+                key={step}
+                className={`rounded-xl border p-3 ${
+                  done
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : active
+                      ? "border-orange-200 bg-orange-50 text-orange-700"
+                      : "border-slate-200 bg-slate-50 text-slate-400"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {done ? <CheckCircle size={16} /> : <Circle size={16} />}
+                  <span className="text-xs font-bold">{step}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-      {/* QR Scanner — show when accepted (so driver can verify passenger) */}
-      {(status === "accepted" || status === "picked_up") && !qrVerified && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm font-semibold text-blue-800 mb-2">Müşteri QR Kodunu Okutun</p>
-          <p className="text-xs text-blue-600 mb-4">
-            Lütfen transferi onaylamadan önce müşterinin QR kodunu okutun.
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+          <h3 className="mb-4 flex items-center gap-2 font-black text-slate-950">
+            <Route size={18} className="text-orange-500" />
+            Transfer Detayları
+          </h3>
+          <div className="grid gap-3 text-sm sm:grid-cols-2">
+            <Info icon={<MapPin size={16} />} label="Güzergah" value={routeText} />
+            <Info
+              icon={<CalendarClock size={16} />}
+              label="Tarih"
+              value={`${pickupDate.toLocaleDateString("tr-TR")} ${pickupTime}`}
+            />
+            <Info icon={<Plane size={16} />} label="Uçuş" value={res.flight_code || "—"} />
+            <Info
+              icon={<Users size={16} />}
+              label="Yolcu"
+              value={`${res.adults} yetişkin, ${res.children} çocuk`}
+            />
+            <Info icon={<Luggage size={16} />} label="Bagaj" value={`${res.luggage_count} bagaj`} />
+            <Info icon={<Hotel size={16} />} label="Otel" value={res.hotel_name || "—"} />
+          </div>
+
+          {(res.child_seat || res.welcome_sign || res.notes || (res.trip_type === "round_trip" && res.return_datetime)) && (
+            <div className="mt-4 space-y-2">
+              {res.child_seat && (
+                <Notice tone="green" icon={<Baby size={15} />} text="Çocuk koltuğu gerekli" />
+              )}
+              {res.welcome_sign && (
+                <Notice tone="blue" icon={<ShieldCheck size={15} />} text={`Karşılama tabelası: ${res.welcome_name || "İsim belirtilmedi"}`} />
+              )}
+              {res.notes && (
+                <Notice tone="amber" icon={<Clock size={15} />} text={res.notes} />
+              )}
+              {res.trip_type === "round_trip" && res.return_datetime && (
+                <Notice
+                  tone="slate"
+                  icon={<Route size={15} />}
+                  text={`Dönüş: ${new Date(res.return_datetime).toLocaleDateString("tr-TR")} ${new Date(res.return_datetime).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 font-black text-slate-950">Müşteri</h3>
+            <p className="font-bold text-slate-900">
+              {customer?.first_name} {customer?.last_name}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${customer?.phone}`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 text-sm font-bold text-blue-700 hover:bg-blue-100"
+              >
+                <Phone size={15} />
+                Ara
+              </a>
+              <a
+                href={`https://wa.me/${customer?.phone?.replace(/[^0-9]/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+              >
+                <MessageCircle size={15} />
+                WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 flex items-center gap-2 font-black text-slate-950">
+              <Car size={17} className="text-orange-500" />
+              Araç
+            </h3>
+            <p className="text-sm font-semibold text-slate-800">
+              {vehicle ? `${vehicle.brand} ${vehicle.model}` : "—"}
+            </p>
+            <p className="mt-1 font-mono text-lg font-black text-slate-950">
+              {vehicle?.plate_number || "—"}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {status === "accepted" && !qrVerified && (
+        <section className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
+          <h3 className="mb-2 flex items-center gap-2 font-black text-blue-950">
+            <QrCode size={18} />
+            Yolcu QR Doğrulama
+          </h3>
+          <p className="mb-4 text-sm text-blue-700">
+            Yolculuğu başlatmak için müşterinin mailindeki veya müşteri panelindeki QR kodu okutun.
           </p>
           <QRScanner token={token} onVerified={onQrVerified} />
+        </section>
+      )}
+
+      {qrVerified && status === "accepted" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-800">
+          QR doğrulandı. Yolculuğu başlatabilirsiniz.
         </div>
       )}
 
-      {qrVerified && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center text-sm font-bold text-green-700">
-          ✅ Müşteri QR kodu doğrulandı.
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
+          {error}
         </div>
       )}
 
-      {/* QR Code section — for passenger to scan */}
-      {res.qr_code_token && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 text-center">
-          <h3 className="font-bold text-gray-900 mb-2">
-            <QrCode size={16} className="inline mr-2" />
-            Doğrulama QR Kodu
-          </h3>
-          <p className="text-xs text-gray-400 mb-3">
-            Bu QR kodu müşteriye göstererek transfer doğrulaması yapabilirsiniz.
-          </p>
-          <div className="inline-block p-4 bg-gray-50 rounded-lg">
-            <QRCodeCanvas value={res.qr_code_token} size={192} />
-          </div>
-        </div>
-      )}
+      <div className="space-y-3">
+        {status === "assigned" && (
+          <ActionButton
+            loading={loading}
+            icon={<CheckCircle size={18} />}
+            label="Transferi Kabul Et"
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => updateStatus("accepted")}
+          />
+        )}
 
-      {/* Driver Voucher */}
-      <a
-        href={`/api/driver-voucher?token=${encodeURIComponent(token)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
-      >
-        <Download size={16} />
-        Voucher Görüntüle / Yazdır
-      </a>
+        {status === "accepted" && (
+          <ActionButton
+            loading={loading}
+            disabled={!canStartRide}
+            icon={<Navigation size={18} />}
+            label="Yolculuğu Başlat"
+            className="bg-indigo-600 hover:bg-indigo-700"
+            onClick={() => updateStatus("picked_up")}
+          />
+        )}
 
-      {/* Action buttons */}
-      {!isCompleted && (
-        <div className="space-y-3">
-          {status === "assigned" && (
-            <button
-              onClick={() => updateStatus("accepted")}
-              disabled={loading}
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {loading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <CheckCircle size={18} />
-              )}
-              Transferi Kabul Et
-            </button>
-          )}
+        {status === "picked_up" && (
+          <ActionButton
+            loading={loading}
+            icon={<CheckCircle size={18} />}
+            label="Transferi Tamamla"
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => updateStatus("completed")}
+          />
+        )}
 
-          {status === "accepted" && (
-            <button
-              onClick={() => updateStatus("picked_up")}
-              disabled={loading || !qrVerified}
-              className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {loading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Navigation size={18} />
-              )}
-              Müşteriyi Aldım
-            </button>
-          )}
+        {res.hotel_address && (status === "accepted" || status === "picked_up") && (
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(res.hotel_address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 font-bold text-white hover:bg-slate-800"
+          >
+            <Navigation size={16} />
+            Navigasyonu Aç
+          </a>
+        )}
 
-          {status === "picked_up" && (
-            <button
-              onClick={() => updateStatus("completed")}
-              disabled={loading}
-              className="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {loading ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <CheckCircle size={18} />
-              )}
-              Transferi Tamamla
-            </button>
-          )}
-
-          {/* Navigate button */}
-          {res.hotel_address && (status === "accepted" || status === "picked_up") && (
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(res.hotel_address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 bg-gray-800 text-white font-medium rounded-xl flex items-center justify-center gap-2"
-            >
-              <Navigation size={16} />
-              Varışa Navigasyon
-            </a>
-          )}
-        </div>
-      )}
-
-      {isCompleted && (
-        <div className="text-center py-8">
-          <CheckCircle size={48} className="text-green-500 mx-auto mb-3" />
-          <p className="text-lg font-bold text-green-800">
-            Transfer Tamamlandı!
-          </p>
-          <p className="text-sm text-gray-400">Hizmetiniz için teşekkür ederiz.</p>
-        </div>
-      )}
+        {status !== "completed" && (
+          <a
+            href={`/api/driver-voucher?token=${encodeURIComponent(token)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-bold text-slate-700 hover:bg-slate-50"
+          >
+            <Download size={16} />
+            Voucher Görüntüle / Yazdır
+          </a>
+        )}
+      </div>
     </div>
+  );
+}
+
+function Info({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-3">
+      <div className="mt-0.5 text-slate-400">{icon}</div>
+      <div className="min-w-0">
+        <p className="text-xs font-bold uppercase text-slate-400">{label}</p>
+        <p className="mt-0.5 break-words font-semibold text-slate-900">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function Notice({
+  icon,
+  text,
+  tone,
+}: {
+  icon: ReactNode;
+  text: string;
+  tone: "green" | "blue" | "amber" | "slate";
+}) {
+  const tones = {
+    green: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    blue: "border-blue-200 bg-blue-50 text-blue-800",
+    amber: "border-amber-200 bg-amber-50 text-amber-800",
+    slate: "border-slate-200 bg-slate-50 text-slate-700",
+  };
+
+  return (
+    <div className={`flex items-start gap-2 rounded-xl border px-3 py-2 text-sm font-semibold ${tones[tone]}`}>
+      <span className="mt-0.5 shrink-0">{icon}</span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function ActionButton({
+  className,
+  disabled,
+  icon,
+  label,
+  loading,
+  onClick,
+}: {
+  className: string;
+  disabled?: boolean;
+  icon: ReactNode;
+  label: string;
+  loading: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading || disabled}
+      className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-4 font-black text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+    >
+      {loading ? <Loader2 size={18} className="animate-spin" /> : icon}
+      {label}
+    </button>
   );
 }
