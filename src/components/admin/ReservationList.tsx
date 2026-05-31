@@ -164,14 +164,14 @@ export default function ReservationList({
       }
 
       if (!res.ok) {
-        console.error('assign-driver failed', res.status, data || text);
-        alert((data && data.error) || `Atama başarısız (kod ${res.status})`);
+        console.error('assign-driver failed', res.status, JSON.stringify(data || text, null, 2));
+        alert((data && data.error) || `Atama başarısız (kod ${res.status})\nDetay: ${JSON.stringify(data || text)}`);
         setAssigningId(null);
         return;
       }
 
       if (!data || !data.driverLink) {
-        console.error('assign-driver missing fields', data);
+        console.error('assign-driver missing fields', JSON.stringify(data, null, 2));
         alert('Atama başarılı ama sunucudan beklenen veri gelmedi. Konsolu kontrol et.');
         setAssigningId(null);
         return;

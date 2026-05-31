@@ -220,6 +220,15 @@ export default function TrackReservation() {
       minute: "2-digit",
     });
 
+  const safeFormat = (d?: string | null) => {
+    if (!d) return "—";
+    try {
+      return formatDate(d);
+    } catch (e) {
+      return String(d);
+    }
+  };
+
   const sc = statusConfig[reservation?.status ?? ""] ?? statusConfig.pending;
   const StatusIcon = sc.icon;
 
@@ -383,13 +392,13 @@ export default function TrackReservation() {
                 <div>
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider">{t("pickup")}</p>
                   <p className="text-gray-900 font-medium text-sm">
-                    {formatDate(reservation.pickup_datetime)}
+                    {safeFormat(reservation.pickup_datetime)}
                   </p>
                   {reservation.return_datetime && (
                     <>
                       <p className="text-[10px] text-gray-500 mt-1.5 uppercase tracking-wider">{t("return")}</p>
                       <p className="text-gray-900 text-sm">
-                        {formatDate(reservation.return_datetime)}
+                        {safeFormat(reservation.return_datetime)}
                       </p>
                     </>
                   )}
