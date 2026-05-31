@@ -66,8 +66,6 @@ export default function AdminCalendarAvailability() {
   const [events, setEvents]     = useState<CalendarEvent[]>([]);
   const [blocked, setBlocked]   = useState<BlockedDate[]>([]);
   const [maxDaily, setMaxDaily] = useState(3);
-  const [maxDailyInput, setMaxDailyInput] = useState("3");
-  const [savingMax, setSavingMax] = useState(false);
   const [loading, setLoading]   = useState(true);
 
   const [selectedDay, setSelectedDay]     = useState<number | null>(null);
@@ -98,7 +96,7 @@ export default function AdminCalendarAvailability() {
     ]);
     setEvents(calData.events ?? []);
     setBlocked(Array.isArray(blockedData) ? blockedData : []);
-    if (availData.maxDaily) { setMaxDaily(availData.maxDaily); setMaxDailyInput(String(availData.maxDaily)); }
+    if (availData.maxDaily) setMaxDaily(availData.maxDaily);
     setLoading(false);
   }, [year, month, monthStart, monthEnd]);
 
@@ -121,10 +119,8 @@ export default function AdminCalendarAvailability() {
 
   const blockedSet = new Set(blocked.map(b => b.blocked_date));
 
-  const eventsForDay = (day: number) => {
-    const ds = dateStr(day);
-    return events.filter(e => e.pickup.startsWith(ds));
-  };
+  const eventsForDay = (day: number) =>
+    events.filter(e => new Date(e.pickup).getDate() === day);
 
   const dateStr = (day: number) => `${year}-${pad(month)}-${pad(day)}`;
 
@@ -403,49 +399,10 @@ export default function AdminCalendarAvailability() {
             )}
           </div>
 
-          {/* Günlük max kapasite editörü */}
-          <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <Car size={12} />
-              Günlük Max Kapasite
-            </p>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={maxDailyInput}
-                onChange={e => setMaxDailyInput(e.target.value)}
-                className="w-16 px-2 py-1.5 text-sm font-bold text-slate-900 border border-slate-200 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-              <span className="text-xs text-slate-500">rezervasyon/gün</span>
-              <button
-                onClick={async () => {
-                  const val = parseInt(maxDailyInput);
-                  if (!val || val < 1) return;
-                  setSavingMax(true);
-                  await fetch("/api/admin/crud", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      table: "settings",
-                      action: "update",
-                      data: { value: String(val) },
-                      id: "max_daily_bookings",
-                    }),
-                  });
-                  setMaxDaily(val);
-                  setSavingMax(false);
-                }}
-                disabled={savingMax || parseInt(maxDailyInput) === maxDaily}
-                className="ml-auto px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-40 transition-colors"
-              >
-                {savingMax ? "Kaydediliyor…" : "Kaydet"}
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1.5">
-              Bu değer 1 olursa: 1 rezervasyon = tarih dolu. Müşteriye alternatif günler gösterilir.
-            </p>
+          {/* Kapasitei bilgisi */}
+          <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3 text-xs text-slate-500 flex items-center gap-2" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <Car size={14} className="text-slate-400 shrink-0" />
+            Günlük max kapasite: <span className="font-bold text-slate-800 ml-1">{maxDaily}</span> rezervasyon
           </div>
         </div>
       </div>
