@@ -133,6 +133,13 @@ export default function ReservationList({
       cancel_requested: "İptal Talep Edildi",
     };
 
+    const assignmentStatusLabels: Record<string, string> = {
+      assigned: "Atandı",
+      accepted: "Kabul Etti",
+      picked_up: "Yolda",
+      completed: "Tamamlandı",
+    };
+
   const formatPickupDate = (date: string) =>
     new Date(date).toLocaleDateString("tr-TR", {
       day: "2-digit",
@@ -536,10 +543,10 @@ export default function ReservationList({
                 <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
                   <button
                     onClick={() => setEditModal({ reservationId: r.id })}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-xs font-semibold"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold"
                   >
                     <Pencil size={13} />
-                    Düzenle
+                    Rezervasyonu Düzenle
                   </button>
                   {r.status === "pending" && (
                     <button
@@ -547,7 +554,7 @@ export default function ReservationList({
                       className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-xs font-semibold"
                     >
                       <Trash2 size={13} />
-                      Bekleyen Rezervasyonu Sil
+                      Sil
                     </button>
                   )}
                 </div>
@@ -613,80 +620,85 @@ export default function ReservationList({
                             })()
                           : null;
                         return (
-                          <div key={da.id} className="p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3 flex-wrap mb-2">
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${da.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                                {legLabel}
+                          <div key={da.id} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+                            {/* Driver header */}
+                            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-bold ${da.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                                  {legLabel}
+                                </span>
+                                <span className="font-semibold text-sm text-gray-900 truncate">{da.drivers?.full_name}</span>
+                                <a href={`tel:${da.drivers?.phone}`} className="text-blue-600 text-xs flex items-center gap-1 shrink-0 hover:underline">
+                                  <Phone size={11} />
+                                  {da.drivers?.phone}
+                                </a>
+                                {da.pickup_time && (
+                                  <span className="text-xs text-orange-600 font-medium shrink-0">· Alış: {da.pickup_time}</span>
+                                )}
+                              </div>
+                              <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[da.status] || "bg-gray-100 text-gray-600"}`}>
+                                {assignmentStatusLabels[da.status] ?? da.status}
                               </span>
-                              <span className="text-xs font-medium text-gray-400">Şoför:</span>
-                              <span className="font-medium text-sm">{da.drivers?.full_name}</span>
-                              <a href={`tel:${da.drivers?.phone}`} className="text-blue-600 text-sm flex items-center gap-1">
-                                <Phone size={12} />
-                                {da.drivers?.phone}
-                              </a>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[da.status] || "bg-gray-100 text-gray-600"}`}>
-                                {da.status}
-                              </span>
-                              {da.pickup_time && (
-                                <span className="text-xs text-orange-600 font-medium">Alış: {da.pickup_time}</span>
-                              )}
                             </div>
+
+                            {/* Actions */}
                             {da.link_token && (
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="px-4 py-3 flex flex-wrap items-center gap-2">
+                                {/* Communication */}
                                 {waUrl && (
-                                  <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-medium">
+                                  <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-semibold">
                                     <MessageCircle size={13} />
                                     WhatsApp
                                   </a>
                                 )}
-                                <a
-                                  href={`/api/driver-voucher?token=${da.link_token}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-medium"
-                                >
-                                  <ExternalLink size={13} />
-                                  Voucher Aç
-                                </a>
-                                <button
-                                  onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-medium"
-                                >
-                                  {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
-                                  {copiedLink ? "Kopyalandı!" : "Linki Kopyala"}
-                                </button>
                                 <button
                                   onClick={() => sendDriverAssignmentEmail(da.id)}
                                   disabled={emailSendingId === da.id}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60 text-xs font-semibold"
                                 >
-                                  {emailSendingId === da.id ? "Gönderiliyor..." : "E-posta Gönder"}
+                                  {emailSendingId === da.id ? "Gönderiliyor…" : <><Send size={13} />E-posta</>}
+                                </button>
+
+                                {/* Divider */}
+                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
+
+                                {/* Utilities */}
+                                <a href={`/api/driver-voucher?token=${da.link_token}`} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold">
+                                  <ExternalLink size={13} />
+                                  Voucher
+                                </a>
+                                <button
+                                  onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold"
+                                >
+                                  {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
+                                  {copiedLink ? "Kopyalandı!" : "Link Kopyala"}
+                                </button>
+
+                                {/* Divider */}
+                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
+
+                                {/* Danger zone */}
+                                <button
+                                  onClick={() => unassignDriver(da.id)}
+                                  disabled={unassigningId === da.id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 disabled:opacity-60 text-xs font-semibold"
+                                >
+                                  {unassigningId === da.id ? "Kaldırılıyor…" : "Atamayı Kaldır"}
                                 </button>
                                 <button
                                   onClick={() => setDeleteModal({ reservationId: r.id })}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 text-xs font-semibold"
                                 >
                                   <Trash2 size={13} />
                                   Sil
                                 </button>
-                                <button
-                                  onClick={() => setEditModal({ reservationId: r.id })}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-xs font-medium"
-                                >
-                                  <Pencil size={13} />
-                                  Düzenle
-                                </button>
-                                <button
-                                  onClick={() => unassignDriver(da.id)}
-                                  disabled={unassigningId === da.id}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
-                                >
-                                  {unassigningId === da.id ? "Kaldırılıyor..." : "Atamayı Kaldır"}
-                                </button>
                               </div>
                             )}
                             {emailMessage && emailSendingId === null && (
-                              <p className="mt-2 text-xs text-slate-500">{emailMessage}</p>
+                              <p className="px-4 pb-3 text-xs text-slate-500">{emailMessage}</p>
                             )}
                           </div>
                         );
