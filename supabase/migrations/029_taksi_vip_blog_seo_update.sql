@@ -67,6 +67,7 @@ UPDATE blog_posts SET
 <h3>Wie buche ich einen Privattransfer vom Flughafen Antalya?</h3>
 <p>Wählen Sie Ihr Ziel, suchen Sie Ihr Fahrzeug und bezahlen Sie sicher online. Sie erhalten sofortige Buchungsbestätigung — Ihr Fahrer verfolgt Ihren Flug und wartet kostenlos bei Verspätungen.</p>',
 
+  image_url = '/images/blog/family-transfer-tips.jpg',
   updated_at = NOW()
 
 WHERE slug = 'antalya-havalimani-taksi-mi-vip-transfer-mi';
