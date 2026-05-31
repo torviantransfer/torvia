@@ -7,8 +7,6 @@ import {
   CalendarClock,
   Car,
   CheckCircle,
-  Clock,
-  Download,
   Hotel,
   Loader2,
   Luggage,
@@ -21,6 +19,7 @@ import {
   Route,
   ShieldCheck,
   Users,
+  Clock,
 } from "lucide-react";
 import QRScanner from "@/components/driver/QRScanner";
 
@@ -70,20 +69,52 @@ interface Props {
   token: string;
 }
 
+const TZ = "Europe/Istanbul";
+
+function fmtDate(dt: string | null | undefined) {
+  if (!dt) return "—";
+  return new Date(dt).toLocaleDateString("tr-TR", {
+    timeZone: TZ,
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function fmtTime(dt: string | null | undefined) {
+  if (!dt) return "—";
+  return new Date(dt).toLocaleTimeString("tr-TR", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function fmtDateShort(dt: string | null | undefined) {
+  if (!dt) return "—";
+  return new Date(dt).toLocaleDateString("tr-TR", {
+    timeZone: TZ,
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 const STATUS_CONFIG: Record<string, { label: string; tone: string; step: number }> = {
-  assigned:  { label: "Atama Bekliyor",   tone: "border-amber-200 bg-amber-50 text-amber-800",     step: 1 },
-  accepted:  { label: "Şoför Kabul Etti", tone: "border-blue-200 bg-blue-50 text-blue-800",         step: 2 },
-  picked_up: { label: "Yolculuk Başladı", tone: "border-indigo-200 bg-indigo-50 text-indigo-800",   step: 3 },
+  assigned:  { label: "Atama Bekliyor",   tone: "border-amber-200 bg-amber-50 text-amber-800",      step: 1 },
+  accepted:  { label: "Şoför Kabul Etti", tone: "border-blue-200 bg-blue-50 text-blue-800",          step: 2 },
+  picked_up: { label: "Yolculuk Başladı", tone: "border-indigo-200 bg-indigo-50 text-indigo-800",    step: 3 },
   completed: { label: "Tamamlandı",       tone: "border-emerald-200 bg-emerald-50 text-emerald-800", step: 4 },
 };
 
 const STEPS = ["Kabul", "QR", "Yolculuk", "Bitiş"];
 
 export default function DriverPanel({ assignment, token }: Props) {
-  const [status, setStatus]       = useState(assignment.status);
-  const [loading, setLoading]     = useState(false);
+  const [status, setStatus]         = useState(assignment.status);
+  const [loading, setLoading]       = useState(false);
   const [qrVerified, setQrVerified] = useState(status === "picked_up" || status === "completed");
-  const [error, setError]         = useState("");
+  const [error, setError]           = useState("");
 
   const res        = assignment.reservations;
   const customer   = res?.customers;
@@ -92,6 +123,20 @@ export default function DriverPanel({ assignment, token }: Props) {
   const vehicle    = assignment.vehicles;
   const statusConf = STATUS_CONFIG[status] ?? STATUS_CONFIG.assigned;
   const isReturn   = assignment.leg === "return";
+
+  const activeDatetime = isReturn && res?.return_datetime
+    ? res.return_datetime
+    : res?.pickup_datetime ?? null;
+
+  const pickupTimeDisplay = isReturn && assignment.pickup_time
+    ? assignment.pickup_time
+    : fmtTime(activeDatetime);
+
+  const routeText = isReturn
+    ? `${regionName} → Antalya Havalimanı`
+    : `Antalya Havalimanı → ${regionName}`;
+
+  const canStartRide = status === "accepted" && qrVerified;
 
   const updateStatus = async (newStatus: string) => {
     setLoading(true);
@@ -141,39 +186,33 @@ export default function DriverPanel({ assignment, token }: Props) {
     );
   }
 
-  const pickupDate = new Date(isReturn && res.return_datetime ? res.return_datetime : res.pickup_datetime);
-  const pickupTime = isReturn && assignment.pickup_time
-    ? assignment.pickup_time
-    : pickupDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-  const routeText = isReturn
-    ? `${regionName} → Antalya Havalimanı`
-    : `Antalya Havalimanı → ${regionName}`;
-  const canStartRide = status === "accepted" && qrVerified;
-
-  /* --- which action button to show --- */
   const primaryAction =
-    status === "assigned"  ? { label: "Transferi Kabul Et",  icon: <CheckCircle size={18} />, cls: "bg-blue-600 hover:bg-blue-700",     next: "accepted"  } :
-    status === "accepted"  ? { label: "Yolculuğu Başlat",    icon: <Navigation  size={18} />, cls: "bg-indigo-600 hover:bg-indigo-700", next: "picked_up", disabled: !canStartRide } :
+    status === "assigned"  ? { label: "Transferi Kabul Et",  icon: <CheckCircle size={18} />, cls: "bg-blue-600 hover:bg-blue-700",      next: "accepted"  } :
+    status === "accepted"  ? { label: "Yolculuğu Başlat",    icon: <Navigation  size={18} />, cls: "bg-indigo-600 hover:bg-indigo-700",  next: "picked_up", disabled: !canStartRide } :
     status === "picked_up" ? { label: "Transferi Tamamla",   icon: <CheckCircle size={18} />, cls: "bg-emerald-600 hover:bg-emerald-700", next: "completed" } :
     null;
 
   return (
-    /* extra bottom padding so sticky bar doesn't overlap content */
-    <div className="space-y-4 pb-28">
+    <div className="space-y-3 pb-28">
 
-      {/* ── Hero card ── */}
+      {/* ── HERO CARD — tek bakışta tüm kritik bilgiler ── */}
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-        {/* dark header */}
-        <div className="bg-slate-950 px-5 py-5 text-white">
+        {/* Koyu başlık: kod + güzergah + durum */}
+        <div className="bg-slate-950 px-5 py-4 text-white">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-mono text-sm font-bold text-orange-400">{res.reservation_code}</p>
-              <h2 className="mt-1 text-lg font-black leading-snug">{routeText}</h2>
-              <p className="mt-1.5 text-sm text-slate-400">
-                {region?.duration_minutes ? `~${region.duration_minutes} dk` : ""}
-                {region?.distance_km ? ` · ${region.distance_km} km` : ""}
+              <p className="font-mono text-sm font-bold text-orange-400 tracking-widest">
+                {res.reservation_code}
               </p>
+              <h2 className="mt-1 text-lg font-black leading-snug">{routeText}</h2>
+              {(region?.distance_km || region?.duration_minutes) && (
+                <p className="mt-1 text-xs text-slate-400">
+                  {region.distance_km && `${region.distance_km} km`}
+                  {region.distance_km && region.duration_minutes && " · "}
+                  {region.duration_minutes && `~${region.duration_minutes} dk`}
+                </p>
+              )}
             </div>
             <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold ${statusConf.tone}`}>
               {statusConf.label}
@@ -181,21 +220,62 @@ export default function DriverPanel({ assignment, token }: Props) {
           </div>
         </div>
 
-        {/* date / time */}
-        <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
+        {/* Tarih + Saat — en büyük, en önemli */}
+        <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 bg-white">
           <div className="px-5 py-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Alış Tarihi</p>
-            <p className="mt-1 text-sm font-bold text-slate-900">
-              {pickupDate.toLocaleDateString("tr-TR", { weekday: "long", day: "2-digit", month: "long" })}
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tarih</p>
+            <p className="mt-1 text-sm font-bold text-slate-900 leading-tight">
+              {fmtDate(activeDatetime)}
             </p>
           </div>
           <div className="px-5 py-4">
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Alış Saati</p>
-            <p className="mt-1 text-3xl font-black tabular-nums text-orange-600">{pickupTime}</p>
+            <p className="mt-1 text-4xl font-black tabular-nums text-orange-600 leading-none">
+              {pickupTimeDisplay}
+            </p>
           </div>
         </div>
 
-        {/* progress stepper */}
+        {/* Müşteri + Uçuş — ikinci en kritik bilgiler */}
+        <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
+          {/* Müşteri adı + telefon */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Müşteri</p>
+            <p className="mt-1 text-sm font-black text-slate-900">
+              {customer?.first_name} {customer?.last_name}
+            </p>
+            {customer?.phone && (
+              <a
+                href={`tel:${customer.phone}`}
+                className="mt-1.5 flex items-center gap-1 text-sm font-bold text-blue-600"
+              >
+                <Phone size={13} />
+                {customer.phone}
+              </a>
+            )}
+          </div>
+          {/* Uçuş kodu */}
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Uçuş</p>
+            <p className="mt-1 flex items-center gap-1.5 text-xl font-black text-slate-900">
+              <Plane size={16} className="text-slate-400" />
+              {res.flight_code || <span className="text-slate-300 font-normal text-sm">—</span>}
+            </p>
+          </div>
+        </div>
+
+        {/* Otel */}
+        {res.hotel_name && (
+          <div className="border-b border-slate-100 px-5 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Otel</p>
+            <p className="mt-0.5 text-sm font-bold text-slate-900">{res.hotel_name}</p>
+            {res.hotel_address && (
+              <p className="mt-0.5 text-xs text-slate-400">{res.hotel_address}</p>
+            )}
+          </div>
+        )}
+
+        {/* Progress stepper */}
         <div className="px-5 py-4">
           <div className="flex items-center">
             {STEPS.map((step, index) => {
@@ -204,31 +284,19 @@ export default function DriverPanel({ assignment, token }: Props) {
               return (
                 <Fragment key={step}>
                   <div className="flex flex-col items-center gap-1.5">
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition-colors ${
-                        done
-                          ? "bg-emerald-500 text-white"
-                          : active
-                            ? "bg-orange-500 text-white"
-                            : "bg-slate-100 text-slate-400"
-                      }`}
-                    >
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition-colors ${
+                      done ? "bg-emerald-500 text-white" : active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-400"
+                    }`}>
                       {done ? <CheckCircle size={15} /> : <span>{index + 1}</span>}
                     </div>
-                    <span
-                      className={`text-[10px] font-bold ${
-                        done ? "text-emerald-600" : active ? "text-orange-600" : "text-slate-400"
-                      }`}
-                    >
+                    <span className={`text-[10px] font-bold ${
+                      done ? "text-emerald-600" : active ? "text-orange-600" : "text-slate-400"
+                    }`}>
                       {step}
                     </span>
                   </div>
                   {index < STEPS.length - 1 && (
-                    <div
-                      className={`mb-5 h-0.5 flex-1 mx-1 rounded-full transition-colors ${
-                        done ? "bg-emerald-300" : "bg-slate-200"
-                      }`}
-                    />
+                    <div className={`mb-5 h-0.5 flex-1 mx-1 rounded-full transition-colors ${done ? "bg-emerald-300" : "bg-slate-200"}`} />
                   )}
                 </Fragment>
               );
@@ -237,92 +305,83 @@ export default function DriverPanel({ assignment, token }: Props) {
         </div>
       </section>
 
-      {/* ── Content grid ── */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* ── Hızlı iletişim butonları ── */}
+      {customer?.phone && (
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href={`tel:${customer.phone}`}
+            className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 py-3.5 text-sm font-bold text-white hover:bg-blue-700"
+          >
+            <Phone size={16} />
+            Ara
+          </a>
+          <a
+            href={`https://wa.me/${customer.phone.replace(/[^0-9]/g, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-sm font-bold text-white hover:bg-emerald-600"
+          >
+            <MessageCircle size={16} />
+            WhatsApp
+          </a>
+        </div>
+      )}
 
-        {/* Transfer details */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:col-span-2">
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-black text-slate-950">
-            <Route size={16} className="text-orange-500" />
-            Transfer Detayları
+      {/* ── Detay kartları ── */}
+      <div className="grid gap-3 sm:grid-cols-2">
+
+        {/* Yolcu + Araç */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+          <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
+            <Users size={14} />
+            Yolcular & Araç
           </h3>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            <Info icon={<MapPin size={15} />}       label="Güzergah" value={routeText} />
-            <Info icon={<CalendarClock size={15} />} label="Tarih"    value={`${pickupDate.toLocaleDateString("tr-TR")} ${pickupTime}`} />
-            <Info icon={<Plane size={15} />}         label="Uçuş"     value={res.flight_code || "—"} />
-            <Info icon={<Users size={15} />}         label="Yolcu"    value={`${res.adults} yetişkin, ${res.children} çocuk`} />
-            <Info icon={<Luggage size={15} />}       label="Bagaj"    value={`${res.luggage_count} bagaj`} />
-            <Info icon={<Hotel size={15} />}         label="Otel"     value={res.hotel_name || "—"} />
+          <div className="space-y-2">
+            <Info icon={<Users size={14} />}   label="Yolcu"  value={`${res.adults} yetişkin${res.children > 0 ? `, ${res.children} çocuk` : ""}`} />
+            <Info icon={<Luggage size={14} />} label="Bagaj"  value={`${res.luggage_count} adet`} />
+            {vehicle && (
+              <>
+                <Info icon={<Car size={14} />} label="Araç"  value={`${vehicle.brand} ${vehicle.model}`} />
+                <div className="rounded-xl bg-slate-900 px-3 py-2 text-center font-mono text-lg font-black tracking-widest text-white">
+                  {vehicle.plate_number}
+                </div>
+              </>
+            )}
           </div>
+        </div>
 
-          {(res.child_seat || res.welcome_sign || res.notes || (res.trip_type === "round_trip" && res.return_datetime)) && (
-            <div className="mt-4 space-y-2">
-              {res.child_seat && (
-                <Notice tone="green" icon={<Baby size={14} />} text="Çocuk koltuğu gerekli" />
-              )}
-              {res.welcome_sign && (
-                <Notice tone="blue" icon={<ShieldCheck size={14} />} text={`Karşılama tabelası: ${res.welcome_name || "İsim belirtilmedi"}`} />
-              )}
-              {res.notes && (
-                <Notice tone="amber" icon={<Clock size={14} />} text={res.notes} />
-              )}
-              {res.trip_type === "round_trip" && res.return_datetime && (
-                <Notice
-                  tone="slate"
-                  icon={<Route size={14} />}
-                  text={`Dönüş: ${new Date(res.return_datetime).toLocaleDateString("tr-TR")} ${new Date(res.return_datetime).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`}
-                />
-              )}
-            </div>
-          )}
-        </section>
-
-        {/* Sidebar */}
-        <div className="space-y-4">
-
-          {/* Customer */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="mb-3 text-sm font-black text-slate-950">Müşteri</h3>
-            <p className="text-base font-bold text-slate-900">
-              {customer?.first_name} {customer?.last_name}
-            </p>
-            <div className="mt-3 flex flex-col gap-2">
-              <a
-                href={`tel:${customer?.phone}`}
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 py-2.5 text-sm font-bold text-blue-700 hover:bg-blue-100"
-              >
-                <Phone size={15} />
-                Ara
-              </a>
-              <a
-                href={`https://wa.me/${customer?.phone?.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
-              >
-                <MessageCircle size={15} />
-                WhatsApp
-              </a>
-            </div>
-          </div>
-
-          {/* Vehicle */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-black text-slate-950">
-              <Car size={16} className="text-orange-500" />
-              Araç
-            </h3>
-            <p className="text-sm font-semibold text-slate-700">
-              {vehicle ? `${vehicle.brand} ${vehicle.model}` : "—"}
-            </p>
-            <p className="mt-1.5 font-mono text-xl font-black tracking-widest text-slate-950">
-              {vehicle?.plate_number || "—"}
-            </p>
+        {/* Transfer detayı */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+          <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400">
+            <Route size={14} />
+            Transfer Detayı
+          </h3>
+          <div className="space-y-2">
+            <Info icon={<MapPin size={14} />}       label="Güzergah" value={routeText} />
+            <Info icon={<CalendarClock size={14} />} label="Tarih"   value={`${fmtDateShort(activeDatetime)} – ${pickupTimeDisplay}`} />
+            {res.trip_type === "round_trip" && res.return_datetime && (
+              <Info icon={<Route size={14} />} label="Dönüş" value={`${fmtDateShort(res.return_datetime)} – ${fmtTime(res.return_datetime)}`} />
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── QR scanner ── */}
+      {/* ── Özel notlar / uyarılar ── */}
+      {(res.child_seat || res.welcome_sign || res.notes) && (
+        <div className="space-y-2">
+          {res.child_seat && (
+            <Notice tone="green" icon={<Baby size={14} />} text="Çocuk koltuğu gerekli" />
+          )}
+          {res.welcome_sign && (
+            <Notice tone="blue" icon={<ShieldCheck size={14} />} text={`Karşılama tabelası: ${res.welcome_name || "İsim belirtilmedi"}`} />
+          )}
+          {res.notes && (
+            <Notice tone="amber" icon={<Clock size={14} />} text={res.notes} />
+          )}
+        </div>
+      )}
+
+      {/* ── QR Doğrulama ── */}
       {status === "accepted" && !qrVerified && (
         <section className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
           <h3 className="mb-1.5 flex items-center gap-2 text-sm font-black text-blue-950">
@@ -349,31 +408,18 @@ export default function DriverPanel({ assignment, token }: Props) {
         </div>
       )}
 
-      {/* ── Secondary actions (voucher / navigation) ── */}
-      <div className="flex flex-col gap-2">
-        {res.hotel_address && (status === "accepted" || status === "picked_up") && (
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(res.hotel_address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
-          >
-            <Navigation size={15} />
-            Navigasyonu Aç
-          </a>
-        )}
-        {status !== "completed" && (
-          <a
-            href={`/api/driver-voucher?token=${encodeURIComponent(token)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50"
-          >
-            <Download size={15} />
-            Voucher Görüntüle / Yazdır
-          </a>
-        )}
-      </div>
+      {/* ── Navigasyon butonu ── */}
+      {res.hotel_address && (status === "accepted" || status === "picked_up") && (
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(res.hotel_address)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
+        >
+          <Navigation size={15} />
+          Navigasyonu Aç
+        </a>
+      )}
 
       {/* ── Sticky primary CTA ── */}
       {primaryAction && (
@@ -396,7 +442,7 @@ export default function DriverPanel({ assignment, token }: Props) {
 
 function Info({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-3 py-3">
+    <div className="flex items-start gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
       <div className="mt-0.5 shrink-0 text-slate-400">{icon}</div>
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
@@ -406,15 +452,7 @@ function Info({ icon, label, value }: { icon: ReactNode; label: string; value: s
   );
 }
 
-function Notice({
-  icon,
-  text,
-  tone,
-}: {
-  icon: ReactNode;
-  text: string;
-  tone: "green" | "blue" | "amber" | "slate";
-}) {
+function Notice({ icon, text, tone }: { icon: ReactNode; text: string; tone: "green" | "blue" | "amber" | "slate" }) {
   const tones = {
     green: "border-emerald-200 bg-emerald-50 text-emerald-800",
     blue:  "border-blue-200 bg-blue-50 text-blue-800",
