@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
+
     const { data: assignment, error: fetchError } = await supabase
       .from("driver_assignments")
       .select("id, reservation_id, status")
@@ -26,28 +27,30 @@ export async function POST(request: NextRequest) {
 
     if (assignment.status === "picked_up" || assignment.status === "completed") {
       return NextResponse.json(
-        { error: "This driver assignment cannot be removed after pickup or completion" },
+        { error: "Yolculuk başlamış veya tamamlanmış bir atama kaldırılamaz." },
         { status: 409 }
       );
     }
 
-    const { error: updateError } = await supabase
+    // Hard delete — status CHECK constraint doesn't include 'cancelled'
+    const { error: deleteError } = await supabase
       .from("driver_assignments")
-      .update({ status: "cancelled" })
+      .delete()
       .eq("id", assignmentId);
 
-    if (updateError) {
-      console.error("Unassign driver error:", updateError.message);
-      return NextResponse.json({ error: "Failed to remove driver assignment" }, { status: 500 });
+    if (deleteError) {
+      console.error("Unassign driver error:", deleteError.message);
+      return NextResponse.json({ error: "Atama kaldırılamadı." }, { status: 500 });
     }
 
-    const { data: remainingActive, error: remainingError } = await supabase
+    // Revert reservation to 'paid' if no active assignments remain
+    const { data: remaining } = await supabase
       .from("driver_assignments")
       .select("id")
       .eq("reservation_id", assignment.reservation_id)
-      .in("status", ["assigned", "picked_up"]);
+      .in("status", ["assigned", "accepted", "picked_up"]);
 
-    if (!remainingError && (!remainingActive || remainingActive.length === 0)) {
+    if (!remaining || remaining.length === 0) {
       await supabase
         .from("reservations")
         .update({ status: "paid" })
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("Unassign driver error:", err);
+    console.error("Unassign driver exception:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

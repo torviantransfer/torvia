@@ -84,7 +84,7 @@ export default function ReservationList({
   vehicles,
 }: Props) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("active");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [assigningLeg, setAssigningLeg] = useState<"outbound" | "return">("outbound");
