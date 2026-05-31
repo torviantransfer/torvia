@@ -295,4 +295,22 @@ INSERT INTO blog_posts (
   '/images/regions/kemer-coast.webp',
   true,
   NOW()
-);
+)
+ON CONFLICT (slug) DO UPDATE SET
+  title_tr = EXCLUDED.title_tr,
+  title_en = EXCLUDED.title_en,
+  title_de = EXCLUDED.title_de,
+  title_pl = EXCLUDED.title_pl,
+  title_ru = EXCLUDED.title_ru,
+  excerpt_tr = EXCLUDED.excerpt_tr,
+  excerpt_en = EXCLUDED.excerpt_en,
+  excerpt_de = EXCLUDED.excerpt_de,
+  excerpt_pl = EXCLUDED.excerpt_pl,
+  excerpt_ru = EXCLUDED.excerpt_ru,
+  content_tr = EXCLUDED.content_tr,
+  content_en = EXCLUDED.content_en,
+  content_de = EXCLUDED.content_de,
+  content_pl = EXCLUDED.content_pl,
+  content_ru = EXCLUDED.content_ru,
+  image_url = EXCLUDED.image_url,
+  is_published = EXCLUDED.is_published;
