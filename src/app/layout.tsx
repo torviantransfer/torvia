@@ -1,5 +1,6 @@
 ﻿import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default function RootLayout({
   return (
     <>
       {children}
+      <Analytics />
       <Script
         id="google-ads-gtag"
         src="https://www.googletagmanager.com/gtag/js?id=AW-18125256328"

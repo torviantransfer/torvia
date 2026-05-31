@@ -25,6 +25,10 @@ import {
   PieChart as PieIcon,
   MapPin,
   Activity,
+  ExternalLink,
+  Users,
+  Search,
+  BarChart2,
 } from "lucide-react";
 
 interface DashboardData {
@@ -208,6 +212,66 @@ export default function AdminDashboardCharts() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
+      </div>
+
+      {/* Traffic & Analytics quick links */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+            <BarChart2 size={14} className="text-slate-500" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-800">Trafik &amp; Analitik</h3>
+            <p className="text-[10px] text-slate-400">Ziyaretçi ve arama verileri</p>
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-3">
+          <a
+            href="https://analytics.google.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3.5 hover:border-orange-200 hover:bg-orange-50 transition-all"
+          >
+            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-orange-200">
+              <Activity size={16} className="text-orange-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">GA4 Realtime</p>
+              <p className="text-[10px] text-slate-400 truncate">Anlık ziyaretçiler · kaynak · sayfa</p>
+            </div>
+            <ExternalLink size={13} className="text-slate-300 shrink-0 group-hover:text-orange-400" />
+          </a>
+          <a
+            href="https://search.google.com/search-console"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3.5 hover:border-blue-200 hover:bg-blue-50 transition-all"
+          >
+            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-blue-200">
+              <Search size={16} className="text-blue-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">Search Console</p>
+              <p className="text-[10px] text-slate-400 truncate">Google aramaları · tıklama · sıralama</p>
+            </div>
+            <ExternalLink size={13} className="text-slate-300 shrink-0 group-hover:text-blue-400" />
+          </a>
+          <a
+            href="https://vercel.com/analytics"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3.5 hover:border-violet-200 hover:bg-violet-50 transition-all"
+          >
+            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 group-hover:border-violet-200">
+              <Users size={16} className="text-violet-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">Vercel Analytics</p>
+              <p className="text-[10px] text-slate-400 truncate">Tekil ziyaretçi · sayfa görüntüleme</p>
+            </div>
+            <ExternalLink size={13} className="text-slate-300 shrink-0 group-hover:text-violet-400" />
+          </a>
+        </div>
       </div>
 
       {/* Trip type + Monthly bookings count */}
