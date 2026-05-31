@@ -66,6 +66,13 @@ const nextConfig: NextConfig = {
       { source: "/about", destination: "/en/about", permanent: true },
       { source: "/contact", destination: "/en/contact", permanent: true },
       { source: "/regions", destination: "/en/regions", permanent: true },
+      // Additional locale-less paths — ensure 308 permanent (not 307 from middleware)
+      { source: "/terms", destination: "/en/terms", permanent: true },
+      { source: "/privacy", destination: "/en/privacy", permanent: true },
+      { source: "/cookies", destination: "/en/cookies", permanent: true },
+      { source: "/cancellation", destination: "/en/cancellation", permanent: true },
+      { source: "/land-of-legends-transfer", destination: "/en/land-of-legends-transfer", permanent: true },
+      { source: "/track", destination: "/en/track", permanent: true },
     );
     return rules;
   },
