@@ -7,7 +7,6 @@ import {
   CalendarClock,
   Car,
   CheckCircle,
-  Hotel,
   Loader2,
   Luggage,
   MapPin,
@@ -46,6 +45,7 @@ interface Props {
       notes: string | null;
       status: string;
       qr_code_token: string | null;
+      locale: string | null;
       customers: {
         first_name: string;
         last_name: string;
@@ -164,15 +164,37 @@ export default function DriverPanel({ assignment, token }: Props) {
 
   const sendWhatsAppNotify = (newStatus: string) => {
     if (!customer?.phone) return;
-    const phone = customer.phone.replace(/[^0-9]/g, "");
-    const code  = res?.reservation_code ?? "";
+    const phone       = customer.phone.replace(/[^0-9]/g, "");
+    const code        = res?.reservation_code ?? "";
+    const driverName  = assignment.drivers?.full_name ?? "—";
     const vehicleText = vehicle ? `${vehicle.brand} ${vehicle.model} (${vehicle.plate_number})` : "—";
-    const messages: Record<string, string> = {
-      accepted:  `TORVIAN Transfer\n\n${code} numaralı transferiniz şoför tarafından kabul edildi.\nŞoför: ${assignment.drivers?.full_name ?? "—"}\nAraç: ${vehicleText}`,
-      picked_up: `TORVIAN Transfer\n\n${code} numaralı transferiniz başladı. Keyifli yolculuklar dileriz.`,
-      completed: `TORVIAN Transfer\n\n${code} numaralı transferiniz tamamlandı. Bizi tercih ettiğiniz için teşekkür ederiz.`,
+    const loc         = res?.locale ?? "en";
+
+    const waMessages: Record<string, Record<string, string>> = {
+      accepted: {
+        tr: `TORVIAN Transfer\n\n${code} numaralı transferiniz şoför tarafından kabul edildi.\nŞoför: ${driverName}\nAraç: ${vehicleText}`,
+        en: `TORVIAN Transfer\n\nYour transfer ${code} has been accepted by the driver.\nDriver: ${driverName}\nVehicle: ${vehicleText}`,
+        de: `TORVIAN Transfer\n\nIhre Fahrt ${code} wurde vom Fahrer angenommen.\nFahrer: ${driverName}\nFahrzeug: ${vehicleText}`,
+        pl: `TORVIAN Transfer\n\nTwój transfer ${code} został przyjęty przez kierowcę.\nKierowca: ${driverName}\nPojazd: ${vehicleText}`,
+        ru: `TORVIAN Transfer\n\nВаш трансфер ${code} принят водителем.\nВодитель: ${driverName}\nАвтомобиль: ${vehicleText}`,
+      },
+      picked_up: {
+        tr: `TORVIAN Transfer\n\n${code} numaralı transferiniz başladı. Keyifli yolculuklar dileriz.`,
+        en: `TORVIAN Transfer\n\nYour transfer ${code} has started. Have a pleasant journey!`,
+        de: `TORVIAN Transfer\n\nIhre Fahrt ${code} hat begonnen. Gute Reise!`,
+        pl: `TORVIAN Transfer\n\nTwój transfer ${code} się rozpoczął. Miłej podróży!`,
+        ru: `TORVIAN Transfer\n\nВаш трансфер ${code} начался. Хорошей поездки!`,
+      },
+      completed: {
+        tr: `TORVIAN Transfer\n\n${code} numaralı transferiniz tamamlandı. Bizi tercih ettiğiniz için teşekkür ederiz.`,
+        en: `TORVIAN Transfer\n\nYour transfer ${code} has been completed. Thank you for choosing TORVIAN.`,
+        de: `TORVIAN Transfer\n\nIhre Fahrt ${code} wurde abgeschlossen. Vielen Dank für Ihr Vertrauen.`,
+        pl: `TORVIAN Transfer\n\nTwój transfer ${code} został ukończony. Dziękujemy za skorzystanie z TORVIAN.`,
+        ru: `TORVIAN Transfer\n\nВаш трансфер ${code} завершён. Спасибо, что выбрали TORVIAN.`,
+      },
     };
-    const text = messages[newStatus];
+
+    const text = waMessages[newStatus]?.[loc] ?? waMessages[newStatus]?.["en"];
     if (text) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, "_blank");
   };
 

@@ -289,6 +289,7 @@ export async function POST(request: NextRequest) {
         exchange_rate_try: rateMap.TRY ?? null,
         status: "pending",
         qr_code_token: qrCodeToken,
+        locale: locale ?? "en",
       })
       .select()
       .single();

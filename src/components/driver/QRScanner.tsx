@@ -72,7 +72,7 @@ export default function QRScanner({ token, onVerified }: Props) {
           () => {}
         );
       } catch {
-        setMessage("Kamera izni verilmedi veya kamera kullanılamıyor.");
+        setMessage("camera_denied");
         setResult("error");
       }
     })();
@@ -145,17 +145,32 @@ export default function QRScanner({ token, onVerified }: Props) {
       {result === "error" && (
         <div className="flex flex-col items-center gap-3 px-5 py-12">
           <AlertTriangle size={48} className="text-red-500" />
-          <p className="text-center text-sm font-black text-red-700">{message}</p>
-          <button
-            onClick={() => {
-              setOpen(false);
-              setTimeout(() => setOpen(true), 100);
-              setResult("idle");
-            }}
-            className="mt-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white"
-          >
-            Tekrar Dene
-          </button>
+          {message === "camera_denied" ? (
+            <>
+              <p className="text-center text-sm font-black text-red-700">
+                Kamera erişimine izin verilmedi.
+              </p>
+              <p className="text-center text-xs text-slate-500">
+                Tarayıcı ayarlarından kamera iznini açın, ardından sayfayı yenileyin.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              >
+                Sayfayı Yenile
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-center text-sm font-black text-red-700">{message}</p>
+              <button
+                onClick={() => setResult("idle")}
+                className="mt-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              >
+                Tekrar Dene
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
