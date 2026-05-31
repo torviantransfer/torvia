@@ -96,6 +96,7 @@ export default function ReservationList({
   const [copiedLink, setCopiedLink] = useState(false);
   const [emailSendingId, setEmailSendingId] = useState<string | null>(null);
   const [emailMessage, setEmailMessage] = useState<string | null>(null);
+  const [unassigningId, setUnassigningId] = useState<string | null>(null);
 
   const filtered = reservations.filter((r) => {
     const matchesSearch =
@@ -188,6 +189,33 @@ export default function ReservationList({
 
     setEmailSendingId(null);
     setTimeout(() => setEmailMessage(null), 4000);
+  };
+
+  const unassignDriver = async (assignmentId: string) => {
+    if (!window.confirm("Bu şoför atamasını kaldırmak istediğinize emin misiniz?")) {
+      return;
+    }
+
+    setUnassigningId(assignmentId);
+    try {
+      const res = await fetch("/api/admin/unassign-driver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId }),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json().catch(() => null);
+        alert(data?.error || "Şoför ataması kaldırılamadı.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Şoför ataması kaldırılırken bir hata oluştu.");
+    } finally {
+      setUnassigningId(null);
+    }
   };
 
   return (
@@ -487,6 +515,13 @@ export default function ReservationList({
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-medium"
                                 >
                                   {emailSendingId === da.id ? "Gönderiliyor..." : "E-posta Gönder"}
+                                </button>
+                                <button
+                                  onClick={() => unassignDriver(da.id)}
+                                  disabled={unassigningId === da.id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium"
+                                >
+                                  {unassigningId === da.id ? "Kaldırılıyor..." : "Atamayı Kaldır"}
                                 </button>
                               </div>
                             )}

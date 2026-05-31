@@ -473,7 +473,7 @@ export default function TrackReservation() {
           </div>
 
           {/* Driver Info Card */}
-          {reservation.driver_assignments && reservation.driver_assignments.length > 0 && (
+          {reservation.driver_assignments?.some((da) => ["assigned", "picked_up"].includes(da.status)) && (
             <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.04)" }}>
               <div className="px-6 py-4" style={{ borderBottom: "1px solid #e2e8f0" }}>
                 <p className="text-xs text-gray-500 uppercase tracking-[0.15em] font-semibold">{t("driverInfo")}</p>
@@ -481,7 +481,7 @@ export default function TrackReservation() {
 
               <div className="p-6 space-y-3">
                 {reservation.driver_assignments
-                  .filter(da => ["assigned", "picked_up"].includes(da.status))
+                  .filter((da) => ["assigned", "picked_up"].includes(da.status))
                   .map((da) => {
                     const isReturn = da.leg === "return";
                     const legLabel = isReturn ? t("return") : t("pickup");
