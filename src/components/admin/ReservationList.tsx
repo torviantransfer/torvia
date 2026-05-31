@@ -106,6 +106,8 @@ export default function ReservationList({
   const [editModal, setEditModal] = useState<{ assignmentId?: string; reservationId?: string; field?: string; value?: string } | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ reservationId?: string } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // ID of the existing assignment being replaced (unassign first, then assign)
+  const [replacingAssignmentId, setReplacingAssignmentId] = useState<string | null>(null);
 
   const filtered = reservations.filter((r) => {
     const matchesSearch =
@@ -171,8 +173,22 @@ export default function ReservationList({
   };
 
   const assignDriver = async (reservationId: string) => {
-    console.log('assignDriver called', { reservationId, selectedDriver, selectedVehicle, assigningLeg, forceAssign });
     if (!selectedDriver || !selectedVehicle) return;
+
+    // Step 0: If replacing an existing assignment, remove it first
+    if (replacingAssignmentId) {
+      const unRes = await fetch("/api/admin/unassign-driver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignmentId: replacingAssignmentId }),
+      });
+      if (!unRes.ok) {
+        const d = await unRes.json().catch(() => null);
+        alert(d?.error ?? "Mevcut şoför kaldırılamadı.");
+        return;
+      }
+      setReplacingAssignmentId(null);
+    }
 
     // Step 1: Check for conflicts (unless forced)
     if (!forceAssign) {
@@ -548,13 +564,13 @@ export default function ReservationList({
                     <Pencil size={13} />
                     Rezervasyonu Düzenle
                   </button>
-                  {r.status === "pending" && (
+                  {r.status !== "completed" && (
                     <button
                       onClick={() => setDeleteModal({ reservationId: r.id })}
                       className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-xs font-semibold"
                     >
                       <Trash2 size={13} />
-                      Sil
+                      {["pending", "cancelled"].includes(r.status) ? "Sil" : "İptal Et"}
                     </button>
                   )}
                 </div>
@@ -707,24 +723,42 @@ export default function ReservationList({
                   )}
                   {/* Assign buttons per leg */}
                   {(r.status === "paid" || r.status === "driver_assigned") && (() => {
-                    const outboundAssigned = r.driver_assignments?.some(da => da.leg === "outbound" && ["assigned", "accepted", "picked_up"].includes(da.status));
-                    const returnAssigned = r.driver_assignments?.some(da => da.leg === "return" && ["assigned", "accepted", "picked_up"].includes(da.status));
-                    const canAssignOutbound = !outboundAssigned;
+                    const outboundAssignment = r.driver_assignments?.find(da => da.leg === "outbound" && ["assigned", "accepted", "picked_up"].includes(da.status));
+                    const returnAssignment   = r.driver_assignments?.find(da => da.leg === "return"   && ["assigned", "accepted", "picked_up"].includes(da.status));
+                    const outboundAssigned = !!outboundAssignment;
+                    const returnAssigned   = !!returnAssignment;
+                    // Always allow outbound; allow return only for round trips
                     const canAssignReturn = r.trip_type === "round_trip" && !returnAssigned;
-
-                    if (!canAssignOutbound && !canAssignReturn) return null;
+                    // Show this block whenever there's something to assign or replace
+                    const showBlock = !outboundAssigned || canAssignReturn;
+                    if (!showBlock && !outboundAssigned) return null;
 
                     if (assigningId === r.id) {
+                      // Which legs can appear in the leg selector
+                      const legOptions = [
+                        { value: "outbound", label: outboundAssigned ? "Gidiş (Değiştir)" : "Gidiş" },
+                        ...(r.trip_type === "round_trip" ? [{ value: "return", label: returnAssigned ? "Dönüş (Değiştir)" : "Dönüş" }] : []),
+                      ];
                       return (
                         <div className="mt-3">
+                          {replacingAssignmentId && (
+                            <div className="mb-2 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                              <AlertTriangle size={13} />
+                              Mevcut şoför kaldırılacak ve yenisi atanacak.
+                            </div>
+                          )}
                           <div className="flex flex-wrap items-center gap-3">
                             <select
                               value={assigningLeg}
-                              onChange={(e) => setAssigningLeg(e.target.value as "outbound" | "return")}
+                              onChange={(e) => {
+                                const leg = e.target.value as "outbound" | "return";
+                                setAssigningLeg(leg);
+                                const existing = leg === "outbound" ? outboundAssignment : returnAssignment;
+                                setReplacingAssignmentId(existing?.id ?? null);
+                              }}
                               className="px-3 py-2 text-sm border border-gray-200 rounded-lg font-medium"
                             >
-                              {canAssignOutbound && <option value="outbound">Gidiş</option>}
-                              {canAssignReturn && <option value="return">Dönüş</option>}
+                              {legOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
                             <select
                               value={selectedDriver}
@@ -802,43 +836,43 @@ export default function ReservationList({
                       );
                     }
 
+                    const openAssign = (leg: "outbound" | "return") => {
+                      const existing = leg === "outbound" ? outboundAssignment : returnAssignment;
+                      setAssigningId(r.id);
+                      setAssigningLeg(leg);
+                      setReplacingAssignmentId(existing?.id ?? null);
+                      setSelectedDriver("");
+                      setSelectedVehicle("");
+                      setConflicts([]);
+                      setForceAssign(false);
+                      setReturnPickupTime("");
+                    };
+
                     return (
-                      <div className="mt-3 flex items-center gap-2">
-                        {canAssignOutbound && (
-                            <button
-                            onClick={() => {
-                              console.log('Assign outbound button clicked', r.id);
-                              setAssigningId(r.id);
-                              setAssigningLeg("outbound");
-                              setSelectedDriver("");
-                              setSelectedVehicle("");
-                              setConflicts([]);
-                              setForceAssign(false);
-                              setReturnPickupTime("");
-                            }}
-                            className="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 flex items-center gap-2"
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => openAssign("outbound")}
+                          className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 ${
+                            outboundAssigned
+                              ? "bg-amber-500 hover:bg-amber-600 text-white"
+                              : "bg-slate-900 hover:bg-slate-800 text-white"
+                          }`}
+                        >
+                          <UserPlus size={14} />
+                          {outboundAssigned ? "Gidiş Şoförünü Değiştir" : "Gidiş Şoför Ata"}
+                        </button>
+                        {r.trip_type === "round_trip" && (
+                          <button
+                            onClick={() => openAssign("return")}
+                            className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 ${
+                              returnAssigned
+                                ? "bg-amber-500 hover:bg-amber-600 text-white"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"
+                            }`}
                           >
                             <UserPlus size={14} />
-                            Gidiş Şoför Ata
+                            {returnAssigned ? "Dönüş Şoförünü Değiştir" : "Dönüş Şoför Ata"}
                           </button>
-                        )}
-                        {canAssignReturn && (
-                          <button
-                              onClick={() => {
-                                console.log('Assign return button clicked', r.id);
-                                setAssigningId(r.id);
-                                setAssigningLeg("return");
-                                setSelectedDriver("");
-                                setSelectedVehicle("");
-                                setConflicts([]);
-                                setForceAssign(false);
-                                setReturnPickupTime("");
-                              }}
-                              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                            >
-                              <UserPlus size={14} />
-                              Dönüş Şoför Ata
-                            </button>
                         )}
                       </div>
                     );
