@@ -58,8 +58,11 @@ export const contactSchema = z.object({
 
 export const assignDriverSchema = z.object({
   reservationId: z.string().uuid(),
-  driverId: z.string().uuid(),
-  vehicleId: z.string().uuid(),
+  // Accept common UUID-like strings used by the frontend (36 chars hex + dashes)
+  // This is a pragmatic relaxation to allow non-standard seeded IDs; prefer
+  // fixing the source data long-term.
+  driverId: z.string().regex(/^[0-9a-fA-F-]{36}$/, "Invalid UUID-like driverId"),
+  vehicleId: z.string().regex(/^[0-9a-fA-F-]{36}$/, "Invalid UUID-like vehicleId"),
   leg: z.enum(["outbound", "return"]).default("outbound"),
   pickupTime: z.string().optional(),
 });
