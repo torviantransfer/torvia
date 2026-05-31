@@ -113,6 +113,7 @@ export default function ReservationList({
   });
 
   const assignDriver = async (reservationId: string) => {
+    console.log('assignDriver called', { reservationId, selectedDriver, selectedVehicle, assigningLeg, forceAssign });
     if (!selectedDriver || !selectedVehicle) return;
 
     // Step 1: Check for conflicts (unless forced)
@@ -633,8 +634,9 @@ export default function ReservationList({
                     return (
                       <div className="mt-3 flex items-center gap-2">
                         {canAssignOutbound && (
-                          <button
+                            <button
                             onClick={() => {
+                              console.log('Assign outbound button clicked', r.id);
                               setAssigningId(r.id);
                               setAssigningLeg("outbound");
                               setSelectedDriver("");
@@ -651,20 +653,21 @@ export default function ReservationList({
                         )}
                         {canAssignReturn && (
                           <button
-                            onClick={() => {
-                              setAssigningId(r.id);
-                              setAssigningLeg("return");
-                              setSelectedDriver("");
-                              setSelectedVehicle("");
-                              setConflicts([]);
-                              setForceAssign(false);
-                              setReturnPickupTime("");
-                            }}
-                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                          >
-                            <UserPlus size={14} />
-                            Dönüş Şoför Ata
-                          </button>
+                              onClick={() => {
+                                console.log('Assign return button clicked', r.id);
+                                setAssigningId(r.id);
+                                setAssigningLeg("return");
+                                setSelectedDriver("");
+                                setSelectedVehicle("");
+                                setConflicts([]);
+                                setForceAssign(false);
+                                setReturnPickupTime("");
+                              }}
+                              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                            >
+                              <UserPlus size={14} />
+                              Dönüş Şoför Ata
+                            </button>
                         )}
                       </div>
                     );
