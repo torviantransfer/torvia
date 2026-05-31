@@ -618,18 +618,16 @@ export default function ReservationList({
                         const legLabel = da.leg === "return" ? "Dönüş" : "Gidiş";
                         const waUrl = da.link_token && da.drivers?.phone
                           ? (() => {
-                              const driverLink = `${window.location.origin}/driver/${da.link_token}`;
-                              const voucherLink = `${window.location.origin}/api/driver-voucher?token=${da.link_token}`;
+                                  const driverLink = `${window.location.origin}/driver/${da.link_token}`;
                               const pickupDate = new Date(r.pickup_datetime);
                               const msg = encodeURIComponent(
-                                `🚗 TORVIAN — New Transfer Assignment (${legLabel})\n\n` +
-                                `📋 Code: ${r.reservation_code}\n` +
-                                `👤 Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
-                                `📍 Destination: ${r.regions?.name_en}\n` +
-                                `📅 Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n` +
-                                (da.leg === "return" && da.pickup_time ? `⏰ Pickup: ${da.pickup_time}\n` : "") +
-                                `\n🔗 Driver Panel:\n${driverLink}\n\n` +
-                                `📄 Voucher:\n${voucherLink}`
+                                `TORVIAN - Transfer Assignment (${legLabel})\n\n` +
+                                `Code: ${r.reservation_code}\n` +
+                                `Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
+                                `Destination: ${r.regions?.name_en}\n` +
+                                `Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n` +
+                                (da.leg === "return" && da.pickup_time ? `Pickup: ${da.pickup_time}\n` : "") +
+                                `\nDriver Panel:\n${driverLink}`
                               );
                               const phone = da.drivers!.phone.replace(/[^0-9]/g, "");
                               return `https://wa.me/${phone}?text=${msg}`;
@@ -676,15 +674,7 @@ export default function ReservationList({
                                   {emailSendingId === da.id ? "Gönderiliyor…" : <><Send size={13} />E-posta</>}
                                 </button>
 
-                                {/* Divider */}
-                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
-
                                 {/* Utilities */}
-                                <a href={`/api/driver-voucher?token=${da.link_token}`} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold">
-                                  <ExternalLink size={13} />
-                                  Voucher
-                                </a>
                                 <button
                                   onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold"
