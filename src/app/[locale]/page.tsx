@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/home/HeroSection";
@@ -73,6 +74,18 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
 
+  // Fetch approved reviews for AggregateRating schema
+  const supabase = createAdminClient();
+  const { data: reviewData } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("is_approved", true);
+  const reviewList = reviewData ?? [];
+  const reviewCount = reviewList.length;
+  const avgRating = reviewCount >= 5
+    ? (reviewList.reduce((s, r) => s + (r.rating as number), 0) / reviewCount).toFixed(1)
+    : null;
+
   // JSON-LD Structured Data
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -128,8 +141,16 @@ export default async function HomePage({
         closes: "23:59",
       },
     ],
-    // NOTE: AggregateRating & Review removed — only add when real verified
-    // reviews exist (Google penalizes fabricated review counts).
+    // AggregateRating — only included when 5+ approved reviews exist in DB
+    ...(avgRating ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: avgRating,
+        reviewCount: reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    } : {}),
   };
 
   const webSiteSchema = {

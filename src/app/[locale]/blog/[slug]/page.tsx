@@ -184,6 +184,8 @@ export default async function BlogPostPage({
     .order("sort_order", { ascending: true })
     .limit(5);
 
+  const BASE = "https://torviantransfer.com";
+
   const blogPostSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -195,16 +197,56 @@ export default async function BlogPostPage({
     author: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
-      url: "https://torviantransfer.com",
+      url: BASE,
     },
     publisher: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
-      logo: { "@type": "ImageObject", url: "https://torviantransfer.com/images/logo.png" },
+      logo: { "@type": "ImageObject", url: `${BASE}/images/logo.png` },
     },
-    mainEntityOfPage: `https://torviantransfer.com/${locale}/blog/${canonicalSlug}`,
+    mainEntityOfPage: `${BASE}/${locale}/blog/${canonicalSlug}`,
     wordCount: wordCount,
   };
+
+  // BreadcrumbList schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "TORVIAN Transfer", item: `${BASE}/${locale}` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${BASE}/${locale}/blog` },
+      { "@type": "ListItem", position: 3, name: title, item: `${BASE}/${locale}/blog/${canonicalSlug}` },
+    ],
+  };
+
+  // FAQPage schema — extract Q&A pairs from the HTML content
+  const faqItems = (() => {
+    // Find FAQ heading in any language
+    const faqPattern = /sık sorulan|frequently asked|häufig gestellt|często zadawane|часто задаваемые/i;
+    const faqMatch = faqPattern.exec(content);
+    if (!faqMatch || faqMatch.index === undefined) return null;
+    // Grab everything after the FAQ section heading's closing tag
+    const afterFaq = content.slice(content.indexOf("</h2>", faqMatch.index) + 5);
+    const pairs: { question: string; answer: string }[] = [];
+    const re = /<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi;
+    let m;
+    while ((m = re.exec(afterFaq)) !== null) {
+      const q = m[1].replace(/<[^>]*>/g, "").trim();
+      const a = m[2].replace(/<[^>]*>/g, "").trim();
+      if (q && a) pairs.push({ question: q, answer: a });
+    }
+    return pairs.length > 0 ? pairs : null;
+  })();
+
+  const faqSchema = faqItems ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(({ question, answer }) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
+  } : null;
 
   return (
     <>
@@ -212,6 +254,16 @@ export default async function BlogPostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
       <Header />
       <main>
         <section
