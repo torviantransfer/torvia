@@ -21,6 +21,7 @@ import {
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
 import { pixelInitiateCheckout, pixelAddPaymentInfo } from "@/lib/pixel";
+import { trackPageView, trackBookingStep } from "@/lib/analytics";
 
 interface Props {
   initialRegion?: string;
@@ -189,12 +190,31 @@ function BookingWizardInner(props: Props) {
       .catch(() => { setDateAvailable(true); })
       .finally(() => setCheckingAvailability(false));
   }, [pickupDate]);
+  useEffect(() => {
+    trackPageView({
+      region: regionSlug,
+      metadata: { tripType, pickupDate, pickupTime, route: "/booking" },
+    });
+  }, [regionSlug, tripType, pickupDate, pickupTime]);
+
+  useEffect(() => {
+    if (step === 3 && clientSecret) {
+      trackBookingStep("payment_page_view", {
+        region: regionSlug,
+        metadata: { totalPrice, tripType },
+      });
+    }
+  }, [step, clientSecret, regionSlug, totalPrice, tripType]);
 
   const selectVehicle = (vehicle: VehicleOption) => {
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!dateAvailable) { setError(t("dateUnavailable")); return; }
     setSelectedVehicle(vehicle);
     pixelInitiateCheckout(vehicle.oneWayPrice);
+    trackBookingStep("vehicle_selected", {
+      region: regionSlug,
+      metadata: { vehicle: vehicle.slug, price: vehicle.oneWayPrice },
+    });
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -239,6 +259,16 @@ function BookingWizardInner(props: Props) {
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);
         pixelAddPaymentInfo(selectedVehicle.oneWayPrice);
+        trackBookingStep("checkout_initiated", {
+          region: regionSlug,
+          metadata: {
+            vehicle: selectedVehicle.slug,
+            totalPrice: selectedVehicle.oneWayPrice,
+            adults,
+            children,
+            luggage,
+          },
+        });
         setStep(3);
         window.scrollTo({ top: 0, behavior: "smooth" });
       }

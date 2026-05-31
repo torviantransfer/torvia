@@ -15,7 +15,7 @@ export async function GET() {
   // All non-cancelled reservations for aggregation
   const { data: reservations } = await admin
     .from("reservations")
-    .select("id, status, total_price, created_at, pickup_datetime, trip_type, region_id, regions(name_en)")
+    .select("id, status, total_price, created_at, pickup_datetime, trip_type, region_id, stripe_payment_intent_id, regions(name_en)")
     .not("status", "eq", "cancelled")
     .order("created_at", { ascending: true });
 
@@ -99,6 +99,10 @@ export async function GET() {
     .reduce((s, r) => s + r.total_price, 0);
 
   const cancelRequested = all.filter((r) => r.status === "cancel_requested").length;
+  const paymentInitiated = all.filter((r) => r.stripe_payment_intent_id !== null).length;
+  const paymentCompleted = all.filter((r) => ["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status)).length;
+  const paymentPending = all.filter((r) => r.status === "pending" && r.stripe_payment_intent_id !== null).length;
+  const paymentConversion = paymentInitiated > 0 ? Math.round((paymentCompleted / paymentInitiated) * 100) : 0;
 
   return NextResponse.json({
     monthlyRevenue,
@@ -112,6 +116,10 @@ export async function GET() {
       thisMonthCount: thisMonth.length,
       thisMonthRevenue: Math.round(thisMonthRevenue * 100) / 100,
       cancelRequested,
+      paymentInitiated,
+      paymentCompleted,
+      paymentPending,
+      paymentConversion,
     },
   });
 }

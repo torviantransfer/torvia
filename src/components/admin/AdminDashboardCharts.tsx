@@ -43,6 +43,24 @@ interface DashboardData {
     thisMonthCount: number;
     thisMonthRevenue: number;
     cancelRequested: number;
+    paymentInitiated: number;
+    paymentCompleted: number;
+    paymentPending: number;
+    paymentConversion: number;
+  };
+}
+
+interface AnalyticsData {
+  funnel: { name: string; value: number }[];
+  topCountries: { name: string; value: number }[];
+  topPages: { name: string; value: number }[];
+  topSources: { name: string; value: number }[];
+  summary: {
+    eventsLast30Days: number;
+    uniqueSessions: number;
+    bookingSessions: number;
+    paymentSuccessSessions: number;
+    conversionRate: number;
   };
 }
 
@@ -60,6 +78,7 @@ const PIE_COLORS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#636
 
 export default function AdminDashboardCharts() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +86,12 @@ export default function AdminDashboardCharts() {
       .then((r) => r.json())
       .then(setData)
       .finally(() => setLoading(false));
+
+    fetch("/api/admin/dashboard-analytics")
+      .then((r) => r.json())
+      .then((result) => {
+        if (!result?.error) setAnalyticsData(result);
+      });
   }, []);
 
   if (loading) {
@@ -85,6 +110,12 @@ export default function AdminDashboardCharts() {
   if (!data) return null;
 
   const { monthlyRevenue, statusDistribution, topRegions, tripTypes, dailyBookings, summary } = data;
+  const paymentFunnelData = [
+    { name: "Başlatılan Ödemeler", value: summary.paymentInitiated },
+    { name: "Tamamlanan Ödemeler", value: summary.paymentCompleted },
+    { name: "Beklemede", value: summary.paymentPending },
+  ];
+  const analyticsSummary = analyticsData?.summary;
 
   return (
     <div className="space-y-6 mt-8">
@@ -119,6 +150,106 @@ export default function AdminDashboardCharts() {
           gradient="from-amber-500 to-orange-600"
         />
       </div>
+
+      <div className="grid lg:grid-cols-3 gap-4">
+        <ChartCard icon={DollarSign} title="Ödeme Funnel" subtitle="Ödemeye geçen / tamamlayan">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={paymentFunnelData} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={0} />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
+              <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="mt-4 text-sm text-slate-500">
+            Dönüşüm: <span className="font-semibold text-slate-900">{summary.paymentConversion}%</span>
+          </div>
+        </ChartCard>
+      </div>
+
+      {analyticsData && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <SummaryCard
+              icon={Activity}
+              label="Son 30 Gün Olay"
+              value={analyticsSummary?.eventsLast30Days ?? 0}
+              sub="olay"
+              gradient="from-slate-500 to-slate-700"
+            />
+            <SummaryCard
+              icon={MapPin}
+              label="Benzersiz Oturumlar"
+              value={analyticsSummary?.uniqueSessions ?? 0}
+              sub="ziyaretçi"
+              gradient="from-cyan-500 to-blue-600"
+            />
+            <SummaryCard
+              icon={TrendingUp}
+              label="Rezervasyon Dönüşümü"
+              value={`${analyticsSummary?.conversionRate ?? 0}%`}
+              sub="booking başına"
+              gradient="from-emerald-500 to-teal-600"
+            />
+            <SummaryCard
+              icon={BarChart2}
+              label="Tamamlanan Ödemeler"
+              value={analyticsSummary?.paymentSuccessSessions ?? 0}
+              sub="oturum"
+              gradient="from-violet-500 to-purple-600"
+            />
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-4">
+            <ChartCard icon={MapPin} title="En Önemli Ülkeler" subtitle="Ziyaretçi ülke dağılımı">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={analyticsData.topCountries} layout="vertical" margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} width={100} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
+                  <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard icon={Search} title="En Popüler Sayfalar" subtitle="Sayfa davranışı">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={analyticsData.topPages} layout="vertical" margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} width={100} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
+                  <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard icon={Users} title="Kaynaklar" subtitle="UTM / direct kaynaklar">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={analyticsData.topSources} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={0} />
+                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
+                  <Bar dataKey="value" fill="#f97316" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+
+          <ChartCard icon={BarChart3} title="Booking Funnel" subtitle="Ziyaretçi aktiviteleri">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={analyticsData.funnel} margin={{ left: 0, right: 0, top: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} interval={0} />
+                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0", fontSize: 13 }} />
+                <Bar dataKey="value" fill="#8b5cf6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
 
       {/* Charts grid */}
       <div className="grid lg:grid-cols-2 gap-4">

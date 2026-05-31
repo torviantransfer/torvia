@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { pixelPurchase } from "@/lib/pixel";
+import { trackPaymentSuccess } from "@/lib/analytics";
 
 interface Props {
   reservationCode: string;
@@ -15,6 +16,7 @@ export default function PixelPurchaseFire({ reservationCode }: Props) {
   useEffect(() => {
     if (reservationCode && reservationCode !== "—") {
       pixelPurchase(reservationCode, 0, "USD");
+      trackPaymentSuccess({ metadata: { reservationCode } });
     }
   }, [reservationCode]);
 
