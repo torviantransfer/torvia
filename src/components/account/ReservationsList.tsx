@@ -52,6 +52,8 @@ const t: Record<string, Record<string, string>> = {
   cancelReason: { en: "Reason (optional)", tr: "Sebep (isteğe bağlı)", de: "Grund (optional)", pl: "Powód (opcjonalnie)", ru: "Причина (необязательно)" },
   cancelSubmit: { en: "Confirm Cancel", tr: "İptali Onayla", de: "Stornierung bestätigen", pl: "Potwierdź anulowanie", ru: "Подтвердить отмену" },
   cancelSuccess: { en: "Cancellation request sent", tr: "İptal talebi gönderildi", de: "Stornierungsanfrage gesendet", pl: "Prośba o anulowanie wysłana", ru: "Запрос на отмену отправлен" },
+  qrTitle: { en: "Transfer QR Code", tr: "Transfer QR Kodu", de: "Transfer QR-Code", pl: "Kod QR transferu", ru: "QR-код трансфера" },
+  qrDesc: { en: "Your driver will scan this QR code before starting the journey.", tr: "Şoför yolculuğu başlatmadan önce bu QR kodu okutacaktır.", de: "Ihr Fahrer scannt diesen QR-Code vor Fahrtbeginn.", pl: "Kierowca zeskanuje ten kod QR przed rozpoczęciem podróży.", ru: "Водитель отсканирует этот QR-код перед началом поездки." },
 };
 
 const STATUS_BADGE: Record<string, string> = {
@@ -395,14 +397,14 @@ export default function ReservationsList({
                       <div className="rounded-2xl border border-gray-200 bg-white p-4">
                         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-950">
                           <QrCode size={16} />
-                          Transfer QR Kodu
+                          {t.qrTitle[locale] ?? t.qrTitle.en}
                         </h3>
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                           <div className="inline-flex rounded-xl bg-gray-50 p-3">
                             <QRCodeCanvas value={`/verify/${r.qr_code_token}`} size={132} />
                           </div>
                           <p className="text-sm text-gray-500">
-                            Şoför yolculuğu başlatmadan önce bu QR kodu okutacaktır.
+                            {t.qrDesc[locale] ?? t.qrDesc.en}
                           </p>
                         </div>
                       </div>
