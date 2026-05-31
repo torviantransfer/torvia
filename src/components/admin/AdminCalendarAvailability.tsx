@@ -8,7 +8,6 @@ import {
   Unlock,
   Clock,
   X,
-  Users,
   Car,
   Phone,
   AlertTriangle,
@@ -21,6 +20,7 @@ interface CalendarEvent {
   status: string;
   pickup: string;
   region: string;
+  route: string;
   customer: string;
   phone: string;
   adults: number;
@@ -30,6 +30,7 @@ interface CalendarEvent {
   hotel: string | null;
   price: number;
   tripType: string;
+  leg: "outbound" | "return";
   returnDate: string | null;
 }
 
@@ -272,7 +273,10 @@ export default function AdminCalendarAvailability() {
                               className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium truncate flex items-center gap-1 ${cfg.bg} ${cfg.text}`}
                             >
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
-                              <span className="truncate">{new Date(ev.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})} {ev.region}</span>
+                              <span className="truncate">
+                                {ev.leg === "return" ? "↩ " : "↗ "}
+                                {new Date(ev.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})} {ev.region}
+                              </span>
                             </button>
                           );
                         })}
@@ -380,9 +384,11 @@ export default function AdminCalendarAvailability() {
                           <p className="text-[11px] font-medium text-slate-700 flex items-center gap-1">
                             <Clock size={10} className="text-slate-400 shrink-0" />
                             {new Date(ev.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}
-                            <span className="text-slate-300 mx-0.5">→</span>
-                            <span className="truncate">{ev.region}</span>
+                            <span className={`ml-1 px-1 py-0.5 rounded text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                              {ev.leg === "return" ? "Dönüş" : "Gidiş"}
+                            </span>
                           </p>
+                          <p className="text-[10px] text-slate-400 truncate">{ev.route}</p>
                           <p className="text-[10px] text-slate-500 mt-0.5 truncate">{ev.customer}</p>
                         </button>
                       );
@@ -418,7 +424,8 @@ export default function AdminCalendarAvailability() {
             </div>
             <div className="p-5 space-y-3 text-sm">
               {[
-                ["Güzergah", `Antalya Havalimanı → ${selectedEvent.region}`],
+                ["Güzergah", selectedEvent.route || `Antalya Havalimanı → ${selectedEvent.region}`],
+                ["Leg", selectedEvent.leg === "return" ? "↩ Dönüş" : "↗ Gidiş"],
                 ["Saat", new Date(selectedEvent.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})],
                 ...(selectedEvent.returnDate ? [["Dönüş", new Date(selectedEvent.returnDate).toLocaleDateString("tr-TR")]] : []),
                 ["Müşteri", selectedEvent.customer],

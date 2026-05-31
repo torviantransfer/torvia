@@ -22,7 +22,8 @@ export default async function AdminDashboard({
     [
       supabase
         .from("reservations")
-        .select("id", { count: "exact", head: true }),
+        .select("id", { count: "exact", head: true })
+        .not("status", "eq", "cancelled"),
       supabase.from("drivers").select("id", { count: "exact", head: true }),
       supabase
         .from("vehicles")
@@ -40,6 +41,7 @@ export default async function AdminDashboard({
     .select(
       "id, reservation_code, status, total_price, pickup_datetime, created_at, customers(first_name, last_name, email), regions(name_en)"
     )
+    .not("status", "eq", "cancelled")
     .order("created_at", { ascending: false })
     .limit(10);
 

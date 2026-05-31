@@ -12,10 +12,11 @@ export async function GET() {
 
   const admin = createAdminClient();
 
-  // All reservations for aggregation
+  // All non-cancelled reservations for aggregation
   const { data: reservations } = await admin
     .from("reservations")
     .select("id, status, total_price, created_at, pickup_datetime, trip_type, region_id, regions(name_en)")
+    .not("status", "eq", "cancelled")
     .order("created_at", { ascending: true });
 
   const all = reservations ?? [];
