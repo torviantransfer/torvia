@@ -49,8 +49,9 @@ export async function getConfig(key: string): Promise<string> {
     cacheTime = Date.now();
   }
 
-  // DB value first
-  if (cache[key]) return cache[key];
+  // DB value first, but ignore placeholder entries
+  const dbValue = cache[key];
+  if (dbValue && dbValue !== "placeholder") return dbValue;
 
   // Fallback to env var
   const envKey = ENV_MAP[key];

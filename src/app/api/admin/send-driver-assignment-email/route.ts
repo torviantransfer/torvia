@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         `id, leg, pickup_time, status,
          drivers(full_name, phone),
          vehicles(plate_number, brand, model),
-         reservations(reservation_code, pickup_datetime, return_datetime, regions(name_en), customers(first_name, last_name, email))`
+         reservations(reservation_code, pickup_datetime, return_datetime, locale, regions(name_en, name_tr, name_de, name_pl, name_ru), customers(first_name, last_name, email))`
       )
       .eq("id", assignmentId)
       .single();
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     const vehicle = Array.isArray(assignment.vehicles) ? assignment.vehicles[0] : assignment.vehicles;
     const region = Array.isArray(reservation.regions) ? reservation.regions[0] : reservation.regions;
 
+    const locale = reservation.locale ?? "en";
     const customer = Array.isArray(reservation?.customers)
       ? reservation.customers[0]
       : reservation?.customers;
@@ -52,9 +53,10 @@ export async function POST(request: NextRequest) {
       driverPhone: driver?.phone ?? "",
       vehicleInfo: vehicle ? `${vehicle.brand} ${vehicle.model} — ${vehicle.plate_number}` : "—",
       pickupTime: assignment.pickup_time || undefined,
-      regionName: region?.name_en ?? "",
+      regionName: (region as any)?.[`name_${locale}`] ?? region?.name_en ?? "",
       pickupDatetime: reservation.pickup_datetime,
       returnDatetime: reservation.return_datetime,
+      locale,
     });
 
     return NextResponse.json({ ok: true });

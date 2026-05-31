@@ -85,11 +85,43 @@ const i18n: Record<string, Record<string, string>> = {
     imp5: "Do not contact the driver directly for future bookings. Our company is not responsible for any issues that may arise.",
     contact: "Need help? We're available 24/7",
     footer: "This e-mail serves as your official transfer voucher.",
+    driverAssignmentSubjectOutbound: "Your outbound driver has been assigned",
+    driverAssignmentSubjectReturn: "Your return driver has been assigned",
+    driverAssignmentBanner: "Your driver has been assigned",
+    driverAssignmentBody: "Your transfer has been assigned to a driver. See the details below.",
+    driverAssignmentDriverInfoTitle: "Driver Information",
+    driverAssignmentDriverLabel: "Driver",
+    driverAssignmentPhoneLabel: "Phone",
+    driverAssignmentVehicleLabel: "Vehicle",
+    driverAssignmentTransferDetailsTitle: "Transfer Details",
+    driverAssignmentDateLabel: "Date",
+    driverAssignmentPickupTimeLabel: "Pickup Time",
+    driverAssignmentImportantLabel: "Important Notice",
+    driverAssignmentEarlyWarningTitle: "Please be ready at least 2 hours before pickup.",
+    driverAssignmentEarlyWarningBody: "Your driver will arrive at the scheduled time at your hotel or address.",
+    driverAssignmentFooter: "This email is for transfer information only.",
+    airport: "Antalya Airport",
   },
   tr: {
     subject: "TORVIAN Transfer Voucherınız",
     greeting: "Merhaba",
     confirmed: "VIP transferiniz onaylandı ve ödemeniz alındı.",
+    driverAssignmentSubjectOutbound: "Gidiş Şoför Bilgisi",
+    driverAssignmentSubjectReturn: "Dönüş Şoför Bilgisi",
+    driverAssignmentBanner: "Şoförünüz Atandı",
+    driverAssignmentBody: "Transferiniz için şoför ataması yapılmıştır. Aşağıda detayları bulabilirsiniz.",
+    driverAssignmentDriverInfoTitle: "Şoför Bilgileri",
+    driverAssignmentDriverLabel: "Şoför",
+    driverAssignmentPhoneLabel: "Telefon",
+    driverAssignmentVehicleLabel: "Araç",
+    driverAssignmentTransferDetailsTitle: "Transfer Detayları",
+    driverAssignmentDateLabel: "Tarih",
+    driverAssignmentPickupTimeLabel: "Alış Saati",
+    driverAssignmentImportantLabel: "Önemli Uyarı",
+    driverAssignmentEarlyWarningTitle: "Lütfen alış saatinden en az 2 saat önce hazır olun.",
+    driverAssignmentEarlyWarningBody: "Şoförünüz belirtilen saatte otelinizde/adresinizde olacaktır.",
+    driverAssignmentFooter: "Bu e-posta yalnızca transfer bilgisi amaçlıdır.",
+    airport: "Antalya Havalimanı",
     showVoucher: "Lütfen bu voucher'ı (basılı veya ekranda) teslim noktasında şoförünüze gösterin.",
     code: "Rezervasyon Kodu",
     route: "Güzergah",
@@ -169,6 +201,22 @@ const i18n: Record<string, Record<string, string>> = {
     imp5: "Kontaktieren Sie den Fahrer nicht direkt für zukünftige Buchungen. Unser Unternehmen übernimmt keine Verantwortung für mögliche Probleme.",
     contact: "Brauchen Sie Hilfe? Wir sind 24/7 erreichbar",
     footer: "Diese E-Mail dient als Ihr offizieller Transfer-Voucher.",
+    driverAssignmentSubjectOutbound: "Ihr Hinfahrzeug wurde zugewiesen",
+    driverAssignmentSubjectReturn: "Ihr Rückfahrzeug wurde zugewiesen",
+    driverAssignmentBanner: "Ihr Fahrer wurde zugewiesen",
+    driverAssignmentBody: "Ihr Transfer wurde einem Fahrer zugewiesen. Unten finden Sie die Details.",
+    driverAssignmentDriverInfoTitle: "Fahrerinformationen",
+    driverAssignmentDriverLabel: "Fahrer",
+    driverAssignmentPhoneLabel: "Telefon",
+    driverAssignmentVehicleLabel: "Fahrzeug",
+    driverAssignmentTransferDetailsTitle: "Transferdetails",
+    driverAssignmentDateLabel: "Datum",
+    driverAssignmentPickupTimeLabel: "Abholzeit",
+    driverAssignmentImportantLabel: "Wichtige Hinweise",
+    driverAssignmentEarlyWarningTitle: "Bitte seien Sie mindestens 2 Stunden vor der Abholung bereit.",
+    driverAssignmentEarlyWarningBody: "Ihr Fahrer kommt zur geplanten Zeit zu Ihrem Hotel oder Ihrer Adresse.",
+    driverAssignmentFooter: "Diese E-Mail dient nur der Transferinformation.",
+    airport: "Antalya Flughafen",
   },
   pl: {
     subject: "Twój Voucher TORVIAN Transfer",
@@ -211,6 +259,22 @@ const i18n: Record<string, Record<string, string>> = {
     imp5: "Nie kontaktuj się bezpośrednio z kierowcą w sprawie przyszłych rezerwacji. Nasza firma nie ponosi odpowiedzialności za ewentualne problemy.",
     contact: "Potrzebujesz pomocy? Jesteśmy dostępni 24/7",
     footer: "Ten e-mail służy jako oficjalny voucher transferowy.",
+    driverAssignmentSubjectOutbound: "Twój kierowca na trasie wylotowej został przydzielony",
+    driverAssignmentSubjectReturn: "Twój kierowca na trasie powrotnej został przydzielony",
+    driverAssignmentBanner: "Twój kierowca został przydzielony",
+    driverAssignmentBody: "Twój transfer został przypisany do kierowcy. Poniżej znajdują się szczegóły.",
+    driverAssignmentDriverInfoTitle: "Informacje o kierowcy",
+    driverAssignmentDriverLabel: "Kierowca",
+    driverAssignmentPhoneLabel: "Telefon",
+    driverAssignmentVehicleLabel: "Pojazd",
+    driverAssignmentTransferDetailsTitle: "Szczegóły transferu",
+    driverAssignmentDateLabel: "Data",
+    driverAssignmentPickupTimeLabel: "Godzina odbioru",
+    driverAssignmentImportantLabel: "Ważne informacje",
+    driverAssignmentEarlyWarningTitle: "Proszę być gotowym co najmniej 2 godziny przed odbiorem.",
+    driverAssignmentEarlyWarningBody: "Twój kierowca przyjedzie o zaplanowanej godzinie do hotelu lub adresu.",
+    driverAssignmentFooter: "Ten e-mail ma charakter wyłącznie informacyjny.",
+    airport: "Lotnisko Antalya",
   },
   ru: {
     subject: "Ваш ваучер TORVIAN Transfer",
@@ -253,6 +317,22 @@ const i18n: Record<string, Record<string, string>> = {
     imp5: "Не связывайтесь с водителем напрямую для будущих бронирований. Наша компания не несёт ответственности за возможные проблемы.",
     contact: "Нужна помощь? Мы доступны 24/7",
     footer: "Это письмо является вашим официальным ваучером на трансфер.",
+    driverAssignmentSubjectOutbound: "Ваш водитель на выезд назначен",
+    driverAssignmentSubjectReturn: "Ваш водитель на обратную поездку назначен",
+    driverAssignmentBanner: "Ваш водитель назначен",
+    driverAssignmentBody: "Ваш трансфер назначен водителю. Ниже вы найдёте детали.",
+    driverAssignmentDriverInfoTitle: "Информация о водителе",
+    driverAssignmentDriverLabel: "Водитель",
+    driverAssignmentPhoneLabel: "Телефон",
+    driverAssignmentVehicleLabel: "Транспорт",
+    driverAssignmentTransferDetailsTitle: "Детали трансфера",
+    driverAssignmentDateLabel: "Дата",
+    driverAssignmentPickupTimeLabel: "Время подачи",
+    driverAssignmentImportantLabel: "Важное уведомление",
+    driverAssignmentEarlyWarningTitle: "Пожалуйста, будьте готовы как минимум за 2 часа до подачи.",
+    driverAssignmentEarlyWarningBody: "Ваш водитель прибудет вовремя в ваш отель или по адресу.",
+    driverAssignmentFooter: "Это письмо является лишь информацией о трансфере.",
+    airport: "Аэропорт Анталия",
   },
 };
 
@@ -493,29 +573,34 @@ interface DriverAssignmentEmailData {
   regionName: string;
   pickupDatetime: string;
   returnDatetime?: string | null;
+  locale: string;
 }
 
 export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData) {
   const resend = await getResend();
   if (!resend) return;
 
+  const locale = data.locale || "en";
   const isReturn = data.leg === "return";
-  const legLabel = isReturn ? "Dönüş" : "Gidiş";
-  const subject = `TORVIAN — ${legLabel} Şoför Bilgileri | ${data.reservationCode}`;
+  const subjectBase = isReturn
+    ? t(locale, "driverAssignmentSubjectReturn")
+    : t(locale, "driverAssignmentSubjectOutbound");
+  const subject = `${subjectBase} | ${data.reservationCode}`;
 
   const datetime = isReturn && data.returnDatetime
     ? new Date(data.returnDatetime)
     : new Date(data.pickupDatetime);
-  const dateStr = datetime.toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" });
-  const timeStr = datetime.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+  const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : "en-US";
+  const dateStr = datetime.toLocaleDateString(regionalDateLocale, { day: "2-digit", month: "long", year: "numeric" });
+  const timeStr = datetime.toLocaleTimeString(regionalDateLocale, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 
   const direction = isReturn
-    ? `${data.regionName} &rarr; Antalya Airport`
-    : `Antalya Airport &rarr; ${data.regionName}`;
+    ? `${data.regionName} &rarr; ${t(locale, "airport")}`
+    : `${t(locale, "airport")} &rarr; ${data.regionName}`;
 
-  const pickupTimeRow = isReturn && data.pickupTime
+  const pickupTimeRow = data.pickupTime
     ? `<tr>
-        <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#9200; &nbsp;Al&#305;&#351; Saati</td>
+        <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "driverAssignmentPickupTimeLabel")}</td>
         <td style="padding:9px 20px;font-size:14px;color:#007AFF;font-weight:700;">${data.pickupTime}</td>
       </tr>`
     : "";
@@ -523,8 +608,8 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   const earlyWarning = isReturn
     ? `<tr>
         <td colspan="2" style="padding:12px 20px;background:#fef3c7;border-left:3px solid #007AFF;">
-          <p style="color:#92400e;font-size:13px;font-weight:700;margin:0;">&#9888; L&uuml;tfen al&#305;&#351; saatinden en az 2 saat &ouml;nce haz&#305;r olunuz.</p>
-          <p style="color:#78350f;font-size:12px;margin:4px 0 0;">&#350;of&ouml;r&uuml;n&uuml;z belirtilen saatte otel/adresinizde olacakt&#305;r.</p>
+          <p style="color:#92400e;font-size:13px;font-weight:700;margin:0;">${t(locale, "driverAssignmentEarlyWarningTitle")}</p>
+          <p style="color:#78350f;font-size:12px;margin:4px 0 0;">${t(locale, "driverAssignmentEarlyWarningBody")}</p>
         </td>
       </tr>`
     : "";
@@ -534,7 +619,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
 
   const html = `
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="${locale}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -557,7 +642,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   <!-- BANNER -->
   <tr>
     <td style="background:#eff6ff;padding:14px 24px;text-align:center;border-left:4px solid #007AFF;border-right:4px solid #007AFF;">
-      <span style="font-size:14px;color:#1d4ed8;font-weight:700;letter-spacing:1px;">&#128663; &nbsp;${legLabel.toUpperCase()} &#350;OF&Ouml;R&Uuml;N&Uuml;Z ATANDI</span>
+      <span style="font-size:14px;color:#1d4ed8;font-weight:700;letter-spacing:1px;">${t(locale, "driverAssignmentBanner")}</span>
     </td>
   </tr>
 
@@ -565,8 +650,8 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   <tr>
     <td style="background:#ffffff;padding:32px 24px 24px;">
 
-      <p style="font-size:17px;color:#111827;margin:0 0 4px;font-weight:600;">Merhaba ${data.customerFirstName},</p>
-      <p style="margin:0 0 24px;color:#6b7280;font-size:13px;line-height:1.6;">${isReturn ? "Dönüş" : "Gidiş"} transferiniz için şoför ataması yapılmıştır. Aşağıda detayları bulabilirsiniz.</p>
+      <p style="font-size:17px;color:#111827;margin:0 0 4px;font-weight:600;">${t(locale, "greeting")} ${data.customerFirstName},</p>
+      <p style="margin:0 0 24px;color:#6b7280;font-size:13px;line-height:1.6;">${t(locale, "driverAssignmentBody")}</p>
 
       <!-- Reservation Code -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
@@ -579,34 +664,34 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       </table>
 
       <!-- Driver Info -->
-      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">&#350;of&ouml;r Bilgileri</p>
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(locale, "driverAssignmentDriverInfoTitle")}</p>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td style="padding:4px 0;"></td></tr>
         <tr>
-          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128100; &nbsp;&#350;of&ouml;r</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "driverAssignmentDriverLabel")}</td>
           <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${data.driverName}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128222; &nbsp;Telefon</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "driverAssignmentPhoneLabel")}</td>
           <td style="padding:9px 20px;font-size:13px;color:#111827;">${data.driverPhone}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128663; &nbsp;Ara&ccedil;</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "driverAssignmentVehicleLabel")}</td>
           <td style="padding:9px 20px;font-size:13px;color:#111827;">${data.vehicleInfo}</td>
         </tr>
         <tr><td style="padding:4px 0;"></td></tr>
       </table>
 
       <!-- Transfer Info -->
-      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">Transfer Detaylar&#305;</p>
+      <p style="color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;border-bottom:1px solid #e5e7eb;padding-bottom:8px;">${t(locale, "driverAssignmentTransferDetailsTitle")}</p>
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:12px;overflow:hidden;margin-bottom:20px;border:1px solid #f3f4f6;">
         <tr><td style="padding:4px 0;"></td></tr>
         <tr>
-          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#9992;&#65039; &nbsp;G&uuml;zergah</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "route")}</td>
           <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${direction}</td>
         </tr>
         <tr>
-          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">&#128197; &nbsp;Tarih</td>
+          <td style="padding:9px 20px;color:#6b7280;font-size:13px;white-space:nowrap;width:38%;">${t(locale, "driverAssignmentDateLabel")}</td>
           <td style="padding:9px 20px;font-size:13px;color:#111827;font-weight:600;">${dateStr} &mdash; ${timeStr}</td>
         </tr>
         ${pickupTimeRow}
@@ -618,8 +703,8 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fef3c7;border-radius:12px;overflow:hidden;margin-bottom:24px;border-left:4px solid #ef4444;">
         <tr>
           <td style="padding:16px 20px;">
-            <p style="color:#92400e;font-size:13px;font-weight:700;margin:0 0 4px;">&#9888; &Ouml;nemli Uyar&#305;</p>
-            <p style="color:#78350f;font-size:12px;margin:0;line-height:1.5;">Bir sonraki taşımalarda şof&ouml;r ile doğrudan iletişime ge&ccedil;meyiniz. Yaşanan olumsuzluklardan firmamız sorumlu değildir.</p>
+            <p style="color:#92400e;font-size:13px;font-weight:700;margin:0 0 4px;">${t(locale, "driverAssignmentImportantLabel")}</p>
+            <p style="color:#78350f;font-size:12px;margin:0;line-height:1.5;">${t(locale, "imp5")}</p>
           </td>
         </tr>
       </table>
@@ -628,7 +713,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:4px;">
         <tr>
           <td style="text-align:center;padding-bottom:14px;">
-            <p style="color:#6b7280;font-size:12px;margin:0 0 14px;">Soru veya sorun i&ccedil;in 7/24 ulaşabilirsiniz</p>
+            <p style="color:#6b7280;font-size:12px;margin:0 0 14px;">${t(locale, "contact")}</p>
             <a href="https://wa.me/${wa}" style="display:inline-block;background:#25D366;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 4px 4px 0;">WhatsApp</a>
             <a href="mailto:torviantransfer@gmail.com" style="display:inline-block;background:#007AFF;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:700;margin:0 0 4px 4px;">E-mail</a>
           </td>
@@ -641,9 +726,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   <!-- FOOTER -->
   <tr>
     <td style="background:#f9fafb;border-top:1px solid #e5e7eb;border-radius:0 0 16px 16px;padding:18px 24px;text-align:center;">
-      <p style="color:#9ca3af;font-size:11px;margin:0 0 4px;">Bu e-posta transferiniz hakkında bilgilendirme amaçlıdır.</p>
-      <p style="color:#d1d5db;font-size:10px;margin:0;">&#169; ${new Date().getFullYear()} TORVIAN Transfer &middot; Antalya, Turkey &middot; <a href="${siteUrl}" style="color:#9ca3af;text-decoration:none;">torviantransfer.com</a></p>
-    </td>
+          <p style="color:#9ca3af;font-size:11px;margin:0 0 4px;">${t(locale, "driverAssignmentFooter")}</p>
   </tr>
 
 </table>

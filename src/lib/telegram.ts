@@ -62,8 +62,8 @@ export async function sendTelegram(options: TelegramMessageOptions): Promise<voi
         disable_web_page_preview: true,
       }),
     });
-  } catch {
-    // Telegram failure should never block business logic
+  } catch (err) {
+    console.error("Telegram sendMessage failed:", err);
   }
 }
 
@@ -212,8 +212,8 @@ export async function sendTelegramDocument(
       method: "POST",
       body: formData,
     });
-  } catch {
-    // Telegram failure should never block business logic
+  } catch (err) {
+    console.error("Telegram sendDocument failed:", err);
   }
 }
 

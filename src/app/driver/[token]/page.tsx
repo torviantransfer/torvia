@@ -59,19 +59,6 @@ export default async function DriverPage({
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-black tracking-wide text-slate-950">
-            TORVIAN
-            </h1>
-            <p className="text-sm font-medium text-slate-500">Şoför Paneli</p>
-          </div>
-          <div className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">
-            Transfer Operasyonu
-          </div>
-        </div>
-
         <DriverPanel
           assignment={JSON.parse(JSON.stringify(assignment))}
           token={token}
