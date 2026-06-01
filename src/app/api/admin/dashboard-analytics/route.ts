@@ -57,7 +57,11 @@ export async function GET() {
   }
 
   const topCountries = Object.entries(countryMap)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => {
+      if (a[0] === "unknown") return 1;
+      if (b[0] === "unknown") return -1;
+      return b[1] - a[1];
+    })
     .slice(0, 8)
     .map(([name, value]) => ({ name, value }));
 
