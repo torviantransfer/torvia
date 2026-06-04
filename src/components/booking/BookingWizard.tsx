@@ -794,26 +794,12 @@ function BookingWizardInner(props: Props) {
                           <p className="text-xs font-semibold text-gray-800">{t("depositNow")}</p>
                           <p className="text-[10px] text-gray-400 mt-0.5">{t("payOnlineDesc")}</p>
                         </div>
-                        <div className="text-right">
-                          <span className="text-lg font-black text-gray-900">{fmt(selectedVehicle.cashDeposit, exchangeRates)}</span>
-                          <div className="flex justify-end gap-2 mt-0.5">
-                            {otherCurrencies(selectedVehicle.cashDeposit, exchangeRates).map((line, i) => (
-                              <span key={i} className="text-[10px] text-gray-400">{line}</span>
-                            ))}
-                          </div>
-                        </div>
+                        <span className="text-lg font-black text-gray-900">{fmt(selectedVehicle.cashDeposit, exchangeRates)}</span>
                       </div>
                       {/* Driver row */}
                       <div className="flex justify-between items-center px-4 py-2.5 bg-gray-50" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
                         <p className="text-xs text-gray-500">{t("payToDriver")}</p>
-                        <div className="text-right">
-                          <span className="text-sm font-bold text-gray-600">{fmt(selectedVehicle.cashDriverAmount ?? 0, exchangeRates)}</span>
-                          <div className="flex justify-end gap-2 mt-0.5">
-                            {otherCurrencies(selectedVehicle.cashDriverAmount ?? 0, exchangeRates).map((line, i) => (
-                              <span key={i} className="text-[10px] text-gray-400">{line}</span>
-                            ))}
-                          </div>
-                        </div>
+                        <span className="text-sm font-bold text-gray-600">{fmt(selectedVehicle.cashDriverAmount ?? 0, exchangeRates)}</span>
                       </div>
                     </div>
                   ) : (
