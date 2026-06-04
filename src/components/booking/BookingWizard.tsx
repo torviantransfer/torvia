@@ -449,39 +449,49 @@ function BookingWizardInner(props: Props) {
                           ))}
                         </div>
                       </div>
-                      <div className="flex items-end justify-between mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                        <div>
-                          {/* Show online discounted price prominently if discount is active */}
-                          {vehicle.cashPrice != null && settingsData.cashPaymentEnabled ? (
-                            <>
-                              <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="text-sm text-gray-400">{fmt(vehicle.cashPrice, exchangeRates)}</span>
-                                <span className="text-xs text-gray-400">{t("cashPriceLabel")}</span>
-                              </div>
-                            </>
-                          ) : (
-                            <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
-                          )}
-                          {vehicle.calculation.roundTripDiscount > 0 && (
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-sm text-gray-400 line-through">{fmt(vehicle.oneWayPrice * 2, exchangeRates)}</span>
-                              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">-{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}</span>
+                      {/* ── Price + CTA ── */}
+                      <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                        <div className="flex items-start justify-between gap-4">
+                          {/* Prices */}
+                          <div className="flex-1 min-w-0">
+                            {/* Online price row */}
+                            <div className="flex items-baseline gap-2.5 flex-wrap">
+                              <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">Online</span>
+                              <span className="text-2xl font-black text-gray-900 leading-none">{fmt(vehicle.calculation.basePrice, exchangeRates)}</span>
+                              {vehicle.calculation.roundTripDiscount > 0 && (
+                                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+                                  -{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
+                                </span>
+                              )}
                             </div>
-                          )}
-                          <div className="text-xs text-gray-500 mt-0.5 space-y-0.5">
-                            {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (<p key={i}>{line}</p>))}
+
+                            {/* Cash price row */}
+                            {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
+                              <div className="flex items-center gap-2 mt-1.5">
+                                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">{t("payAtVehicle")}</span>
+                                <span className="text-sm font-bold text-amber-600">{fmt(vehicle.cashPrice, exchangeRates)}</span>
+                              </div>
+                            )}
+
+                            {/* Currency conversions */}
+                            <div className="flex flex-wrap gap-x-3 mt-1.5">
+                              {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (
+                                <span key={i} className="text-[11px] text-gray-400">{line}</span>
+                              ))}
+                            </div>
                           </div>
+
+                          {/* CTA */}
+                          <button
+                            type="button"
+                            onClick={() => selectVehicle(vehicle)}
+                            disabled={checkingAvailability}
+                            className="flex-shrink-0 px-4 sm:px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
+                          >
+                            {checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
+                            {t("selectVehicle")}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => selectVehicle(vehicle)}
-                          disabled={checkingAvailability}
-                          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30"
-                        >
-                          {checkingAvailability ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-                          {t("selectVehicle")}
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -696,98 +706,115 @@ function BookingWizardInner(props: Props) {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 z-10">
-              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                 {/* Header */}
-                <div className="px-5 py-3.5" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
+                <div className="px-5 py-3.5" style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
+                  <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">Rezervasyon Özeti</p>
                   <h3 className="text-sm font-bold text-white">{t("step1")}</h3>
                 </div>
+
                 <div className="p-5 space-y-4">
-                  {/* Vehicle */}
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "rgba(0,122,255,0.04)", border: "1px solid rgba(0,122,255,0.08)" }}>
-                    <div className="relative w-14 h-10 flex-shrink-0">
-                      <Image src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={selectedVehicle.name} fill className="object-contain" sizes="56px" />
+                  {/* Vehicle chip */}
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-16 h-11 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
+                      <Image src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={selectedVehicle.name} fill className="object-contain p-1" sizes="64px" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900">{selectedVehicle.name}</p>
-                      <p className="text-[11px] text-gray-500">{selectedVehicle.max_passengers} {t("passengers")} · {selectedVehicle.max_luggage} {t("luggageCapacity")}</p>
+                      <p className="text-sm font-bold text-gray-900 leading-tight">{selectedVehicle.name}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {selectedVehicle.max_passengers} {t("passengers")} &middot; {selectedVehicle.max_luggage} {t("luggageCapacity")}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Route + Date + Passengers */}
-                  <div className="space-y-2.5">
-                    {regionData && (
-                      <div className="flex items-start gap-2.5">
-                        <div className="flex flex-col items-center mt-0.5">
-                          <div className="w-2 h-2 rounded-full bg-blue-600" />
-                          <div className="w-px h-5 bg-gray-200" />
+                  {/* Route */}
+                  {regionData && (
+                    <div className="rounded-xl p-3 space-y-2" style={{ backgroundColor: "rgba(0,0,0,0.025)", border: "1px solid rgba(0,0,0,0.05)" }}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                          <div className="w-px h-4 bg-gray-200" />
                           <div className="w-2 h-2 rounded-full bg-emerald-500" />
                         </div>
-                        <div className="space-y-1.5 min-w-0">
-                          <p className="text-xs font-medium text-gray-700 truncate">Antalya Airport (AYT)</p>
-                          <p className="text-xs font-medium text-gray-700 truncate">{getRegionName(regionData)}</p>
+                        <div className="min-w-0 space-y-1.5">
+                          <p className="text-xs font-semibold text-gray-700 truncate">Antalya Airport (AYT)</p>
+                          <p className="text-xs font-semibold text-gray-700 truncate">{getRegionName(regionData)}</p>
                         </div>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Calendar size={13} className="text-gray-400 flex-shrink-0" />
-                      <span>{formatDate(pickupDate)} · {pickupTime}</span>
-                    </div>
-                    {tripType === "round_trip" && returnDate && (
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <ArrowLeftRight size={13} className="text-gray-400 flex-shrink-0" />
-                        <span>{formatDate(returnDate)} · {returnTime}</span>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                        <span className="text-[11px] text-gray-500">{formatDate(pickupDate)} · {pickupTime}</span>
+                        {tripType === "round_trip" && returnDate && (
+                          <span className="text-[11px] text-blue-500 font-medium">↔ {formatDate(returnDate)} · {returnTime}</span>
+                        )}
+                        <span className="text-[11px] text-gray-500">{adults} {t("adult")}{children > 0 ? ` + ${children} ${t("child")}` : ""}</span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Users size={13} className="text-gray-400 flex-shrink-0" />
-                      <span>{adults} {t("adult")}{children > 0 ? ` · ${children} ${t("child")}` : ""}</span>
                     </div>
-                  </div>
+                  )}
 
                   {/* Price breakdown */}
-                  <div className="pt-3 space-y-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">{tripType === "round_trip" ? `2 × ${t("oneWay")}` : t("oneWay")}</span>
-                      <span className="font-medium text-gray-800">{fmt(tripType === "round_trip" ? selectedVehicle.oneWayPrice * 2 : selectedVehicle.calculation.basePrice, exchangeRates)}</span>
+                  <div className="space-y-1.5 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-gray-400">{tripType === "round_trip" ? `2 × ${t("oneWay")}` : t("oneWay")}</span>
+                      <span className="font-medium text-gray-700">{fmt(tripType === "round_trip" ? selectedVehicle.oneWayPrice * 2 : selectedVehicle.calculation.basePrice, exchangeRates)}</span>
                     </div>
                     {selectedVehicle.calculation.roundTripDiscount > 0 && (
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">{t("roundTripDiscount")}</span><span className="font-medium text-emerald-600">-{fmt(selectedVehicle.calculation.roundTripDiscount, exchangeRates)}</span></div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">{t("roundTripDiscount")}</span>
+                        <span className="font-semibold text-emerald-500">-{fmt(selectedVehicle.calculation.roundTripDiscount, exchangeRates)}</span>
+                      </div>
                     )}
                     {childSeat && (
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">{t("childSeatFee")}</span><span className="font-medium text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span></div>
-                    )}
-                    {paymentMethod === "cash" && selectedVehicle.cashDeposit != null && (
-                      <>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-amber-600 font-medium">{t("depositNow")}</span>
-                          <span className="font-medium text-amber-600">${selectedVehicle.cashDeposit.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">{t("payToDriver")}</span>
-                          <span className="font-medium text-gray-600">${(selectedVehicle.cashDriverAmount ?? 0).toFixed(2)}</span>
-                        </div>
-                      </>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400">{t("childSeatFee")}</span>
+                        <span className="font-medium text-gray-700">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
+                      </div>
                     )}
                   </div>
 
-                  {/* Total */}
-                  <div className="p-3.5 rounded-xl" style={{
-                    background: paymentMethod === "cash"
-                      ? "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(180,83,9,0.03) 100%)"
-                      : "linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(0,86,204,0.03) 100%)",
-                    border: paymentMethod === "cash" ? "1px solid rgba(245,158,11,0.2)" : "1px solid rgba(0,122,255,0.12)",
-                  }}>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-gray-900 text-xs">{t("totalPrice")}</span>
-                      <span className={`text-lg sm:text-xl font-bold ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>{fmt(totalPrice, exchangeRates)}</span>
+                  {/* Total / Deposit box */}
+                  {paymentMethod === "cash" && selectedVehicle.cashDeposit != null ? (
+                    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.25)" }}>
+                      {/* Cash total row */}
+                      <div className="flex justify-between items-center px-4 py-2.5 bg-amber-50">
+                        <span className="text-xs font-medium text-amber-700">{t("totalPrice")}</span>
+                        <div className="text-right">
+                          <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
+                          <div className="flex justify-end gap-2 mt-0.5">
+                            {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (
+                              <span key={i} className="text-[10px] text-amber-400">{line}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Divider */}
+                      <div style={{ height: 1, backgroundColor: "rgba(245,158,11,0.15)" }} />
+                      {/* Deposit row */}
+                      <div className="flex justify-between items-center px-4 py-2.5 bg-white">
+                        <div>
+                          <p className="text-xs font-semibold text-gray-800">{t("depositNow")}</p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">Kart ile güvenli ödeme</p>
+                        </div>
+                        <span className="text-lg font-black text-gray-900">${selectedVehicle.cashDeposit.toFixed(2)}</span>
+                      </div>
+                      {/* Driver row */}
+                      <div className="flex justify-between items-center px-4 py-2.5 bg-gray-50" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+                        <p className="text-xs text-gray-500">{t("payToDriver")}</p>
+                        <span className="text-sm font-bold text-gray-600">${(selectedVehicle.cashDriverAmount ?? 0).toFixed(2)}</span>
+                      </div>
                     </div>
-                    {paymentMethod === "cash" && (
-                      <p className="text-[10px] text-amber-600 text-right mt-0.5">{t("payAtVehicleTag")}</p>
-                    )}
-                    <div className="mt-1 text-[11px] text-right space-y-0.5">
-                      {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}
+                  ) : (
+                    <div className="rounded-xl px-4 py-3.5" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.07) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.14)" }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
+                        <span className="text-xl font-black text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
+                      </div>
+                      <div className="flex justify-end gap-3 mt-1">
+                        {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (
+                          <span key={i} className="text-[10px] text-gray-400">{line}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Trust badges */}
                   <div className="space-y-1.5">
