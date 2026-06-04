@@ -688,16 +688,16 @@ function BookingWizardInner(props: Props) {
                 )}
 
                 {/* Navigation */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <button type="button" onClick={goBack} className="flex-1 py-3 font-medium rounded-lg text-gray-600 transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
-                    <ArrowLeft size={16} />{t("back")}
+                <div className="flex flex-row gap-3 pt-4">
+                  <button type="button" onClick={goBack} className="px-4 py-3 font-medium rounded-xl text-gray-600 transition-colors flex items-center justify-center gap-1.5 text-sm whitespace-nowrap shrink-0" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
+                    <ArrowLeft size={15} />{t("back")}
                   </button>
-                  <button type="button" onClick={handleSubmit} disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
+                  <button type="button" onClick={handleSubmit} disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
                     {submitting
-                      ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>)
+                      ? (<><Loader2 size={17} className="animate-spin" />{t("processing")}</>)
                       : paymentMethod === "cash"
-                        ? (<><Check size={18} />{t("confirmBooking")}</>)
-                        : (<><CreditCard size={18} />{t("pay")}</>)}
+                        ? (<><Check size={17} />{t("confirmBooking")}</>)
+                        : (<><CreditCard size={17} />{t("pay")}</>)}
                   </button>
                 </div>
               </div>
