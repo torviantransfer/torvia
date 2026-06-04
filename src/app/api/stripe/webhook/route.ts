@@ -2,7 +2,7 @@
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
-import { notifyNewPayment, sendDriverVoucherToTelegram } from "@/lib/telegram";
+import { notifyNewPayment, notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -34,13 +34,15 @@ export async function POST(request: NextRequest) {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
     const reservationId = paymentIntent.metadata?.reservation_id;
     const reservationCode = paymentIntent.metadata?.reservation_code;
+    const isDeposit = paymentIntent.metadata?.is_deposit === "true";
+    const newStatus = isDeposit ? "deposit_paid" : "paid";
 
     if (reservationId) {
-      // Update reservation status to paid
+      // Update reservation status: deposit_paid for cash bookings, paid for online
       await supabase
         .from("reservations")
         .update({
-          status: "paid",
+          status: newStatus,
           stripe_payment_intent_id: paymentIntent.id,
         })
         .eq("id", reservationId);
@@ -109,6 +111,13 @@ export async function POST(request: NextRequest) {
         const rtDiscountEur = eurRate > 0 ? resData.round_trip_discount / eurRate : resData.round_trip_discount;
         const couponDiscountEur = eurRate > 0 ? resData.coupon_discount / eurRate : resData.coupon_discount;
 
+        const depositAmountEur = isDeposit && resData.deposit_amount
+          ? (eurRate > 0 ? resData.deposit_amount / eurRate : resData.deposit_amount)
+          : undefined;
+        const driverAmountEur = isDeposit && resData.driver_amount
+          ? (eurRate > 0 ? resData.driver_amount / eurRate : resData.driver_amount)
+          : undefined;
+
         sendReservationEmail({
           to: resData.customers.email,
           reservationCode: resData.reservation_code,
@@ -135,16 +144,30 @@ export async function POST(request: NextRequest) {
           totalEur,
           qrCodeToken: resData.qr_code_token,
           locale,
+          paymentMethod: isDeposit ? "cash" : "online",
+          depositAmountEur,
+          driverAmountEur,
         }).catch(() => {});
       }
 
       // Send Telegram notification (fire and forget)
-      notifyNewPayment({
-        code: reservationCode ?? "?",
-        amount: `${((paymentIntent.amount ?? 0) / 100).toFixed(2)} USD`,
-        email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
-        region: String(resData.regions?.name_en ?? ""),
-      }).catch(() => {});
+      if (isDeposit) {
+        notifyNewCashBooking({
+          code: reservationCode ?? "?",
+          amount: `${((paymentIntent.amount ?? 0) / 100).toFixed(2)} USD depozit`,
+          cashTotal: `${(resData.total_price ?? 0).toFixed(2)} USD toplam`,
+          driverAmount: `${(resData.driver_amount ?? 0).toFixed(2)} USD şöföre`,
+          email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
+          region: String(resData.regions?.name_en ?? ""),
+        }).catch(() => {});
+      } else {
+        notifyNewPayment({
+          code: reservationCode ?? "?",
+          amount: `${((paymentIntent.amount ?? 0) / 100).toFixed(2)} USD`,
+          email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
+          region: String(resData.regions?.name_en ?? ""),
+        }).catch(() => {});
+      }
 
       // Send driver voucher (without price) to Telegram
       if (resData) {

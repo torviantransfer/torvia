@@ -25,6 +25,10 @@ interface Props {
   pickupDate: string;
   pickupTime: string;
   onSuccess: () => void;
+  // Cash deposit fields
+  isDeposit?: boolean;
+  depositAmount?: number;
+  driverAmount?: number;
 }
 
 const appearance: StripeElementsOptions["appearance"] = {
@@ -74,7 +78,7 @@ const appearance: StripeElementsOptions["appearance"] = {
   },
 };
 
-function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess }: Omit<Props, "clientSecret">) {
+function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, isDeposit, depositAmount, driverAmount }: Omit<Props, "clientSecret">) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -125,10 +129,10 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   return (
     <div className="space-y-5">
       {/* Order Summary Card */}
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <div className={`rounded-xl border p-4 ${isDeposit ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-            <MapPin size={16} className="text-blue-600" />
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDeposit ? "bg-amber-500/10" : "bg-blue-500/10"}`}>
+            <MapPin size={16} className={isDeposit ? "text-amber-600" : "text-blue-600"} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-gray-900 text-sm font-semibold truncate">Antalya Airport → {regionName}</p>
@@ -137,10 +141,28 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </p>
           </div>
         </div>
-        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-          <span className="text-gray-500 text-sm">Total</span>
-          <span className="text-gray-900 text-xl font-bold">${totalPrice.toFixed(2)}</span>
-        </div>
+
+        {isDeposit && depositAmount != null && driverAmount != null ? (
+          <div className="pt-3 border-t border-amber-200 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-amber-700 text-sm font-semibold">Total (cash)</span>
+              <span className="text-gray-700 text-sm font-bold">${totalPrice.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500 text-xs">Pay to driver (cash)</span>
+              <span className="text-gray-600 text-xs">${driverAmount.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between pt-1 border-t border-amber-200">
+              <span className="text-amber-700 text-sm font-bold">Deposit (pay now)</span>
+              <span className="text-amber-700 text-xl font-bold">${depositAmount.toFixed(2)}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+            <span className="text-gray-500 text-sm">Total</span>
+            <span className="text-gray-900 text-xl font-bold">${totalPrice.toFixed(2)}</span>
+          </div>
+        )}
       </div>
 
       {/* Payment Form */}
@@ -183,6 +205,11 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             <>
               <Loader2 size={18} className="animate-spin" />
               Processing...
+            </>
+          ) : isDeposit && depositAmount != null ? (
+            <>
+              <Lock size={16} />
+              Pay Deposit ${depositAmount.toFixed(2)}
             </>
           ) : (
             <>
@@ -227,7 +254,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   );
 }
 
-export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess }: Props) {
+export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, isDeposit, depositAmount, driverAmount }: Props) {
   const options: StripeElementsOptions = {
     clientSecret,
     appearance,
@@ -244,6 +271,9 @@ export default function StripeCheckoutEmbed({ clientSecret, reservationCode, loc
         pickupDate={pickupDate}
         pickupTime={pickupTime}
         onSuccess={onSuccess}
+        isDeposit={isDeposit}
+        depositAmount={depositAmount}
+        driverAmount={driverAmount}
       />
     </Elements>
   );

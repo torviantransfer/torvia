@@ -41,6 +41,8 @@ export interface ReservationEmailData {
   qrCodeToken?: string;
   locale: string;
   paymentMethod?: "online" | "cash";
+  depositAmountEur?: number;
+  driverAmountEur?: number;
 }
 
 // ─── i18n labels ───
@@ -49,7 +51,9 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "Your TORVIAN Transfer Voucher",
     greeting: "Hello",
     confirmed: "Your VIP transfer has been confirmed and paid.",
-    confirmedCash: "Your VIP transfer has been confirmed. Payment will be collected at the vehicle.",
+    confirmedCash: "Your deposit has been received. Your transfer is confirmed.",
+    depositPaid: "Deposit Paid",
+    depositLine: "Pay to driver (cash)",
     showVoucher: "Please present this voucher (printed or on screen) to your driver at pickup.",
     totalCash: "Total (Pay at Vehicle)",
     code: "Reservation Code",
@@ -109,7 +113,9 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "TORVIAN Transfer Voucherınız",
     greeting: "Merhaba",
     confirmed: "VIP transferiniz onaylandı ve ödemeniz alındı.",
-    confirmedCash: "VIP transferiniz onaylandı. Ödeme araçta tahsil edilecektir.",
+    confirmedCash: "Depozitin alındı. Transferin onaylandı.",
+    depositPaid: "Ödenen Depozit",
+    depositLine: "Şoföre öde (nakit)",
     totalCash: "Toplam (Araçta Ödenecek)",
     driverAssignmentSubjectOutbound: "Gidiş Şoför Bilgisi",
     driverAssignmentSubjectReturn: "Dönüş Şoför Bilgisi",
@@ -363,6 +369,7 @@ export const generateQRUrlForDownload = generateQRUrl;
 export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string): string {
   const loc = data.locale;
   const isCash = data.paymentMethod === "cash";
+  const hasDeposit = isCash && data.depositAmountEur != null && data.driverAmountEur != null;
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327";
@@ -381,6 +388,10 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   if (data.childSeatFee > 0) priceRows.push(row(t(loc, "childSeatFee"), `€${data.childSeatFee.toFixed(2)}`));
   if (data.roundTripDiscount > 0) priceRows.push(row(t(loc, "rtDiscount"), `−€${data.roundTripDiscount.toFixed(2)}`, "#22c55e"));
   if (data.couponDiscount > 0) priceRows.push(row(t(loc, "couponDiscount"), `−€${data.couponDiscount.toFixed(2)}`, "#22c55e"));
+  if (hasDeposit) {
+    priceRows.push(row(t(loc, "depositPaid") || "Deposit Paid", `€${data.depositAmountEur!.toFixed(2)}`, "#007AFF"));
+    priceRows.push(row(t(loc, "depositLine") || "Pay to driver", `€${data.driverAmountEur!.toFixed(2)}`, "#b45309"));
+  }
 
   const detailRows: string[] = [
     detailRow("&#9992;&#65039;", t(loc, "route"), `Antalya Airport &rarr; ${data.regionName}`, true),

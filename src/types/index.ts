@@ -97,6 +97,7 @@ export interface Customer {
 export type ReservationStatus =
   | "pending"
   | "paid"
+  | "deposit_paid"
   | "driver_assigned"
   | "passenger_picked_up"
   | "completed"

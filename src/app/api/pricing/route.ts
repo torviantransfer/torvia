@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   // Fetch pricing for this region — all active vehicle categories
   let pricingQuery = supabase
     .from("pricing")
-    .select("*, vehicle_categories!inner(id, name, slug, description, image_url, max_passengers, max_luggage, features, is_active, sort_order)")
+    .select("*, one_way_cash_price, round_trip_cash_price, cash_deposit_amount, vehicle_categories!inner(id, name, slug, description, image_url, max_passengers, max_luggage, features, is_active, sort_order)")
     .eq("region_id", region.id)
     .eq("vehicle_categories.is_active", true);
 
@@ -54,7 +54,6 @@ export async function GET(request: NextRequest) {
       "child_seat_fee",
       "welcome_sign_fee",
       "cash_payment_enabled",
-      "online_payment_discount_percent",
       "night_tariff_enabled",
       "night_tariff_start",
       "night_tariff_end",
@@ -108,7 +107,6 @@ export async function GET(request: NextRequest) {
     exchangeRates[r.target_currency] = r.rate;
   }
 
-  const onlineDiscountPercent = numSetting("online_payment_discount_percent");
   const nightEnabled = settingsMap.night_tariff_enabled === true || settingsMap.night_tariff_enabled === "true";
   const nightPercent = numSetting("night_tariff_percent");
   const parseHour = (v: unknown) => {
@@ -136,8 +134,17 @@ export async function GET(request: NextRequest) {
       nightTariffEnd: nightEndHour,
       childSeatFee: numSetting("child_seat_fee") || 10,
       welcomeSignFee: numSetting("welcome_sign_fee") || 5,
-      onlineDiscountPercent,
+      onlineDiscountPercent: 0,
     });
+
+    // Cash pricing: fixed per-region prices from DB
+    const cashBasePrice = tripType === "round_trip"
+      ? ((pricing as Record<string, unknown>).round_trip_cash_price as number | null ?? null)
+      : ((pricing as Record<string, unknown>).one_way_cash_price as number | null ?? null);
+    const cashDeposit = (pricing as Record<string, unknown>).cash_deposit_amount as number | null ?? null;
+    const cashDriverAmount = cashBasePrice != null && cashDeposit != null
+      ? cashBasePrice - cashDeposit
+      : null;
 
     return {
       categoryId: pricing.category_id,
@@ -151,6 +158,9 @@ export async function GET(request: NextRequest) {
       sort_order: cat.sort_order as number,
       oneWayPrice: pricing.one_way_price,
       roundTripPrice: pricing.round_trip_price,
+      cashPrice: cashBasePrice,
+      cashDeposit,
+      cashDriverAmount,
       calculation,
     };
   });
@@ -179,7 +189,6 @@ export async function GET(request: NextRequest) {
       childSeatFee: numSetting("child_seat_fee") || 10,
       welcomeSignFee: numSetting("welcome_sign_fee") || 5,
       cashPaymentEnabled: settingsMap.cash_payment_enabled === true || settingsMap.cash_payment_enabled === "true",
-      onlineDiscountPercent,
     },
   });
 }

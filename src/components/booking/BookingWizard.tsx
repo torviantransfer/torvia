@@ -50,6 +50,9 @@ interface VehicleOption {
   sort_order: number;
   oneWayPrice: number;
   roundTripPrice: number | null;
+  cashPrice: number | null;
+  cashDeposit: number | null;
+  cashDriverAmount: number | null;
   calculation: PriceCalculation;
 }
 
@@ -116,8 +119,10 @@ function BookingWizardInner(props: Props) {
 
   const [couponApplied, setCouponApplied] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-
   const [reservationCode, setReservationCode] = useState<string | null>(null);
+  const [reservationTotalPrice, setReservationTotalPrice] = useState<number>(0);
+  const [reservationDepositAmount, setReservationDepositAmount] = useState<number>(0);
+  const [reservationDriverAmount, setReservationDriverAmount] = useState<number>(0);
   const [dateAvailable, setDateAvailable] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [suggestedDates, setSuggestedDates] = useState<string[]>([]);
@@ -125,13 +130,10 @@ function BookingWizardInner(props: Props) {
 
   const totalPrice = useMemo(() => {
     if (!selectedVehicle) return 0;
-    let total = selectedVehicle.calculation.basePrice;
-    if (childSeat) total += settingsData.childSeatFee;
-    // Apply online discount when online payment is selected
-    if (paymentMethod === "online" && settingsData.onlineDiscountPercent > 0) {
-      total = Math.round(total * (1 - settingsData.onlineDiscountPercent / 100) * 100) / 100;
+    if (paymentMethod === "cash" && selectedVehicle.cashPrice != null) {
+      return selectedVehicle.cashPrice + (childSeat ? settingsData.childSeatFee : 0);
     }
-    return total;
+    return selectedVehicle.calculation.basePrice + (childSeat ? settingsData.childSeatFee : 0);
   }, [selectedVehicle, childSeat, settingsData, paymentMethod]);
 
   const getRegionName = (r: RegionData) => {
@@ -170,7 +172,7 @@ function BookingWizardInner(props: Props) {
             setSettingsData({
               childSeatFee: data.settings.childSeatFee ?? 10,
               cashPaymentEnabled: data.settings.cashPaymentEnabled ?? false,
-              onlineDiscountPercent: data.settings.onlineDiscountPercent ?? 0,
+              onlineDiscountPercent: 0,
             });
           }
         }
@@ -266,14 +268,12 @@ function BookingWizardInner(props: Props) {
         }
         return;
       }
-      // Cash payment: reservation confirmed directly, go to success page
-      if (data.reservation?.paymentMethod === "cash") {
-        window.location.href = `/${locale}/booking/success?code=${data.reservationCode}`;
-        return;
-      }
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);
+        setReservationTotalPrice(data.reservation?.totalPrice ?? 0);
+        setReservationDepositAmount(data.reservation?.depositAmount ?? 0);
+        setReservationDriverAmount(data.reservation?.driverAmount ?? 0);
         pixelAddPaymentInfo(selectedVehicle.oneWayPrice);
         trackBookingStep("checkout_initiated", {
           region: regionSlug,
@@ -452,19 +452,17 @@ function BookingWizardInner(props: Props) {
                       <div className="flex items-end justify-between mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                         <div>
                           {/* Show online discounted price prominently if discount is active */}
-                          {settingsData.onlineDiscountPercent > 0 ? (
+                          {vehicle.cashPrice != null && settingsData.cashPaymentEnabled ? (
                             <>
                               <div className="flex items-baseline gap-2">
-                                <p className="text-2xl font-bold text-blue-600">
-                                  {fmt(Math.round(vehicle.calculation.basePrice * (1 - settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
-                                </p>
+                                <p className="text-2xl font-bold text-blue-600">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
                                 <span className="inline-flex items-center gap-0.5 text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
                                   <Sparkles size={10} />
-                                  -{settingsData.onlineDiscountPercent}%
+                                  Online
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="text-sm text-gray-400 line-through">{fmt(vehicle.calculation.basePrice, exchangeRates)}</span>
+                                <span className="text-sm text-gray-400">{fmt(vehicle.cashPrice, exchangeRates)}</span>
                                 <span className="text-xs text-gray-400">{t("cashPriceLabel")}</span>
                               </div>
                             </>
@@ -672,12 +670,13 @@ function BookingWizardInner(props: Props) {
                       </label>
                     </div>
 
-                    {/* Discount nudge when cash is selected */}
-                    {paymentMethod === "cash" && settingsData.onlineDiscountPercent > 0 && (
+                    {/* Online savings nudge when cash is selected */}
+                    {paymentMethod === "cash" && selectedVehicle && selectedVehicle.cashPrice != null && (
                       <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl" style={{ background: "rgba(0,122,255,0.06)", border: "1px solid rgba(0,122,255,0.15)" }}>
                         <Sparkles size={14} className="text-blue-600 flex-shrink-0" />
                         <p className="text-xs text-blue-700 font-medium">
-                          {t("onlineDiscountHint").replace("%{pct}", `%${settingsData.onlineDiscountPercent}`)}
+                          {t("payOnline")} → {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
+                          <span className="ml-1 text-blue-500">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} tasarruf)</span>
                         </p>
                       </div>
                     )}
@@ -763,16 +762,19 @@ function BookingWizardInner(props: Props) {
                     {childSeat && (
                       <div className="flex justify-between text-xs"><span className="text-gray-500">{t("childSeatFee")}</span><span className="font-medium text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span></div>
                     )}
-                    {paymentMethod === "online" && settingsData.onlineDiscountPercent > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-blue-600 font-medium flex items-center gap-1">
-                          <Sparkles size={10} />
-                          {t("onlineDiscountLine").replace("%{pct}", String(settingsData.onlineDiscountPercent))}
-                        </span>
-                        <span className="font-medium text-blue-600">
-                          -{fmt(Math.round((selectedVehicle.calculation.basePrice + (childSeat ? settingsData.childSeatFee : 0)) * (settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
-                        </span>
-                      </div>
+                    {paymentMethod === "cash" && selectedVehicle.cashDeposit != null && (
+                      <>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-amber-600 font-medium flex items-center gap-1">
+                            <Banknote size={10} /> Depozit (şimdi öde)
+                          </span>
+                          <span className="font-medium text-amber-600">${selectedVehicle.cashDeposit.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">Şoföre öde</span>
+                          <span className="font-medium text-gray-600">${(selectedVehicle.cashDriverAmount ?? 0).toFixed(2)}</span>
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -825,8 +827,11 @@ function BookingWizardInner(props: Props) {
             <p className="text-xs text-gray-500 mb-6">{t("paymentSecureNote")}</p>
             <StripeCheckoutEmbed
               clientSecret={clientSecret} reservationCode={reservationCode ?? ""} locale={locale}
-              totalPrice={totalPrice} regionName={regionData ? getRegionName(regionData) : regionSlug}
+              totalPrice={reservationTotalPrice} regionName={regionData ? getRegionName(regionData) : regionSlug}
               tripType={tripType} pickupDate={pickupDate} pickupTime={pickupTime}
+              isDeposit={paymentMethod === "cash"}
+              depositAmount={reservationDepositAmount > 0 ? reservationDepositAmount : undefined}
+              driverAmount={reservationDriverAmount > 0 ? reservationDriverAmount : undefined}
               onSuccess={() => { window.location.href = `/${locale}/booking/success?code=${reservationCode}`; }}
             />
           </div>

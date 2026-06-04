@@ -90,19 +90,23 @@ export function notifyNewPayment(data: {
 export function notifyNewCashBooking(data: {
   code: string;
   amount: string;
+  cashTotal?: string;
+  driverAmount?: string;
   email: string;
   region?: string;
 }) {
   return sendTelegram({
     icon: "\u{1F4B5}",  // banknote emoji
-    title: "ARACTA ODEME - YENI REZERVASYON",
+    title: "DEPOZITLI REZERVASYON",
     fields: [
       { label: "Kod:", value: data.code },
-      { label: "Tutar:", value: data.amount },
+      { label: "Depozit:", value: data.amount },
+      { label: "Toplam:", value: data.cashTotal },
+      { label: "Soföre:", value: data.driverAmount },
       { label: "E-posta:", value: data.email },
       { label: "Guzergah:", value: data.region },
-      { label: "Odeme:", value: "ARACTA TAHSIL EDILECEK" },
     ],
+    footer: "ARAÇTA ÖDEME",
   });
 }
 
