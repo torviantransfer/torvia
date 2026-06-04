@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import {
   Elements,
@@ -8,7 +9,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Loader2, Lock, Shield, CreditCard, CheckCircle, MapPin, Plane } from "lucide-react";
+import { Loader2, Lock, Shield, CreditCard, CheckCircle, MapPin } from "lucide-react";
 import { pixelPurchase } from "@/lib/pixel";
 
 const stripePromise = loadStripe(
@@ -220,35 +221,46 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         </button>
       </form>
 
-      {/* Security Badges */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
-          <Shield size={16} className="text-green-500" />
-          <span className="text-[10px] text-gray-500 text-center leading-tight">SSL Encrypted</span>
-        </div>
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
-          <CheckCircle size={16} className="text-green-500" />
-          <span className="text-[10px] text-gray-500 text-center leading-tight">PCI Compliant</span>
-        </div>
-        <div className="flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-3 px-2">
-          <Lock size={16} className="text-green-500" />
-          <span className="text-[10px] text-gray-500 text-center leading-tight">3D Secure</span>
-        </div>
+      {/* Card brand logos */}
+      <div className="flex items-center justify-center gap-2">
+        {[
+          { src: "/images/cards/visa.svg", alt: "Visa", w: 54 },
+          { src: "/images/cards/mastercard.svg", alt: "Mastercard", w: 46 },
+          { src: "/images/cards/amex.svg", alt: "American Express", w: 46 },
+          { src: "/images/cards/troy.svg", alt: "Troy", w: 46 },
+        ].map((card) => (
+          <div
+            key={card.alt}
+            className="h-8 rounded-md border border-gray-200 bg-white overflow-hidden flex items-center justify-center"
+            style={{ width: card.w }}
+          >
+            <Image
+              src={card.src}
+              alt={card.alt}
+              width={card.w}
+              height={32}
+              className="object-contain w-full h-full"
+            />
+          </div>
+        ))}
       </div>
 
-      {/* Card brand logos + trust line */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-3">
-          {/* Visa */}
-          <svg width="36" height="12" viewBox="0 0 48 16" fill="none"><path d="M18.76 1.09l-3.49 13.82h-2.83L15.93 1.09h2.83zm14.18 8.92l1.49-4.1.86 4.1h-2.35zm3.16 4.9h2.62L36.35 1.09h-2.42c-.54 0-1 .32-1.2.8l-4.24 12.02h2.97l.59-1.63h3.62l.34 1.63zm-7.49-4.51c.01-3.65-5.05-3.85-5.01-5.48.01-.5.48-1.02 1.52-1.16.51-.07 1.93-.12 3.53.63l.63-2.94C28.09 1.08 26.59.72 24.72.72c-2.8 0-4.77 1.49-4.79 3.62-.02 1.57 1.4 2.45 2.47 2.98 1.1.54 1.47.88 1.47 1.36-.01.73-.88 1.06-1.7 1.07-1.42.02-2.25-.38-2.91-.69l-.51 2.41c.66.3 1.88.57 3.14.58 2.98 0 4.93-1.47 4.94-3.74zM13.81 1.09L9.38 14.91H6.37L4.19 3.37c-.13-.52-.25-.71-.65-.93C2.88 2.1 1.55 1.8 .37 1.6l.06-.51h4.82c.61 0 1.16.41 1.3 1.12L7.9 9.29l2.94-8.2h2.97z" fill="#6B7280"/></svg>
-          {/* Mastercard */}
-          <svg width="28" height="18" viewBox="0 0 32 20" fill="none"><circle cx="11.5" cy="10" r="9" fill="#6B7280" opacity="0.6"/><circle cx="20.5" cy="10" r="9" fill="#6B7280" opacity="0.4"/></svg>
-          {/* Amex */}
-          <div className="text-[9px] font-bold text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">AMEX</div>
+      {/* Security trust row */}
+      <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <Shield size={13} className="text-emerald-500" />
+          <span className="text-[10px] text-gray-500 font-medium">SSL</span>
         </div>
-        <p className="text-[10px] text-gray-500 text-center">
-          Your payment is securely processed. We never store your card details.
-        </p>
+        <div className="w-px h-3 bg-gray-200" />
+        <div className="flex items-center gap-1.5">
+          <CheckCircle size={13} className="text-emerald-500" />
+          <span className="text-[10px] text-gray-500 font-medium">PCI DSS</span>
+        </div>
+        <div className="w-px h-3 bg-gray-200" />
+        <div className="flex items-center gap-1.5">
+          <Lock size={13} className="text-emerald-500" />
+          <span className="text-[10px] text-gray-500 font-medium">3D Secure</span>
+        </div>
       </div>
     </div>
   );

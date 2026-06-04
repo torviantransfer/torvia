@@ -353,7 +353,7 @@ function BookingWizardInner(props: Props) {
 
       {/* Route map */}
       {regionData && step <= 2 && (
-        <div className="mb-8 rounded-xl" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="mb-8 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", isolation: "isolate", position: "relative", zIndex: 0 }}>
           <RouteMap destinationLat={regionData.latitude} destinationLng={regionData.longitude} destinationName={getRegionName(regionData)} className="h-[220px] sm:h-[250px]" />
         </div>
       )}

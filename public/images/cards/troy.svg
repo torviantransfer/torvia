@@ -1,0 +1,8 @@
+<svg width="780" height="500" viewBox="0 0 780 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="780" height="500" rx="40" fill="#E30613"/>
+<rect x="0" y="340" width="780" height="160" rx="0" fill="#003087"/>
+<rect x="0" y="380" width="780" height="120" rx="0" fill="#003087"/>
+<path d="M0 340 H780 V380 H0 Z" fill="#FFD700"/>
+<text x="390" y="230" font-family="Arial, sans-serif" font-size="140" font-weight="900" text-anchor="middle" fill="white" letter-spacing="8">TROY</text>
+<text x="390" y="420" font-family="Arial, sans-serif" font-size="60" font-weight="600" text-anchor="middle" fill="white" letter-spacing="4">TR</text>
+</svg>

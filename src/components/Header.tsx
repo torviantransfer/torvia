@@ -111,7 +111,7 @@ export default function Header() {
   const allNav = [...primaryNav, ...secondaryNav];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header className="fixed top-0 left-0 right-0 z-[1100]">
       <nav
         className="transition-all duration-500"
         style={{
@@ -166,21 +166,25 @@ export default function Header() {
                 </button>
                 {langOpen && (
                   <div className="absolute right-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[150px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
-                    {(Object.keys(localeNames) as Locale[]).map((loc) => (
-                      <Link
-                        key={loc}
-                        href={pathname}
-                        locale={loc}
-                        className={`block px-3.5 py-2 text-xs transition-colors ${
-                          loc === locale
-                            ? "text-blue-600 font-medium"
-                            : "text-gray-500 hover:text-gray-900"
-                        }`}
-                        onClick={() => setLangOpen(false)}
-                      >
-                        {localeFlags[loc]} {localeNames[loc]}
-                      </Link>
-                    ))}
+                    {(Object.keys(localeNames) as Locale[]).map((loc) => {
+                      const qs = searchParams.toString();
+                      const hrefWithParams = qs ? `${pathname}?${qs}` : pathname;
+                      return (
+                        <Link
+                          key={loc}
+                          href={hrefWithParams}
+                          locale={loc}
+                          className={`block px-3.5 py-2 text-xs transition-colors ${
+                            loc === locale
+                              ? "text-blue-600 font-medium"
+                              : "text-gray-500 hover:text-gray-900"
+                          }`}
+                          onClick={() => setLangOpen(false)}
+                        >
+                          {localeFlags[loc]} {localeNames[loc]}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
