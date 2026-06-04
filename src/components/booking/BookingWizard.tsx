@@ -614,75 +614,50 @@ function BookingWizardInner(props: Props) {
 
                 {/* Payment Method Selector */}
                 {settingsData.cashPaymentEnabled && (
-                  <div className="pt-2 space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t("paymentMethod")}</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Online */}
-                      <label
-                        className="flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all"
-                        style={{
-                          backgroundColor: paymentMethod === "online" ? "rgba(0,122,255,0.05)" : "#FFFFFF",
-                          border: paymentMethod === "online" ? "2px solid rgba(0,122,255,0.4)" : "1px solid rgba(0,0,0,0.08)",
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="online"
-                          checked={paymentMethod === "online"}
-                          onChange={() => setPaymentMethod("online")}
-                          className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 text-sm flex items-center gap-1.5 flex-wrap">
-                            <CreditCard size={14} className="text-blue-600 flex-shrink-0" />
-                            {t("payOnline")}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">{t("payOnlineDesc")}</p>
-                          {settingsData.onlineDiscountPercent > 0 && (
-                            <span className="inline-flex items-center gap-0.5 mt-1.5 text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                              <Sparkles size={9} />
-                              {t("onlineDiscountBadge").replace("%{pct}", `%${settingsData.onlineDiscountPercent}`)}
-                            </span>
-                          )}
-                        </div>
-                      </label>
+                  <div className="pt-2 space-y-2">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("paymentMethod")}</p>
 
-                      {/* Cash */}
-                      <label
-                        className="flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all"
-                        style={{
-                          backgroundColor: paymentMethod === "cash" ? "rgba(245,158,11,0.05)" : "#FFFFFF",
-                          border: paymentMethod === "cash" ? "2px solid rgba(245,158,11,0.4)" : "1px solid rgba(0,0,0,0.08)",
-                        }}
+                    {/* Toggle group */}
+                    <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("online")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${
+                          paymentMethod === "online"
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-gray-500 hover:text-gray-800"
+                        }`}
                       >
-                        <input
-                          type="radio"
-                          name="paymentMethod"
-                          value="cash"
-                          checked={paymentMethod === "cash"}
-                          onChange={() => setPaymentMethod("cash")}
-                          className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0"
-                        />
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
-                            <Banknote size={14} className="text-amber-500 flex-shrink-0" />
-                            {t("payAtVehicle")}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">{t("payAtVehicleDesc")}</p>
-                        </div>
-                      </label>
+                        <CreditCard size={14} />
+                        {t("payOnline")}
+                      </button>
+                      <div style={{ width: 1, backgroundColor: "rgba(0,0,0,0.1)" }} />
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("cash")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${
+                          paymentMethod === "cash"
+                            ? "bg-amber-500 text-white"
+                            : "bg-white text-gray-500 hover:text-gray-800"
+                        }`}
+                      >
+                        <Banknote size={14} />
+                        {t("payAtVehicle")}
+                      </button>
                     </div>
 
+                    {/* Description for selected method */}
+                    <p className="text-xs text-gray-400 px-0.5">
+                      {paymentMethod === "online" ? t("payOnlineDesc") : t("payAtVehicleDesc")}
+                    </p>
+
                     {/* Online savings nudge when cash is selected */}
-                    {paymentMethod === "cash" && selectedVehicle && selectedVehicle.cashPrice != null && (
-                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl" style={{ background: "rgba(0,122,255,0.06)", border: "1px solid rgba(0,122,255,0.15)" }}>
-                        <Sparkles size={14} className="text-blue-600 flex-shrink-0" />
-                        <p className="text-xs text-blue-700 font-medium">
-                          {t("payOnline")} → {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-                          <span className="ml-1 text-blue-500">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
-                        </p>
-                      </div>
+                    {paymentMethod === "cash" && selectedVehicle?.cashPrice != null && (
+                      <p className="text-xs text-blue-600 px-0.5">
+                        <Sparkles size={11} className="inline mr-1" />
+                        {t("payOnline")}: {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
+                        <span className="text-blue-400 ml-1">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
+                      </p>
                     )}
                   </div>
                 )}
