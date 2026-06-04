@@ -13,10 +13,10 @@ const StripeCheckoutEmbed = dynamic(() => import("./StripeCheckoutEmbed"), { ssr
 const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false });
 
 import {
-  Plane, MapPin, Calendar, Clock, Users, Luggage, ArrowRight, ArrowLeft,
-  ArrowLeftRight, Baby, CreditCard, Check, Tag, Shield, Loader2, AlertCircle,
+  Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
+  ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
   Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, Headphones, X,
-  CalendarCheck,
+  CalendarCheck, Banknote, Sparkles,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -458,11 +458,14 @@ function BookingWizardInner(props: Props) {
                                 <p className="text-2xl font-bold text-blue-600">
                                   {fmt(Math.round(vehicle.calculation.basePrice * (1 - settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
                                 </p>
-                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">Online -{settingsData.onlineDiscountPercent}%</span>
+                                <span className="inline-flex items-center gap-0.5 text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
+                                  <Sparkles size={10} />
+                                  -{settingsData.onlineDiscountPercent}%
+                                </span>
                               </div>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-sm text-gray-400 line-through">{fmt(vehicle.calculation.basePrice, exchangeRates)}</span>
-                                <span className="text-xs text-gray-400">nakit fiyat</span>
+                                <span className="text-xs text-gray-400">{t("cashPriceLabel")}</span>
                               </div>
                             </>
                           ) : (
@@ -609,14 +612,15 @@ function BookingWizardInner(props: Props) {
 
                 {/* Payment Method Selector */}
                 {settingsData.cashPaymentEnabled && (
-                  <div className="pt-2">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Ödeme Yöntemi</h3>
+                  <div className="pt-2 space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{t("paymentMethod")}</h3>
                     <div className="grid grid-cols-2 gap-3">
+                      {/* Online */}
                       <label
-                        className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all"
                         style={{
-                          backgroundColor: paymentMethod === "online" ? "rgba(0,122,255,0.04)" : "#FFFFFF",
-                          border: paymentMethod === "online" ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)",
+                          backgroundColor: paymentMethod === "online" ? "rgba(0,122,255,0.05)" : "#FFFFFF",
+                          border: paymentMethod === "online" ? "2px solid rgba(0,122,255,0.4)" : "1px solid rgba(0,0,0,0.08)",
                         }}
                       >
                         <input
@@ -625,24 +629,29 @@ function BookingWizardInner(props: Props) {
                           value="online"
                           checked={paymentMethod === "online"}
                           onChange={() => setPaymentMethod("online")}
-                          className="w-4 h-4 text-blue-600"
+                          className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"
                         />
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm flex items-center gap-1.5">
-                            <CreditCard size={14} className="text-blue-600" />
-                            Online Ödeme
-                            {settingsData.onlineDiscountPercent > 0 && (
-                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">-%{settingsData.onlineDiscountPercent} İndirim!</span>
-                            )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 text-sm flex items-center gap-1.5 flex-wrap">
+                            <CreditCard size={14} className="text-blue-600 flex-shrink-0" />
+                            {t("payOnline")}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">Kart ile güvenli ödeme</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{t("payOnlineDesc")}</p>
+                          {settingsData.onlineDiscountPercent > 0 && (
+                            <span className="inline-flex items-center gap-0.5 mt-1.5 text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                              <Sparkles size={9} />
+                              {t("onlineDiscountBadge").replace("%{pct}", `%${settingsData.onlineDiscountPercent}`)}
+                            </span>
+                          )}
                         </div>
                       </label>
+
+                      {/* Cash */}
                       <label
-                        className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all"
                         style={{
-                          backgroundColor: paymentMethod === "cash" ? "rgba(245,158,11,0.04)" : "#FFFFFF",
-                          border: paymentMethod === "cash" ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(0,0,0,0.06)",
+                          backgroundColor: paymentMethod === "cash" ? "rgba(245,158,11,0.05)" : "#FFFFFF",
+                          border: paymentMethod === "cash" ? "2px solid rgba(245,158,11,0.4)" : "1px solid rgba(0,0,0,0.08)",
                         }}
                       >
                         <input
@@ -651,14 +660,27 @@ function BookingWizardInner(props: Props) {
                           value="cash"
                           checked={paymentMethod === "cash"}
                           onChange={() => setPaymentMethod("cash")}
-                          className="w-4 h-4 text-amber-500"
+                          className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0"
                         />
                         <div>
-                          <p className="font-medium text-gray-900 text-sm">💵 Araçta Ödeme</p>
-                          <p className="text-xs text-gray-500 mt-0.5">Şoföre nakit ödeme</p>
+                          <p className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
+                            <Banknote size={14} className="text-amber-500 flex-shrink-0" />
+                            {t("payAtVehicle")}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">{t("payAtVehicleDesc")}</p>
                         </div>
                       </label>
                     </div>
+
+                    {/* Discount nudge when cash is selected */}
+                    {paymentMethod === "cash" && settingsData.onlineDiscountPercent > 0 && (
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl" style={{ background: "rgba(0,122,255,0.06)", border: "1px solid rgba(0,122,255,0.15)" }}>
+                        <Sparkles size={14} className="text-blue-600 flex-shrink-0" />
+                        <p className="text-xs text-blue-700 font-medium">
+                          {t("onlineDiscountHint").replace("%{pct}", `%${settingsData.onlineDiscountPercent}`)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -668,7 +690,11 @@ function BookingWizardInner(props: Props) {
                     <ArrowLeft size={16} />{t("back")}
                   </button>
                   <button type="button" onClick={handleSubmit} disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
-                    {submitting ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>) : paymentMethod === "cash" ? (<><Check size={18} />Rezervasyonu Onayla</>) : (<><CreditCard size={18} />{t("pay")}</>)}
+                    {submitting
+                      ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>)
+                      : paymentMethod === "cash"
+                        ? (<><Check size={18} />{t("confirmBooking")}</>)
+                        : (<><CreditCard size={18} />{t("pay")}</>)}
                   </button>
                 </div>
               </div>
@@ -739,7 +765,10 @@ function BookingWizardInner(props: Props) {
                     )}
                     {paymentMethod === "online" && settingsData.onlineDiscountPercent > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-blue-600 font-medium">Online İndirim (-%{settingsData.onlineDiscountPercent})</span>
+                        <span className="text-blue-600 font-medium flex items-center gap-1">
+                          <Sparkles size={10} />
+                          {t("onlineDiscountLine").replace("%{pct}", String(settingsData.onlineDiscountPercent))}
+                        </span>
                         <span className="font-medium text-blue-600">
                           -{fmt(Math.round((selectedVehicle.calculation.basePrice + (childSeat ? settingsData.childSeatFee : 0)) * (settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
                         </span>
@@ -759,7 +788,9 @@ function BookingWizardInner(props: Props) {
                       <span className={`text-lg sm:text-xl font-bold ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>{fmt(totalPrice, exchangeRates)}</span>
                     </div>
                     {paymentMethod === "cash" && (
-                      <p className="text-[10px] text-amber-600 text-right mt-0.5">💵 Araçta ödenecek</p>
+                      <p className="text-[10px] text-amber-600 text-right mt-0.5 flex items-center justify-end gap-1">
+                        <Banknote size={11} />{t("payAtVehicleTag")}
+                      </p>
                     )}
                     <div className="mt-1 text-[11px] text-right space-y-0.5">
                       {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}
