@@ -454,13 +454,7 @@ function BookingWizardInner(props: Props) {
                           {/* Show online discounted price prominently if discount is active */}
                           {vehicle.cashPrice != null && settingsData.cashPaymentEnabled ? (
                             <>
-                              <div className="flex items-baseline gap-2">
-                                <p className="text-2xl font-bold text-blue-600">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
-                                <span className="inline-flex items-center gap-0.5 text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
-                                  <Sparkles size={10} />
-                                  Online
-                                </span>
-                              </div>
+                              <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
                               <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="text-sm text-gray-400">{fmt(vehicle.cashPrice, exchangeRates)}</span>
                                 <span className="text-xs text-gray-400">{t("cashPriceLabel")}</span>
@@ -676,7 +670,7 @@ function BookingWizardInner(props: Props) {
                         <Sparkles size={14} className="text-blue-600 flex-shrink-0" />
                         <p className="text-xs text-blue-700 font-medium">
                           {t("payOnline")} → {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-                          <span className="ml-1 text-blue-500">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} tasarruf)</span>
+                          <span className="ml-1 text-blue-500">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
                         </p>
                       </div>
                     )}
@@ -765,13 +759,11 @@ function BookingWizardInner(props: Props) {
                     {paymentMethod === "cash" && selectedVehicle.cashDeposit != null && (
                       <>
                         <div className="flex justify-between text-xs">
-                          <span className="text-amber-600 font-medium flex items-center gap-1">
-                            <Banknote size={10} /> Depozit (şimdi öde)
-                          </span>
+                          <span className="text-amber-600 font-medium">{t("depositNow")}</span>
                           <span className="font-medium text-amber-600">${selectedVehicle.cashDeposit.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Şoföre öde</span>
+                          <span className="text-gray-500">{t("payToDriver")}</span>
                           <span className="font-medium text-gray-600">${(selectedVehicle.cashDriverAmount ?? 0).toFixed(2)}</span>
                         </div>
                       </>
@@ -790,9 +782,7 @@ function BookingWizardInner(props: Props) {
                       <span className={`text-lg sm:text-xl font-bold ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>{fmt(totalPrice, exchangeRates)}</span>
                     </div>
                     {paymentMethod === "cash" && (
-                      <p className="text-[10px] text-amber-600 text-right mt-0.5 flex items-center justify-end gap-1">
-                        <Banknote size={11} />{t("payAtVehicleTag")}
-                      </p>
+                      <p className="text-[10px] text-amber-600 text-right mt-0.5">{t("payAtVehicleTag")}</p>
                     )}
                     <div className="mt-1 text-[11px] text-right space-y-0.5">
                       {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}
