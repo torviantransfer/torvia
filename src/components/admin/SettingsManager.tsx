@@ -41,6 +41,9 @@ const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" | 
   online_payment_discount_percent: { label: "Online Ödeme İndirimi (%)", type: "number", hint: "Online ödemelerde uygulanacak indirim yüzdesi. 0 = indirim yok" },
 };
 
+// Keys managed in dedicated sections (hidden from the generic settings list)
+const HIDDEN_KEYS = new Set(["night_tariff_enabled", "night_tariff_start", "night_tariff_end", "night_tariff_percent"]);
+
 const INTEGRATION_FIELDS: {
   key: string;
   label: string;
@@ -160,9 +163,12 @@ export default function SettingsManager({
         setSettings((prev) =>
           prev.map((s) => (s.key === key ? result.data : s))
         );
-        if (meta?.type === "toggle") {
-          setValues((prev) => ({ ...prev, [key]: String(jsonValue) }));
-        }
+        // Always sync values state from the saved value
+        const saved = result.data.value;
+        setValues((prev) => ({
+          ...prev,
+          [key]: typeof saved === "string" ? saved : String(saved ?? ""),
+        }));
       }
     } finally {
       setSaving(null);
@@ -211,7 +217,7 @@ export default function SettingsManager({
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <h2 className="font-bold text-gray-900 mb-4">Uygulama Ayarları</h2>
             <div className="space-y-4">
-              {settings.map((setting) => {
+              {settings.filter((s) => !HIDDEN_KEYS.has(s.key)).map((setting) => {
                 const meta = SETTING_LABELS[setting.key] ?? {
                   label: setting.key,
                   type: "text",
