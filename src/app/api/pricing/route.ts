@@ -51,15 +51,24 @@ export async function GET(request: NextRequest) {
     .from("settings")
     .select("key, value")
     .in("key", [
-      "night_surcharge_percent",
       "child_seat_fee",
       "welcome_sign_fee",
+      "cash_payment_enabled",
+      "online_payment_discount_percent",
+      "night_tariff_enabled",
+      "night_tariff_start",
+      "night_tariff_end",
+      "night_tariff_percent",
     ]);
 
-  const settingsMap: Record<string, number> = {};
+  const settingsMap: Record<string, unknown> = {};
   for (const s of settings ?? []) {
-    settingsMap[s.key] = typeof s.value === "number" ? s.value : Number(s.value);
+    settingsMap[s.key] = s.value;
   }
+  const numSetting = (key: string) => {
+    const v = settingsMap[key];
+    return typeof v === "number" ? v : Number(v ?? 0);
+  };
 
   // Check coupon
   let couponDiscountPercent = 0;
@@ -99,6 +108,16 @@ export async function GET(request: NextRequest) {
     exchangeRates[r.target_currency] = r.rate;
   }
 
+  const onlineDiscountPercent = numSetting("online_payment_discount_percent");
+  const nightEnabled = settingsMap.night_tariff_enabled === true || settingsMap.night_tariff_enabled === "true";
+  const nightPercent = numSetting("night_tariff_percent");
+  const parseHour = (v: unknown) => {
+    const s = String(v ?? "");
+    return parseInt(s.includes(":") ? s.split(":")[0] : s, 10) || 0;
+  };
+  const nightStartHour = parseHour(settingsMap.night_tariff_start ?? "0");
+  const nightEndHour = parseHour(settingsMap.night_tariff_end ?? "7");
+
   // Build vehicles array with price calculation for each
   const vehicles = pricingRows.map((pricing) => {
     const cat = pricing.vehicle_categories as Record<string, unknown>;
@@ -111,9 +130,13 @@ export async function GET(request: NextRequest) {
       welcomeSign,
       couponDiscountPercent,
       couponDiscountFixed,
-      nightSurchargePercent: 0, // No extra hourly surcharge
-      childSeatFee: settingsMap.child_seat_fee ?? 10,
-      welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
+      nightSurchargePercent: nightPercent,
+      nightTariffEnabled: nightEnabled,
+      nightTariffStart: nightStartHour,
+      nightTariffEnd: nightEndHour,
+      childSeatFee: numSetting("child_seat_fee") || 10,
+      welcomeSignFee: numSetting("welcome_sign_fee") || 5,
+      onlineDiscountPercent,
     });
 
     return {
@@ -153,8 +176,10 @@ export async function GET(request: NextRequest) {
     couponId,
     exchangeRates,
     settings: {
-      childSeatFee: settingsMap.child_seat_fee ?? 10,
-      welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
+      childSeatFee: numSetting("child_seat_fee") || 10,
+      welcomeSignFee: numSetting("welcome_sign_fee") || 5,
+      cashPaymentEnabled: settingsMap.cash_payment_enabled === true || settingsMap.cash_payment_enabled === "true",
+      onlineDiscountPercent,
     },
   });
 }

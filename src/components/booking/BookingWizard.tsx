@@ -99,7 +99,8 @@ function BookingWizardInner(props: Props) {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
   const [regionData, setRegionData] = useState<RegionData | null>(null);
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
-  const [settingsData, setSettingsData] = useState<{ childSeatFee: number }>({ childSeatFee: 10 });
+  const [settingsData, setSettingsData] = useState<{ childSeatFee: number; cashPaymentEnabled: boolean; onlineDiscountPercent: number }>({ childSeatFee: 10, cashPaymentEnabled: false, onlineDiscountPercent: 0 });
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cash">("online");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -125,10 +126,13 @@ function BookingWizardInner(props: Props) {
   const totalPrice = useMemo(() => {
     if (!selectedVehicle) return 0;
     let total = selectedVehicle.calculation.basePrice;
-    // roundTripDiscount is informational only — basePrice is already the round trip price
     if (childSeat) total += settingsData.childSeatFee;
+    // Apply online discount when online payment is selected
+    if (paymentMethod === "online" && settingsData.onlineDiscountPercent > 0) {
+      total = Math.round(total * (1 - settingsData.onlineDiscountPercent / 100) * 100) / 100;
+    }
     return total;
-  }, [selectedVehicle, childSeat, settingsData]);
+  }, [selectedVehicle, childSeat, settingsData, paymentMethod]);
 
   const getRegionName = (r: RegionData) => {
     const name = r[`name_${locale}`] || r.name_en;
@@ -162,7 +166,13 @@ function BookingWizardInner(props: Props) {
             setRegionData(region);
           }
           setExchangeRates(data.exchangeRates);
-          if (data.settings) setSettingsData(data.settings);
+          if (data.settings) {
+            setSettingsData({
+              childSeatFee: data.settings.childSeatFee ?? 10,
+              cashPaymentEnabled: data.settings.cashPaymentEnabled ?? false,
+              onlineDiscountPercent: data.settings.onlineDiscountPercent ?? 0,
+            });
+          }
         }
       })
       .catch(() => setError(t("errorNetwork")))
@@ -237,6 +247,7 @@ function BookingWizardInner(props: Props) {
           childSeat,
           firstName, lastName, email, phone, hotelName: hotelName || undefined,
           notes: notes || undefined, couponCode: couponApplied ? couponCode : undefined, locale,
+          paymentMethod,
         }),
       });
       const data = await res.json();
@@ -253,6 +264,11 @@ function BookingWizardInner(props: Props) {
         } else {
           setError(data.error ?? t("errorGeneric"));
         }
+        return;
+      }
+      // Cash payment: reservation confirmed directly, go to success page
+      if (data.reservation?.paymentMethod === "cash") {
+        window.location.href = `/${locale}/booking/success?code=${data.reservationCode}`;
         return;
       }
       if (data.clientSecret) {
@@ -435,7 +451,23 @@ function BookingWizardInner(props: Props) {
                       </div>
                       <div className="flex items-end justify-between mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                         <div>
-                          <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
+                          {/* Show online discounted price prominently if discount is active */}
+                          {settingsData.onlineDiscountPercent > 0 ? (
+                            <>
+                              <div className="flex items-baseline gap-2">
+                                <p className="text-2xl font-bold text-blue-600">
+                                  {fmt(Math.round(vehicle.calculation.basePrice * (1 - settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
+                                </p>
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">Online -{settingsData.onlineDiscountPercent}%</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-sm text-gray-400 line-through">{fmt(vehicle.calculation.basePrice, exchangeRates)}</span>
+                                <span className="text-xs text-gray-400">nakit fiyat</span>
+                              </div>
+                            </>
+                          ) : (
+                            <p className="text-2xl font-bold text-gray-900">{fmt(vehicle.calculation.basePrice, exchangeRates)}</p>
+                          )}
                           {vehicle.calculation.roundTripDiscount > 0 && (
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-sm text-gray-400 line-through">{fmt(vehicle.oneWayPrice * 2, exchangeRates)}</span>
@@ -575,13 +607,68 @@ function BookingWizardInner(props: Props) {
                   </div>
                 </div>
 
+                {/* Payment Method Selector */}
+                {settingsData.cashPaymentEnabled && (
+                  <div className="pt-2">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Ödeme Yöntemi</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label
+                        className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-colors"
+                        style={{
+                          backgroundColor: paymentMethod === "online" ? "rgba(0,122,255,0.04)" : "#FFFFFF",
+                          border: paymentMethod === "online" ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="online"
+                          checked={paymentMethod === "online"}
+                          onChange={() => setPaymentMethod("online")}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm flex items-center gap-1.5">
+                            <CreditCard size={14} className="text-blue-600" />
+                            Online Ödeme
+                            {settingsData.onlineDiscountPercent > 0 && (
+                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">-%{settingsData.onlineDiscountPercent} İndirim!</span>
+                            )}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">Kart ile güvenli ödeme</p>
+                        </div>
+                      </label>
+                      <label
+                        className="flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-colors"
+                        style={{
+                          backgroundColor: paymentMethod === "cash" ? "rgba(245,158,11,0.04)" : "#FFFFFF",
+                          border: paymentMethod === "cash" ? "1px solid rgba(245,158,11,0.3)" : "1px solid rgba(0,0,0,0.06)",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cash"
+                          checked={paymentMethod === "cash"}
+                          onChange={() => setPaymentMethod("cash")}
+                          className="w-4 h-4 text-amber-500"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">💵 Araçta Ödeme</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Şoföre nakit ödeme</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 {/* Navigation */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <button type="button" onClick={goBack} className="flex-1 py-3 font-medium rounded-lg text-gray-600 transition-colors flex items-center justify-center gap-2 text-sm whitespace-nowrap" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
                     <ArrowLeft size={16} />{t("back")}
                   </button>
-                  <button type="button" onClick={handleSubmit} disabled={submitting} className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-60 shadow-lg shadow-blue-600/20">
-                    {submitting ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>) : (<><CreditCard size={18} />{t("pay")}</>)}
+                  <button type="button" onClick={handleSubmit} disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-sm whitespace-nowrap disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
+                    {submitting ? (<><Loader2 size={18} className="animate-spin" />{t("processing")}</>) : paymentMethod === "cash" ? (<><Check size={18} />Rezervasyonu Onayla</>) : (<><CreditCard size={18} />{t("pay")}</>)}
                   </button>
                 </div>
               </div>
@@ -650,15 +737,31 @@ function BookingWizardInner(props: Props) {
                     {childSeat && (
                       <div className="flex justify-between text-xs"><span className="text-gray-500">{t("childSeatFee")}</span><span className="font-medium text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span></div>
                     )}
+                    {paymentMethod === "online" && settingsData.onlineDiscountPercent > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-blue-600 font-medium">Online İndirim (-%{settingsData.onlineDiscountPercent})</span>
+                        <span className="font-medium text-blue-600">
+                          -{fmt(Math.round((selectedVehicle.calculation.basePrice + (childSeat ? settingsData.childSeatFee : 0)) * (settingsData.onlineDiscountPercent / 100) * 100) / 100, exchangeRates)}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Total */}
-                  <div className="p-3.5 rounded-xl" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.12)" }}>
+                  <div className="p-3.5 rounded-xl" style={{
+                    background: paymentMethod === "cash"
+                      ? "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(180,83,9,0.03) 100%)"
+                      : "linear-gradient(135deg, rgba(0,122,255,0.06) 0%, rgba(0,86,204,0.03) 100%)",
+                    border: paymentMethod === "cash" ? "1px solid rgba(245,158,11,0.2)" : "1px solid rgba(0,122,255,0.12)",
+                  }}>
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-gray-900 text-xs">{t("totalPrice")}</span>
-                      <span className="text-lg sm:text-xl font-bold text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
+                      <span className={`text-lg sm:text-xl font-bold ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>{fmt(totalPrice, exchangeRates)}</span>
                     </div>
-                    <div className="mt-1.5 text-[11px] text-right space-y-0.5">
+                    {paymentMethod === "cash" && (
+                      <p className="text-[10px] text-amber-600 text-right mt-0.5">💵 Araçta ödenecek</p>
+                    )}
+                    <div className="mt-1 text-[11px] text-right space-y-0.5">
                       {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (<p key={i} className="text-gray-400">{line}</p>))}
                     </div>
                   </div>

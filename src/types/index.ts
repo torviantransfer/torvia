@@ -200,6 +200,7 @@ export interface PriceCalculation {
   welcomeSignFee: number;
   roundTripDiscount: number;
   couponDiscount: number;
+  onlineDiscount: number;
   totalPrice: number;
 }
 

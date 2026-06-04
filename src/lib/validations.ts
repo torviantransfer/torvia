@@ -24,6 +24,7 @@ export const reservationSchema = z.object({
   notes: z.string().max(1000).optional().nullable(),
   couponCode: z.string().max(50).optional().nullable(),
   locale: z.enum(["tr", "en", "de", "pl", "ru"]).default("en"),
+  paymentMethod: z.enum(["online", "cash"]).default("online").optional(),
 }).refine(
   (data) => {
     // Parse as Turkey time (UTC+3) since all transfers are Antalya-based

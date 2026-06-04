@@ -6,8 +6,8 @@ export default async function AdminPricingPage() {
 
   const { data: pricing } = await supabase
     .from("pricing")
-    .select("*, regions(slug, name_en, name_tr), vehicle_categories(name, slug)")
-    .order("regions(sort_order)", { ascending: true });
+    .select("*, regions(slug, name_en, name_tr, sort_order), vehicle_categories(name, slug)")
+    .order("one_way_price", { ascending: true });
 
   const { data: regions } = await supabase
     .from("regions")

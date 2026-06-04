@@ -40,6 +40,7 @@ export interface ReservationEmailData {
   totalEur: number;
   qrCodeToken?: string;
   locale: string;
+  paymentMethod?: "online" | "cash";
 }
 
 // ─── i18n labels ───
@@ -48,7 +49,9 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "Your TORVIAN Transfer Voucher",
     greeting: "Hello",
     confirmed: "Your VIP transfer has been confirmed and paid.",
+    confirmedCash: "Your VIP transfer has been confirmed. Payment will be collected at the vehicle.",
     showVoucher: "Please present this voucher (printed or on screen) to your driver at pickup.",
+    totalCash: "Total (Pay at Vehicle)",
     code: "Reservation Code",
     route: "Route",
     type: "Trip Type",
@@ -106,6 +109,8 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "TORVIAN Transfer Voucherınız",
     greeting: "Merhaba",
     confirmed: "VIP transferiniz onaylandı ve ödemeniz alındı.",
+    confirmedCash: "VIP transferiniz onaylandı. Ödeme araçta tahsil edilecektir.",
+    totalCash: "Toplam (Araçta Ödenecek)",
     driverAssignmentSubjectOutbound: "Gidiş Şoför Bilgisi",
     driverAssignmentSubjectReturn: "Dönüş Şoför Bilgisi",
     driverAssignmentBanner: "Şoförünüz Atandı",
@@ -164,6 +169,8 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "Ihr TORVIAN Transfer Voucher",
     greeting: "Hallo",
     confirmed: "Ihr VIP-Transfer wurde bestätigt und bezahlt.",
+    confirmedCash: "Ihr VIP-Transfer wurde bestätigt. Die Zahlung erfolgt im Fahrzeug.",
+    totalCash: "Gesamt (Im Fahrzeug zu zahlen)",
     showVoucher: "Bitte zeigen Sie diesen Voucher (gedruckt oder digital) Ihrem Fahrer bei der Abholung.",
     code: "Buchungscode",
     route: "Route",
@@ -222,6 +229,8 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "Twój Voucher TORVIAN Transfer",
     greeting: "Cześć",
     confirmed: "Twój transfer VIP został potwierdzony i opłacony.",
+    confirmedCash: "Twój transfer VIP został potwierdzony. Płatność zostanie pobrana w pojeździe.",
+    totalCash: "Razem (Do zapłaty w pojeździe)",
     showVoucher: "Prosimy o okazanie tego vouchera (wydrukowanego lub na ekranie) kierowcy przy odbiorze.",
     code: "Kod Rezerwacji",
     route: "Trasa",
@@ -280,6 +289,8 @@ const i18n: Record<string, Record<string, string>> = {
     subject: "Ваш ваучер TORVIAN Transfer",
     greeting: "Здравствуйте",
     confirmed: "Ваш VIP-трансфер подтверждён и оплачен.",
+    confirmedCash: "Ваш VIP-трансфер подтверждён. Оплата будет произведена в транспортном средстве.",
+    totalCash: "Итого (Оплата в транспорте)",
     showVoucher: "Пожалуйста, покажите этот ваучер (распечатанный или на экране) водителю при посадке.",
     code: "Код бронирования",
     route: "Маршрут",
@@ -351,6 +362,7 @@ export const generateQRUrlForDownload = generateQRUrl;
 // ─── Build voucher HTML (shared by email & PDF) ───
 export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string): string {
   const loc = data.locale;
+  const isCash = data.paymentMethod === "cash";
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327";
@@ -411,8 +423,8 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
 
   <!-- ══ CONFIRMED BANNER ══ -->
   <tr>
-    <td style="background:#ecfdf5;padding:14px 24px;text-align:center;border-left:4px solid #10b981;border-right:4px solid #10b981;">
-      <span style="font-size:13px;color:#059669;font-weight:700;letter-spacing:1px;">&#10003; &nbsp;${t(loc, "confirmed").toUpperCase()}</span>
+    <td style="background:${isCash ? "#fffbeb" : "#ecfdf5"};padding:14px 24px;text-align:center;border-left:4px solid ${isCash ? "#f59e0b" : "#10b981"};border-right:4px solid ${isCash ? "#f59e0b" : "#10b981"};">
+      <span style="font-size:13px;color:${isCash ? "#b45309" : "#059669"};font-weight:700;letter-spacing:1px;">&#10003; &nbsp;${(isCash ? t(loc, "confirmedCash") : t(loc, "confirmed")).toUpperCase()}</span>
     </td>
   </tr>
 
@@ -451,8 +463,8 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
           <td colspan="2" style="padding:0 0 4px;"><div style="height:1px;background:#e5e7eb;margin:8px 20px;"></div></td>
         </tr>
         <tr>
-          <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#111827;">${t(loc, "total")}</td>
-          <td style="padding:8px 20px 16px;text-align:right;font-size:24px;font-weight:900;color:#007AFF;font-variant-numeric:tabular-nums;">&euro;${data.totalEur.toFixed(2)}</td>
+          <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#111827;">${isCash ? t(loc, "totalCash") : t(loc, "total")}</td>
+          <td style="padding:8px 20px 16px;text-align:right;font-size:24px;font-weight:900;color:${isCash ? "#b45309" : "#007AFF"};font-variant-numeric:tabular-nums;">&euro;${data.totalEur.toFixed(2)}</td>
         </tr>
       </table>
 

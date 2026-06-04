@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { Save, RefreshCw, Eye, EyeOff, CheckCircle2, XCircle, CreditCard, Mail, Send, Globe, Shield, Loader2 } from "lucide-react";
+import { Save, RefreshCw, Eye, EyeOff, CheckCircle2, XCircle, CreditCard, Mail, Send, Globe, Shield, Loader2, Moon } from "lucide-react";
 
 interface Setting {
   key: string;
@@ -29,7 +29,7 @@ interface Props {
   exchangeRates: ExchangeRate[];
 }
 
-const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" }> = {
+const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" | "toggle"; hint?: string }> = {
   night_surcharge_percent: { label: "Gece Ek Ücreti (%)", type: "number" },
   child_seat_fee: { label: "Çocuk Koltuğu Ücreti (USD)", type: "number" },
   welcome_sign_fee: { label: "Karşılama Tabelası Ücreti (USD)", type: "number" },
@@ -37,6 +37,8 @@ const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" }>
   company_name: { label: "Şirket Adı", type: "text" },
   contact_email: { label: "İletişim E-postası", type: "text" },
   whatsapp_number: { label: "WhatsApp Numarası", type: "text" },
+  cash_payment_enabled: { label: "Araçta Ödeme (Nakit)", type: "toggle", hint: "Açık olduğunda müşteriler araçta nakit ödeme seçebilir" },
+  online_payment_discount_percent: { label: "Online Ödeme İndirimi (%)", type: "number", hint: "Online ödemelerde uygulanacak indirim yüzdesi. 0 = indirim yok" },
 };
 
 const INTEGRATION_FIELDS: {
@@ -130,12 +132,14 @@ export default function SettingsManager({
     }
   };
 
-  const handleSave = async (key: string) => {
+  const handleSave = async (key: string, overrideValue?: unknown) => {
     setSaving(key);
     try {
       const meta = SETTING_LABELS[key];
       let jsonValue: unknown;
-      if (meta?.type === "number") {
+      if (overrideValue !== undefined) {
+        jsonValue = overrideValue;
+      } else if (meta?.type === "number") {
         jsonValue = parseFloat(values[key]) || 0;
       } else {
         jsonValue = values[key];
@@ -156,6 +160,9 @@ export default function SettingsManager({
         setSettings((prev) =>
           prev.map((s) => (s.key === key ? result.data : s))
         );
+        if (meta?.type === "toggle") {
+          setValues((prev) => ({ ...prev, [key]: String(jsonValue) }));
+        }
       }
     } finally {
       setSaving(null);
@@ -209,33 +216,64 @@ export default function SettingsManager({
                   label: setting.key,
                   type: "text",
                 };
+                const isToggle = meta.type === "toggle";
+                const toggleOn = values[setting.key] === "true" || values[setting.key] === true as unknown as string;
                 return (
-                  <div key={setting.key} className="flex items-center gap-4">
-                    <label className="w-64 text-sm font-medium text-gray-700">
-                      {meta.label}
-                    </label>
-                    <input
-                      type={meta.type}
-                      step={meta.type === "number" ? "0.01" : undefined}
-                      value={values[setting.key] ?? ""}
-                      onChange={(e) =>
-                        setValues({ ...values, [setting.key]: e.target.value })
-                      }
-                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm max-w-xs"
-                    />
-                    <button
-                      onClick={() => handleSave(setting.key)}
-                      disabled={saving === setting.key}
-                      className="px-3 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
-                    >
-                      <Save size={14} />
-                      {saving === setting.key ? "Kaydediliyor..." : "Kaydet"}
-                    </button>
+                  <div key={setting.key} className="flex items-start gap-4">
+                    <div className="w-64 flex-shrink-0">
+                      <label className="text-sm font-medium text-gray-700">{meta.label}</label>
+                      {meta.hint && <p className="text-xs text-gray-400 mt-0.5">{meta.hint}</p>}
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      {isToggle ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleSave(setting.key, !toggleOn)}
+                            disabled={saving === setting.key}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${toggleOn ? "bg-emerald-500" : "bg-gray-200"}`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggleOn ? "translate-x-6" : "translate-x-1"}`} />
+                          </button>
+                          <span className={`text-sm font-medium ${toggleOn ? "text-emerald-600" : "text-gray-400"}`}>
+                            {saving === setting.key ? "Kaydediliyor..." : toggleOn ? "Açık" : "Kapalı"}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <input
+                            type={meta.type}
+                            step={meta.type === "number" ? "0.01" : undefined}
+                            value={values[setting.key] ?? ""}
+                            onChange={(e) =>
+                              setValues({ ...values, [setting.key]: e.target.value })
+                            }
+                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-40"
+                          />
+                          <button
+                            onClick={() => handleSave(setting.key)}
+                            disabled={saving === setting.key}
+                            className="px-3 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+                          >
+                            <Save size={14} />
+                            {saving === setting.key ? "Kaydediliyor..." : "Kaydet"}
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
+
+          {/* Night Tariff */}
+          <NightTariffSection
+            values={values}
+            setValues={setValues}
+            saving={saving}
+            onSave={handleSave}
+          />
 
           {/* Exchange Rates */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
@@ -415,6 +453,127 @@ export default function SettingsManager({
               </div>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Night Tariff Section ───────────────────────────────────────────────────
+
+interface NightTariffProps {
+  values: Record<string, string>;
+  setValues: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  saving: string | null;
+  onSave: (key: string, override?: unknown) => Promise<void>;
+}
+
+function NightTariffSection({ values, setValues, saving, onSave }: NightTariffProps) {
+  const enabled = values.night_tariff_enabled === "true";
+  const isSavingAny = saving === "night_tariff_percent" || saving === "night_tariff_start" || saving === "night_tariff_end";
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      {/* Header with toggle */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <Moon size={18} className="text-indigo-500" />
+          <div>
+            <h2 className="font-bold text-gray-900">Gece Tarifesi</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Belirtilen saatler arasındaki rezervasyonlara ek ücret uygular</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onSave("night_tariff_enabled", !enabled)}
+            disabled={saving === "night_tariff_enabled"}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${enabled ? "bg-indigo-500" : "bg-gray-200"}`}
+          >
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-6" : "translate-x-1"}`} />
+          </button>
+          <span className={`text-sm font-medium ${enabled ? "text-indigo-600" : "text-gray-400"}`}>
+            {saving === "night_tariff_enabled" ? "..." : enabled ? "Açık" : "Kapalı"}
+          </span>
+        </div>
+      </div>
+
+      {/* Settings grid */}
+      <div className={`grid sm:grid-cols-3 gap-4 transition-opacity ${enabled ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
+        {/* Start time */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Başlangıç Saati</label>
+          <div className="flex gap-2">
+            <input
+              type="time"
+              value={values.night_tariff_start ?? "00:00"}
+              onChange={(e) => setValues((v) => ({ ...v, night_tariff_start: e.target.value }))}
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+            />
+            <button
+              onClick={() => onSave("night_tariff_start")}
+              disabled={saving === "night_tariff_start"}
+              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+            >
+              <Save size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* End time */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Bitiş Saati</label>
+          <div className="flex gap-2">
+            <input
+              type="time"
+              value={values.night_tariff_end ?? "07:00"}
+              onChange={(e) => setValues((v) => ({ ...v, night_tariff_end: e.target.value }))}
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+            />
+            <button
+              onClick={() => onSave("night_tariff_end")}
+              disabled={saving === "night_tariff_end"}
+              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+            >
+              <Save size={13} />
+            </button>
+          </div>
+        </div>
+
+        {/* Percent */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ek Ücret (%)</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              step="1"
+              value={values.night_tariff_percent ?? "0"}
+              onChange={(e) => setValues((v) => ({ ...v, night_tariff_percent: e.target.value }))}
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
+              placeholder="0"
+            />
+            <button
+              onClick={() => onSave("night_tariff_percent")}
+              disabled={saving === "night_tariff_percent"}
+              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+            >
+              <Save size={13} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Preview */}
+      {enabled && (
+        <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-indigo-50 border border-indigo-100">
+          <Moon size={14} className="text-indigo-500 flex-shrink-0" />
+          <p className="text-xs text-indigo-700">
+            <strong>{values.night_tariff_start ?? "00:00"} – {values.night_tariff_end ?? "07:00"}</strong> saatleri arasındaki rezervasyonlara{" "}
+            <strong>%{values.night_tariff_percent ?? "0"}</strong> gece tarifesi uygulanır.
+            {isSavingAny && <span className="ml-2 text-indigo-400">Kaydediliyor...</span>}
+          </p>
         </div>
       )}
     </div>

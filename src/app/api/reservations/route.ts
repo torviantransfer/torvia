@@ -4,6 +4,8 @@ import Stripe from "stripe";
 import crypto from "crypto";
 import { reservationSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
+import { sendReservationEmail } from "@/lib/email";
+import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
       notes,
       couponCode,
       locale,
+      paymentMethod,
     } = parsed.data;
 
     // Fetch region
@@ -143,11 +146,40 @@ export async function POST(request: NextRequest) {
     const { data: settings } = await supabase
       .from("settings")
       .select("key, value")
-      .in("key", ["night_surcharge_percent", "child_seat_fee", "welcome_sign_fee"]);
+      .in("key", [
+        "child_seat_fee",
+        "welcome_sign_fee",
+        "cash_payment_enabled",
+        "online_payment_discount_percent",
+        "night_tariff_enabled",
+        "night_tariff_start",
+        "night_tariff_end",
+        "night_tariff_percent",
+      ]);
 
-    const settingsMap: Record<string, number> = {};
+    const settingsMap: Record<string, unknown> = {};
     for (const s of settings ?? []) {
-      settingsMap[s.key] = typeof s.value === "number" ? s.value : Number(s.value);
+      settingsMap[s.key] = s.value;
+    }
+    const numSetting = (key: string) => {
+      const v = settingsMap[key];
+      return typeof v === "number" ? v : Number(v ?? 0);
+    };
+
+    const isCash = paymentMethod === "cash";
+    const cashEnabled = settingsMap.cash_payment_enabled === true || settingsMap.cash_payment_enabled === "true";
+    const onlineDiscountPct = !isCash ? (numSetting("online_payment_discount_percent") || 0) : 0;
+    const nightEnabled = settingsMap.night_tariff_enabled === true || settingsMap.night_tariff_enabled === "true";
+    const nightPercent = numSetting("night_tariff_percent");
+    const parseHour = (v: unknown) => {
+      const s = String(v ?? "");
+      return parseInt(s.includes(":") ? s.split(":")[0] : s, 10) || 0;
+    };
+    const nightStartHour = parseHour(settingsMap.night_tariff_start ?? "0");
+    const nightEndHour = parseHour(settingsMap.night_tariff_end ?? "7");
+
+    if (isCash && !cashEnabled) {
+      return NextResponse.json({ error: "Cash payment is not available" }, { status: 400 });
     }
 
     // Validate coupon
@@ -188,9 +220,13 @@ export async function POST(request: NextRequest) {
       welcomeSign: !!welcomeSign,
       couponDiscountPercent,
       couponDiscountFixed,
-      nightSurchargePercent: settingsMap.night_surcharge_percent ?? 0,
-      childSeatFee: settingsMap.child_seat_fee ?? 10,
-      welcomeSignFee: settingsMap.welcome_sign_fee ?? 5,
+      nightSurchargePercent: nightPercent,
+      nightTariffEnabled: nightEnabled,
+      nightTariffStart: nightStartHour,
+      nightTariffEnd: nightEndHour,
+      childSeatFee: numSetting("child_seat_fee") || 10,
+      welcomeSignFee: numSetting("welcome_sign_fee") || 5,
+      onlineDiscountPercent: onlineDiscountPct,
     });
 
     // Get exchange rates for storing
@@ -255,7 +291,8 @@ export async function POST(request: NextRequest) {
     // QR code token
     const qrCodeToken = crypto.randomUUID();
 
-    // Create reservation (status: pending)
+    // Create reservation (pending for online, confirmed for cash)
+    const initialStatus = isCash ? "confirmed" : "pending";
     const { data: reservation, error: resErr } = await supabase
       .from("reservations")
       .insert({
@@ -282,12 +319,14 @@ export async function POST(request: NextRequest) {
         welcome_sign_fee: calc.welcomeSignFee,
         round_trip_discount: calc.roundTripDiscount,
         coupon_discount: calc.couponDiscount,
+        online_discount: calc.onlineDiscount,
         coupon_id: couponId,
         total_price: calc.totalPrice,
         currency: "USD",
         exchange_rate_eur: rateMap.EUR ?? null,
         exchange_rate_try: rateMap.TRY ?? null,
-        status: "pending",
+        status: initialStatus,
+        payment_method: isCash ? "cash" : "online",
         qr_code_token: qrCodeToken,
         locale: locale ?? "en",
       })
@@ -307,8 +346,118 @@ export async function POST(request: NextRequest) {
       await supabase.rpc("increment_coupon_usage", { coupon_id: couponId });
     }
 
-    // Create Stripe PaymentIntent
     const regionName = region[`name_${locale ?? "en"}`] || region.name_en;
+
+    // ─── CASH PAYMENT ─────────────────────────────────────────────────────
+    if (isCash) {
+      // Log notification
+      await supabase.from("notification_log").insert({
+        type: "cash_booking",
+        channel: "system",
+        recipient: "admin",
+        content: `Cash booking confirmed: ${reservationCode}. Amount: $${calc.totalPrice.toFixed(2)}`,
+        metadata: { reservation_id: reservation.id },
+      });
+
+      // Auto-create Supabase Auth account for the customer
+      if (!customer.auth_user_id) {
+        try {
+          const { data: authData } = await supabase.auth.admin.createUser({
+            email: customer.email,
+            email_confirm: true,
+            user_metadata: {
+              full_name: `${customer.first_name} ${customer.last_name}`.trim(),
+              first_name: customer.first_name,
+              last_name: customer.last_name,
+            },
+          });
+          if (authData?.user) {
+            await supabase.from("customers").update({ auth_user_id: authData.user.id }).eq("id", customer.id);
+          }
+        } catch {
+          const { data: userList } = await supabase.auth.admin.listUsers();
+          const existingAuth = userList?.users?.find((u) => u.email === customer.email);
+          if (existingAuth) {
+            await supabase.from("customers").update({ auth_user_id: existingAuth.id }).eq("id", customer.id);
+          }
+        }
+      }
+
+      // Send confirmation email to customer
+      const eurRate = rateMap.EUR ?? 1;
+      const totalEur = eurRate > 0 ? calc.totalPrice / eurRate : calc.totalPrice;
+      sendReservationEmail({
+        to: email,
+        reservationCode,
+        firstName,
+        lastName,
+        regionName: String(regionName),
+        pickupDate,
+        pickupTime,
+        tripType: (tripType ?? "one_way") as "one_way" | "round_trip",
+        returnDate: returnDate ?? undefined,
+        returnTime: returnTime ?? undefined,
+        adults: adults ?? 1,
+        children: children ?? 0,
+        luggageCount: luggage ?? 0,
+        childSeat: !!childSeat,
+        hotelName: hotelName ?? undefined,
+        flightCode: flightCode ?? undefined,
+        vehicleName: (pricing.vehicle_categories as Record<string, unknown>)?.name as string | undefined,
+        basePrice: eurRate > 0 ? calc.basePrice / eurRate : calc.basePrice,
+        nightSurcharge: eurRate > 0 ? calc.nightSurcharge / eurRate : calc.nightSurcharge,
+        childSeatFee: eurRate > 0 ? calc.childSeatFee / eurRate : calc.childSeatFee,
+        roundTripDiscount: eurRate > 0 ? calc.roundTripDiscount / eurRate : calc.roundTripDiscount,
+        couponDiscount: eurRate > 0 ? calc.couponDiscount / eurRate : calc.couponDiscount,
+        totalEur,
+        qrCodeToken,
+        locale: locale ?? "en",
+        paymentMethod: "cash",
+      }).catch(() => {});
+
+      // Telegram notification
+      notifyNewCashBooking({
+        code: reservationCode,
+        amount: `$${calc.totalPrice.toFixed(2)}`,
+        email,
+        region: String(regionName),
+      }).catch(() => {});
+
+      // Driver voucher to Telegram
+      sendDriverVoucherToTelegram({
+        reservationCode,
+        customerFirstName: firstName,
+        customerLastName: lastName,
+        customerPhone: phone,
+        tripType: (tripType ?? "one_way") as "one_way" | "round_trip",
+        pickupDatetime: pickupDatetime,
+        returnDatetime: returnDatetime ?? undefined,
+        flightCode: flightCode ?? undefined,
+        hotelName: hotelName ?? undefined,
+        hotelAddress: hotelAddress ?? undefined,
+        regionName: String(regionName),
+        distanceKm: (region as Record<string, unknown>).distance_km as number | undefined,
+        durationMinutes: (region as Record<string, unknown>).duration_minutes as number | undefined,
+        adults: adults ?? 1,
+        children: children ?? 0,
+        luggageCount: luggage ?? 0,
+        childSeat: !!childSeat,
+        notes: notes ?? undefined,
+      }).catch(() => {});
+
+      return NextResponse.json({
+        reservationCode,
+        reservation: {
+          id: reservation.id,
+          reservationCode,
+          totalPrice: calc.totalPrice,
+          status: "confirmed",
+          paymentMethod: "cash",
+        },
+      });
+    }
+
+    // ─── ONLINE PAYMENT (Stripe) ───────────────────────────────────────────
     const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(calc.totalPrice * 100),
       currency: "usd",

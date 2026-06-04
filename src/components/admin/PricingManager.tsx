@@ -10,7 +10,7 @@ interface PricingRow {
   one_way_price: number;
   round_trip_price: number | null;
   currency: string;
-  regions: { slug: string; name_en: string; name_tr: string } | null;
+  regions: { slug: string; name_en: string; name_tr: string; sort_order?: number } | null;
   vehicle_categories: { name: string; slug: string } | null;
 }
 
@@ -25,7 +25,12 @@ export default function PricingManager({
   regions,
   categories,
 }: Props) {
-  const [pricing, setPricing] = useState<PricingRow[]>(initialPricing);
+  const [pricing, setPricing] = useState<PricingRow[]>(
+    [...initialPricing].sort((a, b) => {
+      const so = (a.regions?.sort_order ?? 999) - (b.regions?.sort_order ?? 999);
+      return so !== 0 ? so : (a.regions?.name_en ?? "").localeCompare(b.regions?.name_en ?? "");
+    })
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState({
     one_way_price: 0,

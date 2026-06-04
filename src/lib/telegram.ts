@@ -87,6 +87,25 @@ export function notifyNewPayment(data: {
   });
 }
 
+export function notifyNewCashBooking(data: {
+  code: string;
+  amount: string;
+  email: string;
+  region?: string;
+}) {
+  return sendTelegram({
+    icon: "\u{1F4B5}",  // banknote emoji
+    title: "ARACTA ODEME - YENI REZERVASYON",
+    fields: [
+      { label: "Kod:", value: data.code },
+      { label: "Tutar:", value: data.amount },
+      { label: "E-posta:", value: data.email },
+      { label: "Guzergah:", value: data.region },
+      { label: "Odeme:", value: "ARACTA TAHSIL EDILECEK" },
+    ],
+  });
+}
+
 export function notifyDriverAssigned(data: {
   code: string;
   driver: string;
