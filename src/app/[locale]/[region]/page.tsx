@@ -310,12 +310,28 @@ export default async function RegionPage({
 
   const price = pricing?.one_way_price ?? 0;
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) } },
+      { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
+      { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
+      { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
+      { "@type": "Question", name: t("faqQ5", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA5", { price }) } },
+      { "@type": "Question", name: t("faqQ6", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA6") } },
+      { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
+      { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
+    ],
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Header />
       <main className="flex-1">
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
         {/* Hero */}
         <section className="relative pb-16 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
@@ -573,19 +589,6 @@ export default async function RegionPage({
               ))}
             </div>
 
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-              "@context": "https://schema.org", "@type": "FAQPage",
-              mainEntity: [
-                { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) } },
-                { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
-                { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
-                { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
-                { "@type": "Question", name: t("faqQ5", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA5", { price }) } },
-                { "@type": "Question", name: t("faqQ6", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA6") } },
-                { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
-                { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
-              ],
-            }) }} />
           </div>
         </section>
 

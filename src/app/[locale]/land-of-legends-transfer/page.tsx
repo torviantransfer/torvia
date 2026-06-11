@@ -205,9 +205,6 @@ export async function generateMetadata({
     },
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
     twitter: seoTwitter(c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
-    other: {
-      "application/ld+json": JSON.stringify(schema),
-    },
   };
 }
 
