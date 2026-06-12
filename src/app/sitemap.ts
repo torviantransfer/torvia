@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug, is_popular, description_de, description_pl, description_ru, meta_title_de, meta_title_pl, meta_title_ru")
+    .select("slug, is_popular")
     .eq("is_active", true);
 
   const { data: blogPosts } = await supabase
@@ -57,21 +57,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Region pages — only emit URLs for locales that have actual content.
-  // tr and en are always primary. de/pl/ru are only included when the DB
-  // has locale-specific description or meta_title, matching the noindex
-  // logic in generateMetadata to keep sitemap and robots in sync.
-  const secondaryLocales = ["de", "pl", "ru"];
+  // Region pages — popular regions get higher priority, primary locales first
   for (const locale of locales) {
     const isPrimary = primaryLocales.includes(locale);
     for (const region of regions ?? []) {
-      // Skip secondary locales that have no translated content
-      if (secondaryLocales.includes(locale)) {
-        const r = region as Record<string, unknown>;
-        const desc = (r[`description_${locale}`] as string | null) ?? "";
-        const mt = (r[`meta_title_${locale}`] as string | null) ?? "";
-        if (!desc.trim() && !mt.trim()) continue;
-      }
       const isPopular = region.is_popular === true;
       const regionPath = region.slug.endsWith("-transfer") ? region.slug : `${region.slug}-transfer`;
       entries.push({
