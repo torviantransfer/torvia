@@ -8,7 +8,9 @@ import { sendReservationEmail } from "@/lib/email";
 import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY is not configured");
+  return new Stripe(key, {
     apiVersion: "2026-03-25.dahlia",
   });
 }
@@ -23,8 +25,10 @@ function generateReservationCode(): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createAdminClient();
   try {
+    // Move supabase init inside try so any init failure returns JSON 500 (not HTML)
+    const supabase = createAdminClient();
+
     // Rate limit by IP
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
     const rl = rateLimit(`reservation:${ip}`, { maxRequests: 10, windowMs: 60_000 });
@@ -32,7 +36,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
-    const body = await request.json();
+    // Safely parse JSON — some browsers/devices can send malformed bodies
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
     const parsed = reservationSchema.safeParse(body);
     if (!parsed.success) {
       console.error("Reservation validation failed:", JSON.stringify(parsed.error.flatten().fieldErrors));

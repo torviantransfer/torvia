@@ -17,6 +17,7 @@ const ENV_MAP: Record<string, string> = {
 // In-memory cache (TTL: 5 min)
 let cache: Record<string, string> = {};
 let cacheTime = 0;
+let loadingPromise: Promise<Record<string, string>> | null = null;
 const CACHE_TTL = 5 * 60 * 1000;
 
 async function loadFromDB(): Promise<Record<string, string>> {
@@ -43,10 +44,20 @@ async function loadFromDB(): Promise<Record<string, string>> {
 }
 
 export async function getConfig(key: string): Promise<string> {
-  // Refresh cache if stale
+  // Refresh cache if stale — use a shared promise to prevent concurrent DB fetches
   if (Date.now() - cacheTime > CACHE_TTL) {
-    cache = await loadFromDB();
-    cacheTime = Date.now();
+    if (!loadingPromise) {
+      loadingPromise = loadFromDB().then((result) => {
+        cache = result;
+        cacheTime = Date.now();
+        loadingPromise = null;
+        return result;
+      }).catch(() => {
+        loadingPromise = null;
+        return cache;
+      });
+    }
+    await loadingPromise;
   }
 
   // DB value first, but ignore placeholder entries
