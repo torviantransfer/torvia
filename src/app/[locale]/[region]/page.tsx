@@ -53,6 +53,24 @@ const regionImages: Record<string, string> = {
 };
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru"];
+const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
+const BASE_URL = "https://torviantransfer.com";
+
+/**
+ * Determine which locales are considered "translated" for a region.
+ * tr and en are always treated as primary. de/pl/ru are only included
+ * when the DB has locale-specific description or meta_title content,
+ * preventing GSC "duplicate without user-selected canonical" reports.
+ */
+function getTranslatedLocales(region: Record<string, unknown>): Locale[] {
+  return ALL_LOCALES.filter((l) => {
+    if (PRIMARY_LOCALES.includes(l)) return true;
+    const desc = (region[`description_${l}`] as string | null | undefined) ?? "";
+    const mt = (region[`meta_title_${l}`] as string | null | undefined) ?? "";
+    return desc.trim().length > 0 || mt.trim().length > 0;
+  });
+}
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
@@ -129,11 +147,20 @@ export async function generateMetadata({
     : "";
   const info = km && dur ? ` ${dur}, ${km}.` : "";
 
-  // Priority: locale-specific column → shared meta_title column (set by migration 006) → generic template
+  // Locale-specific fallback titles prevent GSC "duplicate without canonical" reports
+  const fallbackTitle: Record<string, string> = {
+    tr: `Antalya Havalimanı ${name} Transferi | ${dur} ${km}`.trim(),
+    en: `Antalya Airport to ${name} Transfer | ${dur} ${km}`.trim(),
+    de: `Flughafen Antalya ${name} Transfer | ${dur} ${km}`.trim(),
+    pl: `Transfer z lotniska Antalya do ${name} | ${dur} ${km}`.trim(),
+    ru: `Трансфер из аэропорта Анталья в ${name} | ${dur} ${km}`.trim(),
+  };
+
+  // Priority: locale-specific column → shared meta_title column → locale-specific template
   const metaTitle =
     (region[`meta_title_${locale}`] as string | null) ||
     (region.meta_title as string | null) ||
-    `Antalya Airport to ${name} Transfer | ${dur} ${km}`.trim();
+    fallbackTitle[locale] ?? fallbackTitle.en;
 
   const fallbackDesc: Record<string, string> = {
     tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
@@ -148,26 +175,35 @@ export async function generateMetadata({
     (region.meta_description as string | null) ||
     fallbackDesc[locale] || fallbackDesc.en;
 
-  const regionImg = `https://torviantransfer.com/images/regions/${regionSlugBase}.jpg`;
+  const regionImg = `${BASE_URL}/images/regions/${regionSlugBase}.jpg`;
+
+  // Which locales have actual content for this region?
+  const translatedLocales = getTranslatedLocales(region as Record<string, unknown>);
+  const isTranslated = translatedLocales.includes(locale as Locale);
 
   return {
     title: metaTitle,
     description: metaDesc,
-    alternates: {
-      canonical: `https://torviantransfer.com/${locale}/${regionPath}`,
-      languages: {
-        "x-default": `https://torviantransfer.com/en/${regionPath}`,
-        tr: `https://torviantransfer.com/tr/${regionPath}`,
-        en: `https://torviantransfer.com/en/${regionPath}`,
-        de: `https://torviantransfer.com/de/${regionPath}`,
-        pl: `https://torviantransfer.com/pl/${regionPath}`,
-        ru: `https://torviantransfer.com/ru/${regionPath}`,
-      },
-    },
+    alternates: isTranslated
+      ? {
+          canonical: `${BASE_URL}/${locale}/${regionPath}`,
+          languages: {
+            "x-default": `${BASE_URL}/en/${regionPath}`,
+            ...Object.fromEntries(
+              translatedLocales.map((l) => [l, `${BASE_URL}/${l}/${regionPath}`])
+            ),
+          },
+        }
+      : {
+          // Non-translated locale: point canonical to primary (tr) to resolve
+          // GSC "duplicate without user-selected canonical" errors.
+          canonical: `${BASE_URL}/tr/${regionPath}`,
+        },
+    robots: isTranslated ? undefined : { index: false, follow: true },
     openGraph: {
       title: metaTitle,
       description: metaDesc,
-      url: `https://torviantransfer.com/${locale}/${regionPath}`,
+      url: `${BASE_URL}/${locale}/${regionPath}`,
       type: "website",
       siteName: "TORVIAN Transfer",
       images: [{ url: regionImg, width: 1200, height: 630, alt: `${name} Transfer` }],
