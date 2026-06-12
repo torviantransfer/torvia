@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
       .from("customers")
       .select("*")
       .eq("email", email)
-      .single();
+      .maybeSingle();
 
     if (!customer) {
       const { data: newCustomer, error: custErr } = await supabase
@@ -274,12 +274,25 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (custErr) {
-        return NextResponse.json(
-          { error: "Failed to create customer" },
-          { status: 500 }
-        );
+        // Unique constraint violation (23505): another concurrent request already created the customer
+        if (custErr.code === "23505") {
+          const { data: existingCustomer } = await supabase
+            .from("customers")
+            .select("*")
+            .eq("email", email)
+            .maybeSingle();
+          customer = existingCustomer;
+        }
+        if (!customer) {
+          console.error("Customer creation error:", custErr.message, custErr.code);
+          return NextResponse.json(
+            { error: "Failed to create customer" },
+            { status: 500 }
+          );
+        }
+      } else {
+        customer = newCustomer;
       }
-      customer = newCustomer;
     }
 
     // Generate unique reservation code
@@ -366,6 +379,11 @@ export async function POST(request: NextRequest) {
     // For cash: charge deposit only. For online: charge full amount.
     const regionName = region[`name_${locale ?? "en"}`] || region.name_en;
     const stripeAmount = isCash ? finalDepositAmount : finalTotalPrice;
+
+    if (stripeAmount <= 0) {
+      console.error("Invalid stripe amount:", stripeAmount, { isCash, finalTotalPrice, finalDepositAmount });
+      return NextResponse.json({ error: "Invalid payment amount" }, { status: 400 });
+    }
     const stripeDescription = isCash
       ? `TORVIAN Deposit — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`
       : `TORVIAN VIP Transfer — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`;
@@ -407,7 +425,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("Reservation API error:", err instanceof Error ? err.message : "unknown");
+    console.error("Reservation API unhandled error:", err instanceof Error ? err.stack ?? err.message : String(err));
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

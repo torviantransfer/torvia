@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -97,6 +97,7 @@ function BookingWizardInner(props: Props) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
@@ -232,10 +233,12 @@ function BookingWizardInner(props: Props) {
   };
 
   const handleSubmit = async () => {
+    if (isSubmittingRef.current) return;
     setError(null);
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
-    if (!firstName || !lastName || !email || !phone) { setError(t("errorFillRequired")); return; }
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim()) { setError(t("errorFillRequired")); return; }
     if (!selectedVehicle) return;
+    isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       const res = await fetch("/api/reservations", {
@@ -289,7 +292,7 @@ function BookingWizardInner(props: Props) {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch { setError(t("errorNetwork")); }
-    finally { setSubmitting(false); }
+    finally { isSubmittingRef.current = false; setSubmitting(false); }
   };
 
   const goBack = () => { setError(null); if (step === 2) { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); } };
