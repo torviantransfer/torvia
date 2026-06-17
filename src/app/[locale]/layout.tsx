@@ -5,7 +5,7 @@ import { Inter, Montserrat } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import CookieConsent from "@/components/CookieConsent";
 import Script from "next/script";
-import { PIXEL_ID } from "@/lib/pixel";
+import { PIXEL_ID, GOOGLE_ADS_ID } from "@/lib/pixel";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -50,7 +50,7 @@ export default async function LocaleLayout({
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');gtag('config','${GOOGLE_ADS_ID}');`}
             </Script>
           </>
         )}

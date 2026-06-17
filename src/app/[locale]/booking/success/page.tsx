@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { CheckCircle, Download, Home, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
 import PixelPurchaseFire from "@/components/booking/PixelPurchaseFire";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -21,10 +22,25 @@ export default async function BookingSuccessPage({
   const code = sp.code ?? "—";
   const t = await getTranslations("bookingSuccess");
 
+  let reservationTotal = 0;
+  if (code && code !== "—") {
+    try {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from("reservations")
+        .select("total_price")
+        .eq("reservation_code", code)
+        .single();
+      reservationTotal = data?.total_price ?? 0;
+    } catch {
+      // non-critical, fallback to 0
+    }
+  }
+
   return (
     <>
       <Header />
-      <PixelPurchaseFire reservationCode={code} />
+      <PixelPurchaseFire reservationCode={code} totalPrice={reservationTotal} />
       <main className="flex-1 bg-white">
         <div className="max-w-xl mx-auto px-4 py-16 text-center">
 

@@ -1,24 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
-import { pixelPurchase } from "@/lib/pixel";
+import { pixelPurchase, gAdsConversionPurchase } from "@/lib/pixel";
 import { trackPaymentSuccess } from "@/lib/analytics";
 
 interface Props {
   reservationCode: string;
+  totalPrice?: number;
 }
 
-/**
- * Success sayfasına mount edildiğinde Purchase pixel eventini tetikler.
- * StripeCheckoutEmbed redirect durumlarında devreye girer.
- */
-export default function PixelPurchaseFire({ reservationCode }: Props) {
+export default function PixelPurchaseFire({ reservationCode, totalPrice = 0 }: Props) {
   useEffect(() => {
     if (reservationCode && reservationCode !== "—") {
-      pixelPurchase(reservationCode, 0, "USD");
+      pixelPurchase(reservationCode, totalPrice, "USD");
+      gAdsConversionPurchase(totalPrice, "USD", reservationCode);
       trackPaymentSuccess({ metadata: { reservationCode } });
     }
-  }, [reservationCode]);
+  }, [reservationCode, totalPrice]);
 
   return null;
 }

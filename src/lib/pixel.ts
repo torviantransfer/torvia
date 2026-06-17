@@ -120,3 +120,15 @@ export function pixelSearch(query: string) {
     content_type: "product",
   });
 }
+
+export function gAdsConversionPurchase(
+  value: number,
+  currency = "USD",
+  transactionId?: string
+) {
+  gtag("event", "conversion_event_purchase", {
+    value,
+    currency,
+    transaction_id: transactionId,
+  });
+}
