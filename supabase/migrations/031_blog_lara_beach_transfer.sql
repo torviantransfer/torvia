@@ -38,7 +38,7 @@ INSERT INTO blog_posts (
 <p>Antalya Havalimanı''ndan Lara Beach''e gidecekseniz iyi haberimiz var: <strong>Lara Beach, havalimanına en yakın büyük tatil bölgesidir</strong>. Antalya Havalimanı (AYT) ile Lara bölgesi arasındaki mesafe yalnızca <strong>~14 km</strong>; özel transfer ile bu yol yaklaşık <strong>18–20 dakikada</strong> kat edilir.</p>
 
 <h2>Antalya Havalimanı''ndan Lara Beach''e Mesafe ve Süre</h2>
-<p>Lara Beach (yerel adıyla Kundu), Antalya Havalimanı''nın hemen doğusunda yer alır. Otoyola çıktıktan sonra neredeyse düz bir güzergah; trafik olmayan saatlerde şoför kapıya 15 dakikada ulaşabilir. Yoğun saatlerde ve Lara'nın iç bölgelerindeki otellerde 20–25 dakikayı bulabilir.</p>
+<p>Lara Beach (yerel adıyla Kundu), Antalya Havalimanı''nın hemen doğusunda yer alır. Otoyola çıktıktan sonra neredeyse düz bir güzergah; trafik olmayan saatlerde şoför kapıya 15 dakikada ulaşabilir. Yoğun saatlerde ve Lara''nın iç bölgelerindeki otellerde 20–25 dakikayı bulabilir.</p>
 
 <table>
 <tr><th>Bölge</th><th>Mesafe</th><th>Transfer Süresi</th></tr>
@@ -75,7 +75,7 @@ INSERT INTO blog_posts (
 <p>Lara bölgesi Antalya Havalimanı''na yaklaşık <strong>14 km</strong> uzaklıktadır. Özel transfer ile yaklaşık 18–20 dakika sürer.</p>
 
 <h3>Taksi ile Lara Beach''e gitmek ne kadar tutar?</h3>
-<p>2026 yılı için Antalya Havalimanı taksi tarifesi Lara'ya yaklaşık <strong>600–900 TL</strong> arasındadır; gece tarifesi daha yüksek olabilir. TORVIAN özel transferinde fiyat sabittir, rezervasyon sırasında görürsünüz.</p>
+<p>2026 yılı için Antalya Havalimanı taksi tarifesi Lara''ya yaklaşık <strong>600–900 TL</strong> arasındadır; gece tarifesi daha yüksek olabilir. TORVIAN özel transferinde fiyat sabittir, rezervasyon sırasında görürsünüz.</p>
 
 <h3>Aska Lara Resort''a transfer nasıl yapılır?</h3>
 <p>Rezervasyon sırasında otel adı olarak "Aska Lara Resort & Spa" yazmanız yeterlidir. Şoförünüz otel girişine kadar getirir.</p>
