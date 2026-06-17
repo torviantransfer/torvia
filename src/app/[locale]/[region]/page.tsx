@@ -54,6 +54,17 @@ const regionImages: Record<string, string> = {
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
 const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru"];
+
+function formatDuration(minutes: number, locale: string): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const hStr = (n: number, singular: string, plural?: string) => `${n} ${n === 1 ? singular : (plural ?? singular)}`;
+  if (locale === "tr") return h > 0 ? `${h} saat${m > 0 ? ` ${m} dakika` : ""}` : `${m} dakika`;
+  if (locale === "de") return h > 0 ? `${hStr(h, "Stunde", "Stunden")}${m > 0 ? ` ${m} Min.` : ""}` : `${m} Min.`;
+  if (locale === "pl") return h > 0 ? `${h} godz.${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
+  if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
+  return h > 0 ? `${hStr(h, "hour", "hours")}${m > 0 ? ` ${m} minutes` : ""}` : `${m} minutes`;
+}
 const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
 const BASE_URL = "https://torviantransfer.com";
 
@@ -163,11 +174,11 @@ export async function generateMetadata({
     (fallbackTitle[locale] ?? fallbackTitle.en);
 
   const fallbackDesc: Record<string, string> = {
-    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
-    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, professional drivers, 24/7 service. Book online.`,
-    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis, professionelle Fahrer, 24/7 Service. Jetzt buchen.`,
-    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, profesjonalni kierowcy, serwis 24/7.`,
-    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, профессиональные водители, 24/7.`,
+    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, karşılama hizmeti, uçuş takibi dahil. 2 dakikada rezervasyon yapın.`,
+    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, meet & greet, flight tracking included. Book in 2 minutes — no hidden fees.`,
+    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis, Abholservice, Flugüberwachung inklusive. In 2 Minuten buchen.`,
+    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, powitanie, śledzenie lotu w cenie. Zarezerwuj w 2 minuty.`,
+    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, встреча в аэропорту, отслеживание рейса. Бронируйте за 2 минуты.`,
   };
   // Priority: locale-specific → shared meta_description → locale fallback
   const metaDesc =
@@ -350,7 +361,7 @@ export default async function RegionPage({
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) } },
+      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : region.duration_minutes, distance: region.distance_km }) } },
       { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
       { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
       { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
@@ -604,7 +615,7 @@ export default async function RegionPage({
             <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center tracking-tight">{t("faqHeading", { name })}</h2>
             <div className="space-y-3">
               {[
-                { q: t("faqQ1", { name }), a: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) },
+                { q: t("faqQ1", { name }), a: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : region.duration_minutes, distance: region.distance_km }) },
                 { q: t("faqQ2", { name }), a: t("faqA2") },
                 { q: t("faqQ3", { name }), a: t("faqA3") },
                 { q: t("faqQ4"), a: t("faqA4") },

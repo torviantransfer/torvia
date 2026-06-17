@@ -440,7 +440,7 @@
     "guest": "Misafir",
     "faqHeading": "SSS — {name} Transfer",
     "faqQ1": "Antalya Havalimanı'ndan {name}'e transfer ne kadar sürer?",
-    "faqA1": "Antalya Havalimanı'ndan {name}'e transfer yaklaşık {duration} dakika ({distance} km) sürer.",
+    "faqA1": "Antalya Havalimanı'ndan {name}'e transfer yaklaşık {duration} ({distance} km) sürer.",
     "faqQ2": "{name} transferinde hangi araç kullanılır?",
     "faqA2": "Deri koltuk, Wi-Fi, klima ve 5 yolcuya kadar kapasite sunan Mercedes Vito VIP araçlar kullanıyoruz.",
     "faqQ3": "{name} transfer rezervasyonumu iptal edebilir miyim?",

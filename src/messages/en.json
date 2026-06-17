@@ -440,7 +440,7 @@
     "guest": "Guest",
     "faqHeading": "FAQ — {name} Transfer",
     "faqQ1": "How long is the transfer from Antalya Airport to {name}?",
-    "faqA1": "The transfer from Antalya Airport to {name} takes approximately {duration} minutes ({distance} km).",
+    "faqA1": "The transfer from Antalya Airport to {name} takes approximately {duration} ({distance} km).",
     "faqQ2": "What vehicle is used for the {name} transfer?",
     "faqA2": "We use Mercedes Vito VIP vehicles with leather interior, Wi-Fi, climate control, and space for up to 5 passengers.",
     "faqQ3": "Can I cancel my {name} transfer booking?",
