@@ -369,6 +369,7 @@ export default async function RegionPage({
       { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
       { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
       { "@type": "Question", name: t("faqQ9", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA9", { name }) } },
+      { "@type": "Question", name: t("faqQ10", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) } },
     ],
   };
 
@@ -624,6 +625,7 @@ export default async function RegionPage({
                 { q: t("faqQ7", { name }), a: t("faqA7") },
                 { q: t("faqQ8", { name }), a: t("faqA8") },
                 { q: t("faqQ9", { name }), a: t("faqA9", { name }) },
+                { q: t("faqQ10", { name }), a: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
               ].map(({ q, a }) => (
                 <details key={q} className="rounded-xl overflow-hidden group" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
                   <summary className="px-5 py-4 cursor-pointer font-medium text-gray-900 text-sm flex items-center justify-between">

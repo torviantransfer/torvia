@@ -457,6 +457,8 @@
     "faqA8": "Nasze pojazdy Mercedes Vito VIP pomieszczą do 5 dużych walizek. W przypadku ponadwymiarowego bagażu prosimy o zaznaczenie w uwagach.",
     "faqQ9": "Czy mogę zarezerwować transfer powrotny z {name} na lotnisko Antalya?",
     "faqA9": "Tak. TORVIAN oferuje transfery w jedną stronę oraz w obie strony (odloty i przyloty). Możesz zarezerwować transfer powrotny z {name} bezpośrednio na lotnisko Antalya (AYT). Rezerwacje w obie strony otrzymują specjalną obniżoną cenę. Zarezerwuj online w 2 minuty — brak ukrytych opłat.",
+    "faqQ10": "Jak daleko jest {name} od lotniska Antalya?",
+    "faqA10": "{name} leży około {distance} km od lotniska Antalya (AYT). Prywatny transfer VIP zajmuje ok. {duration} — bez przystanków, od drzwi do drzwi.",
     "readyToBook": "Gotowy zarezerwować transfer do {name}?",
     "readyDesc": "Stała cena, profesjonalni kierowcy, powitanie na lotnisku.",
     "bookNow": "Zarezerwuj Teraz",

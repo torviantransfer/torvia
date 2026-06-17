@@ -457,6 +457,8 @@
     "faqA8": "Mercedes Vito VIP araçlarımız 5 büyük bavula kadar kapasiteye sahiptir. Ekstra veya büyük boy bagaşınız varsa lütfen rezervasyon notlarında belirtin.",
     "faqQ9": "{name}'den Antalya Havalimanı'na dönüş transferi rezerve edebilir miyim?",
     "faqA9": "Evet. TORVIAN hem tek yön hem de gidiş-dönüş transfer hizmeti sunmaktadır. {name}'den Antalya Havalimanı'na (AYT) dönüş transferinizi kolayca rezerve edebilirsiniz. Gidiş-dönüş rezervasyonlara özel indirimli fiyat uygulanır. 2 dakikada online rezervasyon — gizli ücret yok.",
+    "faqQ10": "{name}, Antalya Havalimanı'na ne kadar uzak?",
+    "faqA10": "{name}, Antalya Havalimanı'na (AYT) yaklaşık {distance} km uzaklıktadır. Özel VIP transfer ile bu mesafe yaklaşık {duration} sürmektedir — durak yok, kapıdan kapıya.",
     "readyToBook": "{name} Transferinizi Rezerve Etmeye Hazır mısınız?",
     "readyDesc": "Sabit fiyat, profesyonel şoförler, havalimanında karşılama.",
     "bookNow": "Şimdi Rezerve Et",
