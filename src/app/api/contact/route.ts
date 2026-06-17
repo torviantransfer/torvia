@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyContactForm } from "@/lib/telegram";
+import { capiContact } from "@/lib/capi";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -58,6 +59,14 @@ export async function POST(request: NextRequest) {
       email,
       message,
     }).catch(() => {});
+
+    // Server-side Contact event to Meta Conversions API
+    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+    const userAgent = request.headers.get("user-agent") || undefined;
+    capiContact(
+      { email, firstName, lastName, clientIp, clientUserAgent: userAgent },
+      request.headers.get("referer") || undefined
+    ).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch {

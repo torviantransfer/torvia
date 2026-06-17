@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
 import { notifyNewPayment, notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
+import { capiPurchase } from "@/lib/capi";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -167,6 +168,23 @@ export async function POST(request: NextRequest) {
           email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
           region: String(resData.regions?.name_en ?? ""),
         }).catch(() => {});
+      }
+
+      // Send Purchase event to Meta Conversions API (server-side)
+      if (resData?.customers?.email && reservationCode) {
+        capiPurchase(
+          resData.total_price ?? 0,
+          "USD",
+          reservationCode,
+          {
+            email: resData.customers.email,
+            phone: (resData.customers as Record<string, string> | null)?.phone,
+            firstName: resData.customers.first_name,
+            lastName: resData.customers.last_name ?? undefined,
+          },
+          undefined,
+          `purchase_${reservationCode}`
+        ).catch(() => {});
       }
 
       // Send driver voucher (without price) to Telegram

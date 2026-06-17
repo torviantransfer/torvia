@@ -6,6 +6,7 @@ import { reservationSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendReservationEmail } from "@/lib/email";
 import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
+import { capiInitiateCheckout } from "@/lib/capi";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -420,6 +421,17 @@ export async function POST(request: NextRequest) {
       .from("reservations")
       .update({ stripe_payment_intent_id: paymentIntent.id })
       .eq("id", reservation.id);
+
+    // Server-side InitiateCheckout to Meta Conversions API
+    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
+    const userAgent = request.headers.get("user-agent") || undefined;
+    capiInitiateCheckout(
+      finalTotalPrice,
+      "USD",
+      { email, phone, firstName, lastName, clientIp, clientUserAgent: userAgent },
+      request.headers.get("referer") || undefined,
+      `checkout_${reservationCode}`
+    ).catch(() => {});
 
     return NextResponse.json({
       reservationCode,

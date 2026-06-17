@@ -81,7 +81,7 @@ export function pixelPurchase(
     content_ids: ["transfer"],
     content_name: regionName ?? "Airport Transfer",
     order_id: reservationCode,
-  });
+  }, { eventID: `purchase_${reservationCode}` });
   // Google Ads conversion (event name from Google Ads dashboard)
   gtag("event", "ads_conversion_Satın_alma_i_lemi_1", {
     value,
