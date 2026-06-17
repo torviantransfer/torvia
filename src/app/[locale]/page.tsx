@@ -161,7 +161,7 @@ export default async function HomePage({
     inLanguage: locale,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${BASE_URL}/{locale}/regions`,
+      target: `${BASE_URL}/${locale}/regions`,
       "query-input": "required name=search_term_string",
     },
   };

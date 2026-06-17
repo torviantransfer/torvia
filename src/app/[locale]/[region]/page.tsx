@@ -72,6 +72,16 @@ function getTranslatedLocales(region: Record<string, unknown>): Locale[] {
   });
 }
 
+function formatDuration(minutes: number, locale: string): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (locale === "tr") return h > 0 ? `${h} saat${m > 0 ? ` ${m} dakika` : ""}` : `${m} dakika`;
+  if (locale === "de") return h > 0 ? `${h} Std.${m > 0 ? ` ${m} Min.` : ""}` : `${m} Min.`;
+  if (locale === "pl") return h > 0 ? `${h} godz.${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
+  if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
+  return h > 0 ? `${h} hour${h !== 1 ? "s" : ""}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
+}
+
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
 }
@@ -163,11 +173,11 @@ export async function generateMetadata({
     (fallbackTitle[locale] ?? fallbackTitle.en);
 
   const fallbackDesc: Record<string, string> = {
-    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
-    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, professional drivers, 24/7 service. Book online.`,
-    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis, professionelle Fahrer, 24/7 Service. Jetzt buchen.`,
-    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, profesjonalni kierowcy, serwis 24/7.`,
-    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, профессиональные водители, 24/7.`,
+    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` ${info}` : ""} Sabit fiyat, karşılama hizmeti, uçuş takibi dahil. Gizli ücret yok, 2 dakikada rezervasyon.`,
+    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, meet & greet, flight tracking included. No hidden fees — book in 2 minutes.`,
+    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis inkl. Abholservice & Flugüberwachung. Keine versteckten Kosten — in 2 Min. buchen.`,
+    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, powitanie, śledzenie lotu w cenie. Brak ukrytych opłat — rezerwacja w 2 min.`,
+    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, встреча в аэропорту, отслеживание рейса. Без скрытых доплат — бронируйте за 2 мин.`,
   };
   // Priority: locale-specific → shared meta_description → locale fallback
   const metaDesc =
@@ -350,7 +360,7 @@ export default async function RegionPage({
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: [
-      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) } },
+      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) } },
       { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
       { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
       { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
@@ -395,7 +405,7 @@ export default async function RegionPage({
                 <div className="flex flex-wrap gap-3 mb-6 lg:mb-8">
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
                     <Clock size={16} className="text-blue-600" strokeWidth={1.5} />
-                    <span className="text-sm text-gray-900">~{region.duration_minutes} {t("min")}</span>
+                    <span className="text-sm text-gray-900">~{region.duration_minutes ? formatDuration(region.duration_minutes, locale) : `${region.duration_minutes} ${t("min")}`}</span>
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
                     <MapPin size={16} className="text-blue-600" strokeWidth={1.5} />
@@ -604,7 +614,7 @@ export default async function RegionPage({
             <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center tracking-tight">{t("faqHeading", { name })}</h2>
             <div className="space-y-3">
               {[
-                { q: t("faqQ1", { name }), a: t("faqA1", { name, duration: region.duration_minutes, distance: region.distance_km }) },
+                { q: t("faqQ1", { name }), a: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
                 { q: t("faqQ2", { name }), a: t("faqA2") },
                 { q: t("faqQ3", { name }), a: t("faqA3") },
                 { q: t("faqQ4"), a: t("faqA4") },
