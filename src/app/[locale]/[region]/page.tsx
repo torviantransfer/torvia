@@ -690,6 +690,27 @@ export default async function RegionPage({
           </section>
         )}
 
+        {/* Cross-link: Lara Beach dedicated page for lara/kundu regions */}
+        {(slug === "lara" || slug === "kundu") && (
+          <section className="py-8 bg-blue-50 border-y border-blue-100">
+            <div className="max-w-3xl mx-auto px-4 flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-blue-800">
+                {locale === "tr" ? "Lara Beach otellerine özel transfer rehberimize bakın" :
+                 locale === "de" ? "Sehen Sie unsere spezielle Seite für Lara Beach Hotels" :
+                 locale === "pl" ? "Zobacz naszą dedykowaną stronę dla hoteli Lara Beach" :
+                 locale === "ru" ? "Смотрите нашу страницу для отелей пляжа Лара" :
+                 "See our dedicated Lara Beach transfer page with hotel-specific info"}
+              </p>
+              <Link
+                href="/lara-beach-transfer"
+                className="text-sm font-semibold text-blue-700 hover:text-blue-900 whitespace-nowrap"
+              >
+                Lara Beach Transfer →
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* CTA */}
         <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
           <div className="max-w-2xl mx-auto px-4 text-center">
