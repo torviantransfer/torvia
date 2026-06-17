@@ -159,11 +159,11 @@ export async function generateMetadata({
 
   // Locale-specific fallback titles prevent GSC "duplicate without canonical" reports
   const fallbackTitle: Record<string, string> = {
-    tr: `Antalya Havalimanı ${name} Transferi | ${dur} ${km}`.trim(),
-    en: `Antalya Airport to ${name} Transfer | ${dur} ${km}`.trim(),
-    de: `Flughafen Antalya ${name} Transfer | ${dur} ${km}`.trim(),
-    pl: `Transfer z lotniska Antalya do ${name} | ${dur} ${km}`.trim(),
-    ru: `Трансфер из аэропорта Анталья в ${name} | ${dur} ${km}`.trim(),
+    tr: `Antalya Havalimanı ↔ ${name} Transfer | ${dur} ${km}`.trim(),
+    en: `Antalya Airport ↔ ${name} Transfer | ${dur} ${km}`.trim(),
+    de: `Flughafen Antalya ↔ ${name} Transfer | ${dur} ${km}`.trim(),
+    pl: `Lotnisko Antalya ↔ ${name} Transfer | ${dur} ${km}`.trim(),
+    ru: `Аэропорт Анталья ↔ ${name} Трансфер | ${dur} ${km}`.trim(),
   };
 
   // Priority: locale-specific column → shared meta_title column → locale-specific template
@@ -173,11 +173,11 @@ export async function generateMetadata({
     (fallbackTitle[locale] ?? fallbackTitle.en);
 
   const fallbackDesc: Record<string, string> = {
-    tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` ${info}` : ""} Sabit fiyat, karşılama hizmeti, uçuş takibi dahil. Gizli ücret yok, 2 dakikada rezervasyon.`,
-    en: `Antalya Airport → ${name} private VIP transfer.${info} Fixed price, meet & greet, flight tracking included. No hidden fees — book in 2 minutes.`,
-    de: `Flughafen Antalya → ${name} Privattransfer.${info} Festpreis inkl. Abholservice & Flugüberwachung. Keine versteckten Kosten — in 2 Min. buchen.`,
-    pl: `Lotnisko Antalya → ${name} prywatny transfer VIP.${info} Stała cena, powitanie, śledzenie lotu w cenie. Brak ukrytych opłat — rezerwacja w 2 min.`,
-    ru: `Аэропорт Анталья → ${name} ВИП трансфер.${info} Фиксированная цена, встреча в аэропорту, отслеживание рейса. Без скрытых доплат — бронируйте за 2 мин.`,
+    tr: `Antalya Havalimanı ↔ ${name} özel VIP transfer.${info ? ` ${info}` : ""} Dönüş transferi de mevcut. Sabit fiyat, karşılama, uçuş takibi dahil. Gizli ücret yok, 2 dakikada rezervasyon.`,
+    en: `Antalya Airport ↔ ${name} private VIP transfer.${info} Return transfers available. Fixed price, meet & greet, flight tracking included. No hidden fees — book in 2 minutes.`,
+    de: `Flughafen Antalya ↔ ${name} Privattransfer.${info} Hin- & Rückfahrt verfügbar. Festpreis inkl. Abholservice & Flugüberwachung. Keine Extrakosten — in 2 Min. buchen.`,
+    pl: `Lotnisko Antalya ↔ ${name} prywatny transfer VIP.${info} Odloty i przyloty — transfery w obie strony. Stała cena, powitanie, śledzenie lotu. Brak ukrytych opłat — rezerwacja 2 min.`,
+    ru: `Аэропорт Анталья ↔ ${name} ВИП трансфер.${info} Трансферы в обе стороны. Фиксированная цена, встреча, отслеживание рейса. Без скрытых доплат — бронируйте за 2 мин.`,
   };
   // Priority: locale-specific → shared meta_description → locale fallback
   const metaDesc =
@@ -368,6 +368,7 @@ export default async function RegionPage({
       { "@type": "Question", name: t("faqQ6", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA6") } },
       { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
       { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
+      { "@type": "Question", name: t("faqQ9", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA9", { name }) } },
     ],
   };
 
@@ -622,6 +623,7 @@ export default async function RegionPage({
                 { q: t("faqQ6", { name }), a: t("faqA6") },
                 { q: t("faqQ7", { name }), a: t("faqA7") },
                 { q: t("faqQ8", { name }), a: t("faqA8") },
+                { q: t("faqQ9", { name }), a: t("faqA9", { name }) },
               ].map(({ q, a }) => (
                 <details key={q} className="rounded-xl overflow-hidden group" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
                   <summary className="px-5 py-4 cursor-pointer font-medium text-gray-900 text-sm flex items-center justify-between">
