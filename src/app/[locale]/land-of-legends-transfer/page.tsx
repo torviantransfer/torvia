@@ -277,7 +277,7 @@ export default async function LandOfLegendsPage({
 
                 {/* CTA */}
                 <Link
-                  href="/booking"
+                  href="/booking?region=land-of-legends-transfer"
                   className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white text-base transition-all"
                   style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}
                 >
@@ -345,7 +345,7 @@ export default async function LandOfLegendsPage({
             <h2 className="text-2xl font-bold text-gray-900 mb-3">{c.bookCta}</h2>
             <p className="text-gray-500 mb-6">{c.subheading}</p>
             <Link
-              href="/booking"
+              href="/booking?region=land-of-legends-transfer"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white text-base"
               style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}
             >
