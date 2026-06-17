@@ -5,6 +5,7 @@ import { Inter, Montserrat } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import CookieConsent from "@/components/CookieConsent";
 import Script from "next/script";
+import { PIXEL_ID } from "@/lib/pixel";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -37,7 +38,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID;
+  const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID || PIXEL_ID;
 
   return (
     <html lang={locale} className={`${inter.variable} ${montserrat.variable} h-full`} data-scroll-behavior="smooth" suppressHydrationWarning>
