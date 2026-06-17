@@ -160,7 +160,7 @@ export async function generateMetadata({
   const metaTitle =
     (region[`meta_title_${locale}`] as string | null) ||
     (region.meta_title as string | null) ||
-    fallbackTitle[locale] ?? fallbackTitle.en;
+    (fallbackTitle[locale] ?? fallbackTitle.en);
 
   const fallbackDesc: Record<string, string> = {
     tr: `Antalya Havalimanı → ${name} özel VIP transfer.${info ? ` Süre: ${info}` : ""} Sabit fiyat, profesyonel şoförler, 7/24 hizmet. Online rezervasyon.`,
