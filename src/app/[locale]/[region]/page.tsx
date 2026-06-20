@@ -449,6 +449,13 @@ export default async function RegionPage({
                       <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.one_way_price} /></div>
                       <div className="text-xs text-gray-500">{t("oneWay")} · {t("perVehicle")}</div>
                     </div>
+                    {pricing.round_trip_price && (
+                      <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.15)" }}>
+                        <div className="text-xs text-gray-400 mb-1">{t("roundTrip")}</div>
+                        <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.round_trip_price} /></div>
+                        <div className="text-xs text-gray-500">{t("roundTrip")} · {t("perVehicle")}</div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Trust strip */}
@@ -519,7 +526,7 @@ export default async function RegionPage({
 
                 <div className="space-y-4 mb-8">
                   {[
-                    t("driveFromAirport", { duration: region.duration_minutes }),
+                    t("driveFromAirport", { duration: formatDuration(region.duration_minutes, locale) }),
                     t("mercedesVito"),
                     t("freeFlightMonitoring"),
                     t("freeCancellation"),
@@ -561,6 +568,39 @@ export default async function RegionPage({
                   <span className="text-xs font-medium text-gray-500">{label}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* How to Book — 3 Steps */}
+        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-10 text-center tracking-tight">{t("howToBookTitle")}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { num: "1", title: t("howToBookStep1"), desc: t("howToBookStep1Desc", { name }) },
+                { num: "2", title: t("howToBookStep2"), desc: t("howToBookStep2Desc") },
+                { num: "3", title: t("howToBookStep3"), desc: t("howToBookStep3Desc") },
+              ].map(({ num, title, desc }) => (
+                <div key={num} className="flex gap-4 p-6 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-blue-600" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                    {num}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm mb-1.5">{title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link
+                href={`/booking?region=${slug}`}
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-bold rounded-xl transition-all hover:brightness-110"
+                style={{ backgroundColor: '#2563EB', color: '#fff' }}
+              >
+                {t("bookNow")} <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </section>
