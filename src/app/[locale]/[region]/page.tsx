@@ -151,35 +151,61 @@ export async function generateMetadata({
 
   const name = region[`name_${locale}`] || region.name_en;
 
+  // Fetch pricing to include in meta title/description for better SERP CTR.
+  // Google Trends (Jun 2026): "private transfer antalya airport" +100% Worldwide,
+  // "antalya to belek transfer" +60%. Price in title improves qualified CTR.
+  const { data: pricingMeta } = await supabase
+    .from("pricing")
+    .select("one_way_price")
+    .eq("region_id", region.id)
+    .single();
+  const oneWayPrice = pricingMeta?.one_way_price as number | null | undefined;
+  const priceLabel: Record<string, string> = {
+    en: oneWayPrice ? ` · From €${Math.round(oneWayPrice)}` : "",
+    de: oneWayPrice ? ` · Ab €${Math.round(oneWayPrice)}` : "",
+    pl: oneWayPrice ? ` · Od €${Math.round(oneWayPrice)}` : "",
+    tr: oneWayPrice ? ` · €${Math.round(oneWayPrice)}'den` : "",
+    ru: oneWayPrice ? ` · От €${Math.round(oneWayPrice)}` : "",
+  };
+
   const km = region.distance_km ? `${region.distance_km} km` : "";
-  const dur = region.duration_minutes
-    ? `~${Math.floor(region.duration_minutes / 60)}h ${region.duration_minutes % 60}min`
+  const durMin: number = region.duration_minutes ?? 0;
+  const durStr = durMin > 0
+    ? durMin < 60
+      ? `${durMin} min`
+      : `${Math.floor(durMin / 60)}h ${durMin % 60}min`
     : "";
-  const info = km && dur ? ` ${dur}, ${km}.` : "";
+  const info = km && durStr ? ` ${durStr}, ${km}.` : "";
 
-  // Locale-specific fallback titles prevent GSC "duplicate without canonical" reports
+  // Fallback titles — used only when DB meta_title_{locale} is empty.
+  // Format matches Google Trends top queries per market:
+  //   EN: "transfer from antalya airport" (UK #1, 100 interest, +4%)
+  //   DE: "vip privattransfer" (+30%), "hotel transfer antalya" (#1 DE)
+  //   PL: correct "do {name}" grammar + VIP keyword
   const fallbackTitle: Record<string, string> = {
-    tr: `Antalya Havalimanı ↔ ${name} Transfer | ${dur} ${km}`.trim(),
-    en: `Antalya Airport ↔ ${name} Transfer | ${dur} ${km}`.trim(),
-    de: `Flughafen Antalya ↔ ${name} Transfer | ${dur} ${km}`.trim(),
-    pl: `Lotnisko Antalya ↔ ${name} Transfer | ${dur} ${km}`.trim(),
-    ru: `Аэропорт Анталья ↔ ${name} Трансфер | ${dur} ${km}`.trim(),
+    en: `Transfer from Antalya Airport to ${name} | Private VIP${priceLabel.en}${durStr ? ` · ${durStr}` : ""}`.trim(),
+    de: `VIP Privattransfer Flughafen Antalya → ${name}${priceLabel.de}${durStr ? ` · ${durStr}` : ""}`.trim(),
+    pl: `Transfer z lotniska Antalya do ${name} | VIP Prywatny${priceLabel.pl}${durStr ? ` · ${durStr}` : ""}`.trim(),
+    tr: `Antalya Havalimanı ${name} Özel Transfer | VIP${priceLabel.tr}${durStr ? ` · ${durStr}` : ""}`.trim(),
+    ru: `Трансфер Аэропорт Анталия → ${name} | VIP${priceLabel.ru}${durStr ? ` · ${durStr}` : ""}`.trim(),
   };
 
-  // Priority: locale-specific column → shared meta_title column → locale-specific template
-  const metaTitle =
-    (region[`meta_title_${locale}`] as string | null) ||
-    (region.meta_title as string | null) ||
-    (fallbackTitle[locale] ?? fallbackTitle.en);
+  // DB title takes priority; if set append price suffix when not already present.
+  const dbTitle = (region[`meta_title_${locale}`] as string | null) || (region.meta_title as string | null);
+  const metaTitle = dbTitle
+    ? (oneWayPrice && !dbTitle.includes("€") ? `${dbTitle}${priceLabel[locale]}` : dbTitle)
+    : (fallbackTitle[locale] ?? fallbackTitle.en);
 
+  // Fallback descriptions — include price, USPs optimised per Trends:
+  //   EN: "meet & greet, flight tracking, free cancellation" (top UK USPs)
+  //   DE: "hotel transfer" angle — "direkt zu Ihrem Hotel"
   const fallbackDesc: Record<string, string> = {
-    tr: `Antalya Havalimanı ↔ ${name} özel VIP transfer.${info ? ` ${info}` : ""} Dönüş transferi de mevcut. Sabit fiyat, karşılama, uçuş takibi dahil. Gizli ücret yok, 2 dakikada rezervasyon.`,
-    en: `Antalya Airport ↔ ${name} private VIP transfer.${info} Return transfers available. Fixed price, meet & greet, flight tracking included. No hidden fees — book in 2 minutes.`,
-    de: `Flughafen Antalya ↔ ${name} Privattransfer.${info} Hin- & Rückfahrt verfügbar. Festpreis inkl. Abholservice & Flugüberwachung. Keine Extrakosten — in 2 Min. buchen.`,
-    pl: `Lotnisko Antalya ↔ ${name} prywatny transfer VIP.${info} Odloty i przyloty — transfery w obie strony. Stała cena, powitanie, śledzenie lotu. Brak ukrytych opłat — rezerwacja 2 min.`,
-    ru: `Аэропорт Анталья ↔ ${name} ВИП трансфер.${info} Трансферы в обе стороны. Фиксированная цена, встреча, отслеживание рейса. Без скрытых доплат — бронируйте за 2 мин.`,
+    en: `Private transfer from Antalya Airport to ${name}.${info}${oneWayPrice ? ` From €${Math.round(oneWayPrice)} per vehicle.` : ""} Mercedes Vito, meet & greet, flight tracking, free cancellation 24h. Book online — instant confirmation.`,
+    de: `VIP Privattransfer Flughafen Antalya → ${name}.${info}${oneWayPrice ? ` Ab €${Math.round(oneWayPrice)} pro Fahrzeug.` : ""} Mercedes Vito, Abholung mit Schild, Flugverfolgung, kein Nachtzuschlag. Jetzt buchen.`,
+    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${oneWayPrice ? ` Od €${Math.round(oneWayPrice)} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
+    tr: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${oneWayPrice ? ` Araç başına €${Math.round(oneWayPrice)}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
+    ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От €${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
   };
-  // Priority: locale-specific → shared meta_description → locale fallback
   const metaDesc =
     (region[`meta_description_${locale}`] as string | null) ||
     (region.meta_description as string | null) ||

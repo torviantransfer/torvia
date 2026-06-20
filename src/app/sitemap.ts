@@ -35,17 +35,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static pages
   const staticPages = [
-    { path: "about", priority: 0.7 },
+    // Conversion pages — highest priority after homepage
+    { path: "booking", priority: 0.95 },
+    { path: "regions", priority: 0.9 },
+    { path: "land-of-legends-transfer", priority: 0.9 },
+    // Support + info pages
     { path: "contact", priority: 0.8 },
     { path: "faq", priority: 0.7 },
-    { path: "regions", priority: 0.9 },
+    { path: "about", priority: 0.7 },
     { path: "blog", priority: 0.7 },
-    { path: "land-of-legends-transfer", priority: 0.9 },
     { path: "lara-beach-transfer", priority: 0.9 },
+    // Legal — low priority, no crawl budget waste
+    { path: "cancellation", priority: 0.4 },
     { path: "privacy", priority: 0.3 },
     { path: "terms", priority: 0.3 },
     { path: "cookies", priority: 0.2 },
-    { path: "cancellation", priority: 0.4 },
   ];
   for (const locale of locales) {
     for (const page of staticPages) {
