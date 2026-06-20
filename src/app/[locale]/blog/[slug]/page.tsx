@@ -175,6 +175,27 @@ export default async function BlogPostPage({
     .order("published_at", { ascending: false })
     .limit(3);
 
+  // Dynamic pricing for CTA — reads from the admin panel's "Online Tek ($)" column
+  const ctaRegionSlug = (post.primary_region_slug as string | null) ?? null;
+  let ctaOneWayPrice: number | null = null;
+  if (ctaRegionSlug) {
+    const { data: regionRow } = await supabase
+      .from("regions")
+      .select("id")
+      .eq("slug", ctaRegionSlug)
+      .maybeSingle();
+    if (regionRow) {
+      const { data: priceRow } = await supabase
+        .from("pricing")
+        .select("one_way_price")
+        .eq("region_id", regionRow.id)
+        .order("one_way_price", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (priceRow) ctaOneWayPrice = Number(priceRow.one_way_price);
+    }
+  }
+
   // Popular regions for cross-linking
   const { data: popularRegions } = await supabase
     .from("regions")
@@ -355,31 +376,37 @@ export default async function BlogPostPage({
           </div>
         </section>
 
-        {/* Booking CTA */}
-        <section className="py-12">
-          <div className="max-w-3xl mx-auto px-4">
-            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.05) 0%, rgba(0,122,255,0.05) 100%)", border: "1px solid rgba(0,122,255,0.06)" }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-blue-600 mb-4" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                <ArrowRight size={12} />
-                {locale === "tr" ? "VIP Transfer" : "VIP Transfer"}
+        {/* Booking CTA — price pulled live from admin panel "Online Tek ($)" column */}
+        {(() => {
+          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : "from";
+          const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
+          const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
+          const heading = locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer";
+          const sub = locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : "Professional driver, luxury vehicle, fixed price. Book online now.";
+          const btnLabel = locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now";
+          return (
+            <section className="py-12">
+              <div className="max-w-3xl mx-auto px-4">
+                <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.05) 0%, rgba(0,122,255,0.05) 100%)", border: "1px solid rgba(0,122,255,0.06)" }}>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-blue-600 mb-4" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
+                    <ArrowRight size={12} />
+                    VIP Transfer{priceLabel}
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">{heading}</h3>
+                  <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">{sub}</p>
+                  <Link
+                    href={bookingHref}
+                    className="inline-flex items-center gap-2 px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
+                    style={{ backgroundColor: "#F97316", color: "#fff" }}
+                  >
+                    {btnLabel}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
-                {locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer"}
-              </h3>
-              <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">
-                {locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : "Professional driver, luxury vehicle, fixed price. Book online now."}
-              </p>
-              <Link
-                href="/booking"
-                className="inline-flex items-center gap-2 px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
-                style={{ backgroundColor: "#F97316", color: "#fff" }}
-              >
-                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </section>
+            </section>
+          );
+        })()}
 
         {/* Related posts */}
         {related && related.length > 0 && (
