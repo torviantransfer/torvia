@@ -1,0 +1,28 @@
+# TORVIAN Transfer
+
+> Private VIP airport transfer service from Antalya Airport (AYT) to all major resort
+> destinations on the Turkish Riviera. Fixed price per vehicle, meet & greet, flight
+> tracking, free cancellation up to 24h, Mercedes Vito. Available 24/7 in 5 languages.
+
+## Key facts
+- Service: Private (non-shared) airport transfer, Antalya Airport (AYT) to hotels/resorts.
+- Coverage: Belek, Side, Alanya, Kemer, Lara/Kundu, Kaş, Kalkan, Fethiye, Marmaris, Land of Legends and 24+ regions.
+- Pricing: Fixed per vehicle (not per person). Belek from ~€55, Side from ~€65, Alanya from ~€120. Exact price shown at booking.
+- Vehicles: Mercedes Vito VIP (up to 6 pax), Mercedes Sprinter VIP (larger groups).
+- Included: Meet & greet with name sign, free flight tracking & waiting, free cancellation up to 24h, no night surcharge.
+- Languages: Turkish, English, German, Polish, Russian.
+- Booking: Online, instant confirmation, Stripe secure payment or cash.
+- Contact: WhatsApp/phone +90 546 940 79 55 · torviantransfer@gmail.com
+
+## Common questions
+- Does Uber work in Antalya? No — Uber is not active in Antalya; a pre-booked private transfer is the reliable alternative.
+- Antalya Airport to Alanya transfer time: ~2 hours (130 km).
+- Antalya Airport to Belek transfer time: ~30 min (33 km).
+- Antalya Airport to Side transfer time: ~55 min (65 km).
+- Antalya Airport to Lara Beach transfer time: ~20 min (15 km).
+
+## Primary pages
+- Home: https://torviantransfer.com/en
+- Book: https://torviantransfer.com/en/booking
+- All destinations: https://torviantransfer.com/en/regions
+- Blog (guides): https://torviantransfer.com/en/blog

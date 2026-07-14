@@ -114,7 +114,7 @@
     "errorNetwork": "Błąd sieci. Spróbuj ponownie.",
     "placeholderWelcomeName": "Imię pasażera",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "0850 840 1327",
+    "placeholderPhone": "0546 940 79 55",
     "placeholderHotel": "Nazwa hotelu lub adres odbioru",
     "seoHeading": "Dlaczego warto wybrać TORVIAN Transfer?",
     "seoSubheading": "Bezpieczny, komfortowy i punktualny transfer VIP z lotniska w Antalyi do wszystkich kurortów.",
@@ -347,7 +347,7 @@
     "emailLabel": "E-mail",
     "emailDesc": "Wsparcie 24/7",
     "phoneLabel": "Telefon",
-    "phoneDesc": "0850 840 1327",
+    "phoneDesc": "0546 940 79 55",
     "locationLabel": "Lokalizacja",
     "locationDesc": "Antalya, Turcja",
     "sendMessage": "Wyślij Wiadomość",
@@ -832,6 +832,6 @@
     "s6Title": "6. Bezpieczeństwo Danych",
     "s6Text": "Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony danych osobowych przed nieuprawnionym dostępem, zmianą, ujawnieniem lub zniszczeniem. Wszystkie dane płatności są przetwarzane przez zgodną z PCI-DSS infrastrukturę Stripe.",
     "s7Title": "7. Kontakt",
-    "s7Text": "W przypadku pytań dotyczących danych osobowych lub chęci skorzystania z praw, skontaktuj się z nami pod adresem torviantransfer@gmail.com lub zadzwoń 0850 840 1327."
+    "s7Text": "W przypadku pytań dotyczących danych osobowych lub chęci skorzystania z praw, skontaktuj się z nami pod adresem torviantransfer@gmail.com lub zadzwoń 0546 940 79 55."
   }
 }

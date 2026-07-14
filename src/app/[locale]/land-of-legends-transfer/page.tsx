@@ -1,5 +1,5 @@
-"use server";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getTranslations, getLocale } from "next-intl/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -228,6 +228,25 @@ export default async function LandOfLegendsPage({
     ],
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "TORVIAN Transfer", item: `https://torviantransfer.com/${loc}` },
+      { "@type": "ListItem", position: 2, name: "Land of Legends Transfer", item: `https://torviantransfer.com/${loc}/land-of-legends-transfer` },
+    ],
+  };
+
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "TaxiService",
+    name: "Antalya Airport to Land of Legends Transfer — TORVIAN",
+    description: c.metaDesc,
+    provider: { "@type": "Organization", name: "TORVIAN Transfer", url: "https://torviantransfer.com", telephone: "+90-546-940-79-55" },
+    areaServed: { "@type": "Place", name: "Land of Legends, Belek, Antalya, Turkey" },
+    serviceType: "Airport Transfer",
+  };
+
   const whyPoints = [
     { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : "Sabit fiyat, sürpriz yok" },
     { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : "Uçuş takibi ve ücretsiz bekleme" },
@@ -238,6 +257,8 @@ export default async function LandOfLegendsPage({
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
       <Header />
       <main className="flex-1">
         {/* Hero */}
@@ -277,7 +298,7 @@ export default async function LandOfLegendsPage({
 
                 {/* CTA */}
                 <Link
-                  href="/booking?region=land-of-legends-transfer"
+                  href="/booking?region=belek"
                   className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white text-base transition-all"
                   style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}
                 >
@@ -288,10 +309,13 @@ export default async function LandOfLegendsPage({
 
               {/* Image */}
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                <img
+                <Image
                   src="/images/regions/belek-golf.jpg"
-                  alt="Land of Legends Transfer Belek"
-                  className="w-full h-full object-cover"
+                  alt="Land of Legends Theme Park transfer from Antalya Airport"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
@@ -345,7 +369,7 @@ export default async function LandOfLegendsPage({
             <h2 className="text-2xl font-bold text-gray-900 mb-3">{c.bookCta}</h2>
             <p className="text-gray-500 mb-6">{c.subheading}</p>
             <Link
-              href="/booking?region=land-of-legends-transfer"
+              href="/booking?region=belek"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white text-base"
               style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}
             >

@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Phone, MessageCircle, ArrowRight } from "lucide-react";
 
-const PHONE = "08508401327";
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
+const PHONE = "905469407955";
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
 interface RegionStickyBarProps {
   /** Region slug (without -transfer suffix) used to deep-link the booking flow. */

@@ -102,7 +102,7 @@ export default async function HomePage({
     },
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+90-850-840-13-27",
+      telephone: "+90-546-940-79-55",
       contactType: "customer service",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },
@@ -118,7 +118,7 @@ export default async function HomePage({
     name: "TORVIAN Transfer",
     image: `${BASE_URL}/images/og-default.jpg`,
     url: BASE_URL,
-    telephone: "+90-850-840-13-27",
+    telephone: "+90-546-940-79-55",
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
@@ -173,7 +173,7 @@ export default async function HomePage({
     provider: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
-      telephone: "+90-850-840-13-27",
+      telephone: "+90-546-940-79-55",
       url: BASE_URL,
     },
     areaServed: [
@@ -191,7 +191,7 @@ export default async function HomePage({
     availableChannel: {
       "@type": "ServiceChannel",
       serviceUrl: `${BASE_URL}/${locale}/booking`,
-      servicePhone: "+90-850-840-13-27",
+      servicePhone: "+90-546-940-79-55",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },
     offers: {

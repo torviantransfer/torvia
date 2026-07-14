@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { seoAlternates, seoOpenGraph } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -19,6 +19,7 @@ export async function generateMetadata({
     description,
     alternates: seoAlternates(locale, "/cookies"),
     openGraph: seoOpenGraph(locale, "/cookies", title, description),
+    twitter: seoTwitter(title, description),
   };
 }
 

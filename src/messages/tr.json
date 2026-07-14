@@ -114,7 +114,7 @@
     "errorNetwork": "Ağ hatası. Lütfen tekrar deneyin.",
     "placeholderWelcomeName": "Karşılama tabelasındaki isim",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "0850 840 1327",
+    "placeholderPhone": "0546 940 79 55",
     "placeholderHotel": "Otel adı veya alış adresi",
     "seoHeading": "Neden TORVIAN Transfer Tercih Ediliyor?",
     "seoSubheading": "Antalya Havalimanı'ndan tüm tatil bölgelerine güvenli, konforlu ve zamanında VIP transfer hizmeti.",
@@ -347,7 +347,7 @@
     "emailLabel": "E-posta",
     "emailDesc": "7/24 destek",
     "phoneLabel": "Telefon",
-    "phoneDesc": "0850 840 1327",
+    "phoneDesc": "0546 940 79 55",
     "locationLabel": "Konum",
     "locationDesc": "Antalya, Türkiye",
     "sendMessage": "Mesaj Gönder",
@@ -832,6 +832,6 @@
     "s6Title": "6. Veri Güvenliği",
     "s6Text": "Kişisel verilerinizi yetkisiz erişime, değiştirmeye, ifşa etmeye veya imhaya karşı korumak için uygun teknik ve organizasyonel önlemler uyguluyoruz. Tüm ödeme verileri PCI-DSS uyumlu Stripe altyapısı üzerinden işlenmektedir.",
     "s7Title": "7. İletişim",
-    "s7Text": "Kişisel verilerinizle ilgili sorularınız veya haklarınızı kullanmak için torviantransfer@gmail.com adresinden veya 0850 840 1327 numarasından bize ulaşabilirsiniz."
+    "s7Text": "Kişisel verilerinizle ilgili sorularınız veya haklarınızı kullanmak için torviantransfer@gmail.com adresinden veya 0546 940 79 55 numarasından bize ulaşabilirsiniz."
   }
 }

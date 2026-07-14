@@ -4,7 +4,6 @@ import { useState, useEffect, FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ResetPasswordPage() {
@@ -179,7 +178,6 @@ export default function ResetPasswordPage() {
           </div>
         </div>
       </main>
-      <Footer />
-    </>
+          </>
   );
 }

@@ -58,6 +58,55 @@ const nextConfig: NextConfig = {
         { source: `/${locale}/land-of-legends-transfer-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
       );
     }
+    // Locale-less region URLs (e.g. /alanya-transfer) currently fall through
+    // to next-intl middleware, which issues a 307 (temporary) redirect to
+    // /en/alanya-transfer. A temporary redirect keeps BOTH URLs indexed in
+    // Search Console, splitting ranking signals (duplicate content). Emit an
+    // explicit 308 (permanent) redirect so Google consolidates to the canonical
+    // /en/ version. Only the 24 seeded ACTIVE regions are listed here — their
+    // /en/{slug}-transfer target is guaranteed to return 200. (The broader
+    // regionSlugs array above intentionally is NOT reused: it contains slugs
+    // like "lara"/"kundu" whose /en/{slug}-transfer would 404, since the active
+    // region is "kundu-lara".)
+    const activeRegionSlugs = [
+      "kundu-lara", "sehirici", "kadriye", "belek", "bogazkent", "evrenseki",
+      "side", "kizilagac", "okurcalar", "turkler", "alanya", "mahmutlar",
+      "kargicak", "beldibi", "goynuk", "kemer", "kiris", "camyuva", "tekirova",
+      "adrasan", "kas", "kalkan", "fethiye", "marmaris",
+    ];
+    for (const slug of activeRegionSlugs) {
+      rules.push({
+        source: `/${slug}-transfer`,
+        destination: `/en/${slug}-transfer`,
+        permanent: true,
+      });
+    }
+    // Blog consolidation — posts unpublished by migration 030 return 200 today
+    // (static build not yet redeployed) but will 404 on the next deploy, throwing
+    // away their accumulated ranking signal. 301-redirect each dead post to its
+    // surviving sibling so the equity is preserved. Only clusters where the KEPT
+    // post is the stronger performer in Search Console are listed here:
+    //   • Kemer  → kept `antalya-kemer-transfer-mesafe-sure` (pos ~5, 900+ impr)
+    //   • Taxi   → kept `antalya-havalimani-taksi-mi-vip-transfer-mi`
+    // Alanya cluster: migration 037 (already applied) re-published the stronger page
+    // Google ranks (`antalya-havalimani-alanya-transfer-kac-saat`, pos 9.4, 2798 impr)
+    // and unpublished the weaker `antalya-alanya-transfer-suresi`; this 301 forwards
+    // the weaker URL's equity to the winner.
+    const blogConsolidation: Record<string, string> = {
+      "antalya-havalimani-kemer-transfer": "antalya-kemer-transfer-mesafe-sure",
+      "antalya-havalimani-kemer-vip-transfer": "antalya-kemer-transfer-mesafe-sure",
+      "antalya-taksi-mi-ozel-transfer-mi": "antalya-havalimani-taksi-mi-vip-transfer-mi",
+      "antalya-alanya-transfer-suresi": "antalya-havalimani-alanya-transfer-kac-saat",
+    };
+    for (const locale of locales) {
+      for (const [oldSlug, newSlug] of Object.entries(blogConsolidation)) {
+        rules.push({
+          source: `/${locale}/blog/${oldSlug}`,
+          destination: `/${locale}/blog/${newSlug}`,
+          permanent: true,
+        });
+      }
+    }
     // Redirect bare (locale-less) blog/page paths to default locale
     rules.push(
       { source: "/blog", destination: "/en/blog", permanent: true },

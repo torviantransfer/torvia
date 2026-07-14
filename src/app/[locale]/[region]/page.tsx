@@ -168,7 +168,7 @@ export async function generateMetadata({
     ru: oneWayPrice ? ` · От €${Math.round(oneWayPrice)}` : "",
   };
 
-  const km = region.distance_km ? `${region.distance_km} km` : "";
+  const km = region.distance_km ? `${Number(region.distance_km)} km` : "";
   const durMin: number = region.duration_minutes ?? 0;
   const durStr = durMin > 0
     ? durMin < 60
@@ -322,7 +322,7 @@ export default async function RegionPage({
       "@type": "Organization",
       name: "TORVIAN Transfer",
       url: "https://torviantransfer.com",
-      telephone: "+90-850-840-13-27",
+      telephone: "+90-546-940-79-55",
     },
     areaServed: {
       "@type": "Place",
@@ -332,7 +332,7 @@ export default async function RegionPage({
     availableChannel: {
       "@type": "ServiceChannel",
       serviceUrl: `https://torviantransfer.com/${locale}/${regionPath}`,
-      servicePhone: "+90-850-840-13-27",
+      servicePhone: "+90-546-940-79-55",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },
     offers: pricing
@@ -404,6 +404,16 @@ export default async function RegionPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: t("howToBookTitle"),
+        step: [
+          { "@type": "HowToStep", position: 1, name: t("howToBookStep1"), text: t("howToBookStep1Desc", { name }) },
+          { "@type": "HowToStep", position: 2, name: t("howToBookStep2"), text: t("howToBookStep2Desc") },
+          { "@type": "HowToStep", position: 3, name: t("howToBookStep3"), text: t("howToBookStep3Desc") },
+        ],
+      }) }} />
       <Header />
       <main className="flex-1">
 
@@ -437,7 +447,7 @@ export default async function RegionPage({
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
                     <MapPin size={16} className="text-blue-600" strokeWidth={1.5} />
-                    <span className="text-sm text-gray-900">{region.distance_km} km</span>
+                    <span className="text-sm text-gray-900">{Number(region.distance_km)} km</span>
                   </div>
                 </div>
 

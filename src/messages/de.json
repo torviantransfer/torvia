@@ -114,7 +114,7 @@
     "errorNetwork": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     "placeholderWelcomeName": "Name des Passagiers",
     "placeholderCoupon": "WELCOME10",
-    "placeholderPhone": "0850 840 1327",
+    "placeholderPhone": "0546 940 79 55",
     "placeholderHotel": "Hotelname oder Abholadresse",
     "seoHeading": "Warum TORVIAN Transfer wählen?",
     "seoSubheading": "Sicherer, komfortabler und pünktlicher VIP-Flughafentransfer vom Flughafen Antalya zu allen Urlaubszielen.",
@@ -347,7 +347,7 @@
     "emailLabel": "E-Mail",
     "emailDesc": "24/7 Erreichbar",
     "phoneLabel": "Telefon",
-    "phoneDesc": "0850 840 1327",
+    "phoneDesc": "0546 940 79 55",
     "locationLabel": "Standort",
     "locationDesc": "Antalya, Türkei",
     "sendMessage": "Nachricht Senden",
@@ -832,6 +832,6 @@
     "s6Title": "6. Datensicherheit",
     "s6Text": "Wir setzen geeignete technische und organisatorische Maßnahmen um, um Ihre personenbezogenen Daten vor unbefugtem Zugriff, Änderung, Offenlegung oder Vernichtung zu schützen. Alle Zahlungsdaten werden über die PCI-DSS-konforme Stripe-Infrastruktur verarbeitet.",
     "s7Title": "7. Kontakt",
-    "s7Text": "Bei Fragen zu Ihren personenbezogenen Daten oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an torviantransfer@gmail.com oder rufen Sie 0850 840 1327 an."
+    "s7Text": "Bei Fragen zu Ihren personenbezogenen Daten oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an torviantransfer@gmail.com oder rufen Sie 0546 940 79 55 an."
   }
 }

@@ -1,64 +1,32 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
+import { createAdminClient } from "@/lib/supabase/admin";
+import NewsletterForm from "@/components/NewsletterForm";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru";
-type RegionItem = {
-  slug: string;
-  name_tr: string;
-  name_en: string;
-  name_de: string;
-  name_pl: string;
-  name_ru: string;
-  is_popular?: boolean;
-};
 
-export default function Footer() {
-  const t = useTranslations("footer");
-  const locale = useLocale() as Locale;
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+
+export default async function Footer() {
+  const t = await getTranslations("footer");
+  const locale = (await getLocale()) as Locale;
   const currentYear = new Date().getFullYear();
 
-  const [popularRegions, setPopularRegions] = useState<RegionItem[]>([]);
-
-  const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [newsletterStatus, setNewsletterStatus] = useState<
-    "idle" | "loading" | "success" | "duplicate" | "error"
-  >("idle");
-
-  useEffect(() => {
-    fetch("/api/regions?popular=true")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setPopularRegions(data);
-      })
-      .catch(() => {});
-  }, []);
-
-  async function handleNewsletterSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newsletterEmail || newsletterStatus === "loading") return;
-    setNewsletterStatus("loading");
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newsletterEmail }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNewsletterStatus("success");
-        setNewsletterEmail("");
-      } else if (res.status === 409 || data?.error === "duplicate") {
-        setNewsletterStatus("duplicate");
-      } else {
-        setNewsletterStatus("error");
-      }
-    } catch {
-      setNewsletterStatus("error");
-    }
+  // Fetch popular regions SERVER-SIDE so the internal links are present in the
+  // initial HTML and crawlable by Googlebot (previously loaded via client fetch,
+  // so search engines never saw these site-wide internal links).
+  let popularRegions: { slug: string; name_tr: string; name_en: string; name_de: string; name_pl: string; name_ru: string }[] = [];
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("regions")
+      .select("slug, name_tr, name_en, name_de, name_pl, name_ru")
+      .eq("is_active", true)
+      .eq("is_popular", true)
+      .order("sort_order", { ascending: true })
+      .limit(8);
+    if (Array.isArray(data)) popularRegions = data;
   }
 
   return (
@@ -77,7 +45,7 @@ export default function Footer() {
             <a href="https://facebook.com/torviantransfer" target="_blank" rel="noopener noreferrer" aria-label="TORVIAN Transfer on Facebook" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-gray-500 hover:text-gray-900" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
             </a>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-600 hover:text-emerald-700" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
+            <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" aria-label="Contact TORVIAN Transfer on WhatsApp" className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-emerald-600 hover:text-emerald-700" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
               <MessageCircle size={18} aria-hidden="true" />
             </a>
           </div>
@@ -90,35 +58,8 @@ export default function Footer() {
               <h3 className="text-gray-900 font-semibold text-base mb-1">{t("newsletterTitle")}</h3>
               <p className="text-gray-500 text-sm">{t("newsletterSubtitle")}</p>
             </div>
-            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 w-full md:w-auto md:min-w-[360px]">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => { setNewsletterEmail(e.target.value); setNewsletterStatus("idle"); }}
-                placeholder={t("newsletterPlaceholder")}
-                required
-                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50 transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-                className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-                style={{ backgroundColor: "#007AFF" }}
-              >
-                {newsletterStatus === "loading" ? "..." : t("newsletterButton")}
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
-          {newsletterStatus === "success" && (
-            <p className="mt-3 text-emerald-400 text-sm">{t("newsletterSuccess")}</p>
-          )}
-          {newsletterStatus === "duplicate" && (
-            <p className="mt-3 text-yellow-400 text-sm">{t("newsletterDuplicate")}</p>
-          )}
-          {newsletterStatus === "error" && (
-            <p className="mt-3 text-red-400 text-sm">{t("newsletterError")}</p>
-          )}
         </div>
 
         {/* Columns */}
@@ -142,14 +83,14 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Popular Destinations */}
+          {/* Popular Destinations — server-rendered, crawlable internal links */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("destinations")}</h3>
             <ul className="space-y-3">
               {popularRegions.slice(0, 8).map((region) => (
                 <li key={region.slug}>
                   <Link href={`/${region.slug.endsWith("-transfer") ? region.slug : `${region.slug}-transfer`}`} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
-                    {region[`name_${locale}`] || region.name_en}
+                    {(region[`name_${locale}` as keyof typeof region] as string) || region.name_en} Transfer
                   </Link>
                 </li>
               ))}
@@ -181,9 +122,9 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+08508401327" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
+                <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
                   <Phone size={14} />
-                  0850 840 1327
+                  0546 940 79 55
                 </a>
               </li>
               <li>
@@ -194,7 +135,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}`}
+                  href={`https://wa.me/${WHATSAPP}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors"

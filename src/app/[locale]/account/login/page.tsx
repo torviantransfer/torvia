@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter, useParams } from "next/navigation";
 import { Mail, Lock, Loader2, AlertCircle, User, Eye, EyeOff } from "lucide-react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export default function AccountLoginPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -139,8 +138,7 @@ export default function AccountLoginPage() {
         <main className="flex-1 min-h-[80vh] flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
         </main>
-        <Footer />
-      </>
+              </>
     );
   }
 
@@ -304,8 +302,7 @@ export default function AccountLoginPage() {
         </div>
         </div>
       </main>
-      <Footer />
-    </>
+          </>
   );
 }
 

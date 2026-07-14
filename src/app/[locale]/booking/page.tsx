@@ -88,6 +88,7 @@ export default async function BookingPage({
         {hasRegion && (
           <section className="pt-20 sm:pt-24 pb-6">
             <div className="max-w-6xl mx-auto px-4">
+              <h1 className="sr-only">{t("title")}</h1>
               <BookingWizardClient
                 initialRegion={sp.region}
                 initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}

@@ -28,6 +28,7 @@ export async function generateMetadata({
 
 export default async function AboutPage() {
   const t = await getTranslations("about");
+  const nav = await getTranslations("nav");
 
   const aboutSchema = {
     "@context": "https://schema.org",
@@ -44,7 +45,7 @@ export default async function AboutPage() {
     },
     contactPoint: {
       "@type": "ContactPoint",
-      telephone: "+90-850-840-13-27",
+      telephone: "+90-546-940-79-55",
       contactType: "customer service",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
     },
@@ -250,8 +251,8 @@ export default async function AboutPage() {
               ))}
             </div>
             <div className="mt-10 text-center">
-              <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm text-white transition-colors hover:brightness-110" style={{ backgroundColor: "#FF9500" }}>
-                Book Your Transfer
+              <Link href="/booking" className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm text-white transition-colors hover:brightness-110" style={{ backgroundColor: "#FF9500" }}>
+                {nav("bookNow")}
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>

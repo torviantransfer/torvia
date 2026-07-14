@@ -112,7 +112,7 @@ export default async function BookingSuccessPage({
           {/* Support — small & subtle */}
           <p className="text-xs text-gray-400 mb-3">{t("needHelp")}</p>
           <a
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}`}
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"

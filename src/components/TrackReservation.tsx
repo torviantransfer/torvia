@@ -556,7 +556,7 @@ export default function TrackReservation() {
               )}
 
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "08508401327"}?text=${encodeURIComponent(`Reservation: ${reservation.reservation_code}`)}`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}?text=${encodeURIComponent(`Reservation: ${reservation.reservation_code}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#25D366]/90 text-white font-semibold rounded-xl hover:bg-[#20BD5A] transition-colors text-sm"
@@ -691,7 +691,7 @@ export default function TrackReservation() {
           {/* Contact Support Footer */}
           <div className="text-center py-6">
             <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{t("contactSupport")}</p>
-            <p className="text-sm text-gray-600 font-medium">0850 840 1327 · torviantransfer@gmail.com</p>
+            <p className="text-sm text-gray-600 font-medium">0546 940 79 55 · torviantransfer@gmail.com</p>
           </div>
         </div>
       )}

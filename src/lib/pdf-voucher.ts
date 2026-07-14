@@ -42,7 +42,7 @@ const labels: Record<string, Record<string, string>> = {
     imp4: "Free child seat & booster on request.",
     imp5: "Do not contact the driver directly for future bookings.",
     footer: "This document serves as your official transfer voucher.",
-    contact: "24/7 Support: 0850 840 1327 | torviantransfer@gmail.com",
+    contact: "24/7 Support: 0546 940 79 55 | torviantransfer@gmail.com",
     paid: "PAID & CONFIRMED",
   },
   tr: {
@@ -82,7 +82,7 @@ const labels: Record<string, Record<string, string>> = {
     imp4: "Talep üzerine ücretsiz çocuk koltuğu.",
     imp5: "Bir sonraki taşımalarda şoför ile doğrudan iletişime geçmeyiniz.",
     footer: "Bu belge resmi transfer voucherınız olarak geçerlidir.",
-    contact: "7/24 Destek: 0850 840 1327 | torviantransfer@gmail.com",
+    contact: "7/24 Destek: 0546 940 79 55 | torviantransfer@gmail.com",
     paid: "ÖDENDİ & ONAYLANDI",
   },
   de: {
@@ -122,7 +122,7 @@ const labels: Record<string, Record<string, string>> = {
     imp4: "Kostenloser Kindersitz auf Anfrage.",
     imp5: "Kontaktieren Sie den Fahrer nicht direkt für zukünftige Buchungen.",
     footer: "Dieses Dokument dient als Ihr offizieller Transfer-Voucher.",
-    contact: "24/7 Support: 0850 840 1327 | torviantransfer@gmail.com",
+    contact: "24/7 Support: 0546 940 79 55 | torviantransfer@gmail.com",
     paid: "BEZAHLT & BESTÄTIGT",
   },
   pl: {
@@ -162,7 +162,7 @@ const labels: Record<string, Record<string, string>> = {
     imp4: "Bezpłatny fotelik dziecięcy na życzenie.",
     imp5: "Nie kontaktuj się bezpośrednio z kierowcą w sprawie przyszłych rezerwacji.",
     footer: "Ten dokument służy jako oficjalny voucher transferowy.",
-    contact: "24/7 Wsparcie: 0850 840 1327 | torviantransfer@gmail.com",
+    contact: "24/7 Wsparcie: 0546 940 79 55 | torviantransfer@gmail.com",
     paid: "OPŁACONO I POTWIERDZONE",
   },
   ru: {
@@ -202,7 +202,7 @@ const labels: Record<string, Record<string, string>> = {
     imp4: "Бесплатное детское кресло по запросу.",
     imp5: "Не связывайтесь с водителем напрямую для будущих бронирований.",
     footer: "Этот документ является вашим официальным ваучером на трансфер.",
-    contact: "24/7 Поддержка: 0850 840 1327 | torviantransfer@gmail.com",
+    contact: "24/7 Поддержка: 0546 940 79 55 | torviantransfer@gmail.com",
     paid: "ОПЛАЧЕНО И ПОДТВЕРЖДЕНО",
   },
 };

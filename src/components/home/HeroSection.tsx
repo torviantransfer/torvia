@@ -5,8 +5,8 @@ import Image from "next/image";
 import { Shield, Clock, CheckCircle2, Phone, MessageCircle } from "lucide-react";
 import BookingFormMini from "@/components/booking/BookingFormMini";
 
-const CONTACT_PHONE = "08508401327";
-const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "908508401327";
+const CONTACT_PHONE = "905469407955";
+const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
 export default function HeroSection() {
   const t = useTranslations("hero");

@@ -34,7 +34,7 @@ export default async function ContactPage() {
     "@type": "LocalBusiness",
     name: "TORVIAN Transfer",
     url: "https://torviantransfer.com",
-    telephone: "+90-850-840-13-27",
+    telephone: "+90-546-940-79-55",
     email: "torviantransfer@gmail.com",
     address: {
       "@type": "PostalAddress",
@@ -113,7 +113,7 @@ export default async function ContactPage() {
 
                 {/* WhatsApp */}
                 <a
-                  href="https://wa.me/08508401327"
+                  href="https://wa.me/905469407955"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-5 rounded-xl bg-white group transition-all hover:shadow-md"
@@ -144,7 +144,7 @@ export default async function ContactPage() {
 
                 {/* Phone */}
                 <a
-                  href="tel:+908508401327"
+                  href="tel:+905469407955"
                   className="flex items-center gap-4 p-5 rounded-xl bg-white group transition-all hover:shadow-md"
                   style={{ border: "1px solid #e2e8f0" }}
                 >
@@ -153,7 +153,7 @@ export default async function ContactPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("phoneLabel")}</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">0850 840 1327</p>
+                    <p className="font-semibold text-gray-900 text-sm mt-0.5">0546 940 79 55</p>
                     <p className="text-xs text-gray-500 mt-0.5">{t("responseTime")}</p>
                   </div>
                   <ArrowRight size={16} className="text-gray-300 flex-shrink-0 group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
