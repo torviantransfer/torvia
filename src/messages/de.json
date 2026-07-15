@@ -620,7 +620,11 @@
     "ctaBadge": "VIP Transfer",
     "ctaHeading": "Buchen Sie Ihren VIP-Flughafentransfer",
     "ctaSubheading": "Professionelle Fahrer, luxuriöse Fahrzeuge und Festpreisgarantie für einen komfortablen Transfer.",
-    "ctaButton": "Jetzt Buchen"
+    "ctaButton": "Jetzt Buchen",
+    "ctaHeadingDefault": "Buchen Sie Ihren VIP-Flughafentransfer",
+    "ctaHeadingRegion": "Buchen Sie Ihren VIP-Transfer nach {name}",
+    "ctaSubDefault": "Professionelle Fahrer, luxuriöse Fahrzeuge und Festpreisgarantie. Jetzt online buchen.",
+    "ctaSubRegion": "Professioneller Fahrer, Luxusfahrzeug, Festpreis nach {name}. Jetzt online buchen."
   },
   "terms": {
     "title": "Rechtliches",

@@ -620,7 +620,11 @@
     "ctaBadge": "VIP Transfer",
     "ctaHeading": "Zarezerwuj prywatny transfer VIP z lotniska",
     "ctaSubheading": "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny dla komfortowej podróży.",
-    "ctaButton": "Rezerwuj Teraz"
+    "ctaButton": "Rezerwuj Teraz",
+    "ctaHeadingDefault": "Zarezerwuj VIP Transfer z Lotniska",
+    "ctaHeadingRegion": "Zarezerwuj VIP Transfer do {name}",
+    "ctaSubDefault": "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny. Zarezerwuj online już teraz.",
+    "ctaSubRegion": "Profesjonalny kierowca, luksusowy pojazd, stała cena do {name}. Zarezerwuj online już teraz."
   },
   "terms": {
     "title": "Prawne",

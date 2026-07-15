@@ -624,7 +624,11 @@
     "ctaBadge": "VIP Transfer",
     "ctaHeading": "Antalya Havalimanı VIP Transfer Rezervasyonu",
     "ctaSubheading": "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi ile konforlu transfer.",
-    "ctaButton": "Hemen Rezervasyon Yap"
+    "ctaButton": "Hemen Rezervasyon Yap",
+    "ctaHeadingDefault": "Antalya Havalimanı VIP Transfer Rezervasyonu",
+    "ctaHeadingRegion": "{name} için VIP Transfer Rezervasyonu Yapın",
+    "ctaSubDefault": "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi. Hemen online rezervasyon yapın.",
+    "ctaSubRegion": "Profesyonel şoför, lüks araç, {name} için sabit fiyat. Hemen online rezervasyon yapın."
   },
   "terms": {
     "title": "Yasal",

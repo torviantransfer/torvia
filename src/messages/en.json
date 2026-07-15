@@ -620,7 +620,11 @@
     "ctaBadge": "VIP Transfer",
     "ctaHeading": "Book Your VIP Airport Transfer",
     "ctaSubheading": "Professional drivers, luxury vehicles and a fixed-price guarantee for a comfortable transfer.",
-    "ctaButton": "Book Now"
+    "ctaButton": "Book Now",
+    "ctaHeadingDefault": "Book Your VIP Airport Transfer",
+    "ctaHeadingRegion": "Book Your VIP Transfer to {name}",
+    "ctaSubDefault": "Professional drivers, luxury vehicles and a fixed-price guarantee. Book online now.",
+    "ctaSubRegion": "Professional driver, luxury vehicle, fixed price to {name}. Book online now."
   },
   "terms": {
     "title": "Legal",
