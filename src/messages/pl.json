@@ -430,6 +430,10 @@
   "regionDetail": {
     "home": "Strona Główna",
     "airportTo": "Lotnisko Antalya → {name} | Prywatny VIP Transfer",
+    "routeIntentTitle": "Planujesz transfer do {name}?",
+    "routeIntentDesc": "Porównaj ceny, sprawdź dokładną odległość i czas przejazdu i zarezerwuj prywatny transfer VIP do {name} w kilka minut — stała cena, bez ukrytych opłat.",
+    "routeIntentPrimaryCta": "Zarezerwuj Tę Trasę",
+    "routeIntentSecondaryCta": "Zobacz Wszystkie Destynacje",
     "defaultDesc": "Zarezerwuj prywatny VIP transfer z lotniska Antalya do {name}. Stała cena, od drzwi do drzwi, Mercedes Vito, powitanie, śledzenie lotu. Dostępny 24/7.",
     "min": "min",
     "whyChoose": "Dlaczego TORVIAN?",

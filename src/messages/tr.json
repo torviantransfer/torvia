@@ -430,6 +430,10 @@
   "regionDetail": {
     "home": "Ana Sayfa",
     "airportTo": "Antalya Havalimanı → {name} | Özel VIP Transfer",
+    "routeIntentTitle": "{name} transferi mi planlıyorsunuz?",
+    "routeIntentDesc": "Fiyatları karşılaştırın, tam mesafe ve süreyi görün, {name}'ye özel VIP transferinizi dakikalar içinde rezerve edin — sabit fiyat, gizli ücret yok.",
+    "routeIntentPrimaryCta": "Bu Rotayı Rezerve Et",
+    "routeIntentSecondaryCta": "Tüm Destinasyonları Gör",
     "defaultDesc": "Antalya Havalimanı'ndan {name}'e özel VIP transfer rezervasyonu yapın. Sabit fiyat, kapıdan kapıya, Mercedes Vito, karşılama, uçuş takibi. 7/24 hizmet.",
     "min": "dk",
     "whyChoose": "Neden TORVIAN?",

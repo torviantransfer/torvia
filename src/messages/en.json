@@ -430,6 +430,10 @@
   "regionDetail": {
     "home": "Home",
     "airportTo": "Antalya Airport → {name} | Private VIP Transfer",
+    "routeIntentTitle": "Planning a transfer to {name}?",
+    "routeIntentDesc": "Compare prices, check the exact distance and duration, and book your private VIP transfer to {name} in minutes — fixed price, no hidden fees.",
+    "routeIntentPrimaryCta": "Book This Route",
+    "routeIntentSecondaryCta": "See All Destinations",
     "defaultDesc": "Book a private VIP transfer from Antalya Airport to {name}. Fixed price, door-to-door, Mercedes Vito, meet & greet, flight tracking. 24/7 available.",
     "min": "min",
     "whyChoose": "Why Choose TORVIAN?",
