@@ -22,6 +22,8 @@
   "hero": {
     "title": "Transfer z Lotniska Antalya — Stała cena, natychmiastowa rezerwacja",
     "subtitle": "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Mercedes Vito, śledzenie lotu, wsparcie 24/7.",
+    "promoText": "Zarezerwuj prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i najpopularniejszych kurortów Antalyi — stała cena, śledzenie lotu i szybkie potwierdzenie.",
+    "badgePill": "Prywatny transfer z lotniska Antalya • VIP Transfer Antalya • Rezerwacja transferu",
     "badge": "Usługa 24/7",
     "exploreRegions": "Odkryj regiony >",
     "startingFrom": "od",
@@ -151,6 +153,10 @@
     "trustCancel": "Bezpłatne anulowanie 24h wcześniej",
     "trustNoHidden": "Brak ukrytych opłat",
     "findTransfer": "Znajdź Transfer",
+    "bookNow": "Rezerwuj teraz",
+    "selectDate": "Wybierz datę",
+    "hour": "Godzina",
+    "minute": "Minuta",
     "addReturn": "Dodaj Powrót",
     "adult": "Dorosły",
     "child": "Dziecko",
@@ -253,9 +259,10 @@
     "review5Text": "Rezerwacja dla 8 osób z całym sprzętem golfowym. Dwa pojazdy na czas, kierowcy mili i profesjonalni. Będziemy rezerwować co roku na nasz wyjazd golfowy."
   },
   "cta": {
-    "heading": "Gotowy na bezstresowy przylot?",
-    "subheading": "Zarezerwuj swój prywatny transfer teraz i rozpocznij wakacje od momentu lądowania w Antalyi.",
+    "heading": "Zarezerwuj prywatny transfer VIP z lotniska Antalya",
+    "subheading": "Bezpieczna rezerwacja transferu do Belek, Side, Alanya, Kemer i wszystkich kurortów Antalyi. Stała cena, profesjonalni kierowcy i szybkie potwierdzenie.",
     "bookTransfer": "Zarezerwuj Transfer",
+    "primaryCta": "Rezerwuj transfer z lotniska",
     "contactUs": "Kontakt"
   },
   "regions": {
@@ -270,6 +277,8 @@
     "distance": "Odległość",
     "startingFrom": "Cena",
     "bookTransfer": "Rezerwuj Transfer",
+    "introText": "Rezerwacja transferu z lotniska Antalya do Belek, Side, Alanya, Kemer i najpopularniejszych kurortów Antalyi z prywatną obsługą VIP.",
+    "bookRegionTransfer": "Rezerwuj prywatny transfer do {name}",
     "tagGolf": "Golf & Luksus",
     "tagHistory": "Historia & Plaża",
     "tagCoastal": "Tętniące życiem miasto nadmorskie",
@@ -600,7 +609,11 @@
     "shareArticle": "Udostępnij artykuł",
     "relatedPosts": "Powiązane Artykuły",
     "popularTransfers": "Popularne Transfery",
-    "bookTransfer": "Zarezerwuj transfer"
+    "bookTransfer": "Zarezerwuj transfer",
+    "ctaBadge": "VIP Transfer",
+    "ctaHeading": "Zarezerwuj prywatny transfer VIP z lotniska",
+    "ctaSubheading": "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny dla komfortowej podróży.",
+    "ctaButton": "Rezerwuj Teraz"
   },
   "terms": {
     "title": "Prawne",

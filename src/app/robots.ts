@@ -10,11 +10,8 @@ export default function robots(): MetadataRoute.Robots {
           "/api/",
           "/admin/",
           "/driver/",
-          "/*/booking/",
-          "/*/booking/success",
-          "/*/booking/cancel",
-          "/*/account/",
-          "/*/track",
+          "/account/",
+          "/track",
           // Static assets — no SEO value, reduce crawl budget waste
           "/_next/static/media/",
           "/manifest.json",

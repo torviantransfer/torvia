@@ -26,9 +26,25 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
 
+  const titleByLocale: Record<string, string> = {
+    tr: "Antalya Havalimanı VIP Transfer | Belek, Side, Alanya, Kemer",
+    en: "Antalya Airport VIP Transfer | Private Transfer to Belek, Side, Alanya, Kemer",
+    de: "VIP Flughafentransfer Antalya | Privattransfer nach Belek, Side, Alanya, Kemer",
+    pl: "Transfer VIP z lotniska Antalya | Transfer do Belek, Side, Alanya, Kemer",
+    ru: "VIP трансфер из аэропорта Анталии | Белек, Сиде, Аланья, Кемер",
+  };
+
+  const descriptionByLocale: Record<string, string> = {
+    tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine özel VIP transfer. Sabit fiyat, uçuş takibi, online rezervasyon.",
+    en: "Private transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all Antalya resorts. Fixed price, flight tracking, instant booking.",
+    de: "Privater VIP-Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Flugverfolgung, sofortige Buchung.",
+    pl: "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, śledzenie lotu, szybka rezerwacja.",
+    ru: "Частный VIP-трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, отслеживание рейса, онлайн-бронирование.",
+  };
+
   return {
-    title: t("title"),
-    description: t("description"),
+    title: titleByLocale[locale] ?? t("title"),
+    description: descriptionByLocale[locale] ?? t("description"),
     alternates: {
       canonical: `${BASE_URL}/${locale}`,
       languages: {
@@ -56,14 +72,14 @@ export async function generateMetadata({
       images: [`${BASE_URL}/images/og-default.jpg`],
     },
     keywords: locale === "tr"
-      ? "antalya havalimanı transfer, antalya vip transfer, havalimanı transfer, antalya özel transfer, belek transfer, side transfer, alanya transfer, kemer transfer, antalya havalimanı taksi, özel şoför, lüks transfer"
+      ? "antalya havalimanı transfer, antalya vip transfer, havalimanı transfer, antalya özel transfer, belek transfer, side transfer, alanya transfer, kemer transfer, antalya rezervasyon, antalya havalimanı taksi, özel şoför, lüks transfer"
       : locale === "de"
-      ? "Antalya Flughafen Transfer, VIP Transfer Antalya, Privattransfer Antalya, Flughafen Transfer Türkei, Belek Transfer, Side Transfer, Alanya Transfer, Kemer Transfer"
+      ? "Antalya Flughafen Transfer, VIP Transfer Antalya, Privattransfer Antalya, Flughafen Transfer Türkei, Belek Transfer, Side Transfer, Alanya Transfer, Kemer Transfer, Antalya Buchung, Hotel Transfer Antalya"
       : locale === "ru"
-      ? "трансфер из аэропорта Анталии, ВИП трансфер Анталья, частный трансфер Анталья, трансфер Белек, трансфер Сиде, трансфер Аланья, трансфер Кемер"
+      ? "трансфер из аэропорта Анталии, VIP трансфер Анталья, частный трансфер Анталья, трансфер Белек, трансфер Сиде, трансфер Аланья, трансфер Кемер, бронь Анталии, трансфер в отель"
       : locale === "pl"
-      ? "transfer z lotniska Antalya, VIP transfer Antalya, prywatny transfer Antalya, transfer Belek, transfer Side, transfer Alanya"
-      : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, turkey airport transfer",
+      ? "transfer z lotniska Antalya, VIP transfer Antalya, prywatny transfer Antalya, transfer Belek, transfer Side, transfer Alanya, rezerwacja Antalya, transfer do hotelu"
+      : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, antalya booking, airport transfer booking, private chauffeur",
   };
 }
 

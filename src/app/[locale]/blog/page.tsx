@@ -82,7 +82,7 @@ export default async function BlogPage({
                   return (
                     <Link
                       key={post.id}
-                      href={`/blog/${normalizeSlug(post.slug)}`}
+                      href={`/${locale}/blog/${normalizeSlug(post.slug)}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
@@ -148,20 +148,20 @@ export default async function BlogPage({
           <div className="max-w-3xl mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium text-blue-600 mb-6" style={{ backgroundColor: "rgba(0,122,255,0.08)", border: "1px solid rgba(0,122,255,0.12)" }}>
               <Plane size={14} />
-              {locale === "tr" ? "VIP Transfer" : locale === "de" ? "VIP Transfer" : locale === "ru" ? "VIP Трансфер" : "VIP Transfer"}
+              {t("ctaBadge")}
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-gray-900 mb-4">
-              {locale === "tr" ? "Antalya Havalimanı VIP Transfer Rezervasyonu" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer"}
+              {t("ctaHeading")}
             </h2>
             <p className="text-gray-400 text-base mb-8 max-w-xl mx-auto">
-              {locale === "tr" ? "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi ile konforlu transfer." : locale === "de" ? "Professionelle Fahrer, Luxusfahrzeuge und Festpreisgarantie." : locale === "ru" ? "Профессиональные водители, роскошные автомобили и гарантия фиксированной цены." : locale === "pl" ? "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny." : "Professional drivers, luxury vehicles and fixed price guarantee."}
+              {t("ctaSubheading")}
             </p>
             <Link
-              href="/booking"
+              href={`/${locale}/booking`}
               className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
               style={{ backgroundColor: "#F97316", color: "#fff" }}
             >
-              {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
+              {t("ctaButton")}
               <ArrowRight size={16} />
             </Link>
           </div>

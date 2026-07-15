@@ -15,8 +15,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
-  const title = `${t("title")} | TORVIAN Transfer`;
-  const description = t("subtitle");
+
+  const titleByLocale: Record<string, string> = {
+    tr: "Antalya Havalimanı Transfer Rezervasyonu | VIP Transfer Belek, Side, Alanya, Kemer",
+    en: "Book Private Transfer from Antalya Airport | VIP Transfer to Belek, Side, Alanya, Kemer",
+    de: "Buchen Sie Ihren Flughafentransfer Antalya | VIP Transfer nach Belek, Side, Alanya, Kemer",
+    pl: "Rezerwacja transferu z lotniska Antalya | VIP Transfer do Belek, Side, Alanya, Kemer",
+    ru: "Бронирование трансфера из аэропорта Анталии | VIP трансфер в Белек, Сиде, Аланью, Кемер",
+  };
+
+  const descriptionByLocale: Record<string, string> = {
+    tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine özel VIP transfer rezervasyonu yapın. Sabit fiyat, uçuş takibi, hızlı onay.",
+    en: "Book a private transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all resorts. Airport transfer booking with fixed price, flight tracking and instant confirmation.",
+    de: "Buchen Sie Ihren privaten Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Flugverfolgung, sofortige Bestätigung.",
+    pl: "Zarezerwuj prywatny transfer z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, śledzenie lotu, szybka rezerwacja.",
+    ru: "Забронируйте частный трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, отслеживание рейса, мгновенное подтверждение.",
+  };
+
+  const title = titleByLocale[locale] ?? `${t("title")} | Private Airport Transfer Antalya`;
+  const description = descriptionByLocale[locale] ?? `${t("subtitle")} Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all resort destinations with fixed prices and instant confirmation.`;
   return {
     title,
     description,

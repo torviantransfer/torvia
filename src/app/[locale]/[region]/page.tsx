@@ -399,6 +399,36 @@ export default async function RegionPage({
     ],
   };
 
+  const heroTitle = locale === "tr"
+    ? `${name} Özel Transfer | Antalya Havalimanı → ${name}`
+    : locale === "de"
+      ? `Privater Transfer nach ${name} | Flughafen Antalya → ${name}`
+      : locale === "pl"
+        ? `Prywatny transfer do ${name} | Lotnisko Antalya → ${name}`
+        : locale === "ru"
+          ? `Частный трансфер в ${name} | Аэропорт Анталии → ${name}`
+          : `Private Transfer to ${name} | Antalya Airport → ${name}`;
+
+  const heroDescription = locale === "tr"
+    ? `${name} için Antalya Havalimanı'ndan özel VIP transfer. Sabit fiyat, profesyonel şoför, uçuş takibi ve online rezervasyon.`
+    : locale === "de"
+      ? `Privater VIP-Transfer vom Flughafen Antalya nach ${name}. Festpreis, professioneller Fahrer, Flugverfolgung und Online-Buchung.`
+      : locale === "pl"
+        ? `Prywatny transfer VIP z lotniska Antalya do ${name}. Stała cena, profesjonalny kierowca, śledzenie lotu i szybka rezerwacja.`
+        : locale === "ru"
+          ? `Частный VIP-трансфер из аэропорта Анталии в ${name}. Фиксированная цена, профессиональный водитель, отслеживание рейса и онлайн-бронирование.`
+          : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
+
+  const routeKeywords = locale === "tr"
+    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `Antalya airport to ${name} transfer`, `${name} VIP transfer`]
+    : locale === "de"
+      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `Antalya Airport to ${name} transfer`, `${name} VIP Transfer`]
+      : locale === "pl"
+        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `Antalya Airport to ${name} transfer`, `${name} transfer prywatny`]
+        : locale === "ru"
+          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `Antalya Airport to ${name} transfer`, `частный трансфер ${name}`]
+          : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `VIP transfer ${name}`, `${name} airport transfer`];
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
@@ -434,11 +464,19 @@ export default async function RegionPage({
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
               <div>
                 <h1 className="text-3xl lg:text-5xl font-bold mb-4 lg:mb-5 tracking-tight text-gray-900">
-                  {t("airportTo", { name })}
+                  {heroTitle}
                 </h1>
                 <p className="text-base lg:text-lg text-gray-500 mb-6 lg:mb-8 leading-relaxed">
-                  {description || t("defaultDesc", { name })}
+                  {heroDescription}
                 </p>
+
+                <div className="flex flex-wrap gap-2 mb-6 lg:mb-8">
+                  {routeKeywords.map((keyword) => (
+                    <span key={keyword} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
 
                 <div className="flex flex-wrap gap-3 mb-6 lg:mb-8">
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
@@ -495,6 +533,32 @@ export default async function RegionPage({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
               )}
+            </div>
+          </div>
+        </section>
+
+        {/* Route intent block */}
+        <section className="py-6 lg:py-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/70 to-white p-6 lg:p-8">
+              <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-center">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">
+                  {t("routeIntentTitle", { name })}
+                </h2>
+                <p className="text-sm leading-relaxed text-gray-600">
+                  {t("routeIntentDesc", { name })}
+                </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={`/${locale}/booking?region=${slug}`} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                    {t("routeIntentPrimaryCta")}
+                  </Link>
+                  <Link href={`/${locale}/regions`} className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                    {t("routeIntentSecondaryCta")}
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>

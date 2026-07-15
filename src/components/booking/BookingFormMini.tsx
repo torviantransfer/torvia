@@ -117,6 +117,7 @@ export default function BookingFormMini() {
 
   const nameKey = `name_${locale}` as keyof Region;
   const airportName = ({ tr: "Antalya Havalimanı (AYT)", en: "Antalya Airport (AYT)", de: "Flughafen Antalya (AYT)", pl: "Lotnisko Antalya (AYT)", ru: "Аэропорт Анталья (AYT)" } as Record<string, string>)[locale] ?? "Antalya Airport (AYT)";
+  const bookingHint = t("bookNow");
   const REGION_NAME_OVERRIDES: Record<string, string> = { "kundu-lara": "Kundu" };
   const getRegionLabel = (r: Region) => REGION_NAME_OVERRIDES[r.slug] ?? ((r[nameKey] as string) || r.name_en);
   const getName = (slug: string) => {
@@ -257,7 +258,7 @@ export default function BookingFormMini() {
       </div>
       <div className="border-t border-gray-100 px-5 py-3 flex items-center justify-center gap-5">
         <div className="text-center">
-          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">HOUR</span>
+          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
           <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
             <span className="text-base font-bold text-gray-900 w-6 text-center">{String(calFor === "dep" ? depH : retH).padStart(2, "0")}</span>
             <div className="flex flex-col">
@@ -268,7 +269,7 @@ export default function BookingFormMini() {
         </div>
         <span className="text-base font-bold text-gray-300 mt-4">:</span>
         <div className="text-center">
-          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">MINUTE</span>
+          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
           <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
             <span className="text-base font-bold text-gray-900 w-6 text-center">{String(calFor === "dep" ? depM : retM).padStart(2, "0")}</span>
             <div className="flex flex-col">
@@ -344,7 +345,7 @@ export default function BookingFormMini() {
             {depFmt ? (
               <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
             ) : (
-              <span className={`text-[13px] whitespace-nowrap ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? "Tarih seçiniz!" : t("departureDate")}</span>
+              <span className={`text-[13px] whitespace-nowrap ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
             )}
           </button>
           {open === "cal" && calFor === "dep" && renderCalendar()}
@@ -384,7 +385,7 @@ export default function BookingFormMini() {
 
         {/* Submit */}
         <button type="button" onClick={submit} className="h-[44px] px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] shrink-0 transition-colors mr-1.5 whitespace-nowrap active:scale-95">
-          {t("findTransfer")}
+          {bookingHint}
         </button>
       </div>
 
@@ -419,7 +420,7 @@ export default function BookingFormMini() {
               {depFmt ? (
                 <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
               ) : (
-                <span className={`text-[12px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? "Tarih seçiniz!" : t("departureDate")}</span>
+                <span className={`text-[12px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
               )}
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
@@ -457,7 +458,7 @@ export default function BookingFormMini() {
 
         {/* Submit */}
         <button type="button" onClick={submit} className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors active:scale-[0.98]">
-          {t("findTransfer")}
+          {bookingHint}
         </button>
       </div>
     </div>

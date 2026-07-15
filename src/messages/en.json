@@ -22,6 +22,8 @@
   "hero": {
     "title": "Antalya Airport Transfer — Fixed Price, Instant Booking",
     "subtitle": "Private VIP transfer from Antalya Airport (AYT) to Belek, Side, Alanya, Kemer and all resorts. Mercedes Vito, flight tracking, 24/7 support.",
+    "promoText": "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all Antalya resorts with fixed prices, flight tracking and instant confirmation.",
+    "badgePill": "Private Transfer Antalya Airport • VIP Transfer Antalya • Airport Transfer Booking",
     "badge": "24/7 Service",
     "exploreRegions": "Explore Regions >",
     "startingFrom": "starting from",
@@ -151,6 +153,10 @@
     "trustCancel": "Free cancellation 24h before",
     "trustNoHidden": "No hidden fees",
     "findTransfer": "Find Transfer",
+    "bookNow": "Book now",
+    "selectDate": "Please select a date",
+    "hour": "Hour",
+    "minute": "Minute",
     "addReturn": "Add Return",
     "adult": "Adult",
     "child": "Child",
@@ -253,9 +259,10 @@
     "review5Text": "Booked for a group of 8 with all our golf bags. Two vehicles arrived on time, drivers friendly and professional. Will book every year for our golf trip."
   },
   "cta": {
-    "heading": "Ready for a stress-free arrival?",
-    "subheading": "Book your private airport transfer now and start your holiday the moment you land in Antalya.",
+    "heading": "Book Your Private VIP Transfer from Antalya Airport",
+    "subheading": "Secure airport transfer booking to Belek, Side, Alanya, Kemer and all Antalya resorts. Fixed price, professional drivers and instant confirmation.",
     "bookTransfer": "Book Your Transfer",
+    "primaryCta": "Book Airport Transfer",
     "contactUs": "Contact Us"
   },
   "regions": {
@@ -270,6 +277,8 @@
     "distance": "Distance",
     "startingFrom": "Price",
     "bookTransfer": "Book Transfer",
+    "introText": "Airport transfer booking from Antalya Airport to Belek, Side, Alanya, Kemer and the most popular Antalya resorts with private VIP service.",
+    "bookRegionTransfer": "Book {name} Private Transfer",
     "tagGolf": "Golf & Luxury",
     "tagHistory": "History & Beach",
     "tagCoastal": "Vibrant Coastal City",
@@ -600,7 +609,11 @@
     "shareArticle": "Share this article",
     "relatedPosts": "Related Articles",
     "popularTransfers": "Popular Transfers",
-    "bookTransfer": "Book Transfer"
+    "bookTransfer": "Book Transfer",
+    "ctaBadge": "VIP Transfer",
+    "ctaHeading": "Book Your VIP Airport Transfer",
+    "ctaSubheading": "Professional drivers, luxury vehicles and a fixed-price guarantee for a comfortable transfer.",
+    "ctaButton": "Book Now"
   },
   "terms": {
     "title": "Legal",

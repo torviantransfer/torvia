@@ -55,8 +55,24 @@ export async function generateMetadata({
   const supabase = createAdminClient();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "regions" });
-  const title = `${t("title")} | TORVIAN Transfer`;
-  const description = t("subtitle");
+  const title = locale === "tr"
+    ? "Antalya Havalimanı Transfer Bölgeleri | Belek, Side, Alanya, Kemer"
+    : locale === "de"
+      ? "Antalya Flughafen Transferziele | Belek, Side, Alanya, Kemer"
+      : locale === "pl"
+        ? "Transfery z lotniska Antalya | Belek, Side, Alanya, Kemer"
+        : locale === "ru"
+          ? "Трансферы из аэропорта Антальи | Белек, Сиде, Аланья, Кемер"
+          : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
+  const description = locale === "tr"
+    ? "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve 25+ destinasyona sabit fiyatlı VIP özel transfer rezervasyonu yapın."
+    : locale === "de"
+      ? "Buchen Sie Ihren VIP-Privattransfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und über 25 Zielen."
+      : locale === "pl"
+        ? "Zarezerwuj prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i ponad 25 destynacji."
+        : locale === "ru"
+          ? "Забронируйте VIP-трансфер из аэропорта Антальи в Белек, Сиде, Аланью, Кемер и более 25 направлений."
+          : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
   return {
     title,
     description,
@@ -107,6 +123,15 @@ export default async function RegionsPage({
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("destinations")}</p>
             <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">{t("title")}</h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">{t("subtitle")}</p>
+            <div className="mt-8 flex justify-center">
+              <Link
+                href="/booking"
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
+                style={{ backgroundColor: "#F97316", color: "#fff" }}
+              >
+                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
+              </Link>
+            </div>
           </div>
         </section>
 

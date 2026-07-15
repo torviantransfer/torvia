@@ -178,13 +178,18 @@ export default async function BlogPostPage({
   // Dynamic pricing for CTA — reads from the admin panel's "Online Tek ($)" column
   const ctaRegionSlug = (post.primary_region_slug as string | null) ?? null;
   let ctaOneWayPrice: number | null = null;
+  let ctaRegionName: string | null = null;
   if (ctaRegionSlug) {
     const { data: regionRow } = await supabase
       .from("regions")
-      .select("id")
+      .select("id, slug, name_tr, name_en, name_de, name_pl, name_ru")
       .eq("slug", ctaRegionSlug)
       .maybeSingle();
     if (regionRow) {
+      ctaRegionName =
+        (regionRow as Record<string, unknown>)[`name_${loc}`] as string | null
+        ?? (regionRow as Record<string, unknown>).name_en as string | null
+        ?? null;
       const { data: priceRow } = await supabase
         .from("pricing")
         .select("one_way_price")
@@ -380,10 +385,14 @@ export default async function BlogPostPage({
         {(() => {
           const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : "from";
           const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
-          const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
-          const heading = locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer";
-          const sub = locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : "Professional driver, luxury vehicle, fixed price. Book online now.";
-          const btnLabel = locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now";
+          const bookingHref = ctaRegionSlug ? `/${locale}/booking?region=${ctaRegionSlug}` : `/${locale}/booking`;
+          const heading = ctaRegionName
+            ? t("ctaHeadingRegion", { name: ctaRegionName })
+            : t("ctaHeadingDefault");
+          const sub = ctaRegionName
+            ? t("ctaSubRegion", { name: ctaRegionName })
+            : t("ctaSubDefault");
+          const btnLabel = t("ctaButton");
           return (
             <section className="py-12">
               <div className="max-w-3xl mx-auto px-4">
@@ -424,7 +433,7 @@ export default async function BlogPostPage({
                   return (
                     <Link
                       key={rp.id}
-                      href={`/blog/${rp.slug}`}
+                      href={`/${locale}/blog/${normalizeSlug(String(rp.slug))}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",

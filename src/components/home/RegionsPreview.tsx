@@ -23,7 +23,7 @@ export default function RegionsPreview() {
             {t("popularHeading")}
           </h2>
           <p className="text-gray-500 text-base max-w-2xl mx-auto">
-            {t("subtitle")}
+            {t("introText")}
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function RegionsPreview() {
                   className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:brightness-110"
                   style={{ backgroundColor: "#1B3A5C" }}
                 >
-                  {t("viewDetails")}
+                  {t("bookRegionTransfer", { name: region.name })}
                   <ArrowRight size={14} />
                 </Link>
               </div>
@@ -66,14 +66,21 @@ export default function RegionsPreview() {
           ))}
         </div>
 
-        {/* All regions link */}
-        <div className="text-center mt-10">
+        {/* CTA row */}
+        <div className="flex flex-wrap justify-center gap-3 mt-10">
+          <Link
+            href="/booking"
+            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+          >
+            Book now
+            <ArrowRight size={14} />
+          </Link>
           <Link
             href="/regions"
-            className="inline-flex items-center gap-1.5 text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors group"
+            className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
           >
             {t("allRegions")}
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={14} />
           </Link>
         </div>
       </div>

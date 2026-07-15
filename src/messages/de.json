@@ -22,6 +22,8 @@
   "hero": {
     "title": "Antalya Flughafen Transfer — Festpreis, Sofortbuchung",
     "subtitle": "Privater VIP Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und alle Urlaubsorte. Mercedes Vito, Flugverfolgung, 24/7 Support.",
+    "promoText": "Buchen Sie einen privaten VIP-Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen beliebten Urlaubszielen mit festem Preis, Flugverfolgung und sofortiger Bestätigung.",
+    "badgePill": "Privater Transfer Flughafen Antalya • VIP Transfer Antalya • Flughafentransfer buchen",
     "badge": "24/7 Service",
     "exploreRegions": "Regionen entdecken >",
     "startingFrom": "ab",
@@ -151,6 +153,10 @@
     "trustCancel": "Kostenlose Stornierung 24h vorher",
     "trustNoHidden": "Keine versteckten Gebühren",
     "findTransfer": "Transfer Finden",
+    "bookNow": "Jetzt buchen",
+    "selectDate": "Bitte wählen Sie ein Datum",
+    "hour": "Stunde",
+    "minute": "Minute",
     "addReturn": "Rückfahrt",
     "adult": "Erwachsene",
     "child": "Kind",
@@ -253,9 +259,10 @@
     "review5Text": "Für 8 Personen mit Golfgepäck gebucht. Zwei Fahrzeuge pünktlich, freundliche und professionelle Fahrer. Wir buchen jedes Jahr für unsere Golfreise."
   },
   "cta": {
-    "heading": "Bereit für eine stressfreie Ankunft?",
-    "subheading": "Buchen Sie jetzt Ihren privaten Flughafentransfer und starten Sie Ihren Urlaub direkt nach der Landung in Antalya.",
+    "heading": "Buchen Sie Ihren privaten VIP-Transfer vom Flughafen Antalya",
+    "subheading": "Sichern Sie sich Ihren Flughafentransfer nach Belek, Side, Alanya, Kemer und allen Urlaubszielen Antalyas. Festpreis, professionelle Fahrer und sofortige Bestätigung.",
     "bookTransfer": "Transfer Buchen",
+    "primaryCta": "Flughafentransfer buchen",
     "contactUs": "Kontakt"
   },
   "regions": {
@@ -270,6 +277,8 @@
     "distance": "Entfernung",
     "startingFrom": "Preis",
     "bookTransfer": "Jetzt Buchen",
+    "introText": "Flughafentransfer buchen vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und den beliebtesten Urlaubsorten Antalyas mit privatem VIP-Service.",
+    "bookRegionTransfer": "Privaten Transfer nach {name} buchen",
     "tagGolf": "Golf & Luxus",
     "tagHistory": "Geschichte & Strand",
     "tagCoastal": "Lebhafte Küstenstadt",
@@ -600,7 +609,11 @@
     "shareArticle": "Artikel teilen",
     "relatedPosts": "Ähnliche Artikel",
     "popularTransfers": "Beliebte Transfers",
-    "bookTransfer": "Transfer buchen"
+    "bookTransfer": "Transfer buchen",
+    "ctaBadge": "VIP Transfer",
+    "ctaHeading": "Buchen Sie Ihren VIP-Flughafentransfer",
+    "ctaSubheading": "Professionelle Fahrer, luxuriöse Fahrzeuge und Festpreisgarantie für einen komfortablen Transfer.",
+    "ctaButton": "Jetzt Buchen"
   },
   "terms": {
     "title": "Rechtliches",
