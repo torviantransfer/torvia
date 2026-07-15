@@ -82,7 +82,7 @@ export default async function BlogPage({
                   return (
                     <Link
                       key={post.id}
-                      href={`/${locale}/blog/${normalizeSlug(post.slug)}`}
+                      href={`/blog/${normalizeSlug(post.slug)}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
@@ -157,7 +157,7 @@ export default async function BlogPage({
               {t("ctaSubheading")}
             </p>
             <Link
-              href={`/${locale}/booking`}
+              href="/booking"
               className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
               style={{ backgroundColor: "#F97316", color: "#fff" }}
             >

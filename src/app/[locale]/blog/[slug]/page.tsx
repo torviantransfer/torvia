@@ -385,7 +385,7 @@ export default async function BlogPostPage({
         {(() => {
           const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : "from";
           const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
-          const bookingHref = ctaRegionSlug ? `/${locale}/booking?region=${ctaRegionSlug}` : `/${locale}/booking`;
+          const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
           const heading = ctaRegionName
             ? t("ctaHeadingRegion", { name: ctaRegionName })
             : t("ctaHeadingDefault");
@@ -433,7 +433,7 @@ export default async function BlogPostPage({
                   return (
                     <Link
                       key={rp.id}
-                      href={`/${locale}/blog/${normalizeSlug(String(rp.slug))}`}
+                      href={`/blog/${normalizeSlug(String(rp.slug))}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",

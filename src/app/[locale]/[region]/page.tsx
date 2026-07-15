@@ -566,10 +566,10 @@ export default async function RegionPage({
                 </p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Link href={`/${locale}/booking?region=${slug}`} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                  <Link href={`/booking?region=${slug}`} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
                     {t("routeIntentPrimaryCta")}
                   </Link>
-                  <Link href={`/${locale}/regions`} className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                  <Link href="/regions" className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                     {t("routeIntentSecondaryCta")}
                   </Link>
                 </div>
