@@ -420,14 +420,24 @@ export default async function RegionPage({
           : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
 
   const routeKeywords = locale === "tr"
-    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `Antalya airport to ${name} transfer`, `${name} VIP transfer`]
+    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`]
     : locale === "de"
-      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `Antalya Airport to ${name} transfer`, `${name} VIP Transfer`]
+      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `${name} Hotel Transfer`, `${name} Kindersitz Transfer`, `Festpreis ${name} Transfer`, `${name} VIP Transfer`]
       : locale === "pl"
-        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `Antalya Airport to ${name} transfer`, `${name} transfer prywatny`]
+        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`]
         : locale === "ru"
-          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `Antalya Airport to ${name} transfer`, `частный трансфер ${name}`]
-          : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `VIP transfer ${name}`, `${name} airport transfer`];
+          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`]
+          : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`];
+
+  const routeIntentLabel = locale === "tr"
+    ? "Bu rota için sık aranan ifadeler"
+    : locale === "de"
+      ? "Häufige Suchbegriffe für diese Route"
+      : locale === "pl"
+        ? "Często wyszukiwane frazy dla tej trasy"
+        : locale === "ru"
+          ? "Часто ищут по этому маршруту"
+          : "Common search phrases for this route";
 
   return (
     <>
@@ -470,12 +480,17 @@ export default async function RegionPage({
                   {heroDescription}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-6 lg:mb-8">
-                  {routeKeywords.map((keyword) => (
-                    <span key={keyword} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-                      {keyword}
-                    </span>
-                  ))}
+                <div className="mb-6 lg:mb-8">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-400">
+                    {routeIntentLabel}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {routeKeywords.map((keyword) => (
+                      <span key={keyword} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3 mb-6 lg:mb-8">

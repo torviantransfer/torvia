@@ -17,19 +17,19 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "booking" });
 
   const titleByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı Transfer Rezervasyonu | VIP Transfer Belek, Side, Alanya, Kemer",
-    en: "Book Private Transfer from Antalya Airport | VIP Transfer to Belek, Side, Alanya, Kemer",
-    de: "Buchen Sie Ihren Flughafentransfer Antalya | VIP Transfer nach Belek, Side, Alanya, Kemer",
-    pl: "Rezerwacja transferu z lotniska Antalya | VIP Transfer do Belek, Side, Alanya, Kemer",
-    ru: "Бронирование трансфера из аэропорта Анталии | VIP трансфер в Белек, Сиде, Аланью, Кемер",
+    tr: "Antalya Havalimanı Otel Transferi & VIP Transfer Rezervasyonu | Belek, Side, Alanya, Kemer",
+    en: "Book Antalya Airport Hotel Transfer & Private VIP Transfer | Belek, Side, Alanya, Kemer",
+    de: "Buchen Sie Ihren Flughafen Antalya Hotel Transfer & VIP Privattransfer | Belek, Side, Alanya, Kemer",
+    pl: "Rezerwacja transferu do hotelu z lotniska Antalya & VIP Transfer | Belek, Side, Alanya, Kemer",
+    ru: "Бронирование трансфера в отель из аэропорта Анталии и VIP-трансфера | Белек, Сиде, Аланья, Кемер",
   };
 
   const descriptionByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine özel VIP transfer rezervasyonu yapın. Sabit fiyat, uçuş takibi, hızlı onay.",
-    en: "Book a private transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all resorts. Airport transfer booking with fixed price, flight tracking and instant confirmation.",
-    de: "Buchen Sie Ihren privaten Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Flugverfolgung, sofortige Bestätigung.",
-    pl: "Zarezerwuj prywatny transfer z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, śledzenie lotu, szybka rezerwacja.",
-    ru: "Забронируйте частный трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, отслеживание рейса, мгновенное подтверждение.",
+    tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine otel transferi, özel VIP transfer ve sabit fiyatlı kapıdan kapıya hizmet. Uçuş takibi, çocuk koltuğu seçeneği, hızlı onay.",
+    en: "Book your Antalya Airport hotel transfer and private VIP transfer to Belek, Side, Alanya, Kemer and all resorts. Fixed-price door-to-door service with flight tracking, child seat options and instant confirmation.",
+    de: "Buchen Sie Ihren Flughafen Antalya Hotel Transfer und privaten VIP-Transfer nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Tür-zu-Tür, Flugverfolgung, Kindersitzoption und schnelle Bestätigung.",
+    pl: "Zarezerwuj transfer do hotelu z lotniska Antalya oraz prywatny VIP transfer do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, usługa od drzwi do drzwi, śledzenie lotu i szybka rezerwacja.",
+    ru: "Забронируйте трансфер в отель из аэропорта Анталии и частный VIP-трансфер в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, услуга «от двери до двери», отслеживание рейса и мгновенное подтверждение.",
   };
 
   const title = titleByLocale[locale] ?? `${t("title")} | Private Airport Transfer Antalya`;
@@ -54,6 +54,22 @@ export default async function BookingPage({
   const t = await getTranslations({ locale, namespace: "booking" });
 
   const hasRegion = !!sp.region;
+
+  const intentKeywords: Record<string, string[]> = {
+    tr: ["Antalya havalimanı otel transferi", "Belek VIP transfer", "Side özel transfer", "Alanya çocuk koltuklu transfer", "Sabit fiyatlı transfer"],
+    de: ["Flughafen Antalya Hotel Transfer", "Belek VIP Transfer", "Side Privattransfer", "Alanya Kindersitz Transfer", "Festpreis Transfer"],
+    pl: ["transfer do hotelu z lotniska Antalya", "VIP transfer do Belek", "prywatny transfer do Side", "transfer z fotelikiem dla dzieci", "transfer ze stałą ceną"],
+    ru: ["трансфер в отель из аэропорта Анталии", "VIP трансфер в Белек", "частный трансфер в Сиде", "трансфер с детским креслом", "трансфер с фиксированной ценой"],
+    en: ["Antalya airport hotel transfer", "VIP transfer to Belek", "private transfer to Side", "family transfer with child seat", "fixed-price airport transfer"],
+  };
+
+  const intentLabel: Record<string, string> = {
+    tr: "Sık aranan transfer niyetleri",
+    de: "Häufige Suchanfragen",
+    pl: "Popularne intencje transferowe",
+    ru: "Часто ищут",
+    en: "Common transfer searches",
+  };
 
   return (
     <>
@@ -80,6 +96,16 @@ export default async function BookingPage({
                 <p className="text-base sm:text-lg text-white/85 max-w-2xl mx-auto drop-shadow">
                   {t("subtitle")}
                 </p>
+                <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-white/80 mr-1">
+                    {intentLabel[locale] ?? intentLabel.en}
+                  </span>
+                  {(intentKeywords[locale] ?? intentKeywords.en).map((keyword) => (
+                    <span key={keyword} className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
               </div>
               <div className="max-w-5xl mx-auto">
                 <BookingWizardClient />
