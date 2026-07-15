@@ -17,11 +17,11 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "booking" });
 
   const titleByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı Otel Transferi & VIP Transfer Rezervasyonu | Belek, Side, Alanya, Kemer",
-    en: "Book Antalya Airport Hotel Transfer & Private VIP Transfer | Belek, Side, Alanya, Kemer",
-    de: "Buchen Sie Ihren Flughafen Antalya Hotel Transfer & VIP Privattransfer | Belek, Side, Alanya, Kemer",
-    pl: "Rezerwacja transferu do hotelu z lotniska Antalya & VIP Transfer | Belek, Side, Alanya, Kemer",
-    ru: "Бронирование трансфера в отель из аэропорта Анталии и VIP-трансфера | Белек, Сиде, Аланья, Кемер",
+    tr: "Antalya Havalimanı Özel Transfer Rezervasyonu | Otel Transferi Belek, Side, Alanya, Kemer",
+    en: "Private Transfer Antalya Airport | Book Hotel Transfer to Belek, Side, Alanya, Kemer",
+    de: "Privater Transfer Flughafen Antalya buchen | Hotel Transfer Belek, Side, Alanya, Kemer",
+    pl: "Prywatny Transfer z Lotniska Antalya | Rezerwacja transferu do hotelu Belek, Side, Alanya, Kemer",
+    ru: "Частный Трансфер из Аэропорта Анталии | Бронирование трансфера в отель Белек, Сиде, Аланья, Кемер",
   };
 
   const descriptionByLocale: Record<string, string> = {

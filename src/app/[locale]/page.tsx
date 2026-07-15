@@ -27,11 +27,11 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "meta" });
 
   const titleByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı VIP Transfer | Belek, Side, Alanya, Kemer",
-    en: "Antalya Airport VIP Transfer | Private Transfer to Belek, Side, Alanya, Kemer",
-    de: "VIP Flughafentransfer Antalya | Privattransfer nach Belek, Side, Alanya, Kemer",
-    pl: "Transfer VIP z lotniska Antalya | Transfer do Belek, Side, Alanya, Kemer",
-    ru: "VIP трансфер из аэропорта Анталии | Белек, Сиде, Аланья, Кемер",
+    tr: "Antalya Havalimanı Özel Transfer | VIP Belek, Side, Alanya, Kemer",
+    en: "Private Transfer Antalya Airport | VIP Transfer to Belek, Side, Alanya, Kemer",
+    de: "Privater Transfer Flughafen Antalya | VIP Transfer nach Belek, Side, Alanya, Kemer",
+    pl: "Prywatny Transfer z Lotniska Antalya | VIP Transfer do Belek, Side, Alanya, Kemer",
+    ru: "Частный Трансфер из Аэропорта Анталии | VIP Белек, Сиде, Аланья, Кемер",
   };
 
   const descriptionByLocale: Record<string, string> = {
