@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
 
@@ -22,14 +23,14 @@ export async function generateMetadata({
     de: "Privater Transfer Flughafen Antalya buchen | Hotel Transfer Belek, Side, Alanya, Kemer",
     pl: "Prywatny Transfer z Lotniska Antalya | Rezerwacja transferu do hotelu Belek, Side, Alanya, Kemer",
     ru: "Частный Трансфер из Аэропорта Анталии | Бронирование трансфера в отель Белек, Сиде, Аланья, Кемер",
+    nl: "Privétransfer Luchthaven Antalya Boeken | Hoteltransfer Belek, Side, Alanya, Kemer",
   };
-
-  const descriptionByLocale: Record<string, string> = {
     tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine otel transferi, özel VIP transfer ve sabit fiyatlı kapıdan kapıya hizmet. Uçuş takibi, çocuk koltuğu seçeneği, hızlı onay.",
     en: "Book your Antalya Airport hotel transfer and private VIP transfer to Belek, Side, Alanya, Kemer and all resorts. Fixed-price door-to-door service with flight tracking, child seat options and instant confirmation.",
     de: "Buchen Sie Ihren Flughafen Antalya Hotel Transfer und privaten VIP-Transfer nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Tür-zu-Tür, Flugverfolgung, Kindersitzoption und schnelle Bestätigung.",
     pl: "Zarezerwuj transfer do hotelu z lotniska Antalya oraz prywatny VIP transfer do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, usługa od drzwi do drzwi, śledzenie lotu i szybka rezerwacja.",
     ru: "Забронируйте трансфер в отель из аэропорта Анталии и частный VIP-трансфер в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, услуга «от двери до двери», отслеживание рейса и мгновенное подтверждение.",
+    nl: "Boek uw hoteltransfer vanaf de luchthaven Antalya en privé VIP-transfer naar Belek, Side, Alanya, Kemer en alle resorts. Vaste prijs van deur tot deur, vluchtmonitoring, kinderzitjes en directe bevestiging.",
   };
 
   const title = titleByLocale[locale] ?? `${t("title")} | Private Airport Transfer Antalya`;
@@ -55,20 +56,64 @@ export default async function BookingPage({
 
   const hasRegion = !!sp.region;
 
-  const intentKeywords: Record<string, string[]> = {
-    tr: ["Antalya havalimanı otel transferi", "Belek VIP transfer", "Side özel transfer", "Alanya çocuk koltuklu transfer", "Sabit fiyatlı transfer"],
-    de: ["Flughafen Antalya Hotel Transfer", "Belek VIP Transfer", "Side Privattransfer", "Alanya Kindersitz Transfer", "Festpreis Transfer"],
-    pl: ["transfer do hotelu z lotniska Antalya", "VIP transfer do Belek", "prywatny transfer do Side", "transfer z fotelikiem dla dzieci", "transfer ze stałą ceną"],
-    ru: ["трансфер в отель из аэропорта Анталии", "VIP трансфер в Белек", "частный трансфер в Сиде", "трансфер с детским креслом", "трансфер с фиксированной ценой"],
-    en: ["Antalya airport hotel transfer", "VIP transfer to Belek", "private transfer to Side", "family transfer with child seat", "fixed-price airport transfer"],
+  const intentKeywords: Record<string, { label: string; href: string }[]> = {
+    tr: [
+      { label: "Antalya havalimanı otel transferi", href: "/booking" },
+      { label: "Belek VIP transfer", href: "/belek-transfer" },
+      { label: "Side otel transferi", href: "/side-transfer" },
+      { label: "Alanya özel transfer", href: "/alanya-transfer" },
+      { label: "Kemer havalimanı transfer", href: "/kemer-transfer" },
+      { label: "Sabit fiyatlı transfer", href: "/booking" },
+    ],
+    en: [
+      { label: "Antalya airport hotel transfer", href: "/booking" },
+      { label: "VIP transfer to Belek", href: "/belek-transfer" },
+      { label: "Private transfer to Side", href: "/side-transfer" },
+      { label: "Alanya airport transfer", href: "/alanya-transfer" },
+      { label: "Kemer transfer", href: "/kemer-transfer" },
+      { label: "Fixed-price transfer", href: "/booking" },
+    ],
+    de: [
+      { label: "Flughafen Antalya Hotel Transfer", href: "/booking" },
+      { label: "VIP Transfer Belek", href: "/belek-transfer" },
+      { label: "Privattransfer Side", href: "/side-transfer" },
+      { label: "Alanya Flughafentransfer", href: "/alanya-transfer" },
+      { label: "Kemer Transfer", href: "/kemer-transfer" },
+      { label: "Festpreis Transfer", href: "/booking" },
+    ],
+    pl: [
+      { label: "transfer do hotelu z lotniska Antalya", href: "/booking" },
+      { label: "VIP transfer do Belek", href: "/belek-transfer" },
+      { label: "prywatny transfer do Side", href: "/side-transfer" },
+      { label: "transfer do Alanyi", href: "/alanya-transfer" },
+      { label: "transfer do Kemer", href: "/kemer-transfer" },
+      { label: "transfer ze stałą ceną", href: "/booking" },
+    ],
+    ru: [
+      { label: "трансфер в отель из аэропорта Анталии", href: "/booking" },
+      { label: "VIP трансфер в Белек", href: "/belek-transfer" },
+      { label: "частный трансфер в Сиде", href: "/side-transfer" },
+      { label: "трансфер в Аланью", href: "/alanya-transfer" },
+      { label: "трансфер в Кемер", href: "/kemer-transfer" },
+      { label: "трансфер с фиксированной ценой", href: "/booking" },
+    ],
+    nl: [
+      { label: "luchthaven Antalya hoteltransfer", href: "/booking" },
+      { label: "VIP transfer naar Belek", href: "/belek-transfer" },
+      { label: "privétransfer naar Side", href: "/side-transfer" },
+      { label: "transfer naar Alanya", href: "/alanya-transfer" },
+      { label: "transfer naar Kemer", href: "/kemer-transfer" },
+      { label: "vaste prijs transfer", href: "/booking" },
+    ],
   };
 
   const intentLabel: Record<string, string> = {
-    tr: "Sık aranan transfer niyetleri",
+    tr: "Sık aranan transferler",
     de: "Häufige Suchanfragen",
-    pl: "Popularne intencje transferowe",
+    pl: "Popularne wyszukiwania transferów",
     ru: "Часто ищут",
     en: "Common transfer searches",
+    nl: "Populaire transferzoekopdrachten",
   };
 
   return (
@@ -100,10 +145,14 @@ export default async function BookingPage({
                   <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-white/80 mr-1">
                     {intentLabel[locale] ?? intentLabel.en}
                   </span>
-                  {(intentKeywords[locale] ?? intentKeywords.en).map((keyword) => (
-                    <span key={keyword} className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur">
-                      {keyword}
-                    </span>
+                  {(intentKeywords[locale] ?? intentKeywords.en).map(({ label, href }) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur transition-colors hover:bg-white/20 hover:border-white/30"
+                    >
+                      {label}
+                    </Link>
                   ))}
                 </div>
               </div>

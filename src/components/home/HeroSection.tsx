@@ -38,40 +38,9 @@ export default function HeroSection() {
         <p className="text-base sm:text-lg text-white/70 leading-relaxed max-w-2xl mx-auto text-center mb-6">
           {t("subtitle")}
         </p>
-        <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-2xl mx-auto text-center mb-4">
-          {t("promoText")}
-        </p>
         <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] sm:text-sm font-medium text-white/90 mb-6 backdrop-blur">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           {t("badgePill")}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-4xl">
-          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mr-1">
-            {t("searchKeywordsHeading")}
-          </span>
-          {/* These used to be dead <span> keyword labels — a visible keyword
-              list with no function reads as keyword stuffing to Google and does
-              nothing for the visitor. Now each chip is a real internal link to
-              the matching region (or the booking page for the generic ones),
-              so the keyword relevance stays but the spam signal is gone and the
-              link equity flows to the pages we want to rank. */}
-          {[
-            { label: t("keywordHotelTransfer"), href: "/booking" },
-            { label: t("keywordPrivateHotel"), href: "/booking" },
-            { label: t("keywordVipBelek"), href: "/belek-transfer" },
-            { label: t("keywordBelekHotel"), href: "/belek-transfer" },
-            { label: t("keywordSideHotel"), href: "/side-transfer" },
-            { label: t("keywordAlanyaPrivate"), href: "/alanya-transfer" },
-          ].map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur transition-colors hover:bg-white/20 hover:border-white/30"
-            >
-              {label}
-            </Link>
-          ))}
         </div>
 
         {/* Mini trust tags */}
@@ -118,6 +87,34 @@ export default function HeroSection() {
       {/* Bottom — Booking form bar */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-14 sm:pb-16">
         <BookingFormMini />
+
+        {/* SEO promo + internal-link keyword chips — moved below the booking
+            form so the widget stays high on the page (better conversion) while
+            keeping the keyword relevance and internal links for search. */}
+        <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-2xl mx-auto text-center mt-8 mb-4">
+          {t("promoText")}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
+          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mr-1">
+            {t("searchKeywordsHeading")}
+          </span>
+          {[
+            { label: t("keywordHotelTransfer"), href: "/booking" },
+            { label: t("keywordPrivateHotel"), href: "/booking" },
+            { label: t("keywordVipBelek"), href: "/belek-transfer" },
+            { label: t("keywordBelekHotel"), href: "/belek-transfer" },
+            { label: t("keywordSideHotel"), href: "/side-transfer" },
+            { label: t("keywordAlanyaPrivate"), href: "/alanya-transfer" },
+          ].map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur transition-colors hover:bg-white/20 hover:border-white/30"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -101,6 +101,9 @@ const nextConfig: NextConfig = {
       "antalya-havalimani-kemer-vip-transfer": "antalya-kemer-transfer-mesafe-sure",
       "antalya-taksi-mi-ozel-transfer-mi": "antalya-havalimani-taksi-mi-vip-transfer-mi",
       "antalya-alanya-transfer-suresi": "antalya-havalimani-alanya-transfer-kac-saat",
+      // Abandoned original (dotless "ı") of the maintained uber post; unpublished
+      // in migration 050. Forward its equity to the "i" version Google indexes.
+      "uber-antalya-havalimanı-ulasim": "uber-antalya-havalimani-ulasim",
     };
     for (const locale of locales) {
       for (const [oldSlug, newSlug] of Object.entries(blogConsolidation)) {
