@@ -1,6 +1,7 @@
-﻿const BASE_URL = "https://torviantransfer.com";
-const locales = ["tr", "en", "de", "pl", "ru"] as const;
-type AppLocale = (typeof locales)[number];
+﻿import { locales, localeOgTags, type Locale } from "@/i18n/config";
+
+const BASE_URL = "https://torviantransfer.com";
+type AppLocale = Locale;
 
 /**
  * Build canonical + hreflang alternates.
@@ -41,6 +42,41 @@ export function seoAlternates(
 }
 
 /**
+ * Like `seoAlternates`, but for pages whose path differs per locale
+ * (localized blog slugs). `pathFor` must return the locale's own path,
+ * e.g. `/blog/transfer-lotnisko-antalya-belek` for "pl".
+ */
+export function seoAlternatesPerLocale(
+  locale: string,
+  pathFor: (l: AppLocale) => string,
+  availableLocales?: readonly string[]
+) {
+  const allowed = (availableLocales && availableLocales.length > 0
+    ? locales.filter((l) => availableLocales.includes(l))
+    : [...locales]) as AppLocale[];
+
+  const canonicalLocale =
+    allowed.includes(locale as AppLocale)
+      ? (locale as AppLocale)
+      : allowed.includes("en")
+      ? "en"
+      : allowed[0] ?? "en";
+
+  const xDefaultLocale = allowed.includes("en") ? "en" : canonicalLocale;
+  const norm = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+
+  return {
+    canonical: `${BASE_URL}/${canonicalLocale}${norm(pathFor(canonicalLocale))}`,
+    languages: {
+      ...Object.fromEntries(
+        allowed.map((l) => [l, `${BASE_URL}/${l}${norm(pathFor(l))}`])
+      ),
+      "x-default": `${BASE_URL}/${xDefaultLocale}${norm(pathFor(xDefaultLocale))}`,
+    },
+  };
+}
+
+/**
  * Normalize a slug to lowercase ASCII (removes Turkish/diacritic
  * characters such as ı, ğ, ü, ş, ö, ç, İ). Returns a Google-friendly
  * slug. Used to fix duplicate-canonical reports caused by non-ASCII
@@ -64,6 +100,39 @@ export function hasNonAsciiSlug(slug: string): boolean {
   return /[^\x00-\x7F]/.test(slug);
 }
 
+/**
+ * The URL slug a blog post should use in a given locale.
+ *
+ * Historically every locale shared one Turkish slug, so a Polish reader saw
+ * `/pl/blog/antalya-havalimani-belek-transfer` in the SERP — an unreadable URL
+ * next to a Polish title, which suppressed CTR on page-1 rankings. Posts now
+ * carry a per-locale `slug_<locale>` column; the shared `slug` stays as the
+ * fallback and as the permanent identifier for old inbound links.
+ */
+export function localizedBlogSlug(
+  post: Record<string, unknown>,
+  locale: string
+): string {
+  const localized = (post[`slug_${locale}`] as string | null | undefined) ?? "";
+  if (localized.trim()) return normalizeSlug(localized.trim());
+  return normalizeSlug((post.slug as string) ?? "");
+}
+
+/**
+ * Every slug a post can be reached by, in any locale. Used to resolve an
+ * incoming request to the right post before deciding whether to redirect.
+ */
+export function allBlogSlugs(post: Record<string, unknown>): string[] {
+  const out = new Set<string>();
+  const base = (post.slug as string | null) ?? "";
+  if (base) out.add(normalizeSlug(base));
+  for (const l of locales) {
+    const s = (post[`slug_${l}`] as string | null | undefined) ?? "";
+    if (s.trim()) out.add(normalizeSlug(s.trim()));
+  }
+  return [...out];
+}
+
 export function seoOpenGraph(
   locale: string,
   path: string,
@@ -72,11 +141,7 @@ export function seoOpenGraph(
   image?: string
 ) {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  const ogLocale =
-    locale === "tr" ? "tr_TR" :
-    locale === "de" ? "de_DE" :
-    locale === "pl" ? "pl_PL" :
-    locale === "ru" ? "ru_RU" : "en_US";
+  const ogLocale = localeOgTags[locale as AppLocale] ?? localeOgTags.en;
 
   return {
     title,

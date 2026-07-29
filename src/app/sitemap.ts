@@ -1,9 +1,10 @@
 ﻿import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { normalizeSlug } from "@/lib/seo";
+import { localizedBlogSlug } from "@/lib/seo";
+import { locales as ALL_LOCALES } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
-const locales = ["tr", "en", "de", "pl", "ru"];
+const locales: readonly string[] = ALL_LOCALES;
 
 // Primary locales get full priority, secondary locales get reduced priority
 const primaryLocales = ["en", "tr", "de"];
@@ -13,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug, is_popular, description_de, description_pl, description_ru, meta_title_de, meta_title_pl, meta_title_ru")
+    .select("slug, is_popular, description_de, description_pl, description_ru, description_nl, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl")
     .eq("is_active", true);
 
   // Mirror the region page's translation logic: tr/en are always indexed;
@@ -30,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: blogPosts } = await supabase
     .from("blog_posts")
-    .select("slug, published_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, content_tr, content_en, content_de, content_pl, content_ru")
+    .select("slug, published_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
     .eq("is_published", true);
 
   const entries: MetadataRoute.Sitemap = [];
@@ -104,7 +105,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!title.trim() || !content.trim()) continue;
       const postImage = post.image_url as string | null;
       entries.push({
-        url: `${BASE_URL}/${locale}/blog/${normalizeSlug(post.slug)}`,
+        url: `${BASE_URL}/${locale}/blog/${localizedBlogSlug(
+          post as Record<string, unknown>,
+          locale
+        )}`,
         lastModified: post.published_at ? new Date(post.published_at) : new Date(),
         changeFrequency: "monthly",
         priority: isPrimary ? 0.7 : 0.5,

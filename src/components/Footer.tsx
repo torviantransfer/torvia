@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
@@ -16,12 +16,12 @@ export default async function Footer() {
   // Fetch popular regions SERVER-SIDE so the internal links are present in the
   // initial HTML and crawlable by Googlebot (previously loaded via client fetch,
   // so search engines never saw these site-wide internal links).
-  let popularRegions: { slug: string; name_tr: string; name_en: string; name_de: string; name_pl: string; name_ru: string }[] = [];
+  let popularRegions: { slug: string; name_tr: string; name_en: string; name_de: string; name_pl: string; name_ru: string; name_nl: string }[] = [];
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("regions")
-      .select("slug, name_tr, name_en, name_de, name_pl, name_ru")
+      .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl")
       .eq("is_active", true)
       .eq("is_popular", true)
       .order("sort_order", { ascending: true })

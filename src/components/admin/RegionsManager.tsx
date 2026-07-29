@@ -11,6 +11,7 @@ interface Region {
   name_de: string;
   name_pl: string;
   name_ru: string;
+  name_nl: string;
   distance_km: number | null;
   duration_minutes: number | null;
   is_popular: boolean;
@@ -33,6 +34,7 @@ export default function RegionsManager({ initialRegions }: Props) {
     name_de: "",
     name_pl: "",
     name_ru: "",
+    name_nl: "",
     distance_km: "",
     duration_minutes: "",
     sort_order: "0",
@@ -47,6 +49,7 @@ export default function RegionsManager({ initialRegions }: Props) {
       name_de: "",
       name_pl: "",
       name_ru: "",
+      name_nl: "",
       distance_km: "",
       duration_minutes: "",
       sort_order: "0",
@@ -73,6 +76,7 @@ export default function RegionsManager({ initialRegions }: Props) {
             name_de: form.name_de || form.name_en,
             name_pl: form.name_pl || form.name_en,
             name_ru: form.name_ru || form.name_en,
+            name_nl: form.name_nl || form.name_en,
             distance_km: form.distance_km ? parseFloat(form.distance_km) : null,
             duration_minutes: form.duration_minutes
               ? parseInt(form.duration_minutes)
@@ -137,6 +141,7 @@ export default function RegionsManager({ initialRegions }: Props) {
       name_de: r.name_de,
       name_pl: r.name_pl,
       name_ru: r.name_ru,
+      name_nl: r.name_nl,
       distance_km: r.distance_km?.toString() ?? "",
       duration_minutes: r.duration_minutes?.toString() ?? "",
       sort_order: r.sort_order.toString(),
@@ -231,6 +236,16 @@ export default function RegionsManager({ initialRegions }: Props) {
               <input
                 value={form.name_ru}
                 onChange={(e) => setForm({ ...form, name_ru: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Ad (NL)
+              </label>
+              <input
+                value={form.name_nl}
+                onChange={(e) => setForm({ ...form, name_nl: e.target.value })}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
               />
             </div>

@@ -365,8 +365,8 @@
     "stat1Sub": "Her zaman ulaşılabilir",
     "stat2Label": "< 30 dk",
     "stat2Sub": "Yanıt süresi",
-    "stat3Label": "5 Dil",
-    "stat3Sub": "TR · EN · DE · PL · RU",
+    "stat3Label": "6 Dil",
+    "stat3Sub": "TR · EN · DE · PL · RU · NL",
     "stat4Label": "Tam Sigortalı",
     "stat4Sub": "Lisanslı & güvenli",
     "langTag": "Çok Dilli Ekip",
@@ -377,7 +377,8 @@
     "langGerman": "Almanca",
     "langPolish": "Lehçe",
     "langRussian": "Rusça",
-    "mapTitle": "Konumumuz"
+    "mapTitle": "Konumumuz",
+    "langDutch": "Felemenkçe"
   },
   "faq": {
     "title": "Antalya Havalimanı Transfer SSS | Transfer Süresi, Mesafe ve Fiyatlar",

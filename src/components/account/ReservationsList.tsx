@@ -83,7 +83,7 @@ interface Reservation {
   adults: number;
   children: number;
   qr_code_token: string | null;
-  regions: { name_en: string; name_tr: string; name_de: string; name_pl: string; name_ru: string } | null;
+  regions: { name_en: string; name_tr: string; name_de: string; name_pl: string; name_ru: string; name_nl: string } | null;
   vehicle_categories: { name: string } | null;
   driver_assignments: Array<{
     id: string;

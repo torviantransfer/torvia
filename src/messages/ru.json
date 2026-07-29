@@ -365,8 +365,8 @@
     "stat1Sub": "Всегда на связи",
     "stat2Label": "< 30 мин",
     "stat2Sub": "Время ответа",
-    "stat3Label": "5 Языков",
-    "stat3Sub": "TR · EN · DE · PL · RU",
+    "stat3Label": "6 языков",
+    "stat3Sub": "TR · EN · DE · PL · RU · NL",
     "stat4Label": "Полная Страховка",
     "stat4Sub": "Лицензированный & безопасный",
     "langTag": "Многоязычная Команда",
@@ -377,7 +377,8 @@
     "langGerman": "Немецкий",
     "langPolish": "Польский",
     "langRussian": "Русский",
-    "mapTitle": "Наше Местоположение"
+    "mapTitle": "Наше Местоположение",
+    "langDutch": "Нидерландский"
   },
   "faq": {
     "title": "FAQ — Трансфер из Аэропорта Анталья | Время в пути, Расстояние и Цены",
@@ -806,7 +807,10 @@
     "status_passenger_picked_up": "Забран",
     "status_completed": "Завершено",
     "status_cancel_requested": "Запрос на Отмену",
-    "status_cancelled": "Отменено"
+    "status_cancelled": "Отменено",
+    "secureSearch": "Безопасный поиск",
+    "realTimeStatus": "Статус в реальном времени",
+    "trackDriver": "Отследить водителя"
   },
   "kvkk": {
     "title": "GDPR / KVKK",

@@ -11,11 +11,19 @@ interface BlogPost {
   title_de: string | null;
   title_pl: string | null;
   title_ru: string | null;
+  title_nl: string | null;
   content_tr: string | null;
   content_en: string | null;
   content_de: string | null;
   content_pl: string | null;
   content_ru: string | null;
+  content_nl: string | null;
+  slug_tr: string | null;
+  slug_en: string | null;
+  slug_de: string | null;
+  slug_pl: string | null;
+  slug_ru: string | null;
+  slug_nl: string | null;
   image_url: string | null;
   is_published: boolean;
   published_at: string | null;
@@ -26,13 +34,14 @@ interface Props {
   initialPosts: BlogPost[];
 }
 
-const LOCALES = ["en", "tr", "de", "pl", "ru"] as const;
+const LOCALES = ["en", "tr", "de", "pl", "ru", "nl"] as const;
 const LOCALE_LABELS: Record<string, string> = {
   en: "English",
   tr: "Türkçe",
   de: "Deutsch",
   pl: "Polski",
   ru: "Русский",
+  nl: "Nederlands",
 };
 
 const emptyForm = {
@@ -42,11 +51,19 @@ const emptyForm = {
   title_de: "",
   title_pl: "",
   title_ru: "",
+  title_nl: "",
   content_en: "",
   content_tr: "",
   content_de: "",
   content_pl: "",
   content_ru: "",
+  content_nl: "",
+  slug_en: "",
+  slug_tr: "",
+  slug_de: "",
+  slug_pl: "",
+  slug_ru: "",
+  slug_nl: "",
   image_url: "",
 };
 
@@ -83,11 +100,19 @@ export default function BlogManager({ initialPosts }: Props) {
             title_de: form.title_de || null,
             title_pl: form.title_pl || null,
             title_ru: form.title_ru || null,
+            title_nl: form.title_nl || null,
             content_en: form.content_en || null,
             content_tr: form.content_tr || null,
             content_de: form.content_de || null,
             content_pl: form.content_pl || null,
             content_ru: form.content_ru || null,
+            content_nl: form.content_nl || null,
+            slug_en: form.slug_en || null,
+            slug_tr: form.slug_tr || null,
+            slug_de: form.slug_de || null,
+            slug_pl: form.slug_pl || null,
+            slug_ru: form.slug_ru || null,
+            slug_nl: form.slug_nl || null,
             image_url: form.image_url || null,
             ...(!editingId && { published_at: new Date().toISOString() }),
           },
@@ -151,11 +176,19 @@ export default function BlogManager({ initialPosts }: Props) {
       title_de: p.title_de ?? "",
       title_pl: p.title_pl ?? "",
       title_ru: p.title_ru ?? "",
+      title_nl: p.title_nl ?? "",
       content_en: p.content_en ?? "",
       content_tr: p.content_tr ?? "",
       content_de: p.content_de ?? "",
       content_pl: p.content_pl ?? "",
       content_ru: p.content_ru ?? "",
+      content_nl: p.content_nl ?? "",
+      slug_en: p.slug_en ?? "",
+      slug_tr: p.slug_tr ?? "",
+      slug_de: p.slug_de ?? "",
+      slug_pl: p.slug_pl ?? "",
+      slug_ru: p.slug_ru ?? "",
+      slug_nl: p.slug_nl ?? "",
       image_url: p.image_url ?? "",
     });
     setEditingId(p.id);
@@ -255,6 +288,30 @@ export default function BlogManager({ initialPosts }: Props) {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
               placeholder={`${LOCALE_LABELS[activeLang]} başlığı`}
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              URL slug ({LOCALE_LABELS[activeLang]})
+            </label>
+            <input
+              type="text"
+              value={form[`slug_${activeLang}` as keyof typeof form]}
+              onChange={(e) =>
+                updateField(
+                  `slug_${activeLang}`,
+                  e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9-]/g, "-")
+                    .replace(/-+/g, "-")
+                )
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+              placeholder="Boş bırakılırsa üstteki genel slug kullanılır"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Bu dilin URL&apos;si. Okuyucunun dilinde yazın — Google sonuçlarında
+              başlığın altında görünür ve tıklanma oranını etkiler.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -365,8 +365,8 @@
     "stat1Sub": "Zawsze dostępni",
     "stat2Label": "< 30 min",
     "stat2Sub": "Czas odpowiedzi",
-    "stat3Label": "5 Języków",
-    "stat3Sub": "TR · EN · DE · PL · RU",
+    "stat3Label": "6 języków",
+    "stat3Sub": "TR · EN · DE · PL · RU · NL",
     "stat4Label": "W Pełni Ubezpieczeni",
     "stat4Sub": "Licencjonowani & bezpieczni",
     "langTag": "Wielojęzyczny Zespół",
@@ -377,7 +377,8 @@
     "langGerman": "Niemiecki",
     "langPolish": "Polski",
     "langRussian": "Rosyjski",
-    "mapTitle": "Nasza Lokalizacja"
+    "mapTitle": "Nasza Lokalizacja",
+    "langDutch": "Niderlandzki"
   },
   "faq": {
     "title": "FAQ Transfer z Lotniska Antalya | Czas Jazdy, Odległość i Ceny",

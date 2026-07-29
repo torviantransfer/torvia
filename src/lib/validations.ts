@@ -23,7 +23,7 @@ export const reservationSchema = z.object({
   hotelAddress: z.string().max(500).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
   couponCode: z.string().max(50).optional().nullable(),
-  locale: z.enum(["tr", "en", "de", "pl", "ru"]).default("en"),
+  locale: z.enum(["tr", "en", "de", "pl", "ru", "nl"]).default("en"),
   paymentMethod: z.enum(["online", "cash"]).default("online").optional(),
 }).refine(
   (data) => {
@@ -54,7 +54,7 @@ export const contactSchema = z.object({
   email: z.string().email().max(255).trim().toLowerCase(),
   subject: z.string().min(1).max(200).trim(),
   message: z.string().min(1).max(5000).trim(),
-  locale: z.enum(["tr", "en", "de", "pl", "ru"]).default("en"),
+  locale: z.enum(["tr", "en", "de", "pl", "ru", "nl"]).default("en"),
 });
 
 export const assignDriverSchema = z.object({

@@ -365,8 +365,8 @@
     "stat1Sub": "Immer erreichbar",
     "stat2Label": "< 30 Min",
     "stat2Sub": "Antwortzeit",
-    "stat3Label": "5 Sprachen",
-    "stat3Sub": "TR · EN · DE · PL · RU",
+    "stat3Label": "6 Sprachen",
+    "stat3Sub": "TR · EN · DE · PL · RU · NL",
     "stat4Label": "Voll Versichert",
     "stat4Sub": "Lizenziert & sicher",
     "langTag": "Mehrsprachiges Team",
@@ -377,7 +377,8 @@
     "langGerman": "Deutsch",
     "langPolish": "Polnisch",
     "langRussian": "Russisch",
-    "mapTitle": "Unser Standort"
+    "mapTitle": "Unser Standort",
+    "langDutch": "Niederländisch"
   },
   "faq": {
     "title": "Flughafen Antalya Transfer FAQ | Fahrtzeit, Entfernung & Preise",

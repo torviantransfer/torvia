@@ -52,8 +52,8 @@ const regionImages: Record<string, string> = {
   marmaris: "/images/regions/marmaris.jpg",
 };
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
-const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru"];
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
 const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
 const BASE_URL = "https://torviantransfer.com";
 
@@ -79,6 +79,7 @@ function formatDuration(minutes: number, locale: string): string {
   if (locale === "de") return h > 0 ? `${h} Std.${m > 0 ? ` ${m} Min.` : ""}` : `${m} Min.`;
   if (locale === "pl") return h > 0 ? `${h} godz.${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
   if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
+  if (locale === "nl") return h > 0 ? `${h} uur${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
   return h > 0 ? `${h} hour${h !== 1 ? "s" : ""}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
 }
 
@@ -122,7 +123,7 @@ export async function generateStaticParams() {
     .select("slug")
     .eq("is_active", true);
 
-  const locales: Locale[] = ["tr", "en", "de", "pl", "ru"];
+  const locales: Locale[] = ALL_LOCALES;
   const params: { locale: string; region: string }[] = [];
 
   for (const locale of locales) {
@@ -166,6 +167,7 @@ export async function generateMetadata({
     pl: oneWayPrice ? ` · Od €${Math.round(oneWayPrice)}` : "",
     tr: oneWayPrice ? ` · €${Math.round(oneWayPrice)}'den` : "",
     ru: oneWayPrice ? ` · От €${Math.round(oneWayPrice)}` : "",
+    nl: oneWayPrice ? ` · Vanaf €${Math.round(oneWayPrice)}` : "",
   };
 
   const km = region.distance_km ? `${Number(region.distance_km)} km` : "";
@@ -188,6 +190,7 @@ export async function generateMetadata({
     pl: `Transfer z lotniska Antalya do ${name} | VIP Prywatny${priceLabel.pl}${durStr ? ` · ${durStr}` : ""}`.trim(),
     tr: `Antalya Havalimanı ${name} Özel Transfer | VIP${priceLabel.tr}${durStr ? ` · ${durStr}` : ""}`.trim(),
     ru: `Трансфер Аэропорт Анталия → ${name} | VIP${priceLabel.ru}${durStr ? ` · ${durStr}` : ""}`.trim(),
+    nl: `Transfer Luchthaven Antalya naar ${name} | Privé VIP${priceLabel.nl}${durStr ? ` · ${durStr}` : ""}`.trim(),
   };
 
   // DB title takes priority; if set append price suffix when not already present.
@@ -205,6 +208,7 @@ export async function generateMetadata({
     pl: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${oneWayPrice ? ` Od €${Math.round(oneWayPrice)} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
     tr: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${oneWayPrice ? ` Araç başına €${Math.round(oneWayPrice)}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
     ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От €${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
+    nl: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${oneWayPrice ? ` Vanaf €${Math.round(oneWayPrice)} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
   };
   const metaDesc =
     (region[`meta_description_${locale}`] as string | null) ||
@@ -293,15 +297,68 @@ export default async function RegionPage({
     .eq("is_approved", true)
     .limit(6);
 
-  // Fetch other popular regions for cross-linking
-  const { data: otherRegions } = await supabase
+  // Cross-links to other regions.
+  //
+  // This block used to return the same six `is_popular` regions on every
+  // region page, which made the internal link graph a star: the six popular
+  // destinations collected every link and the ~18 smaller ones (Evrenseki,
+  // Kızılağaç, Kargıcak, Boğazkent…) received none. Search Console shows the
+  // result — those pages sit on 3–47 impressions each, because internal links
+  // are how Google decides a page matters.
+  //
+  // Now it is a mesh: four geographic neighbours (a traveller comparing
+  // Kemer also looks at Beldibi and Göynük, not at Alanya) plus two popular
+  // destinations for commercial pull. Every region ends up linked from the
+  // pages around it on the coast.
+  const { data: allRegions } = await supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, duration_minutes, distance_km, is_popular")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km, is_popular, latitude, longitude")
     .eq("is_active", true)
     .neq("slug", region.slug)
-    .eq("is_popular", true)
-    .order("sort_order", { ascending: true })
-    .limit(6);
+    .order("sort_order", { ascending: true });
+
+  type CrossLinkRegion = {
+    slug: string;
+    name_tr: string; name_en: string; name_de: string;
+    name_pl: string; name_ru: string; name_nl: string;
+    duration_minutes: number | null;
+    distance_km: number | null;
+    is_popular: boolean | null;
+    latitude: number | null;
+    longitude: number | null;
+  };
+
+  const otherRegions = (() => {
+    const pool = (allRegions ?? []) as unknown as CrossLinkRegion[];
+    if (pool.length === 0) return [] as CrossLinkRegion[];
+
+    const lat = Number(region.latitude);
+    const lng = Number(region.longitude);
+    const km = Number(region.distance_km);
+
+    // Squared distance is enough for ranking — no need for a real haversine.
+    // Falls back to "similar distance from the airport", which along Antalya's
+    // single coastal road is a good proxy for being neighbours.
+    const proximity = (r: CrossLinkRegion): number => {
+      const rLat = Number(r.latitude);
+      const rLng = Number(r.longitude);
+      if (Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(rLat) && Number.isFinite(rLng)) {
+        return (rLat - lat) ** 2 + (rLng - lng) ** 2;
+      }
+      const rKm = Number(r.distance_km);
+      if (Number.isFinite(km) && Number.isFinite(rKm)) return Math.abs(rKm - km);
+      return Number.POSITIVE_INFINITY;
+    };
+
+    const neighbours = [...pool]
+      .sort((a, b) => proximity(a) - proximity(b))
+      .slice(0, 4);
+
+    const chosen = new Set(neighbours.map((r) => r.slug));
+    const popular = pool.filter((r) => r.is_popular === true && !chosen.has(r.slug));
+
+    return [...neighbours, ...popular].slice(0, 6);
+  })();
 
   const name = region[`name_${locale as Locale}`] || region.name_en;
   const description =

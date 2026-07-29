@@ -53,6 +53,7 @@ interface Reservation {
     name_de: string;
     name_pl: string;
     name_ru: string;
+    name_nl: string;
     slug: string;
   };
   customers: {

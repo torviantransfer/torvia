@@ -1,7 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph, seoTwitter, normalizeSlug } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter, localizedBlogSlug } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { Calendar, ArrowRight, BookOpen, Plane } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 export async function generateMetadata({
   params,
@@ -82,7 +82,7 @@ export default async function BlogPage({
                   return (
                     <Link
                       key={post.id}
-                      href={`/blog/${normalizeSlug(post.slug)}`}
+                      href={`/blog/${localizedBlogSlug(post as Record<string, unknown>, loc)}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
@@ -151,17 +151,17 @@ export default async function BlogPage({
               {locale === "tr" ? "VIP Transfer" : locale === "de" ? "VIP Transfer" : locale === "ru" ? "VIP Трансфер" : "VIP Transfer"}
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-gray-900 mb-4">
-              {locale === "tr" ? "Antalya Havalimanı VIP Transfer Rezervasyonu" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer"}
+              {locale === "tr" ? "Antalya Havalimanı VIP Transfer Rezervasyonu" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : locale === "nl" ? "Boek uw VIP Luchthaventransfer" : "Book Your VIP Airport Transfer"}
             </h2>
             <p className="text-gray-400 text-base mb-8 max-w-xl mx-auto">
-              {locale === "tr" ? "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi ile konforlu transfer." : locale === "de" ? "Professionelle Fahrer, Luxusfahrzeuge und Festpreisgarantie." : locale === "ru" ? "Профессиональные водители, роскошные автомобили и гарантия фиксированной цены." : locale === "pl" ? "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny." : "Professional drivers, luxury vehicles and fixed price guarantee."}
+              {locale === "tr" ? "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi ile konforlu transfer." : locale === "de" ? "Professionelle Fahrer, Luxusfahrzeuge und Festpreisgarantie." : locale === "ru" ? "Профессиональные водители, роскошные автомобили и гарантия фиксированной цены." : locale === "pl" ? "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny." : locale === "nl" ? "Professionele chauffeurs, luxe voertuigen en gegarandeerde vaste prijzen." : "Professional drivers, luxury vehicles and fixed price guarantee."}
             </p>
             <Link
               href="/booking"
               className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
               style={{ backgroundColor: "#F97316", color: "#fff" }}
             >
-              {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
+              {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : "Book Now"}
               <ArrowRight size={16} />
             </Link>
           </div>

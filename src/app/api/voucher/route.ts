@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     .from("reservations")
     .select(`
       *,
-      regions(name_en, name_tr, name_de, name_pl, name_ru, slug),
+      regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, slug),
       customers(first_name, last_name, email),
       vehicle_categories(name)
     `)

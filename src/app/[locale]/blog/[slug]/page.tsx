@@ -1,18 +1,25 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { seoAlternates, seoOpenGraph, normalizeSlug, hasNonAsciiSlug } from "@/lib/seo";
+import {
+  seoAlternatesPerLocale,
+  seoOpenGraph,
+  normalizeSlug,
+  localizedBlogSlug,
+  allBlogSlugs,
+} from "@/lib/seo";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import BlogStickyBar from "@/components/blog/BlogStickyBar";
 import { Link } from "@/i18n/routing";
 import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
-const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru"];
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
@@ -32,8 +39,12 @@ function getTranslatedLocales(post: Record<string, unknown>): Locale[] {
 }
 
 /**
- * Find a blog post by slug. Falls back to a normalized-slug match so
- * that ASCII URLs work even if the DB row stores a Turkish-char slug.
+ * Find a blog post by slug.
+ *
+ * A post is reachable by its shared `slug` *or* by any per-locale
+ * `slug_<locale>`. Old Turkish URLs therefore keep resolving after a post
+ * gains localized slugs — the page then 301s them to the locale's own slug
+ * instead of 404ing, so existing rankings carry over.
  */
 async function findPost(
   supabase: ReturnType<typeof createAdminClient>,
@@ -47,13 +58,18 @@ async function findPost(
     .maybeSingle();
   if (direct) return direct;
 
-  // Fallback: scan published posts and match by normalized slug.
+  // Fallback: scan published posts and match against every known slug
+  // (shared + all locale variants), normalized to ASCII.
   const { data: all } = await supabase
     .from("blog_posts")
     .select("*")
     .eq("is_published", true);
   const wanted = normalizeSlug(requestedSlug);
-  return (all ?? []).find((p) => normalizeSlug(p.slug as string) === wanted) ?? null;
+  return (
+    (all ?? []).find((p) =>
+      allBlogSlugs(p as Record<string, unknown>).includes(wanted)
+    ) ?? null
+  );
 }
 
 export async function generateStaticParams() {
@@ -67,10 +83,10 @@ export async function generateStaticParams() {
   // Fetch full post data to check which locales have actual translations
   const { data: fullPosts } = await supabase
     .from("blog_posts")
-    .select("slug, title_tr, title_en, title_de, title_pl, title_ru, content_tr, content_en, content_de, content_pl, content_ru")
+    .select("slug, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
     .eq("is_published", true);
 
-  const locales: Locale[] = ["tr", "en", "de", "pl", "ru"];
+  const locales: Locale[] = ALL_LOCALES;
   // Only generate static params for locales that have actual translated content.
   // This prevents empty/duplicate pages (e.g. /en/blog/turkish-slug-post) when
   // no English translation exists — those 404 instead of getting flagged as duplicates.
@@ -81,7 +97,10 @@ export async function generateStaticParams() {
         const content = ((post as Record<string, unknown>)[`content_${l}`] as string | null) ?? "";
         return title.trim().length > 0 && content.trim().length > 0;
       })
-      .map((locale) => ({ locale, slug: normalizeSlug(post.slug as string) }))
+      .map((locale) => ({
+        locale,
+        slug: localizedBlogSlug(post as Record<string, unknown>, locale),
+      }))
   );
 }
 
@@ -98,7 +117,8 @@ export async function generateMetadata({
 
   if (!post) return { title: "Not Found", robots: { index: false, follow: false } };
 
-  const canonicalSlug = normalizeSlug(post.slug as string);
+  // This locale's own slug — hreflang must point each language at its own URL.
+  const canonicalSlug = localizedBlogSlug(post, loc);
   const translatedLocales = getTranslatedLocales(post);
   const isTranslated = translatedLocales.includes(loc);
 
@@ -115,11 +135,18 @@ export async function generateMetadata({
     title,
     description,
     alternates: isTranslated
-      ? seoAlternates(locale, `/blog/${canonicalSlug}`, translatedLocales)
+      ? seoAlternatesPerLocale(
+          locale,
+          (l) => `/blog/${localizedBlogSlug(post, l)}`,
+          translatedLocales
+        )
       : {
           // Non-translated page: canonical points to the primary locale to
           // eliminate "duplicate without user-selected canonical" GSC errors.
-          canonical: `${BASE}/${primaryLocale}/blog/${canonicalSlug}`,
+          canonical: `${BASE}/${primaryLocale}/blog/${localizedBlogSlug(
+            post,
+            primaryLocale
+          )}`,
         },
     robots: isTranslated ? undefined : { index: false, follow: true },
     openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
@@ -141,9 +168,12 @@ export default async function BlogPostPage({
 
   if (!post) notFound();
 
-  // 301 redirect non-ASCII URLs to the clean canonical slug.
-  const canonicalSlug = normalizeSlug(post.slug as string);
-  if (slug !== canonicalSlug && (hasNonAsciiSlug(slug) || slug !== canonicalSlug)) {
+  // 301 anything that is not this locale's own slug — the shared Turkish
+  // slug, another locale's slug, or a non-ASCII variant — onto the canonical
+  // localized URL. `findPost` already matched the post, so old inbound links
+  // and existing Google rankings transfer instead of 404ing.
+  const canonicalSlug = localizedBlogSlug(post, loc);
+  if (normalizeSlug(slug) !== canonicalSlug) {
     permanentRedirect(`/${locale}/blog/${canonicalSlug}`);
   }
 
@@ -175,16 +205,21 @@ export default async function BlogPostPage({
     .order("published_at", { ascending: false })
     .limit(3);
 
-  // Dynamic pricing for CTA — reads from the admin panel's "Online Tek ($)" column
+  // The region this post is actually about. Drives both the live CTA price
+  // and the in-article link to that region's sales page — blog posts rank far
+  // better than the region pages they cannibalize, so the contextual link
+  // back is what passes that authority to the page that takes bookings.
   const ctaRegionSlug = (post.primary_region_slug as string | null) ?? null;
   let ctaOneWayPrice: number | null = null;
+  let ctaRegion: Record<string, unknown> | null = null;
   if (ctaRegionSlug) {
     const { data: regionRow } = await supabase
       .from("regions")
-      .select("id")
+      .select("id, slug, duration_minutes, distance_km, name_tr, name_en, name_de, name_pl, name_ru, name_nl")
       .eq("slug", ctaRegionSlug)
       .maybeSingle();
     if (regionRow) {
+      ctaRegion = regionRow as Record<string, unknown>;
       const { data: priceRow } = await supabase
         .from("pricing")
         .select("one_way_price")
@@ -196,14 +231,23 @@ export default async function BlogPostPage({
     }
   }
 
-  // Popular regions for cross-linking
-  const { data: popularRegions } = await supabase
+  // Regions to cross-link at the foot of the article.
+  //
+  // This used to be the same five "popular" regions on every post, which left
+  // the smaller region pages (Evrenseki, Kızılağaç, Kargıcak…) with virtually
+  // no internal links — they draw almost no impressions as a result. Including
+  // the post's own region guarantees every region page that has an article
+  // pointing at it receives a link from that article.
+  const crossLinkQuery = supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, duration_minutes, distance_km")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km")
     .eq("is_active", true)
-    .eq("is_popular", true)
     .order("sort_order", { ascending: true })
-    .limit(5);
+    .limit(6);
+
+  const { data: popularRegions } = await (ctaRegionSlug
+    ? crossLinkQuery.or(`is_popular.eq.true,slug.eq.${ctaRegionSlug}`)
+    : crossLinkQuery.eq("is_popular", true));
 
   const BASE = "https://torviantransfer.com";
 
@@ -243,7 +287,7 @@ export default async function BlogPostPage({
   // FAQPage schema — extract Q&A pairs from the HTML content
   const faqItems = (() => {
     // Find FAQ heading in any language
-    const faqPattern = /sık sorulan|frequently asked|häufig gestellt|często zadawane|часто задаваемые/i;
+    const faqPattern = /sık sorulan|frequently asked|häufig gestellt|często zadawane|часто задаваемые|veelgestelde vragen/i;
     const faqMatch = faqPattern.exec(content);
     if (!faqMatch || faqMatch.index === undefined) return null;
     // Grab everything after the FAQ section heading's closing tag
@@ -378,12 +422,27 @@ export default async function BlogPostPage({
 
         {/* Booking CTA — price pulled live from admin panel "Online Tek ($)" column */}
         {(() => {
-          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : "from";
+          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : "from";
           const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
           const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
-          const heading = locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : "Book Your VIP Airport Transfer";
-          const sub = locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : "Professional driver, luxury vehicle, fixed price. Book online now.";
-          const btnLabel = locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now";
+          const heading = locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : locale === "nl" ? "Boek uw VIP Luchthaventransfer" : "Book Your VIP Airport Transfer";
+          const sub = locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : locale === "nl" ? "Professionele chauffeur, luxe voertuig, vaste prijs. Boek nu online." : "Professional driver, luxury vehicle, fixed price. Book online now.";
+          const btnLabel = locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : "Book Now";
+
+          // Secondary link to the region's own sales page.
+          const regionName = ctaRegion
+            ? ((ctaRegion[`name_${loc}`] as string | null) ||
+               (ctaRegion.name_en as string | null) ||
+               null)
+            : null;
+          const detailsLabel = !regionName ? null
+            : locale === "tr" ? `${regionName} transfer detayları ve fiyatları`
+            : locale === "de" ? `${regionName} Transfer — Preise & Details`
+            : locale === "ru" ? `${regionName}: цены и детали трансфера`
+            : locale === "pl" ? `${regionName} — ceny i szczegóły transferu`
+            : locale === "nl" ? `${regionName} transfer — prijzen en details`
+            : `${regionName} transfer — prices & details`;
+
           return (
             <section className="py-12">
               <div className="max-w-3xl mx-auto px-4">
@@ -402,6 +461,17 @@ export default async function BlogPostPage({
                     {btnLabel}
                     <ArrowRight size={14} />
                   </Link>
+                  {ctaRegionSlug && detailsLabel && (
+                    <div className="mt-4">
+                      <Link
+                        href={`/${normalizeRegionPath(ctaRegionSlug)}`}
+                        className="inline-flex items-center gap-1.5 text-sm text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                      >
+                        <MapPin size={13} />
+                        {detailsLabel}
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -424,7 +494,10 @@ export default async function BlogPostPage({
                   return (
                     <Link
                       key={rp.id}
-                      href={`/blog/${rp.slug}`}
+                      href={`/blog/${localizedBlogSlug(
+                        rp as Record<string, unknown>,
+                        loc
+                      )}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
@@ -501,6 +574,7 @@ export default async function BlogPostPage({
       </main>
       <Footer />
       <WhatsAppButton />
+      <BlogStickyBar regionSlug={ctaRegionSlug} price={ctaOneWayPrice} />
     </>
   );
 }

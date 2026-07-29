@@ -215,6 +215,7 @@ export default async function ContactPage() {
                     { flag: "🇩🇪", langKey: "langGerman" },
                     { flag: "🇵🇱", langKey: "langPolish" },
                     { flag: "🇷🇺", langKey: "langRussian" },
+                    { flag: "🇳🇱", langKey: "langDutch" },
                   ].map(({ flag, langKey }) => (
                     <div key={langKey} className="flex items-center gap-3 px-4 py-3.5 rounded-xl" style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0" }}>
                       <span className="text-2xl">{flag}</span>

@@ -36,21 +36,25 @@ export interface Region {
   name_de: string;
   name_pl: string;
   name_ru: string;
+  name_nl: string;
   description_tr: string | null;
   description_en: string | null;
   description_de: string | null;
   description_pl: string | null;
   description_ru: string | null;
+  description_nl: string | null;
   meta_title_tr: string | null;
   meta_title_en: string | null;
   meta_title_de: string | null;
   meta_title_pl: string | null;
   meta_title_ru: string | null;
+  meta_title_nl: string | null;
   meta_description_tr: string | null;
   meta_description_en: string | null;
   meta_description_de: string | null;
   meta_description_pl: string | null;
   meta_description_ru: string | null;
+  meta_description_nl: string | null;
   distance_km: number;
   duration_minutes: number;
   image_url: string | null;
@@ -192,7 +196,7 @@ export interface CurrencyInfo {
   name: string;
 }
 
-export type Locale = "tr" | "en" | "de" | "pl" | "ru";
+export type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 export interface PriceCalculation {
   basePrice: number;

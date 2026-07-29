@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         `id, leg, pickup_time, status,
          drivers(full_name, phone),
          vehicles(plate_number, brand, model),
-         reservations(reservation_code, pickup_datetime, return_datetime, locale, regions(name_en, name_tr, name_de, name_pl, name_ru), customers(first_name, last_name, email))`
+         reservations(reservation_code, pickup_datetime, return_datetime, locale, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_nl), customers(first_name, last_name, email))`
       )
       .eq("id", assignmentId)
       .single();
