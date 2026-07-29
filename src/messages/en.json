@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Select a region to see pricing",
     "couponAppliedSuccess": "Coupon applied!",
     "couponInvalid": "Invalid or expired coupon",
+    "orderSummary": "Booking Summary",
     "trustSecure": "Secure payment via Stripe",
     "trustCancel": "Free cancellation 24h before",
     "trustNoHidden": "No hidden fees",

@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Fiyat görmek için bölge seçin",
     "couponAppliedSuccess": "Kupon uygulandı!",
     "couponInvalid": "Geçersiz veya süresi dolmuş kupon",
+    "orderSummary": "Rezervasyon Özeti",
     "trustSecure": "Stripe ile güvenli ödeme",
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
     "trustNoHidden": "Gizli ücret yok",

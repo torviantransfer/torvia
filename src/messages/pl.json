@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Wybierz region, aby zobaczyć cenę",
     "couponAppliedSuccess": "Kupon zastosowany!",
     "couponInvalid": "Nieprawidłowy lub wygasły kupon",
+    "orderSummary": "Podsumowanie rezerwacji",
     "trustSecure": "Bezpieczna płatność przez Stripe",
     "trustCancel": "Bezpłatne anulowanie 24h wcześniej",
     "trustNoHidden": "Brak ukrytych opłat",

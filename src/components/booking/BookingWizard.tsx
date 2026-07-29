@@ -138,11 +138,136 @@ function BookingWizardInner(props: Props) {
 
   const totalPrice = useMemo(() => {
     if (!selectedVehicle) return 0;
+    const seatFee = childSeat ? settingsData.childSeatFee : 0;
     if (paymentMethod === "cash" && selectedVehicle.cashPrice != null) {
-      return selectedVehicle.cashPrice + (childSeat ? settingsData.childSeatFee : 0);
+      // Cash price is a fixed per-region override — coupons never apply to it,
+      // so leaving that path alone keeps the driver-side math in sync.
+      return selectedVehicle.cashPrice + seatFee;
     }
-    return selectedVehicle.calculation.basePrice + (childSeat ? settingsData.childSeatFee : 0);
-  }, [selectedVehicle, childSeat, settingsData, paymentMethod]);
+    // Online path: the API returns basePrice as the pre-discount amount and
+    // calculation.couponDiscount as the amount subtracted by the coupon. The
+    // old code only added seatFee to basePrice, so a valid coupon reduced the
+    // charged amount on Stripe but the summary total never moved — the user
+    // saw a lie until the payment screen. Subtracting the discount here keeps
+    // the summary honest.
+    const coupon = couponStatus?.applied ? (selectedVehicle.calculation.couponDiscount || 0) : 0;
+    return Math.max(0, selectedVehicle.calculation.basePrice + seatFee - coupon);
+  }, [selectedVehicle, childSeat, settingsData, paymentMethod, couponStatus]);
+
+  // ---------------------------------------------------------------------------
+  // Step & form persistence
+  //
+  // The wizard rehydrates its search-linked inputs (region, date, passengers)
+  // from `props` because /booking?region=... carries them in the URL. Every
+  // other piece of state (step, chosen vehicle, name/email/phone, coupon,
+  // Stripe clientSecret) lived only in React memory, so a refresh sent the
+  // customer back to step 1 with empty inputs \u2014 a documented drop-off point.
+  //
+  // We stash the transient state in sessionStorage keyed by the trip signature.
+  // A different trip (different region or date) gets its own bucket, so we
+  // never leak one booking's answers into another. Restore happens once, only
+  // after the vehicles list is loaded, so the categoryId can be resolved to a
+  // real object with a live calculation.
+  // ---------------------------------------------------------------------------
+  const storageKey = useMemo(() => {
+    const parts = [
+      regionSlug,
+      tripType,
+      pickupDate || "-",
+      pickupTime || "-",
+      returnDate || "-",
+      returnTime || "-",
+      String(props.initialAdults ?? 2),
+      String(props.initialChildren ?? 0),
+    ];
+    return `torvia:booking:${parts.join("|")}`;
+  }, [regionSlug, tripType, pickupDate, pickupTime, returnDate, returnTime, props.initialAdults, props.initialChildren]);
+
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (vehicles.length === 0) return;
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.sessionStorage.getItem(storageKey);
+      if (!raw) { restoredRef.current = true; return; }
+      const saved = JSON.parse(raw) as Partial<{
+        step: number;
+        categoryId: string;
+        firstName: string; lastName: string; email: string; phone: string;
+        flightCode: string; hotelName: string; notes: string;
+        luggage: number; adults: number; children: number;
+        childSeat: boolean; couponCode: string; couponApplied: string;
+        paymentMethod: "online" | "cash";
+        clientSecret: string; reservationCode: string;
+        reservationTotalPrice: number; reservationDepositAmount: number; reservationDriverAmount: number;
+      }>;
+
+      const matchedVehicle = saved.categoryId
+        ? vehicles.find((v) => v.categoryId === saved.categoryId)
+        : undefined;
+      if (matchedVehicle) setSelectedVehicle(matchedVehicle);
+
+      if (saved.firstName !== undefined) setFirstName(saved.firstName);
+      if (saved.lastName !== undefined) setLastName(saved.lastName);
+      if (saved.email !== undefined) setEmail(saved.email);
+      if (saved.phone !== undefined) setPhone(saved.phone);
+      if (saved.flightCode !== undefined) setFlightCode(saved.flightCode);
+      if (saved.hotelName !== undefined) setHotelName(saved.hotelName);
+      if (saved.notes !== undefined) setNotes(saved.notes);
+      if (saved.luggage !== undefined) setLuggage(saved.luggage);
+      if (saved.adults !== undefined) setAdults(saved.adults);
+      if (saved.children !== undefined) setChildren(saved.children);
+      if (saved.childSeat !== undefined) setChildSeat(saved.childSeat);
+      if (saved.couponCode) setCouponCode(saved.couponCode);
+      if (saved.couponApplied) setCouponApplied(saved.couponApplied);
+      if (saved.paymentMethod) setPaymentMethod(saved.paymentMethod);
+
+      // Only restore step 3 if we still have the Stripe handle. Otherwise fall
+      // back to step 2 (form filled in) so the customer can re-submit and get
+      // a fresh PaymentIntent \u2014 stripe clientSecret can expire and returning
+      // the customer to an empty payment form is worse than dropping a step.
+      if (saved.step === 3 && saved.clientSecret && saved.reservationCode) {
+        setClientSecret(saved.clientSecret);
+        setReservationCode(saved.reservationCode);
+        setReservationTotalPrice(saved.reservationTotalPrice ?? 0);
+        setReservationDepositAmount(saved.reservationDepositAmount ?? 0);
+        setReservationDriverAmount(saved.reservationDriverAmount ?? 0);
+        setStep(3);
+      } else if ((saved.step === 2 || saved.step === 3) && matchedVehicle) {
+        setStep(2);
+      }
+    } catch { /* corrupt payload \u2014 ignore, treat as no saved state */ }
+    restoredRef.current = true;
+  }, [vehicles, storageKey]);
+
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    if (typeof window === "undefined") return;
+    const payload = {
+      step,
+      categoryId: selectedVehicle?.categoryId,
+      firstName, lastName, email, phone,
+      flightCode, hotelName, notes,
+      luggage, adults, children,
+      childSeat, couponCode, couponApplied,
+      paymentMethod,
+      clientSecret, reservationCode,
+      reservationTotalPrice, reservationDepositAmount, reservationDriverAmount,
+    };
+    try {
+      window.sessionStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch { /* quota / private mode \u2014 the refresh case degrades gracefully */ }
+  }, [
+    storageKey, step, selectedVehicle,
+    firstName, lastName, email, phone,
+    flightCode, hotelName, notes,
+    luggage, adults, children,
+    childSeat, couponCode, couponApplied,
+    paymentMethod,
+    clientSecret, reservationCode,
+    reservationTotalPrice, reservationDepositAmount, reservationDriverAmount,
+  ]);
 
   const getRegionName = (r: RegionData) => {
     const name = r[`name_${locale}`] || r.name_en;
@@ -171,6 +296,17 @@ function BookingWizardInner(props: Props) {
         setCouponStatus(data.coupon ?? null);
         if (data.vehicles) {
           setVehicles(data.vehicles);
+          // A vehicle picked before a coupon (or before any pricing refetch)
+          // holds a *stale* calculation object — the old totals with coupon=0.
+          // Re-point selectedVehicle at the matching row in the fresh list so
+          // the sidebar reads the new couponDiscount / totalPrice.
+          setSelectedVehicle((prev) => {
+            if (!prev) return prev;
+            const fresh = (data.vehicles as VehicleOption[]).find(
+              (v) => v.categoryId === prev.categoryId,
+            );
+            return fresh ?? prev;
+          });
           const region = data.region;
           if (region && COORD_OVERRIDES[region.slug]) {
             setRegionData({ ...region, ...COORD_OVERRIDES[region.slug] });
@@ -351,15 +487,23 @@ function BookingWizardInner(props: Props) {
 
       {/* Route summary bar */}
       {regionData && (
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8 px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mb-8 px-3 sm:px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-2 text-sm"><Plane size={15} className="text-blue-600" /><span className="font-medium text-gray-900">Antalya Airport</span></div>
           <ArrowRight size={14} className="text-gray-400" />
           <div className="flex items-center gap-2 text-sm"><MapPin size={15} className="text-emerald-600" /><span className="font-medium text-gray-900">{getRegionName(regionData)}</span></div>
-          <span className="text-gray-400 hidden sm:inline">&bull;</span>
-          <span className="text-xs text-gray-500 hidden sm:inline">{formatDate(pickupDate)} &middot; {pickupTime}</span>
-          {tripType === "round_trip" && (<><span className="text-gray-400 hidden sm:inline">&bull;</span><span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium"><ArrowLeftRight size={12} />{t("roundTrip")}</span></>)}
-          <span className="text-gray-400 hidden sm:inline">&bull;</span>
-          <span className="text-xs text-gray-500 hidden sm:inline">{regionData.distance_km} km &middot; ~{regionData.duration_minutes} min</span>
+          {/* Date + time — kept visible on mobile so the customer can spot the
+              wrong pickup slot before entering personal details. The bullet is
+              omitted on narrow widths because a wrapped second row reads fine
+              without it. */}
+          <span className="text-gray-300 hidden sm:inline">•</span>
+          <span className="text-xs text-gray-500 basis-full sm:basis-auto text-center sm:text-left">{formatDate(pickupDate)} · {pickupTime}</span>
+          {tripType === "round_trip" && (
+            <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium">
+              <ArrowLeftRight size={12} />{t("roundTrip")}
+            </span>
+          )}
+          <span className="text-gray-300 hidden sm:inline">•</span>
+          <span className="text-xs text-gray-500 hidden sm:inline">{regionData.distance_km} km · ~{regionData.duration_minutes} min</span>
         </div>
       )}
 
@@ -461,9 +605,12 @@ function BookingWizardInner(props: Props) {
                           ))}
                         </div>
                       </div>
-                      {/* ── Price + CTA ── */}
+                      {/* ── Price + CTA ──
+                          Below sm we stack the CTA under the price so a wide
+                          currency-conversion line doesn't collide with the
+                          button on 360-395px phones. */}
                       <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                           {/* Prices */}
                           <div className="flex-1 min-w-0">
                             {/* Online price row */}
@@ -498,7 +645,7 @@ function BookingWizardInner(props: Props) {
                             type="button"
                             onClick={() => selectVehicle(vehicle)}
                             disabled={checkingAvailability}
-                            className="flex-shrink-0 px-4 sm:px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all flex items-center gap-2 shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
+                            className="w-full sm:w-auto flex-shrink-0 px-4 sm:px-5 py-3 sm:py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
                           >
                             {checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
                             {t("selectVehicle")}
@@ -513,10 +660,13 @@ function BookingWizardInner(props: Props) {
           )}
         </div>
       )}
-      {/* STEP 2: Passenger Info + Extras */}
+      {/* STEP 2: Passenger Info + Extras
+           Order swap on mobile: the summary card comes FIRST so the customer
+           sees vehicle + price before deciding to fill in the form. On desktop
+           we restore the historical form-left / summary-right layout. */}
       {step === 2 && selectedVehicle && (
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <div className="rounded-2xl p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
                 <Users size={20} className="text-blue-600" />{t("step3")}
@@ -549,35 +699,39 @@ function BookingWizardInner(props: Props) {
                     />
                   </div>
                 </div>
-                {/* Passenger + Luggage counters */}
+                {/* Passenger + Luggage counters
+                     Buttons are 40px on mobile (Apple/Google recommended touch
+                     target) and taper to the previous 28px on desktop where
+                     hover replaces tap. Row switches from a cramped 3-col grid
+                     to a card-per-row layout below sm so labels never truncate. */}
                 <div>
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("passengers")}</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Adults */}
-                    <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
                       <span className="text-xs text-gray-500 font-medium">{t("adult")}</span>
                       <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => setAdults((v) => Math.max(1, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <button type="button" aria-label={`${t("adult")} -`} onClick={() => setAdults((v) => Math.max(1, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
                         <span className="text-base font-bold text-gray-900 w-5 text-center">{adults}</span>
-                        <button type="button" onClick={() => setAdults((v) => Math.min(selectedVehicle?.max_passengers ?? 8, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                        <button type="button" aria-label={`${t("adult")} +`} onClick={() => setAdults((v) => Math.min(selectedVehicle?.max_passengers ?? 8, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
                       </div>
                     </div>
                     {/* Children */}
-                    <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
                       <span className="text-xs text-gray-500 font-medium">{t("child")}</span>
                       <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => setChildren((v) => Math.max(0, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <button type="button" aria-label={`${t("child")} -`} onClick={() => setChildren((v) => Math.max(0, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
                         <span className="text-base font-bold text-gray-900 w-5 text-center">{children}</span>
-                        <button type="button" onClick={() => setChildren((v) => Math.min(6, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                        <button type="button" aria-label={`${t("child")} +`} onClick={() => setChildren((v) => Math.min(6, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
                       </div>
                     </div>
                     {/* Luggage */}
-                    <div className="flex flex-col items-center gap-1.5">
+                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
                       <span className="text-xs text-gray-500 font-medium">{t("luggageCapacity")}</span>
                       <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => setLuggage((v) => Math.max(0, v - 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
+                        <button type="button" aria-label={`${t("luggageCapacity")} -`} onClick={() => setLuggage((v) => Math.max(0, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
                         <span className="text-base font-bold text-gray-900 w-5 text-center">{luggage}</span>
-                        <button type="button" onClick={() => setLuggage((v) => Math.min(selectedVehicle?.max_luggage ?? 10, v + 1))} className="w-7 h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                        <button type="button" aria-label={`${t("luggageCapacity")} +`} onClick={() => setLuggage((v) => Math.min(selectedVehicle?.max_luggage ?? 10, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
                       </div>
                     </div>
                   </div>
@@ -727,12 +881,12 @@ function BookingWizardInner(props: Props) {
             </div>
           </div>
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-1 lg:order-2">
             <div className="sticky top-24 z-10">
               <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
                 {/* Header */}
                 <div className="px-5 py-3.5" style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
-                  <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">Rezervasyon Özeti</p>
+                  <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">{t("orderSummary")}</p>
                   <h3 className="text-sm font-bold text-white">{t("step1")}</h3>
                 </div>
 
@@ -790,6 +944,17 @@ function BookingWizardInner(props: Props) {
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-400">{t("childSeatFee")}</span>
                         <span className="font-medium text-gray-700">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
+                      </div>
+                    )}
+                    {couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-400 truncate mr-2">
+                          {t("couponDiscount")}
+                          {couponApplied && <span className="ml-1 text-gray-300">· {couponApplied}</span>}
+                        </span>
+                        <span className="font-semibold text-emerald-500 whitespace-nowrap">
+                          -{fmt(selectedVehicle.calculation.couponDiscount, exchangeRates)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -872,7 +1037,14 @@ function BookingWizardInner(props: Props) {
               isDeposit={paymentMethod === "cash"}
               depositAmount={reservationDepositAmount > 0 ? reservationDepositAmount : undefined}
               driverAmount={reservationDriverAmount > 0 ? reservationDriverAmount : undefined}
-              onSuccess={() => { window.location.href = `/${locale}/booking/success?code=${reservationCode}`; }}
+              onSuccess={() => {
+                // Wipe the persisted wizard state before we leave the page.
+                // Without this, coming back to /booking with the same trip
+                // signature would resurrect a completed reservation into a
+                // fresh session and confuse the customer.
+                try { window.sessionStorage.removeItem(storageKey); } catch { /* ignore */ }
+                window.location.href = `/${locale}/booking/success?code=${reservationCode}`;
+              }}
             />
           </div>
         </div>

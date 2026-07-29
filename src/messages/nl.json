@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Kies een bestemming om de prijs te zien",
     "couponAppliedSuccess": "Kortingscode toegepast!",
     "couponInvalid": "Ongeldige of verlopen kortingscode",
+    "orderSummary": "Boekingsoverzicht",
     "trustSecure": "Veilig betalen via Stripe",
     "trustCancel": "Gratis annuleren tot 24 uur vooraf",
     "trustNoHidden": "Geen verborgen kosten",

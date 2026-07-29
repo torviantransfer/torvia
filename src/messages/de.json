@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Wählen Sie eine Region für Preise",
     "couponAppliedSuccess": "Gutschein angewendet!",
     "couponInvalid": "Ungültiger oder abgelaufener Gutschein",
+    "orderSummary": "Buchungsübersicht",
     "trustSecure": "Sichere Zahlung über Stripe",
     "trustCancel": "Kostenlose Stornierung 24h vorher",
     "trustNoHidden": "Keine versteckten Gebühren",

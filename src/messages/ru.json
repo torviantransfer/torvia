@@ -156,6 +156,7 @@
     "selectRegionForPrice": "Выберите регион для просмотра цен",
     "couponAppliedSuccess": "Купон применён!",
     "couponInvalid": "Недействительный или просроченный купон",
+    "orderSummary": "Сводка бронирования",
     "trustSecure": "Безопасная оплата через Stripe",
     "trustCancel": "Бесплатная отмена за 24 часа",
     "trustNoHidden": "Без скрытых платежей",
