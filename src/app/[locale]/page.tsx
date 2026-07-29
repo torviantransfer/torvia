@@ -26,22 +26,26 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
 
+  // Titles lead with the exact high-volume head term per market (Google Trends
+  // Jul 2026: "antalya airport transfer" / "flughafen transfer antalya" = 100),
+  // then the rising commercial modifier "private transfer" (DE +200%, NL +110%,
+  // WW +70%). "VIP" kept secondary — it is declining everywhere except UK.
   const titleByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı Özel Transfer | VIP Belek, Side, Alanya, Kemer",
-    en: "Private Transfer Antalya Airport | VIP Transfer to Belek, Side, Alanya, Kemer",
-    de: "Privater Transfer Flughafen Antalya | VIP Transfer nach Belek, Side, Alanya, Kemer",
-    pl: "Prywatny Transfer z Lotniska Antalya | VIP Transfer do Belek, Side, Alanya, Kemer",
-    ru: "Частный Трансфер из Аэропорта Анталии | VIP Белек, Сиде, Аланья, Кемер",
-    nl: "Privétransfer Luchthaven Antalya | VIP Transfer naar Belek, Side, Alanya, Kemer",
+    tr: "Antalya Havalimanı Transfer | Özel Transfer Belek, Side, Alanya, Kemer",
+    en: "Antalya Airport Transfer | Private Transfer to Belek, Side, Alanya, Kemer",
+    de: "Antalya Flughafen Transfer | Privattransfer Belek, Side, Alanya, Kemer",
+    pl: "Transfer z Lotniska Antalya | Prywatny Transfer Belek, Side, Alanya, Kemer",
+    ru: "Трансфер из Аэропорта Анталии | Частный Трансфер Белек, Сиде, Аланья, Кемер",
+    nl: "Antalya Airport Transfer | Privétransfer Belek, Side, Alanya, Kemer",
   };
 
   const descriptionByLocale: Record<string, string> = {
-    tr: "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine özel VIP transfer. Sabit fiyat, uçuş takibi, online rezervasyon.",
-    en: "Private transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all Antalya resorts. Fixed price, flight tracking, instant booking.",
-    de: "Privater VIP-Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Flugverfolgung, sofortige Buchung.",
-    pl: "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, śledzenie lotu, szybka rezerwacja.",
-    ru: "Частный VIP-трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, отслеживание рейса, онлайн-бронирование.",
-    nl: "Privétransfer VIP vanaf de luchthaven Antalya naar Belek, Side, Alanya, Kemer en alle resorts. Vaste prijs, vluchtmonitoring, direct online boeken.",
+    tr: "Antalya Havalimanı transfer hizmeti: Belek, Side, Alanya, Kemer ve tüm otellere özel transfer. Sabit fiyat, Mercedes Vito, uçuş takibi, anında online rezervasyon.",
+    en: "Antalya Airport transfer to Belek, Side, Alanya, Kemer and all resorts. Private door-to-door transfer, fixed price, Mercedes Vito, flight tracking, instant booking.",
+    de: "Antalya Flughafen Transfer nach Belek, Side, Alanya, Kemer und allen Hotels. Privater Hotel-Transfer, Festpreis, Mercedes Vito, Flugverfolgung, sofortige Buchung.",
+    pl: "Transfer z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich hoteli. Prywatny transfer pod drzwi, stała cena, Mercedes Vito, śledzenie lotu, rezerwacja online.",
+    ru: "Трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и все отели. Частный трансфер от двери до двери, фиксированная цена, Mercedes Vito, отслеживание рейса.",
+    nl: "Antalya Airport transfer naar Belek, Side, Alanya, Kemer en alle hotels. Privétransfer van deur tot deur, vaste prijs, Mercedes Vito, vluchtmonitoring, direct boeken.",
   };
 
   return {
