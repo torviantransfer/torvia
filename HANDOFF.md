@@ -1,11 +1,100 @@
 # TORVIAN — Devir Notu
 
-**Son güncelleme:** 2026-07-29
-**Dal:** `main` — kod push edildi, **veritabanı migration'ları HENÜZ ÇALIŞTIRILMADI**
+**Son güncelleme:** 2026-07-29 (bu oturumun sonunda)
+**Dal:** `main` — HEAD: `246b302`, push edildi.
 
 ---
 
-## 🔴 ÖNCE BUNU YAP — SİTE ŞU AN KISMEN BOZUK
+## 🆕 BU OTURUMDA NE OLDU — YENİ SOHBETE BUNU OKU, SONRA DEVAM ET
+
+Kullanıcı bana **kalıcı, geniş bir yetki** verdi: "kıdemli SEO/içerik/CRO uzmanı gibi davran,
+rutin ve düşük riskli iyileştirmeler için ayrıca onay bekleme" dedi. Bu kural hâlâ geçerli —
+yeni sohbette de aynı şekilde davran. Tam kurallar `/memories/repo/seo-operating-charter.md`
+içinde (repo-scoped memory, otomatik yükleniyor) — orada yoksa veya bulamıyorsan bu dosyadaki
+özete güven:
+
+- **6 dil = 6 ayrı pazar** (tr, en, de, pl, ru, nl). Bir dilde alınan karar diğerlerine
+  körü körüne kopyalanmaz.
+- **Düşük riskli (onay bekleme):** başlık/meta düzeltme, yazım, iç link, alt text,
+  içerik genişletme, blog, SSS, kırık link, teknik SEO düzeltmeleri.
+- **Yüksek riskli (önce kısa plan sun, onay al):** domain değişikliği, toplu URL silme,
+  site mimarisi, toplu yönlendirme, **fiyat değişikliği**, hukuki metin, **ödeme/rezervasyon
+  sistemi değişikliği**, marka pozisyonu değişikliği.
+- **"VIP" vs "Private" konusunda tekrar hata yapma:** Site genelinde yerleşik marka ifadesi
+  **"Private VIP Transfer"** (dile göre uyarlanmış) — iki ayrı hizmet değil, aynı hizmetin iki
+  sinyali (VIP=araç/hizmet kalitesi, Private=paylaşımsız). Bir dilde "VIP" kelimesini tamamen
+  silme, ikisini birlikte tut. Detay ve istisna (ana sayfa `<title>`) charter dosyasında.
+
+### Bu oturumda tamamlanan ve push edilen işler
+1. `083e3fa` — Ana sayfa SSS'ye 2 yeni soru + localSeo ticari metin genişletmesi (6 dil).
+2. `fd74ab9` — **Kendi hatamı düzelttim:** "VIP" kelimesini yanlışlıkla 6 dilin `localSeo`
+   bloğundan silmiştim, geri eklendi + blog CTA rozeti artık dile göre değişiyor
+   (önceden İngilizce sabitti).
+3. `1dfa5f4` — **Sitemap "Invalid URL" hatası (GSC'de kullanıcı bildirdi) düzeltildi.**
+   `src/app/sitemap.ts`'teki blog kapak görselleri `<image:loc>` içinde göreli URL
+   (`/images/...`) olarak duruyordu, Google mutlak URL istiyor. `absoluteImageUrl()` helper
+   eklendi. Vercel deploy sonrası canlı sitemap'i tekrar kontrol etmek iyi olur
+   (`https://torviantransfer.com/sitemap.xml`).
+4. `246b302` — **Kritik para birimi gösterim hatası bulundu ve düzeltildi.** Onaylanan
+   6 maddelik proaktif denetim listesinin 1. maddesini (schema markup) incelerken tesadüfen
+   bulundu: fiyatlar DB'de/Stripe'ta her zaman **USD**, ama birkaç yerde ham USD sayısının
+   yanına **hiç dönüşüm yapılmadan "€" sembolü** basılıyordu (örn. $45 → görünürde "€45").
+   Düzeltilen yerler (hepsi 6 dilde): `src/components/PriceTag.tsx` (artık
+   `/api/exchange-rates` + `useCurrency().format()` ile gerçek dönüşüm yapıyor), bölge sayfası
+   `<title>` etiketi (Google SERP'te görünen!), blog CTA rozeti + mobil sticky bar
+   (`BlogStickyBar.tsx`), bölge sayfası SSS cevabı `faqA5` (görünür metin + FAQPage
+   structured data). Build temiz, commit+push edildi.
+
+### ⚠️ BEKLEYEN KARAR — kullanıcıdan onay istendi, henüz onaylanmadı/düzeltilmedi
+
+Aynı incelemede **ayrı ve daha ciddi** bir hesaplama hatası bulundu ama **dokunulmadı** çünkü
+işlem/ödeme belgelerini etkiliyor (yukarıdaki "yüksek riskli" kategoriye giriyor):
+
+- **Dosyalar:** `src/components/account/ReservationsList.tsx`,
+  `src/components/TrackReservation.tsx`, `src/app/api/stripe/webhook/route.ts`,
+  `src/app/api/voucher/route.ts` (tüketiciler: `src/lib/email.ts`, `src/lib/pdf-voucher.ts`).
+- **Hata:** USD→EUR dönüşümünü `exchange_rate_eur` (örn. 0.92) ile **bölüyor**, **çarpması**
+  gerekirken. Sonuç: rezervasyon onay e-postası, PDF voucher, hesap sayfası ve takip
+  sayfasında gösterilen EUR tutarı gerçek değerden **~%18 daha yüksek** görünüyor. Gerçek
+  ödeme her zaman doğru şekilde USD olarak Stripe'tan çekiliyor — sadece referans EUR
+  gösterimi yanlış, para kaybı yok ama müşteri kafası karışabilir/şikayet gelebilir.
+- **Önerilen düzeltme:** 4 dosyada `amount / eurRate` → `amount * eurRate` (basit, izole
+  formül düzeltmesi, gerçek ücretlendirmeyi değiştirmiyor).
+- **Yapılacak:** Yeni sohbette kullanıcıya bunu hatırlat, onay gelirse düzelt + build + commit,
+  sonra `/memories/repo/seo-operating-charter.md`'yi güncelle (zaten bulgu not edildi, "fixed"
+  olarak güncellenmesi lazım).
+
+### Sırada — kullanıcının onayladığı 6 maddelik proaktif denetim listesi
+
+```
+[x] 1. Schema markup / yapılandırılmış veri kapsamı  ← denetlendi, kapsamlı buldu;
+       yan bulgu olarak yukarıdaki para birimi hatası çıktı
+[ ] 2. Görsel alt text denetimi                        ← SIRADAKİ
+[ ] 3. İç link derinliği / site mimarisi
+[ ] 4. Core Web Vitals / sayfa hızı
+[ ] 5. Dile özel anahtar kelime & içerik boşluğu analizi (DE/PL/RU/TR/NL için ayrı ayrı,
+       İngilizce'nin kopyası OLMAYACAK)
+[ ] 6. Rakip analizi + yeni blog konu fırsatları
+```
+
+Rapor formatı kullanıcının istediği: 1) tespit edilen sorun, 2) etkilenen dil/sayfa,
+3) yapılan işlem, 4) hedef anahtar kelimeler, 5) beklenen SEO etkisi, 6) beklenen
+rezervasyon/gelir etkisi, 7) ölçülmesi gereken metrik, 8) sıradaki öncelik.
+
+### ⚠️ Aşağıdaki eski bölümler (migration 038-045 uyarısı, "16/24 bölge" ilerlemesi,
+"booking sayfası UX'e başlanmadı") bu oturumdan ÖNCEKİ bir handoff notundan kalma ve
+**git log'a göre muhtemelen artık güncel değil** — `git log --oneline` şunları gösteriyor:
+`331f398 seo(047): ... (region programme complete 24/24)`, `afe6d2e seo: Dutch content for
+21 remaining blog posts`, `0588c35 fix(booking): step + form persistence, coupon summary,
+mobile pass`. Yani bölge içerik programı muhtemelen bitti ve booking sayfası UX işi muhtemelen
+yapıldı. **Yeni sohbette önce canlı siteyi/DB'yi kontrol et, bu eski notlara körü körüne
+güvenme.** Migration 038-045'in Supabase'de çalıştırılıp çalıştırılmadığı ve service_role
+anahtarının değiştirilip değiştirilmediği de doğrulanmalı (kullanıcı "service role en son
+yapıcam" demişti — hatırlatma yapma, o istediğinde gündeme gelsin).
+
+---
+
+## 🔴 ÖNCE BUNU YAP — SİTE ŞU AN KISMEN BOZUK (eski not, yukarıdaki uyarıya bak)
 
 Kod canlıya çıktı ve `_nl` kolonlarını bekliyor, ama o kolonlar veritabanında yok.
 **`supabase/migrations/038_dutch_locale_and_localized_slugs.sql` çalıştırılana kadar şunlar hata veriyor:**
