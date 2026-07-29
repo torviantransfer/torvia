@@ -6,13 +6,19 @@ import { HelpCircle } from "lucide-react";
 export default function HomeFAQ() {
   const t = useTranslations("homeFaq");
 
+  // Built from translations so the visible copy AND the FAQPage schema are in
+  // the page's own language. Previously this was a hard-coded English array,
+  // which meant a Turkish/German/Russian/Polish visitor saw English questions
+  // and Google indexed an English FAQ schema on a non-English URL (language
+  // mismatch → lost rich-result eligibility). The q1..q6 / a1..a6 keys already
+  // exist in all six locale files.
   const faqs = [
-    { q: "Do you offer private transfer from Antalya Airport to Belek?", a: "Yes. We provide private transfer from Antalya Airport to Belek with fixed pricing, professional drivers and instant booking confirmation." },
-    { q: "Is there a VIP transfer option to Side, Alanya or Kemer?", a: "Yes. We offer VIP transfer Antalya for Side, Alanya, Kemer and all major resort areas with door-to-door service." },
-    { q: "Can I book an airport transfer online?", a: "Yes. Our airport transfer booking process is simple, secure and usually confirmed instantly after you submit your trip details." },
-    { q: "Do you track flights for airport pickups?", a: "Yes. We track flight arrivals so your driver is ready even if your flight is delayed." },
-    { q: "Is the price fixed or can it change?", a: "The price is fixed for the selected route and vehicle, with no hidden fees for standard transfers." },
-    { q: "Which destinations do you cover?", a: "We cover Belek, Side, Alanya, Kemer, Kaş, Kalkan, Fethiye, Marmaris and many more Antalya resort destinations." },
+    { q: t("q1"), a: t("a1") },
+    { q: t("q2"), a: t("a2") },
+    { q: t("q3"), a: t("a3") },
+    { q: t("q4"), a: t("a4") },
+    { q: t("q5"), a: t("a5") },
+    { q: t("q6"), a: t("a6") },
   ];
 
   const faqSchema = {

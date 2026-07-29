@@ -32,6 +32,7 @@ export async function generateMetadata({
     de: "Privater Transfer Flughafen Antalya | VIP Transfer nach Belek, Side, Alanya, Kemer",
     pl: "Prywatny Transfer z Lotniska Antalya | VIP Transfer do Belek, Side, Alanya, Kemer",
     ru: "Частный Трансфер из Аэропорта Анталии | VIP Белек, Сиде, Аланья, Кемер",
+    nl: "Privétransfer Luchthaven Antalya | VIP Transfer naar Belek, Side, Alanya, Kemer",
   };
 
   const descriptionByLocale: Record<string, string> = {
@@ -40,6 +41,7 @@ export async function generateMetadata({
     de: "Privater VIP-Transfer vom Flughafen Antalya nach Belek, Side, Alanya, Kemer und allen Resorts. Festpreis, Flugverfolgung, sofortige Buchung.",
     pl: "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Stała cena, śledzenie lotu, szybka rezerwacja.",
     ru: "Частный VIP-трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и другие курорты. Фиксированная цена, отслеживание рейса, онлайн-бронирование.",
+    nl: "Privétransfer VIP vanaf de luchthaven Antalya naar Belek, Side, Alanya, Kemer en alle resorts. Vaste prijs, vluchtmonitoring, direct online boeken.",
   };
 
   return {
@@ -54,6 +56,7 @@ export async function generateMetadata({
         de: `${BASE_URL}/de`,
         pl: `${BASE_URL}/pl`,
         ru: `${BASE_URL}/ru`,
+        nl: `${BASE_URL}/nl`,
       },
     },
     openGraph: {
@@ -62,7 +65,7 @@ export async function generateMetadata({
       url: `${BASE_URL}/${locale}`,
       siteName: "TORVIAN Transfer",
       type: "website",
-      locale: locale === "tr" ? "tr_TR" : locale === "de" ? "de_DE" : locale === "pl" ? "pl_PL" : locale === "ru" ? "ru_RU" : "en_US",
+      locale: locale === "tr" ? "tr_TR" : locale === "de" ? "de_DE" : locale === "pl" ? "pl_PL" : locale === "ru" ? "ru_RU" : locale === "nl" ? "nl_NL" : "en_US",
       images: [{ url: `${BASE_URL}/images/og-default.jpg`, width: 1200, height: 630, alt: "TORVIAN Transfer - Antalya Airport VIP Transfer" }],
     },
     twitter: {
@@ -79,6 +82,8 @@ export async function generateMetadata({
       ? "трансфер из аэропорта Анталии, VIP трансфер Анталья, частный трансфер Анталья, трансфер Белек, трансфер Сиде, трансфер Аланья, трансфер Кемер, трансфер в отель из аэропорта Анталии, частный трансфер в отель, VIP трансфер Анталия Белек, трансфер в отель Сиде"
       : locale === "pl"
       ? "transfer z lotniska Antalya, VIP transfer Antalya, prywatny transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer do hotelu z lotniska Antalya, prywatny transfer do hotelu, transfer VIP Antalya do Belek, transfer do hotelu Side"
+      : locale === "nl"
+      ? "antalya airport transfer, antalya private transfer, transfer luchthaven Antalya, privétransfer Antalya, VIP transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, hotel transfer Antalya, luchthaven Antalya naar hotel"
       : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, antalya airport hotel transfer, private transfer from antalya airport to hotel, vip transfer antalya airport to belek, side hotel transfer antalya airport",
   };
 }

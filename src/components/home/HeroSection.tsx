@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Shield, Clock, CheckCircle2, Phone, MessageCircle } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import BookingFormMini from "@/components/booking/BookingFormMini";
 
 const CONTACT_PHONE = "905469407955";
@@ -49,20 +50,27 @@ export default function HeroSection() {
           <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mr-1">
             {t("searchKeywordsHeading")}
           </span>
+          {/* These used to be dead <span> keyword labels — a visible keyword
+              list with no function reads as keyword stuffing to Google and does
+              nothing for the visitor. Now each chip is a real internal link to
+              the matching region (or the booking page for the generic ones),
+              so the keyword relevance stays but the spam signal is gone and the
+              link equity flows to the pages we want to rank. */}
           {[
-            t("keywordHotelTransfer"),
-            t("keywordPrivateHotel"),
-            t("keywordVipBelek"),
-            t("keywordBelekHotel"),
-            t("keywordSideHotel"),
-            t("keywordAlanyaPrivate"),
-          ].map((keyword) => (
-            <span
-              key={keyword}
-              className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur"
+            { label: t("keywordHotelTransfer"), href: "/booking" },
+            { label: t("keywordPrivateHotel"), href: "/booking" },
+            { label: t("keywordVipBelek"), href: "/belek-transfer" },
+            { label: t("keywordBelekHotel"), href: "/belek-transfer" },
+            { label: t("keywordSideHotel"), href: "/side-transfer" },
+            { label: t("keywordAlanyaPrivate"), href: "/alanya-transfer" },
+          ].map(({ label, href }) => (
+            <Link
+              key={label}
+              href={href}
+              className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur transition-colors hover:bg-white/20 hover:border-white/30"
             >
-              {keyword}
-            </span>
+              {label}
+            </Link>
           ))}
         </div>
 
