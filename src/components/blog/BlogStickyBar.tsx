@@ -9,7 +9,7 @@ const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 interface BlogStickyBarProps {
   /** Region slug to deep-link the booking flow (from the post's primary region). */
   regionSlug?: string | null;
-  /** Lowest one-way price for that region, shown as a "from €X" hook. */
+  /** Lowest one-way price for that region, shown as a "from $X" hook. */
   price?: number | null;
 }
 
@@ -24,7 +24,9 @@ export default function BlogStickyBar({ regionSlug, price }: BlogStickyBarProps)
   const c = useTranslations("common");
   const waHref = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(c("whatsappMessage"))}`;
   const bookingHref = regionSlug ? `/booking?region=${regionSlug}` : "/booking";
-  const fromLabel = price ? ` · €${Math.round(price)}` : "";
+  // price is the DB's one_way_price, stored in USD (see supabase/seed.sql) —
+  // labeling it with "€" without conversion misstated the price.
+  const fromLabel = price ? ` · $${Math.round(price)}` : "";
 
   return (
     <div

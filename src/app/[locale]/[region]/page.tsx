@@ -161,13 +161,17 @@ export async function generateMetadata({
     .eq("region_id", region.id)
     .single();
   const oneWayPrice = pricingMeta?.one_way_price as number | null | undefined;
+  // one_way_price is stored in USD (see supabase/seed.sql) — labeling it with
+  // "€" without conversion misrepresented the price in every title tag across
+  // all 6 locales (Google SERP snippet + on-page). Metadata is server-rendered
+  // with no per-visitor currency, so show the true base currency ($).
   const priceLabel: Record<string, string> = {
-    en: oneWayPrice ? ` · From €${Math.round(oneWayPrice)}` : "",
-    de: oneWayPrice ? ` · Ab €${Math.round(oneWayPrice)}` : "",
-    pl: oneWayPrice ? ` · Od €${Math.round(oneWayPrice)}` : "",
-    tr: oneWayPrice ? ` · €${Math.round(oneWayPrice)}'den` : "",
-    ru: oneWayPrice ? ` · От €${Math.round(oneWayPrice)}` : "",
-    nl: oneWayPrice ? ` · Vanaf €${Math.round(oneWayPrice)}` : "",
+    en: oneWayPrice ? ` · From $${Math.round(oneWayPrice)}` : "",
+    de: oneWayPrice ? ` · Ab $${Math.round(oneWayPrice)}` : "",
+    pl: oneWayPrice ? ` · Od $${Math.round(oneWayPrice)}` : "",
+    tr: oneWayPrice ? ` · $${Math.round(oneWayPrice)}'den` : "",
+    ru: oneWayPrice ? ` · От $${Math.round(oneWayPrice)}` : "",
+    nl: oneWayPrice ? ` · Vanaf $${Math.round(oneWayPrice)}` : "",
   };
 
   const km = region.distance_km ? `${Number(region.distance_km)} km` : "";
@@ -196,7 +200,7 @@ export async function generateMetadata({
   // DB title takes priority; if set append price suffix when not already present.
   const dbTitle = (region[`meta_title_${locale}`] as string | null) || (region.meta_title as string | null);
   const metaTitle = dbTitle
-    ? (oneWayPrice && !dbTitle.includes("€") ? `${dbTitle}${priceLabel[locale]}` : dbTitle)
+    ? (oneWayPrice && !/[€$]/.test(dbTitle) ? `${dbTitle}${priceLabel[locale]}` : dbTitle)
     : (fallbackTitle[locale] ?? fallbackTitle.en);
 
   // Fallback descriptions — include price, USPs optimised per Trends:

@@ -470,7 +470,7 @@
     "faqQ4": "Şoförüm Antalya Havalimanı'nda beni nasıl bulacak?",
     "faqA4": "Bagajınızı alıp varış salonuna çıktığınızda şoförünüz adınızın yazılı olduğu bir isimlikle sizi bekliyor olacak. Rezervasyon sonrası şoför adı, telefonu ve buluşma noktası haritası e-posta ile gönderilir.",
     "faqQ5": "Antalya Havalimanı'ndan {name}'e özel transfer ücreti ne kadar?",
-    "faqA5": "Antalya Havalimanı'ndan {name}'e tek yön özel VIP transferin sabit fiyatı araç başına (kişi başına değil) €{price}'dan başlar. Otoban, yakıt, bekleme süresi ve karşılama hizmetinin tamamı dahildir. Kasada sürpriz ücret yok.",
+    "faqA5": "Antalya Havalimanı'ndan {name}'e tek yön özel VIP transferin sabit fiyatı araç başına (kişi başına değil) ${price}'dan başlar. Otoban, yakıt, bekleme süresi ve karşılama hizmetinin tamamı dahildir. Kasada sürpriz ücret yok.",
     "faqQ6": "{name}'e 7/24 havalimanı transferi var mı?",
     "faqA6": "Evet. TORVIAN yılın 365 günü, günün 24 saati hizmet verir. Tüm uçuşları gerçek zamanlı takip ediyor; gece geç saatlerde veya sabah erken inen uçuşlar için bekleme sürelerini otomatik ayarlıyoruz. Gece transferi için ekstra ücret alınmaz.",
     "faqQ7": "{name} transferimde çocuk koltuğu ekleyebilir miyim?",

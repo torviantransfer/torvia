@@ -466,7 +466,7 @@
     "faqQ4": "Hoe vindt mijn chauffeur mij op de luchthaven Antalya?",
     "faqA4": "Zoek na het ophalen van uw bagage in de aankomsthal naar uw chauffeur met een naambord met uw naam erop. Na uw boeking ontvangt u per e-mail de naam en het telefoonnummer van de chauffeur en een plattegrond van het ontmoetingspunt.",
     "faqQ5": "Wat kost een privétransfer van de luchthaven Antalya naar {name}?",
-    "faqA5": "De vaste prijs voor een privé VIP-transfer enkele reis van de luchthaven Antalya naar {name} begint bij €{price} per voertuig — niet per persoon. Inclusief tol, brandstof, wachttijd en ontvangst met naambord. Geen verrassingen bij het afrekenen.",
+    "faqA5": "De vaste prijs voor een privé VIP-transfer enkele reis van de luchthaven Antalya naar {name} begint bij ${price} per voertuig — niet per persoon. Inclusief tol, brandstof, wachttijd en ontvangst met naambord. Geen verrassingen bij het afrekenen.",
     "faqQ6": "Is er 24/7 een luchthaventransfer naar {name} beschikbaar?",
     "faqA6": "Ja. TORVIAN rijdt 24 uur per dag, het hele jaar door. Wij volgen elke vlucht in realtime en passen de wachttijd aan bij late of vroege aankomsten — geen toeslag voor nachttransfers.",
     "faqQ7": "Kan ik een kinderzitje toevoegen aan mijn luchthaventransfer naar {name}?",

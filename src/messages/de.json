@@ -470,7 +470,7 @@
     "faqQ4": "Wie findet mein Fahrer mich am Flughafen Antalya?",
     "faqA4": "Nach der Gepäckabholung sehen Sie Ihren Fahrer in der Ankunftshalle mit einem Namensschild. Nach der Buchung erhalten Sie Name, Telefonnummer des Fahrers und eine Karte des Treffpunkts per E-Mail.",
     "faqQ5": "Was kostet ein Privattransfer vom Flughafen Antalya nach {name}?",
-    "faqA5": "Der Festpreis für einen einfachen privaten VIP-Transfer vom Flughafen Antalya nach {name} beginnt bei €{price} pro Fahrzeug — nicht pro Person. Inklusive aller Maut-, Kraftstoff-, Wartezeit- und Meet-&-Greet-Kosten. Keine Überraschungen beim Bezahlen.",
+    "faqA5": "Der Festpreis für einen einfachen privaten VIP-Transfer vom Flughafen Antalya nach {name} beginnt bei ${price} pro Fahrzeug — nicht pro Person. Inklusive aller Maut-, Kraftstoff-, Wartezeit- und Meet-&-Greet-Kosten. Keine Überraschungen beim Bezahlen.",
     "faqQ6": "Gibt es einen 24/7-Transfer vom Flughafen Antalya nach {name}?",
     "faqA6": "Ja. TORVIAN ist 24 Stunden am Tag, 365 Tage im Jahr verfügbar. Wir verfolgen jeden Flug in Echtzeit und passen Wartezeiten für Nacht- oder Frühmorgenankünfte an — kein Nachtzuschlag.",
     "faqQ7": "Kann ich für meinen {name} Transfer einen Kindersitz buchen?",

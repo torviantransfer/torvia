@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { type Currency, currencySymbols } from "@/i18n/config";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function PriceTag({
   amount,
@@ -10,24 +10,28 @@ export default function PriceTag({
   amount: number;
   className?: string;
 }) {
-  const [currency, setCurrency] = useState<Currency>("USD");
+  const { format } = useCurrency();
+  // USD is the DB's base currency (see supabase/seed.sql). Selecting EUR/TRY
+  // in the currency switcher must convert the amount, not just swap the
+  // symbol — fetch live rates the same way BookingWizard does.
+  const [rates, setRates] = useState<Record<string, number>>({ USD: 1 });
 
   useEffect(() => {
-    const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;
-    if (stored && (stored === "USD" || stored === "EUR" || stored === "TRY")) {
-      setCurrency(stored);
-    }
-    const handler = (e: Event) => {
-      setCurrency((e as CustomEvent).detail as Currency);
+    let cancelled = false;
+    fetch("/api/exchange-rates")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.rates) setRates({ USD: 1, ...data.rates });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
     };
-    window.addEventListener("currency-change", handler);
-    return () => window.removeEventListener("currency-change", handler);
   }, []);
 
-  const symbol = currencySymbols[currency] ?? "$";
   return (
     <span className={className}>
-      From {symbol}{amount}
+      From {format(amount, rates)}
     </span>
   );
 }

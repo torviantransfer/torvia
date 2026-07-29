@@ -428,7 +428,10 @@ export default async function BlogPostPage({
         {/* Booking CTA — price pulled live from admin panel "Online Tek ($)" column */}
         {(() => {
           const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : "from";
-          const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
+          // one_way_price is stored in USD (see supabase/seed.sql) — labeling it
+          // with "€" without conversion overstated the EUR price by ~8% (and was
+          // wildly wrong for TRY). Server-rendered here, so show the true currency.
+          const priceLabel = ctaOneWayPrice ? ` · ${fromWord} $${Math.round(ctaOneWayPrice)}` : "";
           const badgeLabel =
             locale === "de" ? "Privater VIP-Transfer" :
             locale === "pl" ? "Prywatny Transfer VIP" :
