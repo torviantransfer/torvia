@@ -24,7 +24,11 @@ const nextConfig: NextConfig = {
     ],
   },
   async redirects() {
-    const locales = ["tr", "en", "de", "pl", "ru"];
+    // Keep in sync with src/i18n/config.ts. Dutch (nl) was added as the 6th
+    // locale (migration 038); leaving it out here means Dutch visitors hitting
+    // the legacy blog/region URLs do not get the 301 that carries the ranking
+    // signal to the surviving URL, so their traffic silently disappears.
+    const locales = ["tr", "en", "de", "pl", "ru", "nl"];
     // Known region slugs — redirect bare slug to slug-transfer
     const regionSlugs = [
       "belek", "side", "alanya", "kemer", "konyaalti", "kundu", "lara",
