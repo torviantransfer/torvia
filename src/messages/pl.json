@@ -767,11 +767,15 @@
     "q5": "Czy zapewniacie foteliki dziecięce?",
     "a5": "Tak, możesz poprosić o fotelik dziecięcy podczas rezerwacji. Opłata wynosi $10 za rezerwację.",
     "q6": "Jak mogę zapłacić?",
-    "a6": "Możesz bezpiecznie zapłacić online kartą kredytową. Wszystkie karty są akceptowane przez system płatności Stripe."
+    "a6": "Możesz bezpiecznie zapłacić online kartą kredytową. Wszystkie karty są akceptowane przez system płatności Stripe.",
+    "q7": "Prywatny transfer, taksówka czy Uber — co jest najlepsze z lotniska Antalya?",
+    "a7": "Uber nie działa w Antalyi. Taksówka lotniskowa nie ma stałej ceny i rzadko oferuje foteliki dziecięce. Prywatny transfer to stała cena za pojazd, kierowca z tabliczką z Twoim nazwiskiem i śledzenie lotu — najbardziej niezawodna opcja transferu do hotelu.",
+    "q8": "Czy Uber działa w Antalyi?",
+    "a8": "Nie. Uber jest ograniczony w Turcji od 2019 roku i nie działa na lotnisku Antalya. Niezawodne alternatywy to BiTaksi, autobus Havaş, oficjalna taksówka lub wcześniej zarezerwowany prywatny transfer."
   },
   "localSeo": {
-    "heading": "Usługa VIP Transfer z Lotniska Antalya",
-    "paragraph1": "TORVIAN Transfer świadczy profesjonalną usługę VIP transfer z lotniska Antalya (AYT) do wszystkich miejscowości turystycznych, w tym Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris. Serwis 24/7, śledzenie lotów i gwarancja stałej ceny.",
+    "heading": "Prywatny Transfer z Lotniska Antalya",
+    "paragraph1": "TORVIAN Transfer świadczy profesjonalny prywatny transfer z lotniska Antalya (AYT) do wszystkich miejscowości turystycznych, w tym Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris. Serwis 24/7, śledzenie lotów i gwarancja stałej ceny.",
     "paragraph2": "Nasza usługa transferu z lotniska Antalya jest realizowana licencjonowanymi i ubezpieczonymi pojazdami. Nasze pojazdy Mercedes Vito VIP posiadają Wi-Fi, klimatyzację, porty USB i bezpłatną wodę. Nasi kierowcy mówią po angielsku, niemiecku i rosyjsku.",
     "paragraph3": "Transfer do hoteli golfowych Belek, transfer do starożytnego Side, transfer na wybrzeże Alanya, transfer do kurortu Kemer — szybki i bezpieczny dostęp do wszystkich popularnych destynacji Antalya. Prywatny transfer od drzwi do drzwi.",
     "feat1": "System Śledzenia Lotów",

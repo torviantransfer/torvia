@@ -767,11 +767,15 @@
     "q5": "Çocuk koltuğu sağlıyor musunuz?",
     "a5": "Evet, rezervasyon sırasında çocuk koltuğu talep edebilirsiniz. Ücret rezervasyon başına 10$'dır.",
     "q6": "Ödemeyi nasıl yapabilirim?",
-    "a6": "Online kredi kartı ile güvenli ödeme yapabilirsiniz. Stripe altyapısı ile tüm kartlar kabul edilmektedir."
+    "a6": "Online kredi kartı ile güvenli ödeme yapabilirsiniz. Stripe altyapısı ile tüm kartlar kabul edilmektedir.",
+    "q7": "Özel transfer, taksi mi yoksa Uber mi? Antalya Havalimanı'ndan en iyisi hangisi?",
+    "a7": "Uber Antalya'da hizmet vermiyor. Havalimanı taksisinde sabit fiyat yoktur ve çocuk koltuğu nadiren bulunur. Özel transfer; araç başına sabit fiyat, isim tabelasıyla bekleyen şoför ve uçuş takibi sunar — otel transferi için en güvenilir seçenektir.",
+    "q8": "Antalya'da Uber var mı?",
+    "a8": "Hayır. Uber, Türkiye'de 2019'dan beri kısıtlı ve Antalya Havalimanı'nda çalışmıyor. Güvenilir alternatifler: BiTaksi, Havaş otobüsü, resmi taksi veya önceden rezervasyon yapılan özel transfer."
   },
   "localSeo": {
-    "heading": "Antalya Havalimanı VIP Transfer Hizmeti",
-    "paragraph1": "TORVIAN Transfer, Antalya Havalimanı'ndan (AYT) Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris ve çevresindeki tüm tatil bölgelerine profesyonel VIP transfer hizmeti sunmaktadır. 7/24 hizmet, uçuş takibi ve sabit fiyat garantisi ile konforlu seyahat deneyimi.",
+    "heading": "Antalya Havalimanı Özel Transfer Hizmeti",
+    "paragraph1": "TORVIAN Transfer, Antalya Havalimanı'ndan (AYT) Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris ve çevresindeki tüm tatil bölgelerine profesyonel özel transfer hizmeti sunmaktadır. 7/24 hizmet, uçuş takibi ve sabit fiyat garantisi ile konforlu seyahat deneyimi.",
     "paragraph2": "Antalya havalimanı transfer hizmetimiz, lisanslı ve sigortalı araçlarla sunulmaktadır. Mercedes Vito VIP araçlarımızda Wi-Fi, klima, USB şarj noktaları ve su ikramı bulunur. Profesyonel şoförlerimiz İngilizce, Almanca ve Rusça konuşabilmektedir.",
     "paragraph3": "Belek golf otelleri transferi, Side antik kent transferi, Alanya sahil bölgesi transferi, Kemer doğa tatil transferi — tüm popüler Antalya tatil destinasyonlarına hızlı ve güvenli ulaşım. Havalimanından otelinize veya otelinizden havalimanına kapıdan kapıya özel transfer.",
     "feat1": "Uçuş Takip Sistemi",

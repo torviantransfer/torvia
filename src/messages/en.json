@@ -767,11 +767,15 @@
     "q5": "Do you provide child seats?",
     "a5": "Yes, you can request a child seat during booking. The fee is $10 per booking.",
     "q6": "How can I pay?",
-    "a6": "You can pay securely online with a credit card. All cards are accepted through Stripe payment infrastructure."
+    "a6": "You can pay securely online with a credit card. All cards are accepted through Stripe payment infrastructure.",
+    "q7": "Private transfer, taxi or Uber — what's best from Antalya Airport?",
+    "a7": "Uber does not operate in Antalya. An airport taxi has no fixed price and rarely offers child seats. A private transfer gives you a fixed price per vehicle, a driver waiting with your name sign, and flight tracking — the most reliable option for a hotel transfer.",
+    "q8": "Is Uber available in Antalya?",
+    "a8": "No. Uber has been restricted in Turkey since 2019 and does not operate at Antalya Airport. Reliable alternatives are BiTaksi, the Havaş shuttle bus, official taxis, or a pre-booked private transfer."
   },
   "localSeo": {
-    "heading": "Antalya Airport VIP Transfer Service",
-    "paragraph1": "TORVIAN Transfer provides professional VIP transfer service from Antalya Airport (AYT) to all resort destinations including Belek, Side, Alanya, Kemer, Kundu-Lara, Kas, Fethiye, Marmaris and surrounding areas. 24/7 service, flight tracking and fixed price guarantee for a comfortable travel experience.",
+    "heading": "Antalya Airport Private Transfer Service",
+    "paragraph1": "TORVIAN Transfer provides a professional private transfer service from Antalya Airport (AYT) to all resort destinations including Belek, Side, Alanya, Kemer, Kundu-Lara, Kas, Fethiye, Marmaris and surrounding areas. 24/7 service, flight tracking and fixed price guarantee for a comfortable travel experience.",
     "paragraph2": "Our Antalya airport transfer service is provided with licensed and insured vehicles. Our Mercedes Vito VIP vehicles feature Wi-Fi, air conditioning, USB charging ports and complimentary water. Our professional drivers speak English, German and Russian.",
     "paragraph3": "Belek golf hotel transfer, Side ancient city transfer, Alanya coastal area transfer, Kemer nature resort transfer — fast and safe access to all popular Antalya holiday destinations. Private door-to-door transfer from the airport to your hotel or from your hotel to the airport.",
     "feat1": "Flight Tracking System",

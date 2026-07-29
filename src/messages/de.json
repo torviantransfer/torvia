@@ -767,11 +767,15 @@
     "q5": "Bieten Sie Kindersitze an?",
     "a5": "Ja, Sie können bei der Buchung einen Kindersitz anfordern. Die Gebühr beträgt $10 pro Buchung.",
     "q6": "Wie kann ich bezahlen?",
-    "a6": "Sie können sicher online mit Kreditkarte bezahlen. Alle Karten werden über die Stripe-Zahlungsinfrastruktur akzeptiert."
+    "a6": "Sie können sicher online mit Kreditkarte bezahlen. Alle Karten werden über die Stripe-Zahlungsinfrastruktur akzeptiert.",
+    "q7": "Privattransfer, Taxi oder Uber — was ist vom Flughafen Antalya am besten?",
+    "a7": "Uber ist in Antalya nicht verfügbar. Ein Flughafentaxi hat keinen Festpreis und selten Kindersitze. Ein Privattransfer bietet einen Festpreis pro Fahrzeug, einen Fahrer mit Namensschild und Flugverfolgung — die zuverlässigste Option für den Hoteltransfer.",
+    "q8": "Gibt es Uber in Antalya?",
+    "a8": "Nein. Uber ist in der Türkei seit 2019 eingeschränkt und fährt nicht am Flughafen Antalya. Zuverlässige Alternativen sind BiTaksi, der Havaş-Shuttlebus, offizielle Taxis oder ein vorab gebuchter Privattransfer."
   },
   "localSeo": {
-    "heading": "Antalya Flughafen VIP Transfer Service",
-    "paragraph1": "TORVIAN Transfer bietet professionellen VIP-Transferservice vom Flughafen Antalya (AYT) zu allen Ferienorten einschließlich Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris und Umgebung. 24/7 Service, Flugverfolgung und Festpreisgarantie.",
+    "heading": "Antalya Flughafen Privattransfer Service",
+    "paragraph1": "TORVIAN Transfer bietet professionellen Privattransfer vom Flughafen Antalya (AYT) zu allen Ferienorten einschließlich Belek, Side, Alanya, Kemer, Kundu-Lara, Kaş, Fethiye, Marmaris und Umgebung. 24/7 Service, Flugverfolgung und Festpreisgarantie.",
     "paragraph2": "Unser Antalya Flughafen-Transferservice wird mit lizenzierten und versicherten Fahrzeugen angeboten. Unsere Mercedes Vito VIP-Fahrzeuge verfügen über WLAN, Klimaanlage, USB-Ladeanschlüsse und kostenloses Wasser. Unsere Fahrer sprechen Englisch, Deutsch und Russisch.",
     "paragraph3": "Belek Golf-Hotel Transfer, Side Antikstadt Transfer, Alanya Küsten Transfer, Kemer Natur-Resort Transfer — schneller und sicherer Zugang zu allen beliebten Antalya-Ferienzielen. Als spezialisierter Hotel Transfer Antalya bringen wir Sie im privaten Tür-zu-Tür-Transfer direkt vom Flughafen zu Ihrem Hotel.",
     "feat1": "Flugverfolgungssystem",
