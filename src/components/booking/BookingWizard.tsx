@@ -64,6 +64,7 @@ interface RegionData {
   name_de: string;
   name_pl: string;
   name_ru: string;
+  name_nl: string;
   distance_km: number;
   duration_minutes: number;
   latitude?: number;
@@ -118,7 +119,13 @@ function BookingWizardInner(props: Props) {
   const [childSeat, setChildSeat] = useState(false);
   const [couponCode, setCouponCode] = useState("");
 
-  const [couponApplied, setCouponApplied] = useState(false);
+  // `couponApplied` is the code we have actually asked the server to price.
+  // It used to be a bare boolean flipped by the Apply button, which meant the
+  // code was never sent to /api/pricing and no discount could ever appear.
+  const [couponApplied, setCouponApplied] = useState<string>("");
+  const [couponStatus, setCouponStatus] = useState<
+    { applied: boolean; reason?: string } | null
+  >(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [reservationCode, setReservationCode] = useState<string | null>(null);
   const [reservationTotalPrice, setReservationTotalPrice] = useState<number>(0);
@@ -157,9 +164,11 @@ function BookingWizardInner(props: Props) {
 
   useEffect(() => {
     const params = new URLSearchParams({ region: regionSlug, trip: tripType, time: pickupTime });
+    if (couponApplied) params.set("coupon", couponApplied);
     fetch(`/api/pricing?${params}`)
       .then((res) => res.json())
       .then((data) => {
+        setCouponStatus(data.coupon ?? null);
         if (data.vehicles) {
           setVehicles(data.vehicles);
           const region = data.region;
@@ -180,7 +189,7 @@ function BookingWizardInner(props: Props) {
       })
       .catch(() => setError(t("errorNetwork")))
       .finally(() => setLoading(false));
-  }, [regionSlug, tripType, pickupTime, t]);
+  }, [regionSlug, tripType, pickupTime, couponApplied, t]);
 
   // Check date availability
   useEffect(() => {
@@ -251,7 +260,7 @@ function BookingWizardInner(props: Props) {
           flightCode: flightCode || undefined, adults, children, luggage,
           childSeat,
           firstName, lastName, email, phone, hotelName: hotelName || undefined,
-          notes: notes || undefined, couponCode: couponApplied ? couponCode : undefined, locale,
+          notes: notes || undefined, couponCode: couponStatus?.applied ? couponApplied : undefined, locale,
           paymentMethod,
         }),
       });
@@ -610,9 +619,45 @@ function BookingWizardInner(props: Props) {
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("couponCode")}</label>
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <input type="text" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponApplied(false); }} placeholder={t("placeholderCoupon")} className="flex-1 px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
-                    <button type="button" onClick={() => setCouponApplied(true)} disabled={!couponCode.trim()} className="px-5 py-2.5 sm:py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all whitespace-nowrap" style={{ backgroundColor: "rgba(0,0,0,0.06)" }}>{t("applyCoupon")}</button>
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value.toUpperCase());
+                        // Editing invalidates the previous verdict; the price
+                        // reverts until the new code is checked server-side.
+                        setCouponApplied("");
+                        setCouponStatus(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && couponCode.trim()) {
+                          e.preventDefault();
+                          setCouponApplied(couponCode.trim().toUpperCase());
+                        }
+                      }}
+                      placeholder={t("placeholderCoupon")}
+                      className="flex-1 px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+                      style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCouponApplied(couponCode.trim().toUpperCase())}
+                      disabled={!couponCode.trim() || couponApplied === couponCode.trim().toUpperCase()}
+                      className="px-5 py-2.5 sm:py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all whitespace-nowrap"
+                      style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
+                    >
+                      {t("applyCoupon")}
+                    </button>
                   </div>
+                  {couponStatus && (
+                    <p
+                      className="mt-2 text-xs font-medium"
+                      style={{ color: couponStatus.applied ? "#16a34a" : "#dc2626" }}
+                      role="status"
+                    >
+                      {couponStatus.applied ? t("couponAppliedSuccess") : t("couponInvalid")}
+                    </p>
+                  )}
                 </div>
 
                 {/* Payment Method Selector */}

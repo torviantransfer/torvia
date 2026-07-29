@@ -7,6 +7,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { sendReservationEmail } from "@/lib/email";
 import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiInitiateCheckout } from "@/lib/capi";
+import { evaluateCoupon, type CouponRow } from "@/lib/coupon";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -210,22 +211,16 @@ export async function POST(request: NextRequest) {
       const { data: coupon } = await supabase
         .from("coupons")
         .select("*")
-        .eq("code", couponCode.toUpperCase())
-        .eq("is_active", true)
-        .single();
+        .eq("code", couponCode.trim().toUpperCase())
+        .maybeSingle();
 
-      if (coupon) {
-        const now = new Date();
-        const from = new Date(coupon.valid_from);
-        const until = new Date(coupon.valid_until);
-        if (now >= from && now <= until && coupon.used_count < coupon.max_uses) {
-          couponId = coupon.id;
-          if (coupon.discount_type === "percent") {
-            couponDiscountPercent = coupon.discount_value;
-          } else {
-            couponDiscountFixed = coupon.discount_value;
-          }
-        }
+      // Same evaluator as /api/pricing — the quote the customer saw and the
+      // price we actually charge must agree on whether the code is valid.
+      const result = evaluateCoupon(coupon as CouponRow | null);
+      if (result.valid) {
+        couponId = result.id;
+        couponDiscountPercent = result.discountPercent;
+        couponDiscountFixed = result.discountFixed;
       }
     }
 

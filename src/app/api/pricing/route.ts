@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { evaluateCoupon, type CouponRow } from "@/lib/coupon";
 import { calculatePrice } from "@/lib/pricing";
 
 export async function GET(request: NextRequest) {
@@ -69,30 +70,28 @@ export async function GET(request: NextRequest) {
     return typeof v === "number" ? v : Number(v ?? 0);
   };
 
-  // Check coupon
+  // Check coupon. Shared with /api/reservations via evaluateCoupon so the two
+  // can never disagree about whether a code is usable.
   let couponDiscountPercent = 0;
   let couponDiscountFixed = 0;
   let couponId: string | null = null;
+  let couponStatus: { applied: boolean; code: string; reason?: string } | null = null;
   if (couponCode) {
+    const normalized = couponCode.trim().toUpperCase();
     const { data: coupon } = await supabase
       .from("coupons")
       .select("*")
-      .eq("code", couponCode.toUpperCase())
-      .eq("is_active", true)
-      .single();
+      .eq("code", normalized)
+      .maybeSingle();
 
-    if (coupon) {
-      const now = new Date();
-      const validFrom = new Date(coupon.valid_from);
-      const validUntil = new Date(coupon.valid_until);
-      if (now >= validFrom && now <= validUntil && coupon.used_count < coupon.max_uses) {
-        couponId = coupon.id;
-        if (coupon.discount_type === "percent") {
-          couponDiscountPercent = coupon.discount_value;
-        } else {
-          couponDiscountFixed = coupon.discount_value;
-        }
-      }
+    const result = evaluateCoupon(coupon as CouponRow | null);
+    if (result.valid) {
+      couponId = result.id;
+      couponDiscountPercent = result.discountPercent;
+      couponDiscountFixed = result.discountFixed;
+      couponStatus = { applied: true, code: normalized };
+    } else {
+      couponStatus = { applied: false, code: normalized, reason: result.reason };
     }
   }
 
@@ -177,6 +176,7 @@ export async function GET(request: NextRequest) {
       name_de: region.name_de,
       name_pl: region.name_pl,
       name_ru: region.name_ru,
+      name_nl: region.name_nl,
       distance_km: region.distance_km,
       duration_minutes: region.duration_minutes,
       latitude: region.latitude,
@@ -184,6 +184,10 @@ export async function GET(request: NextRequest) {
     },
     vehicles,
     couponId,
+    // null when no code was submitted; otherwise tells the client whether it
+    // was accepted and, if not, why — the booking form has had no way to show
+    // that until now, so a rejected code just looked like nothing happened.
+    coupon: couponStatus,
     exchangeRates,
     settings: {
       childSeatFee: numSetting("child_seat_fee") || 10,
