@@ -6,6 +6,16 @@ import { locales as ALL_LOCALES } from "@/i18n/config";
 const BASE_URL = "https://torviantransfer.com";
 const locales: readonly string[] = ALL_LOCALES;
 
+// Google's image sitemap spec requires <image:loc> to be a fully-qualified
+// absolute URL. image_url values stored in the DB are relative paths
+// (e.g. "/images/regions/alanya-castle.jpg"), so they must be resolved
+// against BASE_URL before being emitted, otherwise GSC reports them as
+// "Invalid URL" ("Site haritası okunabiliyor, ancak hataları var").
+function absoluteImageUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
 // Primary locales get full priority, secondary locales get reduced priority
 const primaryLocales = ["en", "tr", "de"];
 
@@ -112,7 +122,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: post.published_at ? new Date(post.published_at) : new Date(),
         changeFrequency: "monthly",
         priority: isPrimary ? 0.7 : 0.5,
-        ...(postImage ? { images: [postImage] } : {}),
+        ...(postImage ? { images: [absoluteImageUrl(postImage)] } : {}),
       });
     }
   }
