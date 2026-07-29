@@ -35,7 +35,16 @@
     "trustCancel": "Gratis annuleren tot 24 uur vooraf",
     "trustNoHidden": "Geen verborgen kosten",
     "callNow": "Bel nu",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "promoText": "Boek een privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en alle badplaatsen rond Antalya — vaste prijzen, vluchtmonitoring en directe bevestiging.",
+    "badgePill": "Privétransfer luchthaven Antalya • VIP-transfer Antalya • Antalya Airport transfer boeken",
+    "searchKeywordsHeading": "Populaire zoekopdrachten",
+    "keywordHotelTransfer": "Antalya airport hoteltransfer",
+    "keywordPrivateHotel": "Privétransfer luchthaven Antalya naar hotel",
+    "keywordVipBelek": "VIP-transfer luchthaven Antalya naar Belek",
+    "keywordBelekHotel": "Belek hoteltransfer vanaf luchthaven Antalya",
+    "keywordSideHotel": "Side hoteltransfer luchthaven Antalya",
+    "keywordAlanyaPrivate": "Alanya privé luchthaventransfer"
   },
   "booking": {
     "title": "Boek uw Antalya luchthaventransfer | Vaste prijs, directe bevestiging",
@@ -164,7 +173,11 @@
     "featureUsb": "USB-oplader",
     "featureTv": "TV",
     "featureMinibar": "Minibar",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer met premium voorzieningen"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer met premium voorzieningen",
+    "bookNow": "Nu boeken",
+    "selectDate": "Kies alstublieft een datum",
+    "hour": "Uur",
+    "minute": "Minuut"
   },
   "trust": {
     "heading": "Waarom reizigers voor TORVIAN kiezen.",
@@ -256,7 +269,8 @@
     "heading": "Klaar voor een zorgeloze aankomst?",
     "subheading": "Boek nu uw privé luchthaventransfer en begin uw vakantie op het moment dat u in Antalya landt.",
     "bookTransfer": "Boek uw transfer",
-    "contactUs": "Neem contact op"
+    "contactUs": "Neem contact op",
+    "primaryCta": "Luchthaventransfer boeken"
   },
   "regions": {
     "title": "Bestemmingen luchthaven Antalya | Afstand en reistijd transfer",
@@ -282,7 +296,9 @@
     "kemerDesc": "Rustige transfer naar Kemer, tussen bergen en zee. Ook naar Çamyuva, Göynük, Beldibi en Tekirova.",
     "kunduDesc": "Snelle en voordelige luchthaventransfer naar Kundu-Lara, het dichtstbijzijnde resortgebied. Vlot bereikbaar vanaf alle all-inclusive hotels.",
     "kasDesc": "Privétransfer naar Kas, de verborgen parel van de Middellandse Zee. Turquoise baaien, duikplekken en authentieke dorpscharme.",
-    "viewDetails": "Bekijk details"
+    "viewDetails": "Bekijk details",
+    "introText": "Boek een luchthaventransfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en de populairste badplaatsen rond Antalya — privé VIP-service.",
+    "bookRegionTransfer": "Privétransfer naar {name} boeken"
   },
   "about": {
     "title": "Over ons — VIP-luchthaventransfer Antalya",
@@ -485,7 +501,11 @@
     "imageAlt": "Privé VIP-transfer van de luchthaven Antalya naar {name}",
     "callNow": "Bellen",
     "whatsappNow": "WhatsApp",
-    "whatsappRegionMessage": "Hallo! Ik wil graag een privé VIP-transfer boeken van de luchthaven Antalya naar {name}."
+    "whatsappRegionMessage": "Hallo! Ik wil graag een privé VIP-transfer boeken van de luchthaven Antalya naar {name}.",
+    "routeIntentTitle": "Plant u een transfer naar {name}?",
+    "routeIntentDesc": "Vergelijk prijzen, bekijk de exacte afstand en reistijd, en boek uw privé VIP-transfer naar {name} in enkele minuten — vaste prijs, geen verborgen kosten.",
+    "routeIntentPrimaryCta": "Deze route boeken",
+    "routeIntentSecondaryCta": "Alle bestemmingen bekijken"
   },
   "compare": {
     "heading": "Waarom Torvian Transfer?",
@@ -601,7 +621,16 @@
     "shareArticle": "Deel dit artikel",
     "relatedPosts": "Gerelateerde artikelen",
     "popularTransfers": "Populaire transfers",
-    "bookTransfer": "Transfer boeken"
+    "bookTransfer": "Transfer boeken",
+    "ctaBadge": "VIP-transfer",
+    "ctaHeading": "Boek uw VIP-luchthaventransfer",
+    "ctaSubheading": "Professionele chauffeurs, luxe voertuigen en een gegarandeerde vaste prijs voor een comfortabele transfer.",
+    "ctaButton": "Nu boeken",
+    "ctaHeadingDefault": "Boek uw VIP-luchthaventransfer",
+    "ctaHeadingRegion": "Boek uw VIP-transfer naar {name}",
+    "ctaSubDefault": "Professionele chauffeurs, luxe voertuigen en een gegarandeerde vaste prijs. Boek nu online.",
+    "ctaSubRegion": "Professionele chauffeur, luxe voertuig, vaste prijs naar {name}. Boek nu online.",
+    "ctaRegionDetails": "{name} transfer — prijzen en details"
   },
   "terms": {
     "title": "Juridisch",

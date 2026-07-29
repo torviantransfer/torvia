@@ -20,8 +20,17 @@
     "signOut": "Çıkış Yap"
   },
   "hero": {
-    "title": "Antalya Havalimanı Transfer — Sabit Fiyat, Anında Rezervasyon",
+    "title": "Antalya Havalimanı Özel Transfer — Sabit Fiyat, Anında Rezervasyon",
     "subtitle": "Belek, Side, Alanya, Kemer ve tüm tatil bölgelerine VIP özel transfer. Mercedes Vito, uçuş takibi, 7/24 destek.",
+    "promoText": "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve en popüler tatil bölgelerine özel VIP transferinizi sabit fiyatla, uçuş takibiyle ve anında onayla rezerve edin.",
+    "badgePill": "Özel Antalya Havalimanı Transferi • VIP Transfer Antalya • Havalimanı Transfer Rezervasyonu",
+    "searchKeywordsHeading": "Popüler aramalar",
+    "keywordHotelTransfer": "Antalya havalimanı otel transferi",
+    "keywordPrivateHotel": "Antalya havalimanından otellere özel transfer",
+    "keywordVipBelek": "Antalya havalimanı Belek VIP transfer",
+    "keywordBelekHotel": "Belek otel transferi",
+    "keywordSideHotel": "Side otel transferi",
+    "keywordAlanyaPrivate": "Alanya özel havalimanı transferi",
     "badge": "7/24 Hizmet",
     "exploreRegions": "Bölgeleri Keşfet >",
     "startingFrom": "'den başlayan fiyatlar",
@@ -151,6 +160,10 @@
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
     "trustNoHidden": "Gizli ücret yok",
     "findTransfer": "Transfer Bul",
+    "bookNow": "Hemen rezervasyon yap",
+    "selectDate": "Lütfen bir tarih seçin",
+    "hour": "Saat",
+    "minute": "Dakika",
     "addReturn": "Dönüş Ekle",
     "adult": "Yetişkin",
     "child": "Çocuk",
@@ -253,9 +266,10 @@
     "review5Text": "8 kişilik grup için tüm golf çantalarımızla rezervasyon yaptırdık. İki araç zamanında geldi, şoförler güler yüzlü ve profesyoneldi. Her yıl golf gezimiz için rezervasyon yapacağız."
   },
   "cta": {
-    "heading": "Stressiz bir varış için hazır mısınız?",
-    "subheading": "Özel havalimanı transferinizi şimdi rezerve edin ve Antalya'ya indiğiniz anda tatilinize başlayın.",
+    "heading": "Antalya Havalimanı'ndan özel VIP transferinizi rezerve edin",
+    "subheading": "Belek, Side, Alanya, Kemer ve Antalya'nın tüm tatil bölgelerine güvenli transfer rezervasyonu. Sabit fiyat, profesyonel şoförler ve anında onay.",
     "bookTransfer": "Transfer Rezervasyonu",
+    "primaryCta": "Havalimanı transferini rezerve et",
     "contactUs": "Bize Ulaşın"
   },
   "regions": {
@@ -270,6 +284,8 @@
     "distance": "Mesafe",
     "startingFrom": "Fiyat",
     "bookTransfer": "Rezervasyon Yap",
+    "introText": "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve en popüler tatil bölgelerine özel VIP hizmetle havalimanı transferi rezerve edin.",
+    "bookRegionTransfer": "{name} özel transferini rezervasyon yap",
     "tagGolf": "Golf & Lüks",
     "tagHistory": "Tarih & Deniz",
     "tagCoastal": "Canlı Sahil Şehri",
@@ -415,6 +431,10 @@
   "regionDetail": {
     "home": "Ana Sayfa",
     "airportTo": "Antalya Havalimanı → {name} | Özel VIP Transfer",
+    "routeIntentTitle": "{name} transfer rezervasyonu için en uygun rota",
+    "routeIntentDesc": "Antalya Havalimanı'ndan {name} transferi için sabit fiyat, kapıdan kapıya servis ve hızlı online onay sunuyoruz.",
+    "routeIntentPrimaryCta": "Hemen Rezervasyon Yap",
+    "routeIntentSecondaryCta": "Diğer Bölgeler",
     "defaultDesc": "Antalya Havalimanı'ndan {name}'e özel VIP transfer rezervasyonu yapın. Sabit fiyat, kapıdan kapıya, Mercedes Vito, karşılama, uçuş takibi. 7/24 hizmet.",
     "min": "dk",
     "whyChoose": "Neden TORVIAN?",
@@ -601,7 +621,16 @@
     "shareArticle": "Bu yazıyı paylaş",
     "relatedPosts": "İlgili Yazılar",
     "popularTransfers": "Popüler Transferler",
-    "bookTransfer": "Transfer Rezerve Et"
+    "bookTransfer": "Transfer Rezerve Et",
+    "ctaBadge": "VIP Transfer",
+    "ctaHeading": "Antalya Havalimanı VIP Transfer Rezervasyonu",
+    "ctaSubheading": "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi ile konforlu transfer.",
+    "ctaButton": "Hemen Rezervasyon Yap",
+    "ctaHeadingDefault": "Antalya Havalimanı VIP Transfer Rezervasyonu",
+    "ctaHeadingRegion": "{name} için VIP Transfer Rezervasyonu Yapın",
+    "ctaSubDefault": "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi. Hemen online rezervasyon yapın.",
+    "ctaSubRegion": "Profesyonel şoför, lüks araç, {name} için sabit fiyat. Hemen online rezervasyon yapın.",
+    "ctaRegionDetails": "{name} transfer detayları ve fiyatları"
   },
   "terms": {
     "title": "Yasal",

@@ -22,7 +22,7 @@ export default function CTASection() {
             className="inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110"
             style={{ backgroundColor: '#007AFF', color: '#fff' }}
           >
-            {t("bookTransfer")}
+            {t("primaryCta")}
             <ArrowRight size={14} />
           </Link>
           <Link

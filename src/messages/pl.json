@@ -20,8 +20,17 @@
     "signOut": "Wyloguj"
   },
   "hero": {
-    "title": "Transfer z Lotniska Antalya — Stała cena, natychmiastowa rezerwacja",
+    "title": "Prywatny Transfer z Lotniska Antalya — Stała cena, natychmiastowa rezerwacja",
     "subtitle": "Prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich kurortów. Mercedes Vito, śledzenie lotu, wsparcie 24/7.",
+    "promoText": "Zarezerwuj prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i najpopularniejszych kurortów Antalyi — stała cena, śledzenie lotu i szybkie potwierdzenie.",
+    "badgePill": "Prywatny transfer z lotniska Antalya • VIP Transfer Antalya • Rezerwacja transferu",
+    "searchKeywordsHeading": "Popularne wyszukiwania",
+    "keywordHotelTransfer": "transfer do hotelu z lotniska Antalya",
+    "keywordPrivateHotel": "prywatny transfer z lotniska Antalya do hotelu",
+    "keywordVipBelek": "VIP transfer Antalya do Belek",
+    "keywordBelekHotel": "transfer do hotelu Belek z lotniska Antalya",
+    "keywordSideHotel": "transfer do hotelu Side z lotniska Antalya",
+    "keywordAlanyaPrivate": "prywatny transfer do Alanya",
     "badge": "Usługa 24/7",
     "exploreRegions": "Odkryj regiony >",
     "startingFrom": "od",
@@ -151,6 +160,10 @@
     "trustCancel": "Bezpłatne anulowanie 24h wcześniej",
     "trustNoHidden": "Brak ukrytych opłat",
     "findTransfer": "Znajdź Transfer",
+    "bookNow": "Rezerwuj teraz",
+    "selectDate": "Wybierz datę",
+    "hour": "Godzina",
+    "minute": "Minuta",
     "addReturn": "Dodaj Powrót",
     "adult": "Dorosły",
     "child": "Dziecko",
@@ -253,9 +266,10 @@
     "review5Text": "Rezerwacja dla 8 osób z całym sprzętem golfowym. Dwa pojazdy na czas, kierowcy mili i profesjonalni. Będziemy rezerwować co roku na nasz wyjazd golfowy."
   },
   "cta": {
-    "heading": "Gotowy na bezstresowy przylot?",
-    "subheading": "Zarezerwuj swój prywatny transfer teraz i rozpocznij wakacje od momentu lądowania w Antalyi.",
+    "heading": "Zarezerwuj prywatny transfer VIP z lotniska Antalya",
+    "subheading": "Bezpieczna rezerwacja transferu do Belek, Side, Alanya, Kemer i wszystkich kurortów Antalyi. Stała cena, profesjonalni kierowcy i szybkie potwierdzenie.",
     "bookTransfer": "Zarezerwuj Transfer",
+    "primaryCta": "Rezerwuj transfer z lotniska",
     "contactUs": "Kontakt"
   },
   "regions": {
@@ -270,6 +284,8 @@
     "distance": "Odległość",
     "startingFrom": "Cena",
     "bookTransfer": "Rezerwuj Transfer",
+    "introText": "Rezerwacja transferu z lotniska Antalya do Belek, Side, Alanya, Kemer i najpopularniejszych kurortów Antalyi z prywatną obsługą VIP.",
+    "bookRegionTransfer": "Rezerwuj prywatny transfer do {name}",
     "tagGolf": "Golf & Luksus",
     "tagHistory": "Historia & Plaża",
     "tagCoastal": "Tętniące życiem miasto nadmorskie",
@@ -415,6 +431,10 @@
   "regionDetail": {
     "home": "Strona Główna",
     "airportTo": "Lotnisko Antalya → {name} | Prywatny VIP Transfer",
+    "routeIntentTitle": "Planujesz transfer do {name}?",
+    "routeIntentDesc": "Porównaj ceny, sprawdź dokładną odległość i czas przejazdu i zarezerwuj prywatny transfer VIP do {name} w kilka minut — stała cena, bez ukrytych opłat.",
+    "routeIntentPrimaryCta": "Zarezerwuj Tę Trasę",
+    "routeIntentSecondaryCta": "Zobacz Wszystkie Destynacje",
     "defaultDesc": "Zarezerwuj prywatny VIP transfer z lotniska Antalya do {name}. Stała cena, od drzwi do drzwi, Mercedes Vito, powitanie, śledzenie lotu. Dostępny 24/7.",
     "min": "min",
     "whyChoose": "Dlaczego TORVIAN?",
@@ -601,7 +621,16 @@
     "shareArticle": "Udostępnij artykuł",
     "relatedPosts": "Powiązane Artykuły",
     "popularTransfers": "Popularne Transfery",
-    "bookTransfer": "Zarezerwuj transfer"
+    "bookTransfer": "Zarezerwuj transfer",
+    "ctaBadge": "VIP Transfer",
+    "ctaHeading": "Zarezerwuj prywatny transfer VIP z lotniska",
+    "ctaSubheading": "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny dla komfortowej podróży.",
+    "ctaButton": "Rezerwuj Teraz",
+    "ctaHeadingDefault": "Zarezerwuj VIP Transfer z Lotniska",
+    "ctaHeadingRegion": "Zarezerwuj VIP Transfer do {name}",
+    "ctaSubDefault": "Profesjonalni kierowcy, luksusowe pojazdy i gwarancja stałej ceny. Zarezerwuj online już teraz.",
+    "ctaSubRegion": "Profesjonalny kierowca, luksusowy pojazd, stała cena do {name}. Zarezerwuj online już teraz.",
+    "ctaRegionDetails": "{name} — ceny i szczegóły transferu"
   },
   "terms": {
     "title": "Prawne",

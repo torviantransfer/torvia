@@ -212,6 +212,7 @@ export default async function BlogPostPage({
   const ctaRegionSlug = (post.primary_region_slug as string | null) ?? null;
   let ctaOneWayPrice: number | null = null;
   let ctaRegion: Record<string, unknown> | null = null;
+  let ctaRegionName: string | null = null;
   if (ctaRegionSlug) {
     const { data: regionRow } = await supabase
       .from("regions")
@@ -220,6 +221,10 @@ export default async function BlogPostPage({
       .maybeSingle();
     if (regionRow) {
       ctaRegion = regionRow as Record<string, unknown>;
+      ctaRegionName =
+        (ctaRegion[`name_${loc}`] as string | null)
+        ?? (ctaRegion.name_en as string | null)
+        ?? null;
       const { data: priceRow } = await supabase
         .from("pricing")
         .select("one_way_price")
@@ -425,24 +430,21 @@ export default async function BlogPostPage({
           const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : "from";
           const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
           const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
-          const heading = locale === "tr" ? "Antalya Havalimanı VIP Transfer" : locale === "de" ? "VIP Flughafen Transfer Buchen" : locale === "ru" ? "Забронировать VIP Трансфер" : locale === "pl" ? "Zarezerwuj VIP Transfer" : locale === "nl" ? "Boek uw VIP Luchthaventransfer" : "Book Your VIP Airport Transfer";
-          const sub = locale === "tr" ? "Profesyonel şoför, lüks araç, sabit fiyat. Hemen online rezervasyon yapın." : locale === "de" ? "Professioneller Fahrer, Luxusfahrzeug, Festpreis. Jetzt online buchen." : locale === "ru" ? "Профессиональный водитель, люкс авто, фиксированная цена." : locale === "pl" ? "Profesjonalny kierowca, luksusowy pojazd, stała cena." : locale === "nl" ? "Professionele chauffeur, luxe voertuig, vaste prijs. Boek nu online." : "Professional driver, luxury vehicle, fixed price. Book online now.";
-          const btnLabel = locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : "Book Now";
+          const heading = ctaRegionName
+            ? t("ctaHeadingRegion", { name: ctaRegionName })
+            : t("ctaHeadingDefault");
+          const sub = ctaRegionName
+            ? t("ctaSubRegion", { name: ctaRegionName })
+            : t("ctaSubDefault");
+          const btnLabel = t("ctaButton");
 
-          // Secondary link to the region's own sales page.
-          const regionName = ctaRegion
-            ? ((ctaRegion[`name_${loc}`] as string | null) ||
-               (ctaRegion.name_en as string | null) ||
-               null)
+          // Secondary link to the region's own sales page. Blog posts outrank
+          // the region pages they cannibalise (Land of Legends: post at pos
+          // 8.4, sales page at 39.2), so this contextual link is what passes
+          // that authority to the page that actually takes bookings.
+          const detailsLabel = ctaRegionName
+            ? t("ctaRegionDetails", { name: ctaRegionName })
             : null;
-          const detailsLabel = !regionName ? null
-            : locale === "tr" ? `${regionName} transfer detayları ve fiyatları`
-            : locale === "de" ? `${regionName} Transfer — Preise & Details`
-            : locale === "ru" ? `${regionName}: цены и детали трансфера`
-            : locale === "pl" ? `${regionName} — ceny i szczegóły transferu`
-            : locale === "nl" ? `${regionName} transfer — prijzen en details`
-            : `${regionName} transfer — prices & details`;
-
           return (
             <section className="py-12">
               <div className="max-w-3xl mx-auto px-4">

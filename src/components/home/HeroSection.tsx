@@ -37,6 +37,34 @@ export default function HeroSection() {
         <p className="text-base sm:text-lg text-white/70 leading-relaxed max-w-2xl mx-auto text-center mb-6">
           {t("subtitle")}
         </p>
+        <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-2xl mx-auto text-center mb-4">
+          {t("promoText")}
+        </p>
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[12px] sm:text-sm font-medium text-white/90 mb-6 backdrop-blur">
+          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+          {t("badgePill")}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 max-w-4xl">
+          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-white/80 mr-1">
+            {t("searchKeywordsHeading")}
+          </span>
+          {[
+            t("keywordHotelTransfer"),
+            t("keywordPrivateHotel"),
+            t("keywordVipBelek"),
+            t("keywordBelekHotel"),
+            t("keywordSideHotel"),
+            t("keywordAlanyaPrivate"),
+          ].map((keyword) => (
+            <span
+              key={keyword}
+              className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur"
+            >
+              {keyword}
+            </span>
+          ))}
+        </div>
 
         {/* Mini trust tags */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-6">
