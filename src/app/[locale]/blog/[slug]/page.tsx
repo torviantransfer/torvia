@@ -429,6 +429,13 @@ export default async function BlogPostPage({
         {(() => {
           const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : "from";
           const priceLabel = ctaOneWayPrice ? ` · ${fromWord} €${Math.round(ctaOneWayPrice)}` : "";
+          const badgeLabel =
+            locale === "de" ? "Privater VIP-Transfer" :
+            locale === "pl" ? "Prywatny Transfer VIP" :
+            locale === "ru" ? "Частный VIP-Трансфер" :
+            locale === "tr" ? "Özel VIP Transfer" :
+            locale === "nl" ? "Privé VIP-transfer" :
+            "Private VIP Transfer";
           const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
           const heading = ctaRegionName
             ? t("ctaHeadingRegion", { name: ctaRegionName })
@@ -451,7 +458,7 @@ export default async function BlogPostPage({
                 <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.05) 0%, rgba(0,122,255,0.05) 100%)", border: "1px solid rgba(0,122,255,0.06)" }}>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-blue-600 mb-4" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
                     <ArrowRight size={12} />
-                    Private Transfer{priceLabel}
+                    {badgeLabel}{priceLabel}
                   </div>
                   <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">{heading}</h3>
                   <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">{sub}</p>
