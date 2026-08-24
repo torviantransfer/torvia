@@ -197,11 +197,17 @@ export async function generateMetadata({
     nl: `Transfer Luchthaven Antalya naar ${name} | Privé VIP${priceLabel.nl}${durStr ? ` · ${durStr}` : ""}`.trim(),
   };
 
-  // DB title takes priority; if set append price suffix when not already present.
-  const dbTitle = (region[`meta_title_${locale}`] as string | null) || (region.meta_title as string | null);
+  // DB title takes priority, but only this locale's own column — falling back
+  // to the untranslated `meta_title` column here served an English title on
+  // /nl, /de, /pl, /ru pages whenever the locale-specific DB field was empty
+  // (confirmed live on /nl/kemer-transfer, /nl/belek-transfer, /nl/alanya-transfer
+  // 2026-08-10 and again 2026-08-24 — GSC shows these rank fine but get ~0% CTR).
+  // The localized fallbackTitle template must win over the generic English column.
+  const dbTitleLocale = region[`meta_title_${locale}`] as string | null;
+  const dbTitle = dbTitleLocale || fallbackTitle[locale] || (region.meta_title as string | null);
   const metaTitle = dbTitle
     ? (oneWayPrice && !/[€$]/.test(dbTitle) ? `${dbTitle}${priceLabel[locale]}` : dbTitle)
-    : (fallbackTitle[locale] ?? fallbackTitle.en);
+    : fallbackTitle.en;
 
   // Fallback descriptions — include price, USPs optimised per Trends:
   //   EN: "meet & greet, flight tracking, free cancellation" (top UK USPs)
@@ -214,10 +220,13 @@ export async function generateMetadata({
     ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От €${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
     nl: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${oneWayPrice ? ` Vanaf €${Math.round(oneWayPrice)} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
   };
+  // Same locale-fallback fix as metaTitle above: this locale's own DB column,
+  // then this locale's own template, only then the generic (English) column.
   const metaDesc =
     (region[`meta_description_${locale}`] as string | null) ||
+    fallbackDesc[locale] ||
     (region.meta_description as string | null) ||
-    fallbackDesc[locale] || fallbackDesc.en;
+    fallbackDesc.en;
 
   const regionImg = `${BASE_URL}/images/regions/${regionSlugBase}.jpg`;
 
@@ -468,7 +477,9 @@ export default async function RegionPage({
         ? `Prywatny transfer do ${name} | Lotnisko Antalya → ${name}`
         : locale === "ru"
           ? `Частный трансфер в ${name} | Аэропорт Анталии → ${name}`
-          : `Private Transfer to ${name} | Antalya Airport → ${name}`;
+          : locale === "nl"
+            ? `Privétransfer naar ${name} | Luchthaven Antalya → ${name}`
+            : `Private Transfer to ${name} | Antalya Airport → ${name}`;
 
   const heroDescription = locale === "tr"
     ? `${name} için Antalya Havalimanı'ndan özel VIP transfer. Sabit fiyat, profesyonel şoför, uçuş takibi ve online rezervasyon.`
@@ -478,7 +489,9 @@ export default async function RegionPage({
         ? `Prywatny transfer VIP z lotniska Antalya do ${name}. Stała cena, profesjonalny kierowca, śledzenie lotu i szybka rezerwacja.`
         : locale === "ru"
           ? `Частный VIP-трансфер из аэропорта Анталии в ${name}. Фиксированная цена, профессиональный водитель, отслеживание рейса и онлайн-бронирование.`
-          : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
+          : locale === "nl"
+            ? `Privé VIP-transfer vanaf de luchthaven Antalya naar ${name}. Vaste prijs, professionele chauffeur, vluchtmonitoring en online reservering.`
+            : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
 
   const routeKeywords = locale === "tr"
     ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`]
@@ -488,7 +501,9 @@ export default async function RegionPage({
         ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`]
         : locale === "ru"
           ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`]
-          : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`];
+          : locale === "nl"
+            ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`]
+            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`];
 
   const routeIntentLabel = locale === "tr"
     ? "Bu rota için sık aranan ifadeler"
@@ -498,7 +513,9 @@ export default async function RegionPage({
         ? "Często wyszukiwane frazy dla tej trasy"
         : locale === "ru"
           ? "Часто ищут по этому маршруту"
-          : "Common search phrases for this route";
+          : locale === "nl"
+            ? "Veelgezochte zoekwoorden voor deze route"
+            : "Common search phrases for this route";
 
   return (
     <>

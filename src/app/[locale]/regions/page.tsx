@@ -37,7 +37,7 @@ const regionImages: Record<string, string> = {
   marmaris: "/images/regions/marmaris.jpg",
 };
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
@@ -63,7 +63,9 @@ export async function generateMetadata({
         ? "Transfery z lotniska Antalya | Belek, Side, Alanya, Kemer"
         : locale === "ru"
           ? "Трансферы из аэропорта Антальи | Белек, Сиде, Аланья, Кемер"
-          : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
+          : locale === "nl"
+            ? "Antalya Luchthaven Transferbestemmingen | Belek, Side, Alanya, Kemer"
+            : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
   const description = locale === "tr"
     ? "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve 25+ destinasyona sabit fiyatlı VIP özel transfer rezervasyonu yapın."
     : locale === "de"
@@ -72,7 +74,9 @@ export async function generateMetadata({
         ? "Zarezerwuj prywatny transfer VIP z lotniska Antalya do Belek, Side, Alanya, Kemer i ponad 25 destynacji."
         : locale === "ru"
           ? "Забронируйте VIP-трансфер из аэропорта Антальи в Белек, Сиде, Аланью, Кемер и более 25 направлений."
-          : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
+          : locale === "nl"
+            ? "Boek uw privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en meer dan 25 bestemmingen."
+            : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
   return {
     title,
     description,
@@ -129,7 +133,7 @@ export default async function RegionsPage({
                 className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
                 style={{ backgroundColor: "#F97316", color: "#fff" }}
               >
-                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : "Book Now"}
+                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : "Book Now"}
               </Link>
             </div>
           </div>
