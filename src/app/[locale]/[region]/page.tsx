@@ -539,16 +539,16 @@ export default async function RegionPage({
             : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
 
   const routeKeywords = locale === "tr"
-    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`, `gece varışı ${name} transfer`, `taksi yerine ${name} transfer`]
+    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`, `gece varışı ${name} transfer`, `taksi yerine ${name} transfer`, `${name} transfer fiyatları`, `${name} transfer rezervasyon`]
     : locale === "de"
-      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `${name} Hotel Transfer`, `${name} Kindersitz Transfer`, `Festpreis ${name} Transfer`, `${name} VIP Transfer`, `Nachttransfer nach ${name}`, `Alternative zum Taxi nach ${name}`]
+      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `${name} Hotel Transfer`, `${name} Kindersitz Transfer`, `Festpreis ${name} Transfer`, `${name} VIP Transfer`, `Nachttransfer nach ${name}`, `Alternative zum Taxi nach ${name}`, `${name} Transfer Preis`, `${name} Transfer jetzt buchen`]
         : locale === "pl"
-        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`, `nocny transfer do ${name}`, `transfer zamiast taksówki do ${name}`]
+        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`, `nocny transfer do ${name}`, `transfer zamiast taksówki do ${name}`, `cena transferu do ${name}`, `zarezerwuj transfer do ${name}`]
         : locale === "ru"
-          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`, `ночной трансфер в ${name}`, `трансфер вместо такси в ${name}`]
+          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`, `ночной трансфер в ${name}`, `трансфер вместо такси в ${name}`, `цена трансфера в ${name}`, `забронировать трансфер в ${name}`]
           : locale === "nl"
-            ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`, `nachttransfer naar ${name}`, `transfer in plaats van taxi naar ${name}`]
-            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`];
+            ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`, `nachttransfer naar ${name}`, `transfer in plaats van taxi naar ${name}`, `${name} transfer prijs`, `${name} transfer boeken`]
+            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`, `${name} transfer price`, `book ${name} transfer online`];
   const routeIntentLabel = locale === "tr"
     ? "Bu rota için sık aranan ifadeler"
     : locale === "de"
