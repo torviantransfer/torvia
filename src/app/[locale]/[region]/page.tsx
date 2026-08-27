@@ -452,6 +452,50 @@ export default async function RegionPage({
 
   const price = pricing?.one_way_price ?? 0;
 
+  // Named 5-star resorts guests specifically search for by brand ("Titanic
+  // Deluxe Lara transfer", etc.) — only listed for the regions that actually
+  // contain them, so this stays real rather than padded.
+  const regionHotels: Record<string, string[]> = {
+    "kundu-lara": ["Aska Lara Resort & Spa", "Titanic Deluxe Lara", "Royal Seginus", "Titanic Mardan Palace", "Delphin Imperial", "Rixos Downtown Antalya"],
+    belek: ["Rixos Premium Belek", "Maxx Royal Belek", "Regnum Carya"],
+    tekirova: ["Rixos Premium Tekirova"],
+    okurcalar: ["Granada Luxury Okurcalar"],
+  };
+  const hotelsForRegion = regionHotels[region.slug] ?? [];
+  const hotelsIntro = locale === "tr"
+    ? `${name} bölgesindeki tüm otellere hizmet veriyoruz, öne çıkanlar:`
+    : locale === "de"
+      ? `Wir bedienen alle Hotels in ${name}, darunter:`
+      : locale === "pl"
+        ? `Obsługujemy wszystkie hotele w ${name}, w tym:`
+        : locale === "ru"
+          ? `Мы обслуживаем все отели в ${name}, включая:`
+          : locale === "nl"
+            ? `Wij bedienen alle hotels in ${name}, waaronder:`
+            : `We serve every hotel in ${name}, including:`;
+  const faqHotelsQ = locale === "tr"
+    ? `${name} bölgesinde hangi otellere transfer sağlıyorsunuz?`
+    : locale === "de"
+      ? `Welche Hotels in ${name} bedienen Sie?`
+      : locale === "pl"
+        ? `Do jakich hoteli w ${name} zapewniacie transfer?`
+        : locale === "ru"
+          ? `В какие отели в ${name} вы осуществляете трансфер?`
+          : locale === "nl"
+            ? `Welke hotels in ${name} bedient u?`
+            : `Which hotels in ${name} do you provide transfer to?`;
+  const faqHotelsA = locale === "tr"
+    ? `${name} bölgesindeki tüm otellere transfer sağlıyoruz; öne çıkanlar arasında ${hotelsForRegion.join(", ")} bulunur. Rezervasyon sırasında otel adınızı belirtmeniz yeterlidir.`
+    : locale === "de"
+      ? `Wir bedienen alle Hotels in ${name}, darunter ${hotelsForRegion.join(", ")}. Geben Sie bei der Buchung einfach Ihren Hotelnamen an.`
+      : locale === "pl"
+        ? `Zapewniamy transfer do wszystkich hoteli w ${name}, w tym do ${hotelsForRegion.join(", ")}. Wystarczy podać nazwę hotelu podczas rezerwacji.`
+        : locale === "ru"
+          ? `Мы осуществляем трансфер во все отели в ${name}, включая ${hotelsForRegion.join(", ")}. Просто укажите название отеля при бронировании.`
+          : locale === "nl"
+            ? `Wij verzorgen transfers naar alle hotels in ${name}, waaronder ${hotelsForRegion.join(", ")}. Vermeld gewoon uw hotelnaam tijdens het boeken.`
+            : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -466,6 +510,7 @@ export default async function RegionPage({
       { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
       { "@type": "Question", name: t("faqQ9", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA9", { name }) } },
       { "@type": "Question", name: t("faqQ10", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) } },
+      ...(hotelsForRegion.length > 0 ? [{ "@type": "Question", name: faqHotelsQ, acceptedAnswer: { "@type": "Answer", text: faqHotelsA } }] : []),
     ],
   };
 
@@ -494,17 +539,16 @@ export default async function RegionPage({
             : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
 
   const routeKeywords = locale === "tr"
-    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`]
+    ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`, `gece varışı ${name} transfer`, `taksi yerine ${name} transfer`]
     : locale === "de"
-      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `${name} Hotel Transfer`, `${name} Kindersitz Transfer`, `Festpreis ${name} Transfer`, `${name} VIP Transfer`]
-      : locale === "pl"
-        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`]
+      ? [`Flughafen Antalya ${name} Transfer`, `${name} Privattransfer`, `${name} Hotel Transfer`, `${name} Kindersitz Transfer`, `Festpreis ${name} Transfer`, `${name} VIP Transfer`, `Nachttransfer nach ${name}`, `Alternative zum Taxi nach ${name}`]
+        : locale === "pl"
+        ? [`transfer z lotniska Antalya do ${name}`, `transfer VIP do ${name}`, `transfer do hotelu ${name}`, `transfer z fotelikiem dla dzieci do ${name}`, `transfer ze stałą ceną do ${name}`, `${name} transfer prywatny`, `nocny transfer do ${name}`, `transfer zamiast taksówki do ${name}`]
         : locale === "ru"
-          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`]
+          ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`, `ночной трансфер в ${name}`, `трансфер вместо такси в ${name}`]
           : locale === "nl"
-            ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`]
-            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`];
-
+            ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`, `nachttransfer naar ${name}`, `transfer in plaats van taxi naar ${name}`]
+            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`];
   const routeIntentLabel = locale === "tr"
     ? "Bu rota için sık aranan ifadeler"
     : locale === "de"
@@ -570,6 +614,12 @@ export default async function RegionPage({
                     ))}
                   </div>
                 </div>
+
+                {hotelsForRegion.length > 0 && (
+                  <p className="text-sm text-gray-500 mb-6 lg:mb-8">
+                    {hotelsIntro} <span className="text-gray-700">{hotelsForRegion.join(", ")}</span>
+                  </p>
+                )}
 
                 <div className="flex flex-wrap gap-3 mb-6 lg:mb-8">
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
@@ -859,6 +909,7 @@ export default async function RegionPage({
                 { q: t("faqQ8", { name }), a: t("faqA8") },
                 { q: t("faqQ9", { name }), a: t("faqA9", { name }) },
                 { q: t("faqQ10", { name }), a: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
+                ...(hotelsForRegion.length > 0 ? [{ q: faqHotelsQ, a: faqHotelsA }] : []),
               ].map(({ q, a }) => (
                 <details key={q} className="rounded-xl overflow-hidden group" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
                   <summary className="px-5 py-4 cursor-pointer font-medium text-gray-900 text-sm flex items-center justify-between">
