@@ -62,6 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "booking", priority: 0.95 },
     { path: "regions", priority: 0.9 },
     { path: "land-of-legends-transfer", priority: 0.9 },
+    { path: "vip-transfer-antalya", priority: 0.9 },
+    { path: "hotel-transfer-antalya", priority: 0.9 },
     // Support + info pages
     { path: "contact", priority: 0.8 },
     { path: "faq", priority: 0.7 },

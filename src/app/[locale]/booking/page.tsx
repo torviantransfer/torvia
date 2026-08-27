@@ -65,6 +65,8 @@ export default async function BookingPage({
       { label: "Side otel transferi", href: "/side-transfer" },
       { label: "Alanya özel transfer", href: "/alanya-transfer" },
       { label: "Kemer havalimanı transfer", href: "/kemer-transfer" },
+      { label: "Antalya VIP transfer", href: "/vip-transfer-antalya" },
+      { label: "Otel transferi (her otel)", href: "/hotel-transfer-antalya" },
       { label: "Sabit fiyatlı transfer", href: "/booking" },
     ],
     en: [
@@ -73,6 +75,8 @@ export default async function BookingPage({
       { label: "Private transfer to Side", href: "/side-transfer" },
       { label: "Alanya airport transfer", href: "/alanya-transfer" },
       { label: "Kemer transfer", href: "/kemer-transfer" },
+      { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
+      { label: "Hotel transfer (any hotel)", href: "/hotel-transfer-antalya" },
       { label: "Fixed-price transfer", href: "/booking" },
     ],
     de: [
@@ -81,6 +85,8 @@ export default async function BookingPage({
       { label: "Privattransfer Side", href: "/side-transfer" },
       { label: "Alanya Flughafentransfer", href: "/alanya-transfer" },
       { label: "Kemer Transfer", href: "/kemer-transfer" },
+      { label: "VIP Transfer Antalya", href: "/vip-transfer-antalya" },
+      { label: "Hotel Transfer (jedes Hotel)", href: "/hotel-transfer-antalya" },
       { label: "Festpreis Transfer", href: "/booking" },
     ],
     pl: [
@@ -89,6 +95,8 @@ export default async function BookingPage({
       { label: "prywatny transfer do Side", href: "/side-transfer" },
       { label: "transfer do Alanyi", href: "/alanya-transfer" },
       { label: "transfer do Kemer", href: "/kemer-transfer" },
+      { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
+      { label: "Transfer do hotelu (każdy hotel)", href: "/hotel-transfer-antalya" },
       { label: "transfer ze stałą ceną", href: "/booking" },
     ],
     ru: [
@@ -97,6 +105,8 @@ export default async function BookingPage({
       { label: "частный трансфер в Сиде", href: "/side-transfer" },
       { label: "трансфер в Аланью", href: "/alanya-transfer" },
       { label: "трансфер в Кемер", href: "/kemer-transfer" },
+      { label: "VIP трансфер Анталия", href: "/vip-transfer-antalya" },
+      { label: "Трансфер в отель (любой отель)", href: "/hotel-transfer-antalya" },
       { label: "трансфер с фиксированной ценой", href: "/booking" },
     ],
     nl: [
@@ -105,6 +115,8 @@ export default async function BookingPage({
       { label: "privétransfer naar Side", href: "/side-transfer" },
       { label: "transfer naar Alanya", href: "/alanya-transfer" },
       { label: "transfer naar Kemer", href: "/kemer-transfer" },
+      { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
+      { label: "Hoteltransfer (elk hotel)", href: "/hotel-transfer-antalya" },
       { label: "vaste prijs transfer", href: "/booking" },
     ],
   };
