@@ -190,6 +190,7 @@ export default function BookingFormMini() {
     : locale === "de" ? ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"]
     : locale === "ru" ? ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
     : locale === "pl" ? ["Nd", "Pn", "Wt", "Sr", "Cz", "Pt", "So"]
+    : locale === "nl" ? ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const locItems = [

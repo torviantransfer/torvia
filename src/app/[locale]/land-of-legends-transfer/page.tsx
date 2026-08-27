@@ -8,7 +8,7 @@ import { Link } from "@/i18n/routing";
 import { MapPin, Clock, CheckCircle, Shield, Star, Plane, ArrowRight, CreditCard } from "lucide-react";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 const content: Record<Locale, {
   title: string;
@@ -166,6 +166,34 @@ const content: Record<Locale, {
     bookCta: "Transfer Rezervasyonu Yap",
     whyTitle: "Neden TORVIAN?",
   },
+  nl: {
+    title: "Land of Legends Transfer | Luchthaven Antalya naar Land of Legends",
+    metaDesc: "Privé VIP-transfer van de luchthaven Antalya naar het Land of Legends pretpark in Belek. ~30 min, 35 km. Vaste prijs, ontvangst met naambord, gratis vluchtmonitoring. Boek online.",
+    heading: "Luchthaven Antalya → Land of Legends Transfer",
+    subheading: "Privé VIP-transfer naar het populairste pretpark van Turkije. Vaste prijs, geen wachttijd.",
+    desc: "Pretpark Land of Legends ligt in Belek, ongeveer 35 km ten oosten van de luchthaven Antalya. Met de privé VIP-transfer van TORVIAN bereikt u het park in ongeveer 30 minuten, volledig comfortabel — geen taxi's, geen wachttijd, geen verrassingen.",
+    distance: "35 km",
+    duration: "~30 min",
+    features: [
+      "Directe deur-tot-deur transfer vanaf de luchthaven Antalya (AYT)",
+      "Vaste prijs — geen taxameter, geen piekprijzen",
+      "Ontvangst met naambord in de aankomsthal",
+      "Gratis vluchtmonitoring — wij wachten bij vertraging",
+      "Mercedes Vito VIP met airconditioning & gratis wifi",
+      "Gratis annuleren tot 24 uur vooraf",
+      "24/7 WhatsApp-ondersteuning in het Nederlands",
+    ],
+    faqQ1: "Hoe ver ligt Land of Legends van de luchthaven Antalya?",
+    faqA1: "Pretpark Land of Legends in Belek ligt ongeveer 35 km van de luchthaven Antalya (AYT). De rit duurt met een privévoertuig ongeveer 30 minuten.",
+    faqQ2: "Wat kost een transfer naar Land of Legends?",
+    faqA2: "Onze vasteprijstransfer naar Land of Legends begint bij een vast tarief per voertuig (niet per persoon). De exacte prijs wordt getoond tijdens het boeken. Geen verborgen kosten.",
+    faqQ3: "Kan ik een retourtransfer van Land of Legends naar de luchthaven boeken?",
+    faqA3: "Ja, wij bieden retourtransfers aan. U kunt de retourtransfer tijdens het boeken selecteren en profiteren van een gecombineerde kortingsprijs.",
+    faqQ4: "Wacht de chauffeur bij de parkingang?",
+    faqA4: "Bij ophaling vanaf het hotel en retourtransfers staat uw chauffeur op het afgesproken tijdstip op de ontmoetingsplek. Bij aankomst op het vliegveld volgen wij uw vlucht en ontvangen wij u in de aankomsthal.",
+    bookCta: "Boek Uw Transfer",
+    whyTitle: "Waarom TORVIAN Boeken?",
+  },
 };
 
 export async function generateMetadata({
@@ -201,6 +229,7 @@ export async function generateMetadata({
         de: `https://torviantransfer.com/de${path}`,
         pl: `https://torviantransfer.com/pl${path}`,
         ru: `https://torviantransfer.com/ru${path}`,
+        nl: `https://torviantransfer.com/nl${path}`,
       },
     },
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
@@ -248,10 +277,10 @@ export default async function LandOfLegendsPage({
   };
 
   const whyPoints = [
-    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : "Sabit fiyat, sürpriz yok" },
-    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : "Uçuş takibi ve ücretsiz bekleme" },
-    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : "Varış salonunda karşılama" },
-    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : "Güvenli online rezervasyon ve ödeme" },
+    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : loc === "nl" ? "Vaste prijs, geen verrassingen" : "Sabit fiyat, sürpriz yok" },
+    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : loc === "nl" ? "Vluchtmonitoring & gratis wachttijd" : "Uçuş takibi ve ücretsiz bekleme" },
+    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : loc === "nl" ? "Ontvangst bij aankomst" : "Varış salonunda karşılama" },
+    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : loc === "nl" ? "Veilig online boeken en betalen" : "Güvenli online rezervasyon ve ödeme" },
   ];
 
   return (

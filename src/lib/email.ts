@@ -619,7 +619,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   const datetime = isReturn && data.returnDatetime
     ? new Date(data.returnDatetime)
     : new Date(data.pickupDatetime);
-  const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : "en-US";
+  const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : locale === "nl" ? "nl-NL" : "en-US";
   const dateStr = datetime.toLocaleDateString(regionalDateLocale, { day: "2-digit", month: "long", year: "numeric" });
   const timeStr = datetime.toLocaleTimeString(regionalDateLocale, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 

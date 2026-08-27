@@ -932,6 +932,7 @@ export default async function RegionPage({
                  locale === "de" ? "Sehen Sie unsere spezielle Seite für Lara Beach Hotels" :
                  locale === "pl" ? "Zobacz naszą dedykowaną stronę dla hoteli Lara Beach" :
                  locale === "ru" ? "Смотрите нашу страницу для отелей пляжа Лара" :
+                 locale === "nl" ? "Bekijk onze speciale pagina voor Lara Beach hotels" :
                  "See our dedicated Lara Beach transfer page with hotel-specific info"}
               </p>
               <Link

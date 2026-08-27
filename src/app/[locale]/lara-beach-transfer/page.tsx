@@ -7,7 +7,7 @@ import { Link } from "@/i18n/routing";
 import { MapPin, Clock, CheckCircle, Star, Plane, ArrowRight } from "lucide-react";
 import { seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 
 const content: Record<Locale, {
   title: string;
@@ -199,6 +199,40 @@ const content: Record<Locale, {
     whyTitle: "Lara Beach için Neden TORVIAN?",
     breadcrumb: "Lara Beach Transfer",
   },
+  nl: {
+    title: "Luchthaven Antalya naar Lara Beach Transfer | Privé VIP | ~20 min",
+    metaDesc: "Privé VIP-transfer van de luchthaven Antalya naar Lara Beach (Kundu). ~20 min, 15 km. Vaste prijs, ontvangst met naambord, gratis vluchtmonitoring. Beter dan een taxi — boek online in 2 minuten.",
+    heading: "Luchthaven Antalya → Lara Beach Transfer",
+    subheading: "Privé VIP-transfer naar Lara Beach hotels — Aska Lara, Titanic Lara, Royal Seginus. Vaste prijs, geen taxi's, geen wachttijd.",
+    desc: "Lara Beach (Kundu) is een van de populairste resortgebieden van Antalya, met enkele van de beste 5-sterrenhotels van Turkije. Op slechts 15 km ten oosten van de luchthaven Antalya (AYT) is dit de dichtstbijzijnde grote bestemming — slechts ~20 minuten met een privétransfer. Sla de taxirij over en kom comfortabel aan.",
+    distance: "15 km",
+    duration: "~20 min",
+    hotels: "Aska Lara Resort & Spa, Titanic Deluxe Lara, Royal Seginus, Rixos Downtown Antalya",
+    taxiNote: "Waarom een privétransfer in plaats van een taxi? Vaste prijs vooraf afgesproken, professionele chauffeur met naambord, gratis wachttijd bij vluchtvertraging — geen verrassingen.",
+    features: [
+      "Directe deur-tot-deur transfer van de luchthaven Antalya (AYT) naar Lara Beach",
+      "Vaste prijs — geen taxameter, geen piekprijzen, niet onderhandelen",
+      "Ontvangst met naambord in de aankomsthal",
+      "Gratis vluchtmonitoring — wij wachten bij vertraging",
+      "Mercedes Vito VIP met airco, wifi en kinderzitjes mogelijk",
+      "Gratis annuleren tot 24 uur voor vertrek",
+      "24/7 WhatsApp-ondersteuning in het Nederlands",
+      "Alle hotels in Lara Beach: Aska Lara, Titanic, Royal Seginus en meer",
+    ],
+    faqQ1: "Hoe ver ligt Lara Beach van de luchthaven Antalya?",
+    faqA1: "Lara Beach (Kundu-gebied) ligt ongeveer 15 km van de luchthaven Antalya (AYT). Een privétransfer duurt ongeveer 20 minuten — hiermee is het het dichtstbijzijnde grote resortgebied bij het vliegveld.",
+    faqQ2: "Is een privétransfer goedkoper dan een taxi van de luchthaven Antalya naar Lara Beach?",
+    faqA2: "TORVIAN privétransfers hebben een vaste prijs die vooraf wordt afgesproken — in tegenstelling tot taxi's met een taxameter. Geen verborgen kosten, geen piekprijzen, en uw chauffeur wacht gratis bij vluchtvertraging.",
+    faqQ3: "Welke hotels in Lara Beach bedient u?",
+    faqA3: "Wij bedienen alle hotels in Lara Beach en Kundu, waaronder Aska Lara Resort & Spa, Titanic Deluxe Lara Beach Hotel, Royal Seginus Hotel, Rixos Downtown Antalya, Mardan Palace en alle andere. Vul gewoon uw hotelnaam in tijdens het boeken.",
+    faqQ4: "Kan ik een retourtransfer van Lara Beach naar de luchthaven Antalya boeken?",
+    faqA4: "Ja. Wij bieden zowel enkele reis als retourtransfers aan. Boek uw retourtransfer van Lara Beach naar de luchthaven Antalya in dezelfde boeking en ontvang een gecombineerde kortingsprijs.",
+    faqQ5: "Hoe vind ik mijn chauffeur op de luchthaven Antalya?",
+    faqA5: "Uw chauffeur wacht in de aankomsthal met een bordje met uw naam. Wij volgen uw vlucht in realtime — bij vertraging staat uw chauffeur er nog steeds, zonder extra kosten.",
+    bookCta: "Boek Lara Beach Transfer",
+    whyTitle: "Waarom TORVIAN voor Lara Beach?",
+    breadcrumb: "Lara Beach Transfer",
+  },
 };
 
 export async function generateMetadata({
@@ -236,6 +270,7 @@ export async function generateMetadata({
         de: `${BASE}/de${path}`,
         pl: `${BASE}/pl${path}`,
         ru: `${BASE}/ru${path}`,
+        nl: `${BASE}/nl${path}`,
       },
     },
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/regions/kundu-lara.jpg"),
