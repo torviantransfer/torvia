@@ -213,12 +213,12 @@ export async function generateMetadata({
   //   EN: "meet & greet, flight tracking, free cancellation" (top UK USPs)
   //   DE: "hotel transfer" angle — "direkt zu Ihrem Hotel"
   const fallbackDesc: Record<string, string> = {
-    en: `Private transfer from Antalya Airport to ${name}.${info}${oneWayPrice ? ` From €${Math.round(oneWayPrice)} per vehicle.` : ""} Mercedes Vito, meet & greet, flight tracking, free cancellation 24h. Book online — instant confirmation.`,
-    de: `VIP Privattransfer Flughafen Antalya → ${name}.${info}${oneWayPrice ? ` Ab €${Math.round(oneWayPrice)} pro Fahrzeug.` : ""} Mercedes Vito, Abholung mit Schild, Flugverfolgung, kein Nachtzuschlag. Jetzt buchen.`,
-    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${oneWayPrice ? ` Od €${Math.round(oneWayPrice)} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
-    tr: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${oneWayPrice ? ` Araç başına €${Math.round(oneWayPrice)}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
-    ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От €${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
-    nl: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${oneWayPrice ? ` Vanaf €${Math.round(oneWayPrice)} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
+    en: `Private transfer from Antalya Airport to ${name}.${info}${oneWayPrice ? ` From $${Math.round(oneWayPrice)} per vehicle.` : ""} Mercedes Vito, meet & greet, flight tracking, free cancellation 24h. Book online — instant confirmation.`,
+    de: `VIP Privattransfer Flughafen Antalya → ${name}.${info}${oneWayPrice ? ` Ab $${Math.round(oneWayPrice)} pro Fahrzeug.` : ""} Mercedes Vito, Abholung mit Schild, Flugverfolgung, kein Nachtzuschlag. Jetzt buchen.`,
+    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${oneWayPrice ? ` Od $${Math.round(oneWayPrice)} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
+    tr: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${oneWayPrice ? ` Araç başına $${Math.round(oneWayPrice)}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
+    ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От $${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
+    nl: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${oneWayPrice ? ` Vanaf $${Math.round(oneWayPrice)} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
   };
   // Same locale-fallback fix as metaTitle above: this locale's own DB column,
   // then this locale's own template, only then the generic (English) column.

@@ -41,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: blogPosts } = await supabase
     .from("blog_posts")
-    .select("slug, published_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
+    .select("slug, published_at, updated_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
     .eq("is_published", true);
 
   const entries: MetadataRoute.Sitemap = [];
@@ -119,7 +119,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           post as Record<string, unknown>,
           locale
         )}`,
-        lastModified: post.published_at ? new Date(post.published_at) : new Date(),
+        lastModified: post.updated_at
+          ? new Date(post.updated_at)
+          : post.published_at
+            ? new Date(post.published_at)
+            : new Date(),
         changeFrequency: "monthly",
         priority: isPrimary ? 0.7 : 0.5,
         ...(postImage ? { images: [absoluteImageUrl(postImage)] } : {}),

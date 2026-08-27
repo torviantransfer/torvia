@@ -25,6 +25,33 @@ function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
 }
 
+const blogCtaRegionFallbacks: Record<string, string> = {
+  "antalya-havalimani-alanya-transfer-kac-saat": "alanya",
+  "antalya-alanya-transfer-suresi": "alanya",
+  "antalya-kemer-transfer-mesafe-sure": "kemer",
+  "antalya-side-transfer-mesafe-sure": "side",
+  "antalya-belek-transfer-mesafe-sure": "belek",
+  "land-of-legends-transfer-rehberi": "belek",
+  "antalya-havalimani-side-transfer": "side",
+  "antalya-havalimani-belek-transfer": "belek",
+  "antalya-havalimani-kemer-transfer": "kemer",
+  "antalya-havalimani-kemer-vip-transfer": "kemer",
+  "antalya-havalimani-lara-beach-transfer": "kundu-lara",
+  "antalya-havalimani-kas-transfer": "kas",
+  "alanya-airport-transfer": "alanya",
+  "side-antik-kent-transfer": "side",
+  "belek-golf-otelleri-transfer": "belek",
+  "regnum-the-crown-belek-transfer": "belek",
+};
+
+function getCtaRegionSlug(post: Record<string, unknown>): string | null {
+  const configuredSlug = (post.primary_region_slug as string | null | undefined)?.trim();
+  if (configuredSlug) return configuredSlug;
+
+  const postSlug = normalizeSlug((post.slug as string | null | undefined) ?? "");
+  return blogCtaRegionFallbacks[postSlug] ?? null;
+}
+
 /**
  * Determine which locales actually have a translated title + content.
  * Used to build hreflang alternates only for translated languages,
@@ -209,7 +236,7 @@ export default async function BlogPostPage({
   // and the in-article link to that region's sales page — blog posts rank far
   // better than the region pages they cannibalize, so the contextual link
   // back is what passes that authority to the page that takes bookings.
-  const ctaRegionSlug = (post.primary_region_slug as string | null) ?? null;
+  const ctaRegionSlug = getCtaRegionSlug(post);
   let ctaOneWayPrice: number | null = null;
   let ctaRegion: Record<string, unknown> | null = null;
   let ctaRegionName: string | null = null;
