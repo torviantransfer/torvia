@@ -403,7 +403,7 @@ export default async function RegionPage({
       "@type": "ServiceChannel",
       serviceUrl: `https://torviantransfer.com/${locale}/${regionPath}`,
       servicePhone: "+90-546-940-79-55",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
     },
     offers: pricing
       ? [
@@ -637,13 +637,13 @@ export default async function RegionPage({
                   <div className="flex flex-wrap gap-4 mb-5">
                     <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(0,122,255,0.05)", border: "1px solid rgba(0,122,255,0.12)" }}>
                       <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
-                      <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.one_way_price} /></div>
+                      <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.one_way_price} showLabel={false} /></div>
                       <div className="text-xs text-gray-500">{t("oneWay")} · {t("perVehicle")}</div>
                     </div>
                     {pricing.round_trip_price && (
                       <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.15)" }}>
                         <div className="text-xs text-gray-400 mb-1">{t("roundTrip")}</div>
-                        <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.round_trip_price} /></div>
+                        <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.round_trip_price} showLabel={false} /></div>
                         <div className="text-xs text-gray-500">{t("roundTrip")} · {t("perVehicle")}</div>
                       </div>
                     )}
@@ -974,8 +974,8 @@ export default async function RegionPage({
           </section>
         )}
 
-        {/* Cross-link: Lara Beach dedicated page for lara/kundu regions */}
-        {(slug === "lara" || slug === "kundu") && (
+        {/* Cross-link: Lara Beach dedicated page for the Kundu-Lara region */}
+        {slug === "kundu-lara" && (
           <section className="py-8 bg-blue-50 border-y border-blue-100">
             <div className="max-w-3xl mx-auto px-4 flex items-center justify-between gap-4 flex-wrap">
               <p className="text-sm text-blue-800">

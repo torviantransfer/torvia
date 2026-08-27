@@ -47,7 +47,7 @@ export default async function AboutPage() {
       "@type": "ContactPoint",
       telephone: "+90-546-940-79-55",
       contactType: "customer service",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
     },
   };
 

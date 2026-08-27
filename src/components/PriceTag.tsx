@@ -1,16 +1,20 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useCurrency } from "@/hooks/useCurrency";
 
 export default function PriceTag({
   amount,
   className,
+  showLabel = true,
 }: {
   amount: number;
   className?: string;
+  showLabel?: boolean;
 }) {
   const { format } = useCurrency();
+  const t = useTranslations("regionDetail");
   // USD is the DB's base currency (see supabase/seed.sql). Selecting EUR/TRY
   // in the currency switcher must convert the amount, not just swap the
   // symbol — fetch live rates the same way BookingWizard does.
@@ -31,7 +35,8 @@ export default function PriceTag({
 
   return (
     <span className={className}>
-      From {format(amount, rates)}
+      {showLabel && <>{t("fromPrice")} </>}
+      {format(amount, rates)}
     </span>
   );
 }

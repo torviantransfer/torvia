@@ -129,7 +129,7 @@ export default async function HomePage({
       "@type": "ContactPoint",
       telephone: "+90-546-940-79-55",
       contactType: "customer service",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
     },
     sameAs: [
       "https://instagram.com/torviantransfer",
@@ -217,7 +217,7 @@ export default async function HomePage({
       "@type": "ServiceChannel",
       serviceUrl: `${BASE_URL}/${locale}/booking`,
       servicePhone: "+90-546-940-79-55",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
     },
     offers: {
       "@type": "AggregateOffer",
