@@ -471,24 +471,27 @@ function BookingWizardInner(props: Props) {
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {/* Step indicator */}
       <div className="flex items-center justify-center mb-6">
-        <div className="flex items-center gap-0 px-2 py-1.5 sm:px-4 sm:py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+        {/* Sized to the content rather than squeezed into a pill: the active
+            step's label needs real room now that it also shows on phones, and
+            the connector lines stretch to fill whatever is left. */}
+        <div className="flex items-center w-full max-w-md px-3 py-2 sm:px-5 sm:py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
           {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center">
-              <div className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl transition-all"
+            <div key={s} className={`flex items-center min-w-0 ${s === step ? "flex-1" : ""}`}>
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-xl transition-all min-w-0"
                 style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
               >
-                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
                   {s < step ? <Check size={12} strokeWidth={3} /> : s}
                 </div>
                 {/* Phones only have room for the current step's name, so show
                     that one and leave the others as bare numbers; from sm up
                     every label fits. Hiding all of them below sm left the
                     indicator as an unexplained "1 2 3". */}
-                <span className={`${s === step ? "inline" : "hidden"} sm:inline text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                <span className={`${s === step ? "inline" : "hidden"} sm:inline text-[11px] sm:text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
                   {stepLabels[s - 1]}
                 </span>
               </div>
-              {s < 3 && <div className="w-3 sm:w-8 flex items-center justify-center"><div className={`w-full h-px ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} /></div>}
+              {s < 3 && <div className={`h-px mx-1.5 sm:mx-2 ${s === step ? "flex-1 min-w-[10px]" : "w-4 sm:w-7"} ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
             </div>
           ))}
         </div>
@@ -708,7 +711,20 @@ function BookingWizardInner(props: Props) {
               <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
                 <Users size={20} className="text-blue-600" />{t("step3")}
               </h2>
+              {/* Grouped into contact / trip / extras. Everything used to run
+                  together as one flat list of eight unrelated fields, so there
+                  was nothing telling the customer how much was left or which
+                  answers belonged together. */}
               <div className="space-y-5">
+                <div className="flex items-center gap-2.5 pb-1">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Users size={14} className="text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("contactSection")}</h3>
+                    <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{t("contactSectionDesc")}</p>
+                  </div>
+                </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
@@ -736,13 +752,23 @@ function BookingWizardInner(props: Props) {
                     />
                   </div>
                 </div>
+                {/* ── Trip details ── */}
+                <div className="flex items-center gap-2.5 pt-3 pb-1" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <Plane size={14} className="text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("tripSection")}</h3>
+                    <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{t("tripSectionDesc")}</p>
+                  </div>
+                </div>
+
                 {/* Passenger + Luggage counters
                      Buttons are 40px on mobile (Apple/Google recommended touch
                      target) and taper to the previous 28px on desktop where
                      hover replaces tap. Row switches from a cramped 3-col grid
                      to a card-per-row layout below sm so labels never truncate. */}
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t("passengers")}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Adults */}
                     <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
@@ -791,16 +817,23 @@ function BookingWizardInner(props: Props) {
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={t("notesPlaceholder")} className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
                 </div>
 
-                {/* Extras */}
-                <div className="pt-2">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">{t("extras")}</h3>
-                  <label className="flex items-center justify-between p-4 rounded-lg cursor-pointer mb-2 transition-colors gap-3" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Baby size={20} className="text-gray-700" />
-                      <div><p className="font-medium text-gray-900 text-sm">{t("childSeat")}</p><p className="text-xs text-gray-500">{t("childSeatNeeded")}</p></div>
+                {/* ── Extras ── */}
+                <div className="pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Sparkles size={14} className="text-blue-600" />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-blue-600">+${settingsData.childSeatFee}</span>
+                    <h3 className="text-sm font-bold text-gray-900">{t("extras")}</h3>
+                  </div>
+                  <label className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors gap-3" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Baby size={20} className="text-gray-700 flex-shrink-0" />
+                      <div className="min-w-0"><p className="font-medium text-gray-900 text-sm">{t("childSeat")}</p><p className="text-xs text-gray-500">{t("childSeatNeeded")}</p></div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {/* Was hardcoded as "+$10" — it stayed in dollars even
+                          when every other price on the page was in lira. */}
+                      <span className="text-sm font-semibold text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
                       <input type="checkbox" checked={childSeat} onChange={(e) => setChildSeat(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
                     </div>
                   </label>
