@@ -194,20 +194,11 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
       {/* Payment Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
-          {/* Card info header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <CreditCard size={16} className="text-gray-500" />
-              <span className="text-gray-900 text-sm font-medium">{t("cardDetails")}</span>
-            </div>
-            {/* Stripe logo */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-gray-400 tracking-wide">POWERED BY</span>
-              <svg width="38" height="16" viewBox="0 0 60 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60 12.5C60 5.596 55.228 0 49.333 0H10.667C4.772 0 0 5.596 0 12.5S4.772 25 10.667 25h38.666C55.228 25 60 19.404 60 12.5z" fill="#635BFF"/>
-                <path d="M28.736 8.264c0-.927.763-1.284 2.026-1.284 1.812 0 4.1.549 5.912 1.528V3.406C34.811 2.614 33.006 2 30.762 2c-4.413 0-7.345 2.305-7.345 6.153 0 6.001 8.26 5.04 8.26 7.631 0 1.095-.954 1.452-2.289 1.452-1.98 0-4.516-.815-6.525-1.91v5.167C24.945 21.403 27.013 22 29.388 22c4.524 0 7.633-2.238 7.633-6.136-.017-6.477-8.285-5.32-8.285-7.6z" fill="#fff"/>
-              </svg>
-            </div>
+          {/* The Stripe mark that used to sit here is now part of the badge
+              under the form, so it is not claimed twice on one screen. */}
+          <div className="flex items-center gap-2 mb-4">
+            <CreditCard size={16} className="text-gray-500" />
+            <span className="text-gray-900 text-sm font-medium">{t("cardDetails")}</span>
           </div>
 
           <PaymentElement options={{ layout: "tabs" }} />
@@ -246,28 +237,17 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         </button>
       </form>
 
-      {/* Card brand logos */}
-      <div className="flex items-center justify-center gap-2">
-        {[
-          { src: "/images/cards/visa.svg", alt: "Visa", w: 54 },
-          { src: "/images/cards/mastercard.svg", alt: "Mastercard", w: 46 },
-          { src: "/images/cards/amex.svg", alt: "American Express", w: 46 },
-          { src: "/images/cards/troy.svg", alt: "Troy", w: 46 },
-        ].map((card) => (
-          <div
-            key={card.alt}
-            className="h-8 rounded-md border border-gray-200 bg-white overflow-hidden flex items-center justify-center"
-            style={{ width: card.w }}
-          >
-            <Image
-              src={card.src}
-              alt={card.alt}
-              width={card.w}
-              height={32}
-              className="object-contain w-full h-full"
-            />
-          </div>
-        ))}
+      {/* One badge instead of four separately-boxed card logos: it carries the
+          Stripe mark and the accepted brands together, so the payment
+          processor and the cards are read as a single statement. */}
+      <div className="flex justify-center">
+        <Image
+          src="/images/cards/stripe-secure-payment.png"
+          alt="Powered by Stripe — Visa, Mastercard, Maestro, American Express, Discover"
+          width={502}
+          height={131}
+          className="h-auto w-full max-w-[260px] opacity-90"
+        />
       </div>
 
     </div>
