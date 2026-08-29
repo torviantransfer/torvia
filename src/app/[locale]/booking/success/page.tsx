@@ -5,6 +5,7 @@ import { CheckCircle, Download, Home, MessageCircle } from "lucide-react";
 import type { Metadata } from "next";
 import PixelPurchaseFire from "@/components/booking/PixelPurchaseFire";
 import { createAdminClient } from "@/lib/supabase/admin";
+import Stripe from "stripe";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -22,25 +23,66 @@ export default async function BookingSuccessPage({
   const code = sp.code ?? "—";
   const t = await getTranslations("bookingSuccess");
 
+  /**
+   * Statuses that mean Stripe actually took the money. They are only ever set
+   * after the payment intent is verified — by the webhook on
+   * payment_intent.succeeded, or by /api/reservations/confirm, which retrieves
+   * the intent and checks it reports "succeeded". Conversion tracking keys off
+   * this rather than off the URL, because this page is a plain link anyone can
+   * open, refresh or bookmark.
+   */
+  const PAID_STATUSES = [
+    "paid",
+    "deposit_paid",
+    "driver_assigned",
+    "passenger_picked_up",
+    "completed",
+  ];
+
   let reservationTotal = 0;
+  let isPaid = false;
+  // What Stripe actually captured, read off the PaymentIntent. For a cash
+  // booking only the deposit is taken online, so reporting total_price as the
+  // conversion value would overstate revenue by the driver's share.
+  let chargedAmount = 0;
+  let chargedCurrency = "USD";
+
   if (code && code !== "—") {
     try {
       const supabase = createAdminClient();
       const { data } = await supabase
         .from("reservations")
-        .select("total_price")
+        .select("total_price, status, stripe_payment_intent_id")
         .eq("reservation_code", code)
         .single();
       reservationTotal = data?.total_price ?? 0;
+      isPaid = PAID_STATUSES.includes(data?.status ?? "");
+
+      if (isPaid && data?.stripe_payment_intent_id) {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: "2026-03-25.dahlia",
+        });
+        const intent = await stripe.paymentIntents.retrieve(
+          data.stripe_payment_intent_id
+        );
+        chargedAmount = (intent.amount_received ?? 0) / 100;
+        chargedCurrency = intent.currency.toUpperCase();
+      }
     } catch {
-      // non-critical, fallback to 0
+      // non-critical, fallback to 0 / not paid
     }
   }
 
   return (
     <>
       <Header />
-      <PixelPurchaseFire reservationCode={code} totalPrice={reservationTotal} />
+      <PixelPurchaseFire
+        reservationCode={code}
+        totalPrice={reservationTotal}
+        isPaid={isPaid}
+        chargedAmount={chargedAmount}
+        chargedCurrency={chargedCurrency}
+      />
       <main className="flex-1 bg-white">
         <div className="max-w-xl mx-auto px-4 py-16 text-center">
 

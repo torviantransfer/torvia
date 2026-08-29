@@ -74,6 +74,9 @@ export function pixelPurchase(
   currency = "USD",
   regionName?: string
 ) {
+  // Meta only. The Google Ads conversion used to be fired from here too, which
+  // meant it went out both at payment confirmation and again on the success
+  // page — see gAdsConversionPurchase, which is now the single Ads entry point.
   fbq("track", "Purchase", {
     value,
     currency,
@@ -82,12 +85,45 @@ export function pixelPurchase(
     content_name: regionName ?? "Airport Transfer",
     order_id: reservationCode,
   }, { eventID: `purchase_${reservationCode}` });
-  // Google Ads conversion (event name from Google Ads dashboard)
-  gtag("event", "ads_conversion_Satın_alma_i_lemi_1", {
-    value,
-    currency,
-    transaction_id: reservationCode,
-  });
+}
+
+/* ─── Purchase de-duplication ───────────────────────────────────────────────
+ * The success page is a plain URL: refreshing it, hitting back, or reopening
+ * a bookmark would re-fire the conversion. Remembering which reservations
+ * have already been reported keeps it to one send per booking. Google Ads
+ * also de-duplicates on transaction_id, so a browser with storage disabled
+ * degrades to Ads-side de-duplication rather than to double counting.
+ */
+
+const PURCHASE_TRACKED_KEY = "TORVIAN_tracked_purchases";
+const MAX_TRACKED = 20;
+
+function readTrackedPurchases(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(PURCHASE_TRACKED_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function hasTrackedPurchase(reservationCode: string): boolean {
+  return readTrackedPurchases().includes(reservationCode);
+}
+
+export function markPurchaseTracked(reservationCode: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const next = [
+      reservationCode,
+      ...readTrackedPurchases().filter((c) => c !== reservationCode),
+    ].slice(0, MAX_TRACKED);
+    window.localStorage.setItem(PURCHASE_TRACKED_KEY, JSON.stringify(next));
+  } catch {
+    // Private mode / storage disabled — Ads still de-duplicates on transaction_id.
+  }
 }
 
 /**
@@ -121,9 +157,19 @@ export function pixelSearch(query: string) {
   });
 }
 
+/**
+ * The single place a Google Ads purchase conversion is sent.
+ *
+ * `value` must be the amount Stripe actually captured — for a cash booking
+ * that is the deposit, not the full fare — and `currency` the currency of that
+ * charge, both read off the PaymentIntent rather than off the reservation.
+ *
+ * transaction_id is the reservation code, which is what lets Ads discard
+ * repeats even when the browser cannot remember what it already sent.
+ */
 export function gAdsConversionPurchase(
   value: number,
-  currency = "USD",
+  currency: string,
   transactionId?: string
 ) {
   gtag("event", "conversion_event_purchase", {
