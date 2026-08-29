@@ -44,6 +44,13 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${inter.variable} ${montserrat.variable} h-full`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
+        {/* The tag and pixel scripts are the first third-party bytes the page
+            waits on; opening those connections while the HTML is still
+            parsing saves the DNS + TLS round trips. Kept to two origins —
+            more hints than that start competing with each other. Fonts are
+            not listed because next/font serves them from our own domain. */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
         {gaId && (
           <>
             <Script
