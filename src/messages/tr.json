@@ -99,6 +99,7 @@
     "tripSectionDesc": "Yolcu, bagaj, uçuş ve otel bilgisi",
     "dateConfirm": "Tamam",
     "cardDetails": "Kart Bilgileri",
+    "stepProgress": "Adım {current}/{total}",
     "vehicleFeatures": "Özellikleri ve avantajları gör",
     "chargedInUsd": "Ödeme {amount} olarak tahsil edilir",
     "payAtVehicle": "Araçta Ödeme",

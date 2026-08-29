@@ -99,6 +99,7 @@
     "tripSectionDesc": "Пассажиры, багаж, рейс и отель",
     "dateConfirm": "Готово",
     "cardDetails": "Данные карты",
+    "stepProgress": "Шаг {current} из {total}",
     "vehicleFeatures": "Посмотреть оснащение и преимущества",
     "chargedInUsd": "Списание составит {amount}",
     "payAtVehicle": "Оплата в транспорте",

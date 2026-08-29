@@ -99,6 +99,7 @@
     "tripSectionDesc": "Passagiere, Gepäck, Flug und Hotel",
     "dateConfirm": "Fertig",
     "cardDetails": "Kartendaten",
+    "stepProgress": "Schritt {current} von {total}",
     "vehicleFeatures": "Ausstattung und Vorteile ansehen",
     "chargedInUsd": "Abbuchung erfolgt als {amount}",
     "payAtVehicle": "Im Fahrzeug Zahlen",

@@ -11,7 +11,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Loader2, Lock, Shield, CreditCard, CheckCircle, MapPin } from "lucide-react";
+import { Loader2, Lock, CreditCard, MapPin } from "lucide-react";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -86,7 +86,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   const stripe = useStripe();
   const elements = useElements();
   const t = useTranslations("booking");
-  const { format: fmt, formatBilling, isConverted } = useCurrency();
+  const { format: fmt } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -178,11 +178,6 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
               <span className="text-amber-700 text-sm font-bold">{t("depositNow")}</span>
               <div className="text-right">
                 <span className="block text-amber-700 text-xl font-bold">{money(depositAmount)}</span>
-                {isConverted && (
-                  <span className="block text-amber-600/70 text-[10px]">
-                    {t("chargedInUsd", { amount: formatBilling(depositAmount) })}
-                  </span>
-                )}
               </div>
             </div>
           </div>
@@ -191,11 +186,6 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             <span className="text-gray-500 text-sm">{t("totalPrice")}</span>
             <div className="text-right">
               <span className="block text-gray-900 text-xl font-bold">{money(totalPrice)}</span>
-              {isConverted && (
-                <span className="block text-gray-400 text-[10px]">
-                  {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
-                </span>
-              )}
             </div>
           </div>
         )}
@@ -280,23 +270,6 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         ))}
       </div>
 
-      {/* Security trust row */}
-      <div className="flex items-center justify-center gap-4">
-        <div className="flex items-center gap-1.5">
-          <Shield size={13} className="text-emerald-500" />
-          <span className="text-[10px] text-gray-500 font-medium">SSL</span>
-        </div>
-        <div className="w-px h-3 bg-gray-200" />
-        <div className="flex items-center gap-1.5">
-          <CheckCircle size={13} className="text-emerald-500" />
-          <span className="text-[10px] text-gray-500 font-medium">PCI DSS</span>
-        </div>
-        <div className="w-px h-3 bg-gray-200" />
-        <div className="flex items-center gap-1.5">
-          <Lock size={13} className="text-emerald-500" />
-          <span className="text-[10px] text-gray-500 font-medium">3D Secure</span>
-        </div>
-      </div>
     </div>
   );
 }

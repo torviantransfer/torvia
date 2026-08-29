@@ -99,6 +99,7 @@
     "tripSectionDesc": "Pasażerowie, bagaż, lot i hotel",
     "dateConfirm": "Gotowe",
     "cardDetails": "Dane karty",
+    "stepProgress": "Krok {current} z {total}",
     "vehicleFeatures": "Zobacz wyposażenie i korzyści",
     "chargedInUsd": "Obciążenie w wysokości {amount}",
     "payAtVehicle": "Płatność w Pojeździe",

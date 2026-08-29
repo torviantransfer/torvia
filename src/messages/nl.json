@@ -99,6 +99,7 @@
     "tripSectionDesc": "Passagiers, bagage, vlucht en hotel",
     "dateConfirm": "Klaar",
     "cardDetails": "Kaartgegevens",
+    "stepProgress": "Stap {current} van {total}",
     "vehicleFeatures": "Bekijk kenmerken en voordelen",
     "chargedInUsd": "Wordt afgeschreven als {amount}",
     "payAtVehicle": "Betalen in het voertuig",

@@ -15,7 +15,7 @@ import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
   ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
   Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, Headphones, X,
-  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown, Info,
+  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -88,7 +88,7 @@ export default function BookingWizard(props: Props) {
 function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
-  const { format: fmt, formatBilling, isConverted } = useCurrency();
+  const { format: fmt } = useCurrency();
 
   const regionSlug = props.initialRegion!;
   const tripType = props.initialTrip ?? "one_way";
@@ -470,33 +470,47 @@ function BookingWizardInner(props: Props) {
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {/* Step indicator.
-          Every pill is built identically and every connector is flex-1, so the
-          circles hold the same positions on all three steps. Showing only the
-          active label inline made the row re-flow on each step — the markers
-          slid left as you advanced — so on phones the current step's name goes
-          under the rail instead, where it also gets the full width. From sm up
-          all three labels are always present, which is stable on its own. */}
+
+          Phones get a progress line rather than a miniature of the desktop
+          stepper. Three pills never fit at that width: labels had to be
+          dropped (leaving an unexplained "1 2 3"), shown only for the active
+          step (which made the markers slide as you advanced), or pushed under
+          the rail as a stray caption. A counter plus the step name reads
+          straight away, holds still, and has room for the longest label in
+          any language. */}
       <div className="mb-6">
-        <div className="flex items-center w-full max-w-md mx-auto px-3 py-2 sm:px-5 sm:py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+        <div className="sm:hidden">
+          <div className="flex items-baseline justify-between gap-3 mb-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 flex-shrink-0">
+              {t("stepProgress", { current: step, total: 3 })}
+            </span>
+            <span className="text-sm font-bold text-gray-900 text-right">{stepLabels[step - 1]}</span>
+          </div>
+          <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${(step / 3) * 100}%`, background: "linear-gradient(135deg, #007AFF, #0056CC)" }}
+            />
+          </div>
+        </div>
+
+        <div className="hidden sm:flex items-center w-full max-w-md mx-auto px-5 py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
           {[1, 2, 3].map((s) => (
             <Fragment key={s}>
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-xl transition-all min-w-0"
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl transition-all min-w-0"
                 style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
               >
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
                   {s < step ? <Check size={12} strokeWidth={3} /> : s}
                 </div>
-                <span className={`hidden sm:inline text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                <span className={`text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
                   {stepLabels[s - 1]}
                 </span>
               </div>
-              {s < 3 && <div className={`h-px flex-1 min-w-[12px] mx-1.5 sm:mx-2 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
+              {s < 3 && <div className={`h-px flex-1 min-w-[12px] mx-2 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
             </Fragment>
           ))}
         </div>
-        <p className="sm:hidden text-center text-[13px] font-bold text-blue-600 mt-2.5">
-          {stepLabels[step - 1]}
-        </p>
       </div>
 
       {/* Route summary — the two stops read as a journey (pin rail + stacked
@@ -639,14 +653,6 @@ function BookingWizardInner(props: Props) {
                             <span className="block text-[28px] leading-none font-black text-gray-900 tracking-tight">
                               {fmt(vehicle.calculation.basePrice, exchangeRates)}
                             </span>
-                            {/* Stripe always charges in USD, so a converted
-                                price must say what actually hits the card. */}
-                            {isConverted && (
-                              <span className="flex items-center gap-1 mt-1.5 text-[11px] text-gray-400">
-                                <Info size={11} className="flex-shrink-0" />
-                                {t("chargedInUsd", { amount: formatBilling(vehicle.calculation.basePrice) })}
-                              </span>
-                            )}
                           </div>
 
                           <button
@@ -1040,11 +1046,6 @@ function BookingWizardInner(props: Props) {
                         <span className="text-xs font-medium text-amber-700">{t("totalPrice")}</span>
                         <div className="text-right">
                           <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
-                          {isConverted && (
-                            <div className="text-[10px] text-amber-400 mt-0.5">
-                              {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
-                            </div>
-                          )}
                         </div>
                       </div>
                       {/* Divider */}
@@ -1069,12 +1070,6 @@ function BookingWizardInner(props: Props) {
                         <span className="text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
                         <span className="text-xl font-black text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
                       </div>
-                      {isConverted && (
-                        <p className="flex items-center justify-end gap-1 text-[10px] text-gray-400 mt-1">
-                          <Info size={10} className="flex-shrink-0" />
-                          {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
-                        </p>
-                      )}
                     </div>
                   )}
 

@@ -99,6 +99,7 @@
     "tripSectionDesc": "Passengers, luggage, flight and hotel",
     "dateConfirm": "Done",
     "cardDetails": "Card Details",
+    "stepProgress": "Step {current} of {total}",
     "vehicleFeatures": "See features and benefits",
     "chargedInUsd": "Charged as {amount}",
     "payAtVehicle": "Pay at Vehicle",
