@@ -151,8 +151,12 @@ export default async function BookingPage({
               quality={80}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
-            <div className="relative z-10 w-full max-w-6xl mx-auto px-4 pt-16 sm:pt-20 pb-10">
-              <div className="text-center mb-8">
+            {/* Flex column so phones can put the booking widget above the
+                headline and keyword chips without reordering the DOM — the h1
+                stays first in the markup for search engines and screen
+                readers, only the visual order changes. */}
+            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-4 pt-16 sm:pt-20 pb-10">
+              <div className="order-2 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg">
                   {t("title")}
                 </h1>
@@ -174,7 +178,7 @@ export default async function BookingPage({
                   ))}
                 </div>
               </div>
-              <div className="max-w-5xl mx-auto">
+              <div className="order-1 lg:order-2 w-full max-w-5xl mx-auto">
                 <BookingWizardClient initialRegion={sp.region} />
               </div>
             </div>

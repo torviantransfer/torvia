@@ -30,8 +30,12 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/70" />
       </div>
 
-      {/* Top content — Title + subtitle */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-4 sm:px-6 pt-28 lg:pt-32">
+      {/* Top content — Title + subtitle.
+          On phones this is ordered BELOW the booking widget so the widget is
+          the first thing in the viewport (it is what visitors came to do),
+          while staying first in the DOM — search engines and screen readers
+          still read the h1 before the form. */}
+      <div className="order-2 lg:order-1 relative z-10 flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-4 sm:px-6 pt-10 lg:pt-32">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] tracking-tight text-white text-center mb-4">
           {t("title")}
         </h1>
@@ -84,13 +88,16 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Bottom — Booking form bar */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-14 sm:pb-16">
+      {/* Booking form — first in the viewport on phones, back under the
+          headline on desktop where both fit above the fold anyway. */}
+      <div className="order-1 lg:order-2 relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-28 lg:pt-0">
         <BookingFormMini />
+      </div>
 
-        {/* SEO promo + internal-link keyword chips — moved below the booking
-            form so the widget stays high on the page (better conversion) while
-            keeping the keyword relevance and internal links for search. */}
+      {/* SEO promo + internal-link keyword chips — kept last on every size so
+          the widget stays high on the page (better conversion) while keeping
+          the keyword relevance and internal links for search. */}
+      <div className="order-3 relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pb-14 sm:pb-16">
         <p className="text-sm sm:text-base text-white/85 leading-relaxed max-w-2xl mx-auto text-center mt-8 mb-4">
           {t("promoText")}
         </p>
