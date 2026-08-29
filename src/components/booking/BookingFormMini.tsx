@@ -152,6 +152,17 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
   const swap = () => { const tmp = from; setFrom(to); setTo(tmp); };
 
+  /* Time as the "HH:MM" that <input type="time"> speaks, both ways. */
+  const activeH = calFor === "dep" ? depH : retH;
+  const activeM = calFor === "dep" ? depM : retM;
+  const timeValue = `${String(activeH).padStart(2, "0")}:${String(activeM).padStart(2, "0")}`;
+  const setTimeFromInput = (value: string) => {
+    const [h, m] = value.split(":").map(Number);
+    // Clearing the field yields "", which parses to NaN — keep the old time.
+    if (Number.isNaN(h) || Number.isNaN(m)) return;
+    if (calFor === "dep") { setDepH(h); setDepM(m); } else { setRetH(h); setRetM(m); }
+  };
+
   const openCal = (target: "dep" | "ret") => {
     if (target === "ret" && !depDate) return;
     setCalFor(target);
@@ -275,56 +286,96 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           );
         })}
       </div>
-      <div className="border-t border-gray-100 px-5 py-3 flex items-center justify-center gap-5">
-        <div className="text-center">
-          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
-          <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-            <span className="text-base font-bold text-gray-900 w-6 text-center">{String(calFor === "dep" ? depH : retH).padStart(2, "0")}</span>
-            <div className="flex flex-col">
-              <button type="button" onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-400 hover:text-gray-600"><ChevronUp size={11} /></button>
-              <button type="button" onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-400 hover:text-gray-600"><ChevronDown size={11} /></button>
+      {/* Time.
+          Phones get the platform's own time picker — the wheel on iOS, the
+          dial on Android — because the stepper below needs about fifteen taps
+          on 11px arrows to get from the default 12:00 to something like 03:30.
+          Pointer devices keep the stepper, where those arrows are fine. */}
+      <div className="border-t border-gray-100 px-4 py-3">
+        <label className="lg:hidden block">
+          <span className="block text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1.5">{t("hour")}</span>
+          <input
+            type="time"
+            step={300}
+            value={timeValue}
+            onChange={(e) => setTimeFromInput(e.target.value)}
+            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+        </label>
+
+        <div className="hidden lg:flex items-center justify-center gap-5">
+          <div className="text-center">
+            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
+            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
+              <div className="flex flex-col">
+                <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+                <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+              </div>
+            </div>
+          </div>
+          <span className="text-base font-bold text-gray-300 mt-4">:</span>
+          <div className="text-center">
+            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
+            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
+              <div className="flex flex-col">
+                <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+                <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+              </div>
             </div>
           </div>
         </div>
-        <span className="text-base font-bold text-gray-300 mt-4">:</span>
-        <div className="text-center">
-          <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
-          <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-            <span className="text-base font-bold text-gray-900 w-6 text-center">{String(calFor === "dep" ? depM : retM).padStart(2, "0")}</span>
-            <div className="flex flex-col">
-              <button type="button" onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-400 hover:text-gray-600"><ChevronUp size={11} /></button>
-              <button type="button" onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-400 hover:text-gray-600"><ChevronDown size={11} /></button>
-            </div>
-          </div>
-        </div>
+      </div>
+
+      {/* Closing the sheet used to mean tapping the dimmed area behind it,
+          which is not obvious. The padding clears the iPhone home indicator. */}
+      <div
+        className="lg:hidden px-4 pt-1"
+        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen(null)}
+          className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+        >
+          {t("dateConfirm")}
+        </button>
       </div>
     </div>
     </>
   );
 
-  /* --- Passenger popup --- */
+  /* --- Passenger popup ---
+   * Spans the full width of its row on phones. It used to be a fixed 220px
+   * box pinned to the right, which since the passenger control became a
+   * full-width row left it hanging off the edge of the card, with the two
+   * counters squeezed into a narrow column. */
+  const stepperBtn =
+    "w-9 h-9 sm:w-7 sm:h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
+
   const renderPassengers = () => (
-    <div className="absolute top-full mt-1 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 w-[220px]">
-      <div className="flex items-center justify-between mb-3">
-        <div>
+    <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 lg:left-auto lg:w-[240px]">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{t("adult")}</p>
           <p className="text-[11px] text-gray-400">13+ {t("age")}</p>
         </div>
-        <div className="flex items-center gap-2.5">
-          <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))} className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm">&minus;</button>
-          <span className="text-sm font-bold text-gray-900 w-3 text-center">{adults}</span>
-          <button type="button" onClick={() => setAdults(Math.min(10, adults + 1))} className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm">+</button>
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <button type="button" aria-label={`${t("adult")} −`} onClick={() => setAdults(Math.max(1, adults - 1))} className={stepperBtn}>&minus;</button>
+          <span className="text-sm font-bold text-gray-900 w-4 text-center">{adults}</span>
+          <button type="button" aria-label={`${t("adult")} +`} onClick={() => setAdults(Math.min(10, adults + 1))} className={stepperBtn}>+</button>
         </div>
       </div>
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{t("child")}</p>
           <p className="text-[11px] text-gray-400">0-12 {t("age")}</p>
         </div>
-        <div className="flex items-center gap-2.5">
-          <button type="button" onClick={() => setKids(Math.max(0, kids - 1))} className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm">&minus;</button>
-          <span className="text-sm font-bold text-gray-900 w-3 text-center">{kids}</span>
-          <button type="button" onClick={() => setKids(Math.min(10, kids + 1))} className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 text-sm">+</button>
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          <button type="button" aria-label={`${t("child")} −`} onClick={() => setKids(Math.max(0, kids - 1))} className={stepperBtn}>&minus;</button>
+          <span className="text-sm font-bold text-gray-900 w-4 text-center">{kids}</span>
+          <button type="button" aria-label={`${t("child")} +`} onClick={() => setKids(Math.min(10, kids + 1))} className={stepperBtn}>+</button>
         </div>
       </div>
     </div>
