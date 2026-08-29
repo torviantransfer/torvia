@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { useCurrency } from "@/hooks/useCurrency";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import {
   Elements,
@@ -25,6 +27,8 @@ interface Props {
   pickupDate: string;
   pickupTime: string;
   onSuccess: () => void;
+  /** Needed to show the summary in the visitor's currency, not raw dollars. */
+  exchangeRates: Record<string, number>;
   // Cash deposit fields
   isDeposit?: boolean;
   depositAmount?: number;
@@ -78,11 +82,23 @@ const appearance: StripeElementsOptions["appearance"] = {
   },
 };
 
-function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, isDeposit, depositAmount, driverAmount }: Omit<Props, "clientSecret">) {
+function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount }: Omit<Props, "clientSecret">) {
   const stripe = useStripe();
   const elements = useElements();
+  const t = useTranslations("booking");
+  const { format: fmt, formatBilling, isConverted } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const money = (usd: number) => fmt(usd, exchangeRates);
+  const formattedDate = (() => {
+    try {
+      return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" })
+        .format(new Date(`${pickupDate}T00:00:00`));
+    } catch {
+      return pickupDate;
+    }
+  })();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,39 +148,55 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
 
   return (
     <div className="space-y-5">
-      {/* Order Summary Card */}
+      {/* Order summary. Every label here was hardcoded English and every
+          amount a hardcoded "$", so a German visitor paying in euro was shown
+          "Total $40.00". */}
       <div className={`rounded-xl border p-4 ${isDeposit ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
         <div className="flex items-center gap-2 mb-3">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDeposit ? "bg-amber-500/10" : "bg-blue-500/10"}`}>
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isDeposit ? "bg-amber-500/10" : "bg-blue-500/10"}`}>
             <MapPin size={16} className={isDeposit ? "text-amber-600" : "text-blue-600"} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-gray-900 text-sm font-semibold truncate">Antalya Airport → {regionName}</p>
             <p className="text-gray-500 text-xs">
-              {tripType === "round_trip" ? "↔ Round Trip" : "→ One Way"} · {pickupDate} · {pickupTime}
+              {tripType === "round_trip" ? t("roundTrip") : t("oneWay")} · {formattedDate} · {pickupTime}
             </p>
           </div>
         </div>
 
         {isDeposit && depositAmount != null && driverAmount != null ? (
           <div className="pt-3 border-t border-amber-200 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-amber-700 text-sm font-semibold">Total (cash)</span>
-              <span className="text-gray-700 text-sm font-bold">${totalPrice.toFixed(2)}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-amber-700 text-sm font-semibold">{t("totalPrice")}</span>
+              <span className="text-gray-700 text-sm font-bold">{money(totalPrice)}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500 text-xs">Pay to driver (cash)</span>
-              <span className="text-gray-600 text-xs">${driverAmount.toFixed(2)}</span>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-gray-500 text-xs">{t("payToDriver")}</span>
+              <span className="text-gray-600 text-xs">{money(driverAmount)}</span>
             </div>
-            <div className="flex items-center justify-between pt-1 border-t border-amber-200">
-              <span className="text-amber-700 text-sm font-bold">Deposit (pay now)</span>
-              <span className="text-amber-700 text-xl font-bold">${depositAmount.toFixed(2)}</span>
+            <div className="flex items-center justify-between gap-3 pt-1 border-t border-amber-200">
+              <span className="text-amber-700 text-sm font-bold">{t("depositNow")}</span>
+              <div className="text-right">
+                <span className="block text-amber-700 text-xl font-bold">{money(depositAmount)}</span>
+                {isConverted && (
+                  <span className="block text-amber-600/70 text-[10px]">
+                    {t("chargedInUsd", { amount: formatBilling(depositAmount) })}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-            <span className="text-gray-500 text-sm">Total</span>
-            <span className="text-gray-900 text-xl font-bold">${totalPrice.toFixed(2)}</span>
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-200">
+            <span className="text-gray-500 text-sm">{t("totalPrice")}</span>
+            <div className="text-right">
+              <span className="block text-gray-900 text-xl font-bold">{money(totalPrice)}</span>
+              {isConverted && (
+                <span className="block text-gray-400 text-[10px]">
+                  {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -176,7 +208,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <CreditCard size={16} className="text-gray-500" />
-              <span className="text-gray-900 text-sm font-medium">Card Details</span>
+              <span className="text-gray-900 text-sm font-medium">{t("cardDetails")}</span>
             </div>
             {/* Stripe logo */}
             <div className="flex items-center gap-1.5">
@@ -208,17 +240,17 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           {loading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Processing...
+              {t("processing")}
             </>
           ) : isDeposit && depositAmount != null ? (
             <>
               <Lock size={16} />
-              Pay Deposit ${depositAmount.toFixed(2)}
+              {t("depositNow")} · {money(depositAmount)}
             </>
           ) : (
             <>
               <Lock size={16} />
-              Pay ${totalPrice.toFixed(2)}
+              {t("pay")} · {money(totalPrice)}
             </>
           )}
         </button>
@@ -269,7 +301,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   );
 }
 
-export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, isDeposit, depositAmount, driverAmount }: Props) {
+export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount }: Props) {
   const options: StripeElementsOptions = {
     clientSecret,
     appearance,
@@ -286,6 +318,7 @@ export default function StripeCheckoutEmbed({ clientSecret, reservationCode, loc
         pickupDate={pickupDate}
         pickupTime={pickupTime}
         onSuccess={onSuccess}
+        exchangeRates={exchangeRates}
         isDeposit={isDeposit}
         depositAmount={depositAmount}
         driverAmount={driverAmount}

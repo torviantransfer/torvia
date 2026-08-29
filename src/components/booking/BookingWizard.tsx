@@ -508,7 +508,7 @@ function BookingWizardInner(props: Props) {
           airport-to-resort transfer it did not inform the decision, it pushed
           the vehicle choices below the fold on phones, and its live OSRM
           distance contradicted the figure shown here. */}
-      {regionData && (
+      {regionData && step <= 2 && (
         <div className="mb-8 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
           <div className="flex gap-3 px-4 py-3.5" style={{ backgroundColor: "#FFFFFF" }}>
             {/* Pin rail */}
@@ -710,13 +710,14 @@ function BookingWizardInner(props: Props) {
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
           <div className="lg:col-span-2 order-2 lg:order-1">
             <div className="rounded-2xl p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
-                <Users size={20} className="text-blue-600" />{t("step3")}
-              </h2>
               {/* Grouped into contact / trip / extras. Everything used to run
                   together as one flat list of eight unrelated fields, so there
                   was nothing telling the customer how much was left or which
-                  answers belonged together. */}
+                  answers belonged together.
+
+                  There is no card title above these: the step indicator already
+                  reads "Passenger Info", and repeating it here put two
+                  Users-icon headings directly on top of each other. */}
               <div className="space-y-5">
                 <div className="flex items-center gap-2.5 pb-1">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
@@ -1096,14 +1097,18 @@ function BookingWizardInner(props: Props) {
         </div>
       )}
       {/* STEP 3: Stripe Payment */}
+      {/* The embed already lays its own summary and card form out as cards, so
+          this wraps them in a heading only — the bordered container it used to
+          sit in put a card inside a card. */}
       {step === 3 && clientSecret && (
         <div className="max-w-2xl mx-auto">
-          <div className="rounded-2xl p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-1.5">
               <CreditCard size={20} className="text-blue-600" />{t("step4")}
             </h2>
-            <p className="text-xs text-gray-500 mb-6">{t("paymentSecureNote")}</p>
+            <p className="text-xs text-gray-500 mb-5">{t("paymentSecureNote")}</p>
             <StripeCheckoutEmbed
+              exchangeRates={exchangeRates}
               clientSecret={clientSecret} reservationCode={reservationCode ?? ""} locale={locale}
               totalPrice={reservationTotalPrice} regionName={regionData ? getRegionName(regionData) : regionSlug}
               tripType={tripType} pickupDate={pickupDate} pickupTime={pickupTime}
