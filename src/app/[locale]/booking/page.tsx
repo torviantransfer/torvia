@@ -56,7 +56,11 @@ export default async function BookingPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
 
-  const hasRegion = !!sp.region;
+  // The full wizard (step 1 = vehicle selection) has no date picker, so it
+  // only renders once we actually have a date. A region without a date
+  // (arriving via a region page's "Book Now" CTA) still falls back to the
+  // hero + mini form below, just with the destination pre-filled.
+  const hasDate = !!sp.region && !!sp.date;
 
   const intentKeywords: Record<string, { label: string; href: string }[]> = {
     tr: [
@@ -134,8 +138,8 @@ export default async function BookingPage({
     <>
       <Header />
 
-      {/* Hero shown only when no region selected */}
-      {!hasRegion && (
+      {/* Hero shown until we have both a region and a date */}
+      {!hasDate && (
         <>
           <section className="relative min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center pt-16">
             <Image
@@ -171,7 +175,7 @@ export default async function BookingPage({
                 </div>
               </div>
               <div className="max-w-5xl mx-auto">
-                <BookingWizardClient />
+                <BookingWizardClient initialRegion={sp.region} />
               </div>
             </div>
           </section>
@@ -190,8 +194,8 @@ export default async function BookingPage({
           serviceType: "Airport Transfer",
         }) }} />
 
-        {/* When region is selected, keep navbar and show wizard directly */}
-        {hasRegion && (
+        {/* When region + date are both known, keep navbar and show wizard directly */}
+        {hasDate && (
           <section className="pt-20 sm:pt-24 pb-6">
             <div className="max-w-6xl mx-auto px-4">
               <h1 className="sr-only">{t("title")}</h1>

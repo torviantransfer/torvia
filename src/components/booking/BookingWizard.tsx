@@ -74,8 +74,14 @@ interface RegionData {
 export default function BookingWizard(props: Props) {
   const t = useTranslations("booking");
 
-  if (!props.initialRegion) {
-    return <BookingFormMini />;
+  // A region without a date happens when someone arrives via a region page's
+  // "Book Now" CTA (which only carries ?region=, no date). Step 1 of the full
+  // wizard has no date picker, so landing there left people stuck unable to
+  // select a vehicle. Send them to the mini form instead — same widget as the
+  // homepage, destination pre-filled — so they can pick a date before the
+  // full wizard (which requires one) takes over.
+  if (!props.initialRegion || !props.initialDate) {
+    return <BookingFormMini presetRegion={props.initialRegion} />;
   }
 
   return <BookingWizardInner {...props} />;

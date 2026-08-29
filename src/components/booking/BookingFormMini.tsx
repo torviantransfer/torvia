@@ -47,7 +47,13 @@ function getCalDays(year: number, month: number) {
   return days;
 }
 
-export default function BookingFormMini() {
+interface BookingFormMiniProps {
+  /** Pre-fills the destination (from a region page's "Book Now" CTA) so the
+   * visitor only has to pick a date/time instead of re-selecting the route. */
+  presetRegion?: string;
+}
+
+export default function BookingFormMini({ presetRegion }: BookingFormMiniProps = {}) {
   const t = useTranslations("booking");
   const locale = useLocale();
   const router = useRouter();
@@ -74,10 +80,11 @@ export default function BookingFormMini() {
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("TORVIAN_booking_form");
+      let restoredRoute = false;
       if (saved) {
         const d = JSON.parse(saved);
-        if (d.from) setFrom(d.from);
-        if (d.to) setTo(d.to);
+        if (d.from) { setFrom(d.from); restoredRoute = true; }
+        if (d.to) { setTo(d.to); restoredRoute = true; }
         if (d.depDate) setDepDate(new Date(d.depDate));
         if (typeof d.depH === "number") setDepH(d.depH);
         if (typeof d.depM === "number") setDepM(d.depM);
@@ -88,8 +95,15 @@ export default function BookingFormMini() {
         if (typeof d.adults === "number") setAdults(d.adults);
         if (typeof d.kids === "number") setKids(d.kids);
       }
+      // Coming from a region page's "Book Now" CTA: pre-fill the route so the
+      // visitor only has to pick a date, unless they already have a route
+      // in progress from a previous visit.
+      if (!restoredRoute && presetRegion) {
+        setFrom("antalya-airport");
+        setTo(presetRegion);
+      }
     } catch {}
-  }, []);
+  }, [presetRegion]);
 
   // Save to sessionStorage on any change
   useEffect(() => {
@@ -118,6 +132,8 @@ export default function BookingFormMini() {
 
   const nameKey = `name_${locale}` as keyof Region;
   const airportName = ({ tr: "Antalya Havalimanı (AYT)", en: "Antalya Airport (AYT)", de: "Flughafen Antalya (AYT)", pl: "Lotnisko Antalya (AYT)", ru: "Аэропорт Анталья (AYT)" } as Record<string, string>)[locale] ?? "Antalya Airport (AYT)";
+  const swapLabel = ({ tr: "Kalkış ve varış yerini değiştir", de: "Start und Ziel tauschen", pl: "Zamień miejsce startu i celu", ru: "Поменять местами пункты отправления и назначения", nl: "Vertrek en bestemming omwisselen" } as Record<string, string>)[locale] ?? "Swap pickup and dropoff";
+  const removeReturnLabel = ({ tr: "Dönüş tarihini kaldır", de: "Rückreisedatum entfernen", pl: "Usuń datę powrotu", ru: "Удалить дату возврата", nl: "Retourdatum verwijderen" } as Record<string, string>)[locale] ?? "Remove return date";
   const bookingHint = t("bookNow");
   const REGION_NAME_OVERRIDES: Record<string, string> = { "kundu-lara": "Kundu" };
   const getRegionLabel = (r: Region) => REGION_NAME_OVERRIDES[r.slug] ?? ((r[nameKey] as string) || r.name_en);
@@ -327,7 +343,7 @@ export default function BookingFormMini() {
         </div>
 
         {/* Swap */}
-        <button type="button" onClick={swap} className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 hover:bg-blue-700 transition-colors z-10 -mx-1 shadow">
+        <button type="button" onClick={swap} aria-label={swapLabel} className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 hover:bg-blue-700 transition-colors z-10 -mx-1 shadow">
           <ArrowLeftRight size={13} className="text-white" />
         </button>
 
@@ -370,7 +386,7 @@ export default function BookingFormMini() {
                   <span className="text-[13px] text-gray-400 whitespace-nowrap">{t("returnDate")}</span>
                 )}
               </button>
-              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} className="text-red-400 hover:text-red-600 ml-0.5"><X size={13} /></button>
+              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 hover:text-red-600 ml-0.5"><X size={13} /></button>
             </div>
           )}
           {open === "cal" && calFor === "ret" && renderCalendar()}
@@ -394,65 +410,73 @@ export default function BookingFormMini() {
       {/* MOBILE CARD (<lg) */}
       <div className="lg:hidden bg-white rounded-xl shadow-2xl shadow-black/20 p-3">
         {/* Row 1: From + Swap + To */}
-        <div className="flex items-center gap-1 mb-2">
+        <div className="flex items-center gap-1.5 mb-2">
           <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => setOpen(open === "from" ? null : "from")} className="w-full flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-2.5 text-left min-w-0">
-              <MapPin size={14} className="text-blue-600 shrink-0" />
-              <span className={`text-[13px] leading-tight ${from ? "font-semibold text-gray-900" : "text-gray-400"}`}>{from ? getName(from) : t("pickup")}</span>
+            <button type="button" onClick={() => setOpen(open === "from" ? null : "from")} aria-haspopup="listbox" aria-expanded={open === "from"} className="w-full min-h-[46px] flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-left min-w-0 active:bg-gray-50">
+              <MapPin size={16} className="text-blue-600 shrink-0" />
+              <span className={`text-[13px] leading-tight truncate ${from ? "font-semibold text-gray-900" : "text-gray-400"}`}>{from ? getName(from) : t("pickup")}</span>
             </button>
             {open === "from" && renderLocDrop("from")}
           </div>
-          <button type="button" onClick={swap} className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow">
-            <ArrowLeftRight size={11} className="text-white" />
+          <button type="button" onClick={swap} aria-label={swapLabel} className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow active:scale-95">
+            <ArrowLeftRight size={14} className="text-white" />
           </button>
           <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => setOpen(open === "to" ? null : "to")} className="w-full flex items-center gap-1.5 border border-gray-200 rounded-lg px-2.5 py-2.5 text-left min-w-0">
-              <MapPin size={14} className="text-blue-600 shrink-0" />
-              <span className={`text-[13px] leading-tight ${to ? "font-semibold text-gray-900" : "text-gray-400"}`}>{to ? getName(to) : t("dropoff")}</span>
+            <button type="button" onClick={() => setOpen(open === "to" ? null : "to")} aria-haspopup="listbox" aria-expanded={open === "to"} className="w-full min-h-[46px] flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-left min-w-0 active:bg-gray-50">
+              <MapPin size={16} className="text-blue-600 shrink-0" />
+              <span className={`text-[13px] leading-tight truncate ${to ? "font-semibold text-gray-900" : "text-gray-400"}`}>{to ? getName(to) : t("dropoff")}</span>
             </button>
             {open === "to" && renderLocDrop("to")}
           </div>
         </div>
 
-        {/* Row 2: Date + Return + Passengers */}
+        {/* Row 2: Date — its own full-width row. This is the field people get
+            stuck on most (see region-page CTA flow), so it gets the most
+            room and the clearest tap target rather than sharing space with
+            return/passengers. */}
+        <div className="relative mb-2">
+          <button
+            type="button"
+            onClick={() => { setDateError(false); openCal("dep"); }}
+            className={`w-full min-h-[46px] flex items-center gap-2 border rounded-lg px-3 py-3 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+          >
+            <Calendar size={16} className={dateError ? "text-red-500 shrink-0" : "text-green-600 shrink-0"} />
+            {depFmt ? (
+              <span className="text-[13px] font-semibold text-gray-900">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
+            ) : (
+              <span className={`text-[13px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
+            )}
+          </button>
+          {open === "cal" && calFor === "dep" && renderCalendar()}
+        </div>
+
+        {/* Row 3: Return + Passengers */}
         <div className="flex items-center gap-1.5 mb-2">
           <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => { setDateError(false); openCal("dep"); }} className={`w-full flex items-center gap-1.5 border rounded-lg px-2.5 py-2.5 min-w-0 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}>
-              <Calendar size={14} className={dateError ? "text-red-500 shrink-0" : "text-green-600 shrink-0"} />
-              {depFmt ? (
-                <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
-              ) : (
-                <span className={`text-[12px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
-              )}
-            </button>
-            {open === "cal" && calFor === "dep" && renderCalendar()}
-          </div>
-
-          <div className="relative shrink-0">
             {!hasRet ? (
-              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1 rounded-lg px-2.5 py-2.5 text-[12px] font-semibold ${depDate ? "text-white bg-blue-600" : "text-white bg-gray-300 cursor-not-allowed"}`}>
-                <CornerDownLeft size={12} />{t("addReturn")}
+              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`w-full min-h-[46px] flex items-center justify-center gap-1.5 rounded-lg px-3 py-3 text-[13px] font-semibold ${depDate ? "text-white bg-blue-600 active:bg-blue-700" : "text-white bg-gray-300 cursor-not-allowed"}`}>
+                <CornerDownLeft size={14} />{t("addReturn")}
               </button>
             ) : (
-              <div className="flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-2.5">
-                <button type="button" onClick={() => openCal("ret")} className="flex items-center gap-1">
-                  <CornerDownLeft size={12} className="text-green-600" />
+              <div className="min-h-[46px] flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-3">
+                <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 flex items-center gap-1.5">
+                  <CornerDownLeft size={14} className="text-green-600 shrink-0" />
                   {retFmt ? (
-                    <span className="text-[12px] font-semibold text-gray-900 whitespace-nowrap">{retFmt.text} &middot; <span className="text-blue-600">{retFmt.time}</span></span>
+                    <span className="text-[13px] font-semibold text-gray-900 truncate">{retFmt.text} &middot; <span className="text-blue-600">{retFmt.time}</span></span>
                   ) : (
-                    <span className="text-[12px] text-gray-400">{t("returnDate")}</span>
+                    <span className="text-[13px] text-gray-400">{t("returnDate")}</span>
                   )}
                 </button>
-                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} className="text-red-400"><X size={11} /></button>
+                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1 -m-1"><X size={13} /></button>
               </div>
             )}
             {open === "cal" && calFor === "ret" && renderCalendar()}
           </div>
 
           <div className="relative shrink-0">
-            <button type="button" onClick={() => setOpen(open === "pax" ? null : "pax")} className="flex items-center gap-1 border border-gray-200 rounded-lg px-2.5 py-2.5">
-              <Users size={13} className="text-blue-600" />
-              <span className="text-[12px] font-semibold text-gray-900">{adults + kids} {t("person")}</span>
+            <button type="button" onClick={() => setOpen(open === "pax" ? null : "pax")} aria-haspopup="dialog" aria-expanded={open === "pax"} className="min-h-[46px] flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-3">
+              <Users size={15} className="text-blue-600" />
+              <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{adults + kids} {t("person")}</span>
             </button>
             {open === "pax" && renderPassengers()}
           </div>
