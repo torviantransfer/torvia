@@ -159,8 +159,13 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://ximlobdcblinqtlizwrz.supabase.co https://*.supabase.co https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://www.facebook.com https://www.google-analytics.com https://www.google.com https://googleads.g.doubleclick.net https://maps.gstatic.com https://maps.googleapis.com https://*.googleapis.com https://api.qrserver.com",
-              "connect-src 'self' https://ximlobdcblinqtlizwrz.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://www.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://stats.g.doubleclick.net https://www.facebook.com https://router.project-osrm.org https://maps.googleapis.com",
+              // Google Ads drops its remarketing-audience pixel on
+              // ad.doubleclick.net and on the visitor's local Google ccTLD, so
+              // those are listed per market we run ads in — CSP has no wildcard
+              // for a suffix like "www.google.*". Missing them does not break
+              // conversions, but the audience lists stay empty.
+              "img-src 'self' data: blob: https://ximlobdcblinqtlizwrz.supabase.co https://*.supabase.co https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://www.facebook.com https://www.google-analytics.com https://www.google.com https://www.google.com.tr https://www.google.de https://www.google.nl https://www.google.pl https://www.google.ru https://www.google.co.uk https://googleads.g.doubleclick.net https://ad.doubleclick.net https://maps.gstatic.com https://maps.googleapis.com https://*.googleapis.com https://api.qrserver.com",
+              "connect-src 'self' https://ximlobdcblinqtlizwrz.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://www.google.com https://www.google.com.tr https://www.google.de https://www.google.nl https://www.google.pl https://www.google.ru https://www.google.co.uk https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://stats.g.doubleclick.net https://www.facebook.com https://router.project-osrm.org https://maps.googleapis.com",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://www.google.com https://maps.google.com https://www.google.com.tr",
               "object-src 'none'",
               "base-uri 'self'",
