@@ -220,7 +220,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
   /* --- Location dropdown --- */
   const renderLocDrop = (field: "from" | "to") => (
-    <div className={`absolute top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 py-1 max-h-[280px] overflow-y-auto min-w-[260px] ${field === "to" ? "right-0" : "left-0"} lg:left-0 lg:right-0 lg:w-[280px] lg:min-w-0`}>
+    <div className={`absolute top-full mt-1 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 py-1 max-h-[280px] overflow-y-auto left-0 right-0 lg:right-auto lg:w-[280px]`}>
       {locItems.map((l) => (
         <button
           key={l.value}
@@ -407,83 +407,138 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         </button>
       </div>
 
-      {/* MOBILE CARD (<lg) */}
-      <div className="lg:hidden bg-white rounded-xl shadow-2xl shadow-black/20 p-3">
-        {/* Row 1: From + Swap + To */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => setOpen(open === "from" ? null : "from")} aria-haspopup="listbox" aria-expanded={open === "from"} className="w-full min-h-[46px] flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-left min-w-0 active:bg-gray-50">
-              <MapPin size={16} className="text-blue-600 shrink-0" />
-              <span className={`text-[13px] leading-tight truncate ${from ? "font-semibold text-gray-900" : "text-gray-400"}`}>{from ? getName(from) : t("pickup")}</span>
-            </button>
-            {open === "from" && renderLocDrop("from")}
-          </div>
-          <button type="button" onClick={swap} aria-label={swapLabel} className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow active:scale-95">
-            <ArrowLeftRight size={14} className="text-white" />
+      {/* MOBILE CARD (<lg) — full-width stacked rows (label above, value
+          below) instead of cramped icon+text pills, so each field reads
+          clearly and has a generous tap target. */}
+      <div className="lg:hidden bg-white rounded-2xl shadow-2xl shadow-black/20 p-3 space-y-2">
+        {/* From */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setOpen(open === "from" ? null : "from")}
+            aria-haspopup="listbox"
+            aria-expanded={open === "from"}
+            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
+          >
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+              <MapPin size={12} className="text-blue-600" />
+              {t("pickup")}
+            </span>
+            <span className={`block text-[15px] mt-0.5 truncate ${from ? "font-bold text-gray-900" : "font-medium text-gray-400"}`}>
+              {from ? getName(from) : t("pickup")}
+            </span>
           </button>
-          <div className="relative flex-1 min-w-0">
-            <button type="button" onClick={() => setOpen(open === "to" ? null : "to")} aria-haspopup="listbox" aria-expanded={open === "to"} className="w-full min-h-[46px] flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-3 text-left min-w-0 active:bg-gray-50">
-              <MapPin size={16} className="text-blue-600 shrink-0" />
-              <span className={`text-[13px] leading-tight truncate ${to ? "font-semibold text-gray-900" : "text-gray-400"}`}>{to ? getName(to) : t("dropoff")}</span>
-            </button>
-            {open === "to" && renderLocDrop("to")}
-          </div>
+          {open === "from" && renderLocDrop("from")}
         </div>
 
-        {/* Row 2: Date — its own full-width row. This is the field people get
-            stuck on most (see region-page CTA flow), so it gets the most
-            room and the clearest tap target rather than sharing space with
-            return/passengers. */}
-        <div className="relative mb-2">
+        {/* Swap — floats between the From/To rows */}
+        <div className="relative h-0">
+          <button
+            type="button"
+            onClick={swap}
+            aria-label={swapLabel}
+            className="absolute -top-[27px] right-4 w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center shadow-md active:scale-95 z-10"
+          >
+            <ArrowLeftRight size={14} className="text-white rotate-90" />
+          </button>
+        </div>
+
+        {/* To */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setOpen(open === "to" ? null : "to")}
+            aria-haspopup="listbox"
+            aria-expanded={open === "to"}
+            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
+          >
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+              <MapPin size={12} className="text-blue-600" />
+              {t("dropoff")}
+            </span>
+            <span className={`block text-[15px] mt-0.5 truncate ${to ? "font-bold text-gray-900" : "font-medium text-gray-400"}`}>
+              {to ? getName(to) : t("dropoff")}
+            </span>
+          </button>
+          {open === "to" && renderLocDrop("to")}
+        </div>
+
+        {/* Date + Time — same picker, split into two columns like the
+            pickup/dropoff rows above so each half reads as its own field. */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => { setDateError(false); openCal("dep"); }}
+              className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+            >
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                <Calendar size={12} className={dateError ? "text-red-500" : "text-green-600"} />
+                {t("departureDate")}
+              </span>
+              <span className={`block text-[15px] font-bold mt-0.5 truncate ${dateError ? "text-red-500" : depFmt ? "text-gray-900" : "text-gray-400 font-medium"}`}>
+                {dateError ? t("selectDate") : depFmt ? depFmt.text : "—"}
+              </span>
+            </button>
+            {open === "cal" && calFor === "dep" && renderCalendar()}
+          </div>
           <button
             type="button"
             onClick={() => { setDateError(false); openCal("dep"); }}
-            className={`w-full min-h-[46px] flex items-center gap-2 border rounded-lg px-3 py-3 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+            className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
           >
-            <Calendar size={16} className={dateError ? "text-red-500 shrink-0" : "text-green-600 shrink-0"} />
-            {depFmt ? (
-              <span className="text-[13px] font-semibold text-gray-900">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
-            ) : (
-              <span className={`text-[13px] ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
-            )}
+            <span className="text-[11px] font-medium text-gray-400">{t("hour")}</span>
+            <span className={`block text-[15px] font-bold mt-0.5 ${depFmt ? "text-blue-600" : "text-gray-400 font-medium"}`}>
+              {depFmt ? depFmt.time : "—"}
+            </span>
           </button>
-          {open === "cal" && calFor === "dep" && renderCalendar()}
         </div>
 
-        {/* Row 3: Return + Passengers */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <div className="relative flex-1 min-w-0">
-            {!hasRet ? (
-              <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`w-full min-h-[46px] flex items-center justify-center gap-1.5 rounded-lg px-3 py-3 text-[13px] font-semibold ${depDate ? "text-white bg-blue-600 active:bg-blue-700" : "text-white bg-gray-300 cursor-not-allowed"}`}>
-                <CornerDownLeft size={14} />{t("addReturn")}
-              </button>
-            ) : (
-              <div className="min-h-[46px] flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-3">
-                <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 flex items-center gap-1.5">
-                  <CornerDownLeft size={14} className="text-green-600 shrink-0" />
-                  {retFmt ? (
-                    <span className="text-[13px] font-semibold text-gray-900 truncate">{retFmt.text} &middot; <span className="text-blue-600">{retFmt.time}</span></span>
-                  ) : (
-                    <span className="text-[13px] text-gray-400">{t("returnDate")}</span>
-                  )}
+        {/* Return + Passengers */}
+        <div className="flex items-center gap-2">
+          {!hasRet ? (
+            <button
+              type="button"
+              onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
+              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold ${depDate ? "text-blue-600 border border-blue-200 bg-blue-50 active:bg-blue-100" : "text-gray-400 border border-gray-200 cursor-not-allowed"}`}
+            >
+              <CornerDownLeft size={14} />{t("addReturn")}
+            </button>
+          ) : (
+            <div className="relative flex-1 min-w-0">
+              <div className="flex items-center border border-gray-200 rounded-xl pl-4 pr-2 py-2.5">
+                <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
+                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                    <CornerDownLeft size={12} className="text-green-600" />
+                    {t("returnDate")}
+                  </span>
+                  <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
+                    {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
+                  </span>
                 </button>
-                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1 -m-1"><X size={13} /></button>
+                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
               </div>
-            )}
-            {open === "cal" && calFor === "ret" && renderCalendar()}
-          </div>
+              {open === "cal" && calFor === "ret" && renderCalendar()}
+            </div>
+          )}
 
           <div className="relative shrink-0">
-            <button type="button" onClick={() => setOpen(open === "pax" ? null : "pax")} aria-haspopup="dialog" aria-expanded={open === "pax"} className="min-h-[46px] flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-3">
+            <button
+              type="button"
+              onClick={() => setOpen(open === "pax" ? null : "pax")}
+              aria-haspopup="dialog"
+              aria-expanded={open === "pax"}
+              className="flex items-center gap-1.5 border border-gray-200 rounded-xl px-4 py-2.5 h-full"
+            >
               <Users size={15} className="text-blue-600" />
-              <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{adults + kids} {t("person")}</span>
+              <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{adults + kids}</span>
             </button>
             {open === "pax" && renderPassengers()}
           </div>
         </div>
 
         {/* Submit */}
-        <button type="button" onClick={submit} className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors active:scale-[0.98]">
+        <button type="button" onClick={submit} className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[15px] transition-colors active:scale-[0.98] shadow-md shadow-blue-600/20">
           {bookingHint}
         </button>
       </div>
