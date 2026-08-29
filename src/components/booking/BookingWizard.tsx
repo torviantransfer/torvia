@@ -8,7 +8,6 @@ import PhoneInput from "react-phone-number-input";
 import * as flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
 
-const RouteMap = dynamic(() => import("./RouteMap"), { ssr: false });
 const StripeCheckoutEmbed = dynamic(() => import("./StripeCheckoutEmbed"), { ssr: false });
 const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false });
 
@@ -16,7 +15,7 @@ import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
   ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
   Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, Headphones, X,
-  CalendarCheck, Banknote, Sparkles,
+  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown, Info,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -89,7 +88,7 @@ export default function BookingWizard(props: Props) {
 function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
-  const { format: fmt, otherCurrencies } = useCurrency();
+  const { format: fmt, formatBilling, isConverted } = useCurrency();
 
   const regionSlug = props.initialRegion!;
   const tripType = props.initialTrip ?? "one_way";
@@ -491,32 +490,47 @@ function BookingWizardInner(props: Props) {
         </div>
       </div>
 
-      {/* Route summary bar */}
-      {regionData && (
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mb-8 px-3 sm:px-4 py-3 rounded-xl" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-          <div className="flex items-center gap-2 text-sm"><Plane size={15} className="text-blue-600" /><span className="font-medium text-gray-900">Antalya Airport</span></div>
-          <ArrowRight size={14} className="text-gray-400" />
-          <div className="flex items-center gap-2 text-sm"><MapPin size={15} className="text-emerald-600" /><span className="font-medium text-gray-900">{getRegionName(regionData)}</span></div>
-          {/* Date + time — kept visible on mobile so the customer can spot the
-              wrong pickup slot before entering personal details. The bullet is
-              omitted on narrow widths because a wrapped second row reads fine
-              without it. */}
-          <span className="text-gray-300 hidden sm:inline">•</span>
-          <span className="text-xs text-gray-500 basis-full sm:basis-auto text-center sm:text-left">{formatDate(pickupDate)} · {pickupTime}</span>
-          {tripType === "round_trip" && (
-            <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium">
-              <ArrowLeftRight size={12} />{t("roundTrip")}
-            </span>
-          )}
-          <span className="text-gray-300 hidden sm:inline">•</span>
-          <span className="text-xs text-gray-500 hidden sm:inline">{regionData.distance_km} km · ~{regionData.duration_minutes} min</span>
-        </div>
-      )}
+      {/* Route summary — the two stops read as a journey (pin rail + stacked
+          names) instead of one dense line where the route, date and distance
+          all competed at the same weight. Trip type, distance and duration sit
+          underneath as separate chips.
 
-      {/* Route map */}
-      {regionData && step <= 2 && (
-        <div className="mb-8 rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", isolation: "isolate", position: "relative", zIndex: 0 }}>
-          <RouteMap destinationLat={regionData.latitude} destinationLng={regionData.longitude} destinationName={getRegionName(regionData)} className="h-[220px] sm:h-[250px]" />
+          The map that used to follow this was removed: on a fixed
+          airport-to-resort transfer it did not inform the decision, it pushed
+          the vehicle choices below the fold on phones, and its live OSRM
+          distance contradicted the figure shown here. */}
+      {regionData && (
+        <div className="mb-8 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
+          <div className="flex gap-3 px-4 py-3.5" style={{ backgroundColor: "#FFFFFF" }}>
+            {/* Pin rail */}
+            <div className="flex flex-col items-center pt-1.5 flex-shrink-0">
+              <span className="w-2 h-2 rounded-full bg-blue-600" />
+              <span className="w-px flex-1 min-h-[18px] my-1 bg-gray-200" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+              <div>
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">Antalya Airport</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(pickupDate)} · {pickupTime}</p>
+              </div>
+              <div>
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">{getRegionName(regionData)}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 px-4 py-2.5" style={{ backgroundColor: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+            {tripType === "round_trip" && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ border: "1px solid rgba(37,99,235,0.2)" }}>
+                <ArrowLeftRight size={11} />{t("roundTrip")}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 bg-white px-2 py-1 rounded-full" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+              <MapPin size={11} className="text-blue-600" />{regionData.distance_km} km
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 bg-white px-2 py-1 rounded-full" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+              <Clock size={11} className="text-blue-600" />~{regionData.duration_minutes} min
+            </span>
+          </div>
         </div>
       )}
 
@@ -587,66 +601,45 @@ function BookingWizardInner(props: Props) {
                     <div className="relative w-full sm:w-[300px] h-64 sm:h-auto sm:min-h-[220px] bg-gray-50 flex-shrink-0 overflow-hidden">
                       <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className="object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 300px" />
                     </div>
+                    {/* Name → capacity → price → CTA, then the extras behind a
+                        disclosure. Previously the feature chips and trust
+                        badges sat between the capacity and the price at the
+                        same visual weight, so on a phone the price and the
+                        button — the two things the customer is actually here
+                        to act on — were pushed below a wall of small text. */}
                     <div className="flex-1 p-5 sm:p-6 flex flex-col">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
-                        {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicleDesc(vehicle.slug, vehicle.description)}</p>}
-                        <div className="flex flex-wrap gap-3 mt-3 mb-4">
-                          <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
-                          <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
-                        </div>
-                        {vehicle.features.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mb-4">
-                            {vehicle.features.map((f) => (
-                              <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-gray-600" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
-                                <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
-                                {featureLabel[f] || f}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <div className="flex flex-wrap gap-2">
-                          {[{ icon: <Shield size={12} />, text: t("trustSecure") }, { icon: <Check size={12} />, text: t("trustCancel") }, { icon: <Headphones size={12} />, text: t("seo247") }].map(({ icon, text }) => (
-                            <span key={text} className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">{icon} {text}</span>
-                          ))}
-                        </div>
+                      <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
+                      {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicleDesc(vehicle.slug, vehicle.description)}</p>}
+                      <div className="flex flex-wrap gap-3 mt-3">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
+                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
                       </div>
-                      {/* ── Price + CTA ──
-                          Below sm we stack the CTA under the price so a wide
-                          currency-conversion line doesn't collide with the
-                          button on 360-395px phones. */}
-                      <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                          {/* Prices */}
+
+                      {/* ── Price + CTA ── */}
+                      <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            {/* Online price row */}
-                            <div className="flex items-baseline gap-2.5 flex-wrap">
-                              <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">Online</span>
-                              <span className="text-2xl font-black text-gray-900 leading-none">{fmt(vehicle.calculation.basePrice, exchangeRates)}</span>
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{t("payOnline")}</span>
                               {vehicle.calculation.roundTripDiscount > 0 && (
-                                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-                                  -{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
+                                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
+                                  {t("roundTripDiscount")} −{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
                                 </span>
                               )}
                             </div>
-
-                            {/* Cash price row */}
-                            {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                              <div className="flex items-center gap-2 mt-1.5">
-                                <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">{t("payAtVehicle")}</span>
-                                <span className="text-sm font-bold text-amber-600">{fmt(vehicle.cashPrice, exchangeRates)}</span>
-                              </div>
+                            <span className="block text-[28px] leading-none font-black text-gray-900 tracking-tight">
+                              {fmt(vehicle.calculation.basePrice, exchangeRates)}
+                            </span>
+                            {/* Stripe always charges in USD, so a converted
+                                price must say what actually hits the card. */}
+                            {isConverted && (
+                              <span className="flex items-center gap-1 mt-1.5 text-[11px] text-gray-400">
+                                <Info size={11} className="flex-shrink-0" />
+                                {formatBilling(vehicle.calculation.basePrice)}
+                              </span>
                             )}
-
-                            {/* Currency conversions */}
-                            <div className="flex flex-wrap gap-x-3 mt-1.5">
-                              {otherCurrencies(vehicle.calculation.basePrice, exchangeRates).map((line, i) => (
-                                <span key={i} className="text-[11px] text-gray-400">{line}</span>
-                              ))}
-                            </div>
                           </div>
 
-                          {/* CTA */}
                           <button
                             type="button"
                             onClick={() => selectVehicle(vehicle)}
@@ -657,7 +650,41 @@ function BookingWizardInner(props: Props) {
                             {t("selectVehicle")}
                           </button>
                         </div>
+
+                        {/* Cash option — a separate lane so it reads as an
+                            alternative rather than a second, competing price. */}
+                        {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
+                          <div className="flex items-center justify-between gap-2 mt-3 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                            <span className="text-[11px] font-medium text-amber-700">{t("payAtVehicle")}</span>
+                            <span className="text-[13px] font-bold text-amber-700">{fmt(vehicle.cashPrice, exchangeRates)}</span>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Features + trust, collapsed by default */}
+                      <details className="group/d mt-3">
+                        <summary className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-gray-500 hover:text-gray-700 cursor-pointer list-none transition-colors">
+                          {t("features")}
+                          <ChevronDown size={13} className="transition-transform group-open/d:rotate-180" />
+                        </summary>
+                        <div className="pt-2.5" style={{ borderTop: "1px dashed rgba(0,0,0,0.08)" }}>
+                          {vehicle.features.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {vehicle.features.map((f) => (
+                                <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-gray-600" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
+                                  <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
+                                  {featureLabel[f] || f}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+                            {[{ icon: <Shield size={12} />, text: t("trustSecure") }, { icon: <Check size={12} />, text: t("trustCancel") }, { icon: <Headphones size={12} />, text: t("seo247") }].map(({ icon, text }) => (
+                              <span key={text} className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">{icon} {text}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </details>
                     </div>
                   </div>
                 </div>
@@ -973,11 +1000,9 @@ function BookingWizardInner(props: Props) {
                         <span className="text-xs font-medium text-amber-700">{t("totalPrice")}</span>
                         <div className="text-right">
                           <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
-                          <div className="flex justify-end gap-2 mt-0.5">
-                            {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (
-                              <span key={i} className="text-[10px] text-amber-400">{line}</span>
-                            ))}
-                          </div>
+                          {isConverted && (
+                            <div className="text-[10px] text-amber-400 mt-0.5">{formatBilling(totalPrice)}</div>
+                          )}
                         </div>
                       </div>
                       {/* Divider */}
@@ -1002,11 +1027,12 @@ function BookingWizardInner(props: Props) {
                         <span className="text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
                         <span className="text-xl font-black text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
                       </div>
-                      <div className="flex justify-end gap-3 mt-1">
-                        {otherCurrencies(totalPrice, exchangeRates).map((line, i) => (
-                          <span key={i} className="text-[10px] text-gray-400">{line}</span>
-                        ))}
-                      </div>
+                      {isConverted && (
+                        <p className="flex items-center justify-end gap-1 text-[10px] text-gray-400 mt-1">
+                          <Info size={10} className="flex-shrink-0" />
+                          {formatBilling(totalPrice)}
+                        </p>
+                      )}
                     </div>
                   )}
 
