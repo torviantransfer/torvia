@@ -10,7 +10,9 @@ import {
   CreditCard,
   CheckCircle2,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
+import VisitorAnalyticsHistory from "./VisitorAnalyticsHistory";
 
 interface Visitor {
   sessionId: string;
@@ -81,6 +83,7 @@ export default function LiveVisitors() {
   const [data, setData] = useState<LiveVisitorsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"live" | "history">("live");
 
   const load = useCallback(async () => {
     try {
@@ -160,6 +163,33 @@ export default function LiveVisitors() {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-slate-200 mb-8">
+        <button
+          onClick={() => setTab("live")}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            tab === "live" ? "border-orange-500 text-orange-600" : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <Radio size={14} />
+          Canlı
+        </button>
+        <button
+          onClick={() => setTab("history")}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            tab === "history" ? "border-orange-500 text-orange-600" : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <BarChart3 size={14} />
+          Genel Analitik
+          <span className="text-[10px] text-slate-400 font-normal">(30 gün)</span>
+        </button>
+      </div>
+
+      {tab === "history" ? (
+        <VisitorAnalyticsHistory />
+      ) : (
+        <>
       {error && (
         <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
           {error}
@@ -351,6 +381,8 @@ export default function LiveVisitors() {
           </table>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
