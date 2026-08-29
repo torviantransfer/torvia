@@ -196,8 +196,11 @@ export default function Header() {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className={`flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-full transition-colors ${showDarkNav ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}
                   >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-[10px] sm:text-xs font-bold">{userInitial}</span>
+                    {/* 24px on phones so the filled circle reads at the same
+                        weight as the 22px hamburger beside it — at 28px it was
+                        the heaviest thing in the bar. */}
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] sm:text-xs font-bold leading-none">{userInitial}</span>
                     </div>
                     <span className={`hidden sm:inline text-xs font-medium max-w-[100px] truncate ${showDarkNav ? 'text-gray-700' : 'text-white/90'}`}>
                       {displayName}
