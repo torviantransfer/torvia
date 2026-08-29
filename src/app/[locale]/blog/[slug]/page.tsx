@@ -385,10 +385,13 @@ export default async function BlogPostPage({
               {t("backToBlog")}
             </Link>
 
-            <div className="flex items-center gap-3 text-sm text-gray-500 mb-5">
+            <div
+              className="inline-flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm font-medium text-gray-500 mb-5 px-3.5 py-2 rounded-full"
+              style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
+            >
               {post.published_at && (
-                <div className="flex items-center gap-2">
-                  <Calendar size={14} />
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={14} className="text-blue-500 shrink-0" />
                   <time>
                     {new Date(post.published_at).toLocaleDateString(loc, {
                       year: "numeric",
@@ -398,9 +401,8 @@ export default async function BlogPostPage({
                   </time>
                 </div>
               )}
-              <span className="w-1 h-1 rounded-full bg-gray-600" />
               <div className="flex items-center gap-1.5">
-                <Clock size={14} />
+                <Clock size={14} className="text-blue-500 shrink-0" />
                 <span>{readingTime} min</span>
               </div>
             </div>
