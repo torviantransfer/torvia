@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Plus, Edit2, Trash2, Power, Eye, EyeOff, Upload, Image as ImageIcon,
-  Loader2, X, Search, Globe,
+  Loader2, X, Search, Globe, Check, AlertCircle,
 } from "lucide-react";
 
 interface BlogPost {
@@ -27,6 +27,18 @@ interface BlogPost {
   excerpt_pl: string | null;
   excerpt_ru: string | null;
   excerpt_nl: string | null;
+  focus_keyword_tr: string | null;
+  focus_keyword_en: string | null;
+  focus_keyword_de: string | null;
+  focus_keyword_pl: string | null;
+  focus_keyword_ru: string | null;
+  focus_keyword_nl: string | null;
+  secondary_keywords_tr: string | null;
+  secondary_keywords_en: string | null;
+  secondary_keywords_de: string | null;
+  secondary_keywords_pl: string | null;
+  secondary_keywords_ru: string | null;
+  secondary_keywords_nl: string | null;
   slug_tr: string | null;
   slug_en: string | null;
   slug_de: string | null;
@@ -70,6 +82,8 @@ const emptyForm = {
   title_en: "", title_tr: "", title_de: "", title_pl: "", title_ru: "", title_nl: "",
   content_en: "", content_tr: "", content_de: "", content_pl: "", content_ru: "", content_nl: "",
   excerpt_en: "", excerpt_tr: "", excerpt_de: "", excerpt_pl: "", excerpt_ru: "", excerpt_nl: "",
+  focus_keyword_en: "", focus_keyword_tr: "", focus_keyword_de: "", focus_keyword_pl: "", focus_keyword_ru: "", focus_keyword_nl: "",
+  secondary_keywords_en: "", secondary_keywords_tr: "", secondary_keywords_de: "", secondary_keywords_pl: "", secondary_keywords_ru: "", secondary_keywords_nl: "",
   slug_en: "", slug_tr: "", slug_de: "", slug_pl: "", slug_ru: "", slug_nl: "",
 };
 
@@ -128,6 +142,8 @@ export default function BlogManager({ initialPosts }: Props) {
                 [`title_${l}`, form[`title_${l}` as keyof FormState] || null],
                 [`content_${l}`, form[`content_${l}` as keyof FormState] || null],
                 [`excerpt_${l}`, form[`excerpt_${l}` as keyof FormState] || null],
+                [`focus_keyword_${l}`, form[`focus_keyword_${l}` as keyof FormState] || null],
+                [`secondary_keywords_${l}`, form[`secondary_keywords_${l}` as keyof FormState] || null],
                 [`slug_${l}`, form[`slug_${l}` as keyof FormState] || null],
               ])
             ),
@@ -185,6 +201,10 @@ export default function BlogManager({ initialPosts }: Props) {
       content_pl: p.content_pl ?? "", content_ru: p.content_ru ?? "", content_nl: p.content_nl ?? "",
       excerpt_en: p.excerpt_en ?? "", excerpt_tr: p.excerpt_tr ?? "", excerpt_de: p.excerpt_de ?? "",
       excerpt_pl: p.excerpt_pl ?? "", excerpt_ru: p.excerpt_ru ?? "", excerpt_nl: p.excerpt_nl ?? "",
+      focus_keyword_en: p.focus_keyword_en ?? "", focus_keyword_tr: p.focus_keyword_tr ?? "", focus_keyword_de: p.focus_keyword_de ?? "",
+      focus_keyword_pl: p.focus_keyword_pl ?? "", focus_keyword_ru: p.focus_keyword_ru ?? "", focus_keyword_nl: p.focus_keyword_nl ?? "",
+      secondary_keywords_en: p.secondary_keywords_en ?? "", secondary_keywords_tr: p.secondary_keywords_tr ?? "", secondary_keywords_de: p.secondary_keywords_de ?? "",
+      secondary_keywords_pl: p.secondary_keywords_pl ?? "", secondary_keywords_ru: p.secondary_keywords_ru ?? "", secondary_keywords_nl: p.secondary_keywords_nl ?? "",
       slug_en: p.slug_en ?? "", slug_tr: p.slug_tr ?? "", slug_de: p.slug_de ?? "",
       slug_pl: p.slug_pl ?? "", slug_ru: p.slug_ru ?? "", slug_nl: p.slug_nl ?? "",
     });
@@ -222,7 +242,14 @@ export default function BlogManager({ initialPosts }: Props) {
 
   const activeTitle = form[`title_${activeLang}` as keyof FormState];
   const activeExcerpt = form[`excerpt_${activeLang}` as keyof FormState];
+  const activeFocusKeyword = form[`focus_keyword_${activeLang}` as keyof FormState];
+  const activeSecondaryKeywords = form[`secondary_keywords_${activeLang}` as keyof FormState];
   const activeSlugOverride = form[`slug_${activeLang}` as keyof FormState];
+  const focusKeywordLower = activeFocusKeyword.trim().toLowerCase();
+  const keywordInTitle = focusKeywordLower !== "" && activeTitle.toLowerCase().includes(focusKeywordLower);
+  const keywordInExcerpt = focusKeywordLower !== "" && activeExcerpt.toLowerCase().includes(focusKeywordLower);
+  const activeContent = form[`content_${activeLang}` as keyof FormState];
+  const keywordInContent = focusKeywordLower !== "" && activeContent.toLowerCase().includes(focusKeywordLower);
   const previewSlug = activeSlugOverride || form.slug || "yazi-basligi";
   const previewUrl = `${SITE_URL} › ${activeLang} › blog › ${previewSlug}`;
 
@@ -360,6 +387,41 @@ export default function BlogManager({ initialPosts }: Props) {
             </div>
           </div>
 
+          {/* Focus keyword + secondary keywords */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Odak Anahtar Kelime <span className="text-gray-400 font-normal">({LOCALE_LABELS[activeLang]})</span>
+              </label>
+              <input
+                type="text"
+                value={activeFocusKeyword}
+                onChange={(e) => updateField(`focus_keyword_${activeLang}`, e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                placeholder="ör. antalya havalimanı transfer"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Yan Kelimeler <span className="text-gray-400 font-normal">(virgülle ayırın)</span>
+              </label>
+              <input
+                type="text"
+                value={activeSecondaryKeywords}
+                onChange={(e) => updateField(`secondary_keywords_${activeLang}`, e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                placeholder="ör. belek transfer, vip transfer"
+              />
+            </div>
+            {focusKeywordLower && (
+              <div className="sm:col-span-2 flex flex-wrap gap-3 -mt-1">
+                <KeywordCheck ok={keywordInTitle} label="Başlıkta geçiyor" />
+                <KeywordCheck ok={keywordInExcerpt} label="Meta açıklamada geçiyor" />
+                <KeywordCheck ok={keywordInContent} label="İçerikte geçiyor" />
+              </div>
+            )}
+          </div>
+
           {/* Title */}
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -460,7 +522,9 @@ export default function BlogManager({ initialPosts }: Props) {
         </form>
       )}
 
-      {/* Posts table */}
+      {/* Posts table — hidden while the form is open so editing/creating a
+          post doesn't feel cluttered by every other post sitting right below it. */}
+      {!showForm && (
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -535,6 +599,16 @@ export default function BlogManager({ initialPosts }: Props) {
           </table>
         </div>
       </div>
+      )}
     </div>
+  );
+}
+
+function KeywordCheck({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium ${ok ? "text-emerald-600" : "text-gray-400"}`}>
+      {ok ? <Check size={12} /> : <AlertCircle size={12} />}
+      {label}
+    </span>
   );
 }
