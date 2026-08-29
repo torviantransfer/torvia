@@ -96,7 +96,12 @@ export default function HeroSection() {
           headline block gets away with pt-28 because it is also
           justify-center inside flex-1; this block is not centred, so at
           pt-28 the card started 16px *behind* the navbar. */}
-      <div className="order-1 lg:order-2 relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-40 lg:pt-0">
+      {/* z-30, not z-10 like its siblings: each of these blocks opens its own
+          stacking context, so at equal z-index the keyword block below wins on
+          DOM order and paints over this one — which put the location list and
+          the calendar underneath the promo text, where they could not be
+          clicked. */}
+      <div className="order-1 lg:order-2 relative z-30 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-40 lg:pt-0">
         <BookingFormMini />
       </div>
 

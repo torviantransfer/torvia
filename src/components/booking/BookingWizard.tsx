@@ -494,22 +494,27 @@ function BookingWizardInner(props: Props) {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center w-full max-w-md mx-auto px-5 py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
-          {[1, 2, 3].map((s) => (
-            <Fragment key={s}>
-              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl transition-all min-w-0"
-                style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
-              >
-                <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
-                  {s < step ? <Check size={12} strokeWidth={3} /> : s}
+        {/* Sized to its labels rather than capped at a fixed width: at
+            max-w-md the three names were truncated to "Araç S…" / "Yolcu
+            Bil…". Fixed-width connectors keep the spacing even. */}
+        <div className="hidden sm:flex justify-center">
+          <div className="inline-flex items-center px-5 py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+            {[1, 2, 3].map((s) => (
+              <Fragment key={s}>
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl transition-all"
+                  style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
+                >
+                  <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                    {s < step ? <Check size={12} strokeWidth={3} /> : s}
+                  </div>
+                  <span className={`text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                    {stepLabels[s - 1]}
+                  </span>
                 </div>
-                <span className={`text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
-                  {stepLabels[s - 1]}
-                </span>
-              </div>
-              {s < 3 && <div className={`h-px flex-1 min-w-[12px] mx-2 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
-            </Fragment>
-          ))}
+                {s < 3 && <div className={`h-px w-8 mx-2 flex-shrink-0 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
+              </Fragment>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -522,7 +527,7 @@ function BookingWizardInner(props: Props) {
           airport-to-resort transfer it did not inform the decision, it pushed
           the vehicle choices below the fold on phones, and its live OSRM
           distance contradicted the figure shown here. */}
-      {regionData && step <= 2 && (
+      {regionData && step === 1 && (
         <div className="mb-8 rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
           <div className="flex gap-3 px-4 py-3.5" style={{ backgroundColor: "#FFFFFF" }}>
             {/* Pin rail */}
@@ -1003,6 +1008,9 @@ function BookingWizardInner(props: Props) {
                           <span className="text-[11px] text-blue-500 font-medium">↔ {formatDate(returnDate)} · {returnTime}</span>
                         )}
                         <span className="text-[11px] text-gray-500">{adults} {t("adult")}{children > 0 ? ` + ${children} ${t("child")}` : ""}</span>
+                        {/* Carried over from the route bar, which only shows on
+                            step 1 now that this card repeats the same trip. */}
+                        <span className="text-[11px] text-gray-500">{regionData.distance_km} km · ~{regionData.duration_minutes} min</span>
                       </div>
                     </div>
                   )}
