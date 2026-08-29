@@ -42,3 +42,20 @@ export const currencySymbols: Record<Currency, string> = {
   EUR: "€",
   TRY: "₺",
 };
+
+/**
+ * Currency shown by default for each locale, so a visitor sees prices in the
+ * money they actually think in instead of always starting from USD. An
+ * explicit pick in the currency selector is remembered and always wins.
+ *
+ * Poland uses PLN and Russia RUB, neither of which we price in — EUR and USD
+ * are the currencies those markets are most used to seeing for travel.
+ */
+export const localeCurrencies: Record<Locale, Currency> = {
+  tr: "TRY",
+  en: "EUR",
+  de: "EUR",
+  nl: "EUR",
+  pl: "EUR",
+  ru: "USD",
+};

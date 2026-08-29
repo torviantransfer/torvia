@@ -1,11 +1,22 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
+import { useLocale } from "next-intl";
 import { ChevronDown } from "lucide-react";
-import { currencies, currencySymbols, type Currency } from "@/i18n/config";
+import {
+  currencies,
+  currencySymbols,
+  localeCurrencies,
+  type Currency,
+  type Locale,
+} from "@/i18n/config";
 
 export default function CurrencySelector({ darkText = true }: { darkText?: boolean }) {
-  const [currency, setCurrency] = useState<Currency>("USD");
+  const locale = useLocale() as Locale;
+  // Mirrors useCurrency: the locale's currency is the starting point, a stored
+  // pick replaces it below. Without this the button would read "$ USD" while
+  // the page showed lira.
+  const [currency, setCurrency] = useState<Currency>(localeCurrencies[locale] ?? "USD");
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

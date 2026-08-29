@@ -1,10 +1,37 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { type Currency, currencySymbols } from "@/i18n/config";
+import { useLocale } from "next-intl";
+import {
+  type Currency,
+  type Locale,
+  currencySymbols,
+  localeCurrencies,
+} from "@/i18n/config";
+
+/**
+ * Every Stripe PaymentIntent is created in USD (see /api/reservations), so
+ * prices in any other currency are a display conversion. Screens showing a
+ * converted price should say what is actually charged, or the amount on the
+ * card statement won't match what the customer agreed to.
+ */
+export const BILLING_CURRENCY: Currency = "USD";
+
+/** Rounds to whole units and dot-groups them, e.g. 3377.4 -> "3.377". */
+function groupThousands(value: number): string {
+  return Math.round(value)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
 
 export function useCurrency() {
-  const [currency, setCurrency] = useState<Currency>("USD");
+  const locale = useLocale() as Locale;
+  // Start from the locale's own currency rather than USD for everyone. This is
+  // derived from the URL, so it matches between server and client render; the
+  // visitor's explicit pick is applied below once localStorage is readable.
+  const [currency, setCurrency] = useState<Currency>(
+    localeCurrencies[locale] ?? "USD"
+  );
 
   useEffect(() => {
     const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;
@@ -34,8 +61,10 @@ export function useCurrency() {
       const rate = exchangeRates[currency];
       if (!rate) return `$${usdAmount.toFixed(dec)}`;
       const converted = usdAmount * rate;
-      const d = currency === "TRY" ? 0 : dec;
-      return `${symbol}${converted.toFixed(d)}`;
+      // Lira amounts run into the thousands, so group them — "₺3.377" is far
+      // quicker to read at a glance than "₺3377".
+      if (currency === "TRY") return `${symbol}${groupThousands(converted)}`;
+      return `${symbol}${converted.toFixed(dec)}`;
     },
     [currency]
   );
@@ -55,13 +84,29 @@ export function useCurrency() {
           const rate = exchangeRates[c];
           if (!rate) return "";
           const converted = usdAmount * rate;
-          const d = c === "TRY" ? 0 : 2;
-          return `${symbol}${converted.toFixed(d)}`;
+          if (c === "TRY") return `${symbol}${groupThousands(converted)}`;
+          return `${symbol}${converted.toFixed(2)}`;
         })
         .filter(Boolean);
     },
     [currency]
   );
 
-  return { currency, format, otherCurrencies };
+  /**
+   * The amount exactly as Stripe will charge it. Show this next to a converted
+   * price so the card statement can't surprise the customer.
+   */
+  const formatBilling = useCallback(
+    (usdAmount: number) => `${currencySymbols[BILLING_CURRENCY]}${usdAmount.toFixed(2)}`,
+    []
+  );
+
+  return {
+    currency,
+    format,
+    otherCurrencies,
+    formatBilling,
+    /** True when `format` is showing a conversion rather than the charged amount. */
+    isConverted: currency !== BILLING_CURRENCY,
+  };
 }
