@@ -255,6 +255,8 @@
     "rating": "Durchschnittsbewertung"
   },
   "testimonials": {
+    "prevReview": "Vorherige Bewertung",
+    "nextReview": "Nächste Bewertung",
     "heading": "Von Reisenden geschätzt.",
     "subheading": "Lesen Sie, was unsere Passagiere über ihren TORVIAN Transfer sagen.",
     "review1Name": "Thomas W.",

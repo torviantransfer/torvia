@@ -58,8 +58,11 @@ export default function TestimonialsSection() {
         {/* Carousel */}
         <div className="relative">
           {/* Nav arrows — desktop only */}
+          {/* Icon-only, so they need a label of their own — a screen reader
+              announced both of these as just "button". */}
           <button
             type="button"
+            aria-label={t("prevReview")}
             onClick={() => scrollTo((current - 1 + testimonials.length) % testimonials.length)}
             className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
           >
@@ -67,6 +70,7 @@ export default function TestimonialsSection() {
           </button>
           <button
             type="button"
+            aria-label={t("nextReview")}
             onClick={() => scrollTo((current + 1) % testimonials.length)}
             className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
           >

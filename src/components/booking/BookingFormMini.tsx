@@ -245,7 +245,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           {l.type === "airport" ? (
             <Plane size={15} className="text-blue-600 shrink-0" />
           ) : (
-            <MapPin size={15} className="text-gray-400 shrink-0" />
+            <MapPin size={15} className="text-gray-500 shrink-0" />
           )}
           {l.label}
         </button>
@@ -309,8 +309,8 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
               <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
               <div className="flex flex-col">
-                <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+                <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+                <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
               </div>
             </div>
           </div>
@@ -320,8 +320,8 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
               <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
               <div className="flex flex-col">
-                <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-400 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+                <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+                <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
               </div>
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{t("adult")}</p>
-          <p className="text-[11px] text-gray-400">13+ {t("age")}</p>
+          <p className="text-[11px] text-gray-500">13+ {t("age")}</p>
         </div>
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <button type="button" aria-label={`${t("adult")} −`} onClick={() => setAdults(Math.max(1, adults - 1))} className={stepperBtn}>&minus;</button>
@@ -370,7 +370,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{t("child")}</p>
-          <p className="text-[11px] text-gray-400">0-12 {t("age")}</p>
+          <p className="text-[11px] text-gray-500">0-12 {t("age")}</p>
         </div>
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <button type="button" aria-label={`${t("child")} −`} onClick={() => setKids(Math.max(0, kids - 1))} className={stepperBtn}>&minus;</button>
@@ -389,7 +389,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <div className="relative flex-1 min-w-0 h-full">
           <button type="button" onClick={() => setOpen(open === "from" ? null : "from")} className="flex items-center gap-2 px-4 h-full w-full text-left hover:bg-gray-50/80 rounded-l-2xl transition-colors border-r border-gray-200/60">
             <MapPin size={16} className="text-blue-600 shrink-0" />
-            <span className={`text-[13px] truncate ${from ? "font-semibold text-gray-900" : "text-gray-400"}`}>{from ? getName(from) : t("pickup")}</span>
+            <span className={`text-[13px] truncate ${from ? "font-semibold text-gray-900" : "text-gray-500"}`}>{from ? getName(from) : t("pickup")}</span>
           </button>
           {open === "from" && renderLocDrop("from")}
         </div>
@@ -403,7 +403,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <div className="relative flex-1 min-w-0 h-full">
           <button type="button" onClick={() => setOpen(open === "to" ? null : "to")} className="flex items-center gap-2 px-4 h-full w-full text-left hover:bg-gray-50/80 transition-colors border-r border-gray-200/60">
             <MapPin size={16} className="text-blue-600 shrink-0" />
-            <span className={`text-[13px] truncate ${to ? "font-semibold text-gray-900" : "text-gray-400"}`}>{to ? getName(to) : t("dropoff")}</span>
+            <span className={`text-[13px] truncate ${to ? "font-semibold text-gray-900" : "text-gray-500"}`}>{to ? getName(to) : t("dropoff")}</span>
           </button>
           {open === "to" && renderLocDrop("to")}
         </div>
@@ -415,7 +415,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             {depFmt ? (
               <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{depFmt.text} &middot; <span className="text-blue-600">{depFmt.time}</span></span>
             ) : (
-              <span className={`text-[13px] whitespace-nowrap ${dateError ? "text-red-500 font-semibold" : "text-gray-400"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
+              <span className={`text-[13px] whitespace-nowrap ${dateError ? "text-red-500 font-semibold" : "text-gray-500"}`}>{dateError ? t("selectDate") : t("departureDate")}</span>
             )}
           </button>
           {open === "cal" && calFor === "dep" && renderCalendar()}
@@ -435,7 +435,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
                 {retFmt ? (
                   <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{retFmt.text} &middot; <span className="text-blue-600">{retFmt.time}</span></span>
                 ) : (
-                  <span className="text-[13px] text-gray-400 whitespace-nowrap">{t("returnDate")}</span>
+                  <span className="text-[13px] text-gray-500 whitespace-nowrap">{t("returnDate")}</span>
                 )}
               </button>
               <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 hover:text-red-600 ml-0.5"><X size={13} /></button>
@@ -472,11 +472,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             aria-expanded={open === "from"}
             className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
               <MapPin size={12} className="text-blue-600" />
               {t("pickup")}
             </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${from ? "font-bold text-gray-900" : "font-medium text-gray-400"}`}>
+            <span className={`block text-[15px] mt-0.5 truncate ${from ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
               {from ? getName(from) : t("pickup")}
             </span>
           </button>
@@ -504,11 +504,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             aria-expanded={open === "to"}
             className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
               <MapPin size={12} className="text-blue-600" />
               {t("dropoff")}
             </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${to ? "font-bold text-gray-900" : "font-medium text-gray-400"}`}>
+            <span className={`block text-[15px] mt-0.5 truncate ${to ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
               {to ? getName(to) : t("dropoff")}
             </span>
           </button>
@@ -524,11 +524,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               onClick={() => { setDateError(false); openCal("dep"); }}
               className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
             >
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+              <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
                 <Calendar size={12} className={dateError ? "text-red-500" : "text-green-600"} />
                 {t("departureDate")}
               </span>
-              <span className={`block text-[15px] font-bold mt-0.5 truncate ${dateError ? "text-red-500" : depFmt ? "text-gray-900" : "text-gray-400 font-medium"}`}>
+              <span className={`block text-[15px] font-bold mt-0.5 truncate ${dateError ? "text-red-500" : depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
                 {dateError ? t("selectDate") : depFmt ? depFmt.text : "—"}
               </span>
             </button>
@@ -539,11 +539,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             onClick={() => { setDateError(false); openCal("dep"); }}
             className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
               <Clock size={12} className="text-blue-600" />
               {t("hour")}
             </span>
-            <span className={`block text-[15px] font-bold mt-0.5 truncate ${depFmt ? "text-gray-900" : "text-gray-400 font-medium"}`}>
+            <span className={`block text-[15px] font-bold mt-0.5 truncate ${depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
               {depFmt ? depFmt.time : "—"}
             </span>
           </button>
@@ -565,7 +565,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               <Users size={16} className="text-blue-600 shrink-0" />
               <span className="text-left">
                 <span className="block text-[15px] font-bold text-gray-900">{adults + kids} {t("person")}</span>
-                <span className="block text-[10.5px] text-gray-400 leading-tight">{t("adult")} &amp; {t("child")}</span>
+                <span className="block text-[10.5px] text-gray-500 leading-tight">{t("adult")} &amp; {t("child")}</span>
               </span>
             </span>
             <ChevronRight size={15} className={`text-gray-300 shrink-0 transition-transform ${open === "pax" ? "rotate-90" : ""}`} />
@@ -584,12 +584,12 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
             >
               <CornerDownLeft size={14} />{t("addReturn")}
-              <span className="text-[11px] font-normal text-gray-400">({t("optional")})</span>
+              <span className="text-[11px] font-normal text-gray-500">({t("optional")})</span>
             </button>
           ) : (
             <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
               <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
-                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
                   <CornerDownLeft size={12} className="text-green-600" />
                   {t("returnDate")}
                 </span>

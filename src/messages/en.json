@@ -255,6 +255,8 @@
     "rating": "Average rating"
   },
   "testimonials": {
+    "prevReview": "Previous review",
+    "nextReview": "Next review",
     "heading": "Loved by travelers.",
     "subheading": "Read what our passengers say about their TORVIAN Transfer experience.",
     "review1Name": "James W.",

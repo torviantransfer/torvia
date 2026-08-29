@@ -255,6 +255,8 @@
     "rating": "Ortalama puan"
   },
   "testimonials": {
+    "prevReview": "Önceki yorum",
+    "nextReview": "Sonraki yorum",
     "heading": "Yolcularımız tarafından seviliyor.",
     "subheading": "Yolcularımızın TORVIAN Transfer deneyimleri hakkında söylediklerini okuyun.",
     "review1Name": "Ahmet Y.",

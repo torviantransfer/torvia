@@ -255,6 +255,8 @@
     "rating": "Średnia ocena"
   },
   "testimonials": {
+    "prevReview": "Poprzednia opinia",
+    "nextReview": "Następna opinia",
     "heading": "Kochane przez podróżnych.",
     "subheading": "Przeczytaj, co nasi pasażerowie mówią o swoim doświadczeniu z TORVIAN.",
     "review1Name": "Piotr K.",

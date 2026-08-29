@@ -255,6 +255,8 @@
     "rating": "Gemiddelde beoordeling"
   },
   "testimonials": {
+    "prevReview": "Vorige beoordeling",
+    "nextReview": "Volgende beoordeling",
     "heading": "Geliefd bij reizigers.",
     "subheading": "Lees wat onze passagiers zeggen over hun ervaring met TORVIAN Transfer.",
     "review1Name": "James W.",
