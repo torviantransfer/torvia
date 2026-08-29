@@ -108,14 +108,25 @@ export default async function AdminDashboard({
     cancelled: { bg: "bg-red-50 text-red-700", dot: "bg-red-400" },
   };
 
+  const today = new Date().toLocaleDateString("tr-TR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
     <div>
       {/* Page header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Kontrol Paneli</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Hoş geldiniz. İşletmenizin genel görünümü.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8 pb-6 border-b border-slate-200">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-orange-500 mb-1.5">Panel</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Kontrol Paneli</h1>
+          <p className="text-sm text-slate-500 mt-1.5">
+            Hoş geldiniz — işletmenizin genel görünümü burada.
+          </p>
+        </div>
+        <div className="text-xs font-medium text-slate-400 capitalize">{today}</div>
       </div>
 
       {/* Stats grid */}
