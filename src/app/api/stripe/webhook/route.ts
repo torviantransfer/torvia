@@ -171,9 +171,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Send Purchase event to Meta Conversions API (server-side)
-      if (resData?.customers?.email && reservationCode) {
+      // Meta requires custom_data.value to be a number greater than 0.
+      if (resData?.customers?.email && reservationCode && (resData.total_price ?? 0) > 0) {
         capiPurchase(
-          resData.total_price ?? 0,
+          resData.total_price!,
           "USD",
           reservationCode,
           {
