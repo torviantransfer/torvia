@@ -9,6 +9,8 @@ insert into storage.buckets (id, name, public)
 values ('blog-images', 'blog-images', true)
 on conflict (id) do nothing;
 
+drop policy if exists "Public read access for blog images" on storage.objects;
+
 create policy "Public read access for blog images"
   on storage.objects for select
   using (bucket_id = 'blog-images');
