@@ -150,11 +150,17 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net",
+              // gtag.js (GA4 + Google Ads conversion tracking) loads a secondary
+              // script from googleads.g.doubleclick.net and pings several more
+              // google.com/doubleclick.net endpoints for beacons/pixels — without
+              // these, both GA4 and Google Ads conversions are silently dropped by
+              // the browser (visible as CSP violation errors in devtools, not as
+              // any app-level failure).
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://cdnjs.cloudflare.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://ximlobdcblinqtlizwrz.supabase.co https://*.supabase.co https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://www.facebook.com https://www.google-analytics.com https://maps.gstatic.com https://maps.googleapis.com https://*.googleapis.com https://api.qrserver.com",
-              "connect-src 'self' https://ximlobdcblinqtlizwrz.supabase.co https://api.stripe.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.facebook.com https://router.project-osrm.org https://maps.googleapis.com",
+              "img-src 'self' data: blob: https://ximlobdcblinqtlizwrz.supabase.co https://*.supabase.co https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://www.facebook.com https://www.google-analytics.com https://www.google.com https://googleads.g.doubleclick.net https://maps.gstatic.com https://maps.googleapis.com https://*.googleapis.com https://api.qrserver.com",
+              "connect-src 'self' https://ximlobdcblinqtlizwrz.supabase.co https://api.stripe.com https://*.google-analytics.com https://analytics.google.com https://www.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://stats.g.doubleclick.net https://www.facebook.com https://router.project-osrm.org https://maps.googleapis.com",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://www.google.com https://maps.google.com https://www.google.com.tr",
               "object-src 'none'",
               "base-uri 'self'",
