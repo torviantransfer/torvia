@@ -93,6 +93,8 @@
     "paymentMethod": "Betaalmethode",
     "payOnline": "Online betalen",
     "payOnlineDesc": "Veilig met kaart · directe bevestiging",
+    "vehicleFeatures": "Bekijk kenmerken en voordelen",
+    "chargedInUsd": "Wordt afgeschreven als {amount}",
     "payAtVehicle": "Betalen in het voertuig",
     "payAtVehicleDesc": "U ontvangt een bevestigingsbericht",
     "payAtVehicleTag": "Te betalen in het voertuig",

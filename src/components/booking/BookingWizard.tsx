@@ -480,7 +480,11 @@ function BookingWizardInner(props: Props) {
                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
                   {s < step ? <Check size={12} strokeWidth={3} /> : s}
                 </div>
-                <span className={`hidden sm:inline text-xs font-semibold ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                {/* Phones only have room for the current step's name, so show
+                    that one and leave the others as bare numbers; from sm up
+                    every label fits. Hiding all of them below sm left the
+                    indicator as an unexplained "1 2 3". */}
+                <span className={`${s === step ? "inline" : "hidden"} sm:inline text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
                   {stepLabels[s - 1]}
                 </span>
               </div>
@@ -635,7 +639,7 @@ function BookingWizardInner(props: Props) {
                             {isConverted && (
                               <span className="flex items-center gap-1 mt-1.5 text-[11px] text-gray-400">
                                 <Info size={11} className="flex-shrink-0" />
-                                {formatBilling(vehicle.calculation.basePrice)}
+                                {t("chargedInUsd", { amount: formatBilling(vehicle.calculation.basePrice) })}
                               </span>
                             )}
                           </div>
@@ -664,7 +668,7 @@ function BookingWizardInner(props: Props) {
                       {/* Features + trust, collapsed by default */}
                       <details className="group/d mt-3">
                         <summary className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-gray-500 hover:text-gray-700 cursor-pointer list-none transition-colors">
-                          {t("features")}
+                          {t("vehicleFeatures")}
                           <ChevronDown size={13} className="transition-transform group-open/d:rotate-180" />
                         </summary>
                         <div className="pt-2.5" style={{ borderTop: "1px dashed rgba(0,0,0,0.08)" }}>
@@ -1001,7 +1005,9 @@ function BookingWizardInner(props: Props) {
                         <div className="text-right">
                           <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
                           {isConverted && (
-                            <div className="text-[10px] text-amber-400 mt-0.5">{formatBilling(totalPrice)}</div>
+                            <div className="text-[10px] text-amber-400 mt-0.5">
+                              {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1030,7 +1036,7 @@ function BookingWizardInner(props: Props) {
                       {isConverted && (
                         <p className="flex items-center justify-end gap-1 text-[10px] text-gray-400 mt-1">
                           <Info size={10} className="flex-shrink-0" />
-                          {formatBilling(totalPrice)}
+                          {t("chargedInUsd", { amount: formatBilling(totalPrice) })}
                         </p>
                       )}
                     </div>

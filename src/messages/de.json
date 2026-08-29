@@ -93,6 +93,8 @@
     "paymentMethod": "Zahlungsmethode",
     "payOnline": "Online Zahlen",
     "payOnlineDesc": "Sichere Kartenzahlung · sofortige Bestätigung",
+    "vehicleFeatures": "Ausstattung und Vorteile ansehen",
+    "chargedInUsd": "Abbuchung erfolgt als {amount}",
     "payAtVehicle": "Im Fahrzeug Zahlen",
     "payAtVehicleDesc": "Bestätigungsnachricht wird gesendet",
     "payAtVehicleTag": "Im Fahrzeug zu zahlen",

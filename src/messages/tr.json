@@ -93,6 +93,8 @@
     "paymentMethod": "Ödeme Yöntemi",
     "payOnline": "Online Ödeme",
     "payOnlineDesc": "Kart ile güvenli ödeme · anında onay",
+    "vehicleFeatures": "Özellikleri ve avantajları gör",
+    "chargedInUsd": "Ödeme {amount} olarak tahsil edilir",
     "payAtVehicle": "Araçta Ödeme",
     "payAtVehicleDesc": "Onay mesajı gönderilecek",
     "payAtVehicleTag": "Araçta ödenecek",

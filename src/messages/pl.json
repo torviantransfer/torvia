@@ -93,6 +93,8 @@
     "paymentMethod": "Metoda Płatności",
     "payOnline": "Płatność Online",
     "payOnlineDesc": "Bezpieczna płatność kartą · natychmiastowe potwierdzenie",
+    "vehicleFeatures": "Zobacz wyposażenie i korzyści",
+    "chargedInUsd": "Obciążenie w wysokości {amount}",
     "payAtVehicle": "Płatność w Pojeździe",
     "payAtVehicleDesc": "Wiadomość potwierdzająca zostanie wysłana",
     "payAtVehicleTag": "Do zapłaty w pojeździe",
