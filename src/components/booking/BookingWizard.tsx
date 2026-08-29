@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -469,32 +469,34 @@ function BookingWizardInner(props: Props) {
   const stepLabels = [t("step2"), t("step3"), t("step4")];
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-      {/* Step indicator */}
-      <div className="flex items-center justify-center mb-6">
-        {/* Sized to the content rather than squeezed into a pill: the active
-            step's label needs real room now that it also shows on phones, and
-            the connector lines stretch to fill whatever is left. */}
-        <div className="flex items-center w-full max-w-md px-3 py-2 sm:px-5 sm:py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+      {/* Step indicator.
+          Every pill is built identically and every connector is flex-1, so the
+          circles hold the same positions on all three steps. Showing only the
+          active label inline made the row re-flow on each step — the markers
+          slid left as you advanced — so on phones the current step's name goes
+          under the rail instead, where it also gets the full width. From sm up
+          all three labels are always present, which is stable on its own. */}
+      <div className="mb-6">
+        <div className="flex items-center w-full max-w-md mx-auto px-3 py-2 sm:px-5 sm:py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
           {[1, 2, 3].map((s) => (
-            <div key={s} className={`flex items-center min-w-0 ${s === step ? "flex-1" : ""}`}>
+            <Fragment key={s}>
               <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3.5 py-1.5 rounded-xl transition-all min-w-0"
                 style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
               >
-                <div className={`w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full flex items-center justify-center text-[11px] sm:text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
                   {s < step ? <Check size={12} strokeWidth={3} /> : s}
                 </div>
-                {/* Phones only have room for the current step's name, so show
-                    that one and leave the others as bare numbers; from sm up
-                    every label fits. Hiding all of them below sm left the
-                    indicator as an unexplained "1 2 3". */}
-                <span className={`${s === step ? "inline" : "hidden"} sm:inline text-[11px] sm:text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                <span className={`hidden sm:inline text-xs font-semibold truncate ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
                   {stepLabels[s - 1]}
                 </span>
               </div>
-              {s < 3 && <div className={`h-px mx-1.5 sm:mx-2 ${s === step ? "flex-1 min-w-[10px]" : "w-4 sm:w-7"} ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
-            </div>
+              {s < 3 && <div className={`h-px flex-1 min-w-[12px] mx-1.5 sm:mx-2 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
+            </Fragment>
           ))}
         </div>
+        <p className="sm:hidden text-center text-[13px] font-bold text-blue-600 mt-2.5">
+          {stepLabels[step - 1]}
+        </p>
       </div>
 
       {/* Route summary — the two stops read as a journey (pin rail + stacked

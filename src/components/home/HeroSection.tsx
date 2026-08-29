@@ -89,8 +89,14 @@ export default function HeroSection() {
       </div>
 
       {/* Booking form — first in the viewport on phones, back under the
-          headline on desktop where both fit above the fold anyway. */}
-      <div className="order-1 lg:order-2 relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-28 lg:pt-0">
+          headline on desktop where both fit above the fold anyway.
+
+          The section is pulled up under the fixed 64px header by -mt-16, so
+          the top padding has to clear 64px before anything is visible. The
+          headline block gets away with pt-28 because it is also
+          justify-center inside flex-1; this block is not centred, so at
+          pt-28 the card started 16px *behind* the navbar. */}
+      <div className="order-1 lg:order-2 relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-40 lg:pt-0">
         <BookingFormMini />
       </div>
 
