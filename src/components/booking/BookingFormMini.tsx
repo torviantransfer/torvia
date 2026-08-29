@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
+  Clock,
 } from "lucide-react";
 
 interface Region {
@@ -487,54 +488,68 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             onClick={() => { setDateError(false); openCal("dep"); }}
             className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
           >
-            <span className="text-[11px] font-medium text-gray-400">{t("hour")}</span>
-            <span className={`block text-[15px] font-bold mt-0.5 ${depFmt ? "text-blue-600" : "text-gray-400 font-medium"}`}>
+            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+              <Clock size={12} className="text-blue-600" />
+              {t("hour")}
+            </span>
+            <span className={`block text-[15px] font-bold mt-0.5 truncate ${depFmt ? "text-gray-900" : "text-gray-400 font-medium"}`}>
               {depFmt ? depFmt.time : "—"}
             </span>
           </button>
         </div>
 
-        {/* Return + Passengers */}
-        <div className="flex items-center gap-2">
+        {/* Passengers — its own clear, tappable row. This is a required
+            field on every booking (unlike the optional return trip below),
+            so it gets top billing and an explicit "X Kişi" label + chevron
+            instead of sharing a row and reading as just a bare number. */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setOpen(open === "pax" ? null : "pax")}
+            aria-haspopup="dialog"
+            aria-expanded={open === "pax"}
+            className={`w-full flex items-center justify-between gap-3 border rounded-xl px-4 py-2.5 ${open === "pax" ? "border-blue-400 bg-blue-50/50" : "border-gray-200"}`}
+          >
+            <span className="flex items-center gap-2.5">
+              <Users size={16} className="text-blue-600 shrink-0" />
+              <span className="text-left">
+                <span className="block text-[15px] font-bold text-gray-900">{adults + kids} {t("person")}</span>
+                <span className="block text-[10.5px] text-gray-400 leading-tight">{t("adult")} &amp; {t("child")}</span>
+              </span>
+            </span>
+            <ChevronRight size={15} className={`text-gray-300 shrink-0 transition-transform ${open === "pax" ? "rotate-90" : ""}`} />
+          </button>
+          {open === "pax" && renderPassengers()}
+        </div>
+
+        {/* Return — optional add-on, demoted below the required fields with
+            a dashed border so it visually reads as "extra" rather than
+            competing with passengers for attention. */}
+        <div className="relative">
           {!hasRet ? (
             <button
               type="button"
               onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
-              className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold ${depDate ? "text-blue-600 border border-blue-200 bg-blue-50 active:bg-blue-100" : "text-gray-400 border border-gray-200 cursor-not-allowed"}`}
+              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
             >
               <CornerDownLeft size={14} />{t("addReturn")}
+              <span className="text-[11px] font-normal text-gray-400">({t("optional")})</span>
             </button>
           ) : (
-            <div className="relative flex-1 min-w-0">
-              <div className="flex items-center border border-gray-200 rounded-xl pl-4 pr-2 py-2.5">
-                <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
-                  <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
-                    <CornerDownLeft size={12} className="text-green-600" />
-                    {t("returnDate")}
-                  </span>
-                  <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
-                    {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
-                  </span>
-                </button>
-                <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
-              </div>
-              {open === "cal" && calFor === "ret" && renderCalendar()}
+            <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
+              <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                  <CornerDownLeft size={12} className="text-green-600" />
+                  {t("returnDate")}
+                </span>
+                <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
+                  {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
+                </span>
+              </button>
+              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
             </div>
           )}
-
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setOpen(open === "pax" ? null : "pax")}
-              aria-haspopup="dialog"
-              aria-expanded={open === "pax"}
-              className="flex items-center gap-1.5 border border-gray-200 rounded-xl px-4 py-2.5 h-full"
-            >
-              <Users size={15} className="text-blue-600" />
-              <span className="text-[13px] font-semibold text-gray-900 whitespace-nowrap">{adults + kids}</span>
-            </button>
-            {open === "pax" && renderPassengers()}
-          </div>
+          {open === "cal" && calFor === "ret" && renderCalendar()}
         </div>
 
         {/* Submit */}
