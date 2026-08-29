@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const VALID_EVENTS = ["page_view", "booking_step", "payment_success"];
+const VALID_EVENTS = ["page_view", "booking_step", "payment_success", "heartbeat"];
 
 export async function POST(request: Request) {
   const body = await request.json();

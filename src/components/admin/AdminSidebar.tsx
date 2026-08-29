@@ -18,10 +18,13 @@ import {
   ChevronRight,
   FileText,
   Calendar,
+  Radio,
+  X,
 } from "lucide-react";
 
 const navDefs = [
   { path: "", label: "Kontrol Paneli", icon: LayoutDashboard },
+  { path: "/live-visitors", label: "Canlı Ziyaretçiler", icon: Radio },
   { path: "/reservations", label: "Rezervasyonlar", icon: CalendarCheck },
   { path: "/availability", label: "Takvim & Kapasite", icon: Calendar },
   { path: "/drivers", label: "Şoförler", icon: Users },
@@ -35,7 +38,15 @@ const navDefs = [
   { path: "/settings", label: "Ayarlar", icon: Settings },
 ];
 
-export default function AdminSidebar({ userEmail }: { userEmail: string }) {
+export default function AdminSidebar({
+  userEmail,
+  open = false,
+  onClose,
+}: {
+  userEmail: string;
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   // Extract locale from pathname (e.g. /en/admin/... → en)
@@ -53,71 +64,94 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
   };
 
   return (
-    <aside
-      className="fixed left-0 top-0 bottom-0 w-64 flex flex-col z-40"
-      style={{ backgroundColor: "#0F172A" }}
-    >
-      {/* Logo */}
-      <div className="px-6 h-16 flex items-center" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <Link href={base} className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">T</span>
-          </div>
-          <div>
-            <span className="text-white font-bold text-base tracking-tight">
-              TORVIAN
-            </span>
-            <span className="text-slate-500 text-[10px] font-medium ml-1.5 uppercase tracking-widest">
-              Admin
-            </span>
-          </div>
-        </Link>
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-          Menü
-        </p>
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200"
-                style={{
-                  backgroundColor: active ? "rgba(249,115,22,0.1)" : "transparent",
-                  color: active ? "#fb923c" : "#94a3b8",
-                }}
-                onMouseEnter={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
-                    e.currentTarget.style.color = "#ffffff";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "#94a3b8";
-                  }
-                }}
-              >
-                <item.icon
-                  size={18}
-                  strokeWidth={active ? 2 : 1.5}
-                  style={{ color: active ? "#fb923c" : "#64748b" }}
-                />
-                <span className="flex-1">{item.label}</span>
-                {active && (
-                  <ChevronRight size={14} style={{ color: "rgba(251,146,60,0.6)" }} />
-                )}
-              </Link>
-            );
-          })}
+      <aside
+        className={`fixed left-0 top-0 bottom-0 w-64 flex flex-col z-40 transition-transform duration-200 ease-out ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0`}
+        style={{ backgroundColor: "#0F172A" }}
+      >
+        {/* Logo */}
+        <div
+          className="px-6 h-16 flex items-center justify-between"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <Link href={base} className="flex items-center gap-2.5" onClick={onClose}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">T</span>
+            </div>
+            <div>
+              <span className="text-white font-bold text-base tracking-tight">
+                TORVIAN
+              </span>
+              <span className="text-slate-500 text-[10px] font-medium ml-1.5 uppercase tracking-widest">
+                Admin
+              </span>
+            </div>
+          </Link>
+          <button
+            onClick={onClose}
+            className="lg:hidden text-slate-400 hover:text-white p-1"
+            aria-label="Menüyü kapat"
+          >
+            <X size={20} />
+          </button>
         </div>
-      </nav>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+            Menü
+          </p>
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200"
+                  style={{
+                    backgroundColor: active ? "rgba(249,115,22,0.1)" : "transparent",
+                    color: active ? "#fb923c" : "#94a3b8",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
+                      e.currentTarget.style.color = "#ffffff";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "#94a3b8";
+                    }
+                  }}
+                >
+                  <item.icon
+                    size={18}
+                    strokeWidth={active ? 2 : 1.5}
+                    style={{ color: active ? "#fb923c" : "#64748b" }}
+                  />
+                  <span className="flex-1">{item.label}</span>
+                  {active && (
+                    <ChevronRight size={14} style={{ color: "rgba(251,146,60,0.6)" }} />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
 
       {/* Footer */}
       <div className="px-3 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
@@ -145,6 +179,7 @@ export default function AdminSidebar({ userEmail }: { userEmail: string }) {
           <span>Çıkış Yap</span>
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

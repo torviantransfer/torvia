@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Inter, Montserrat } from "next/font/google";
 import { routing } from "@/i18n/routing";
 import CookieConsent from "@/components/CookieConsent";
+import PresenceTracker from "@/components/analytics/PresenceTracker";
 import Script from "next/script";
 import { PIXEL_ID, GOOGLE_ADS_ID } from "@/lib/pixel";
 
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           {children}
           <CookieConsent />
+          <PresenceTracker />
         </NextIntlClientProvider>
       </body>
     </html>
