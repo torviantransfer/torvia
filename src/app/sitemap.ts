@@ -60,6 +60,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages = [
     // Conversion pages — highest priority after homepage
     { path: "booking", priority: 0.95 },
+    // Head-term hub for "Antalya Airport Transfer" — links out to every
+    // region page, so it ranks just under the booking flow itself.
+    { path: "antalya-airport-transfer", priority: 0.95 },
     { path: "regions", priority: 0.9 },
     { path: "land-of-legends-transfer", priority: 0.9 },
     { path: "vip-transfer-antalya", priority: 0.9 },

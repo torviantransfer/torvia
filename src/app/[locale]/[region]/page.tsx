@@ -970,6 +970,17 @@ export default async function RegionPage({
                   );
                 })}
               </div>
+
+              {/* Back-link to the airport head-term hub, which links out to
+                  every region — this is the return edge of that hub. */}
+              <div className="mt-8 text-center">
+                <Link
+                  href="/antalya-airport-transfer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:gap-2 transition-all"
+                >
+                  {t("airportHubLink")} <ArrowRight size={14} />
+                </Link>
+              </div>
             </div>
           </section>
         )}

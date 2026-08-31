@@ -128,6 +128,10 @@ const nextConfig: NextConfig = {
       { source: "/cookies", destination: "/en/cookies", permanent: true },
       { source: "/cancellation", destination: "/en/cancellation", permanent: true },
       { source: "/land-of-legends-transfer", destination: "/en/land-of-legends-transfer", permanent: true },
+      // Head-term hub. Not covered by the activeRegionSlugs loop above —
+      // "antalya-airport" is deliberately not a region (every transfer starts
+      // at the airport), so the locale-less form needs its own 308.
+      { source: "/antalya-airport-transfer", destination: "/en/antalya-airport-transfer", permanent: true },
       { source: "/track", destination: "/en/track", permanent: true },
     );
     return rules;
