@@ -633,15 +633,24 @@ export default async function RegionPage({
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-              <div>
-                <h1 className="text-3xl lg:text-5xl font-bold mb-4 lg:mb-5 tracking-tight text-gray-900">
+              {/* Phones get a different running order than desktop: title →
+                  route facts → price → CTA, with the search-phrase list pushed
+                  to the end. On a narrow screen the phrase list was the first
+                  thing under the H1 and pushed price and booking below the
+                  fold. `flex flex-col` + `order-*` reorders visually while the
+                  DOM order stays exactly as it was, so crawlers and screen
+                  readers see the unchanged sequence. `lg:block` drops flex
+                  entirely on desktop, which makes every `order-*` inert there —
+                  the desktop layout is untouched. */}
+              <div className="flex flex-col lg:block">
+                <h1 className="order-1 text-3xl lg:text-5xl font-bold mb-4 lg:mb-5 tracking-tight text-gray-900">
                   {heroTitle}
                 </h1>
-                <p className="text-base lg:text-lg text-gray-500 mb-6 lg:mb-8 leading-relaxed">
+                <p className="order-2 text-base lg:text-lg text-gray-500 mb-6 lg:mb-8 leading-relaxed">
                   {heroDescription}
                 </p>
 
-                <div className="mb-6 lg:mb-8">
+                <div className="order-7 mb-6 lg:mb-8">
                   <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-400">
                     {routeIntentLabel}
                   </p>
@@ -655,12 +664,12 @@ export default async function RegionPage({
                 </div>
 
                 {hotelsForRegion.length > 0 && (
-                  <p className="text-sm text-gray-500 mb-6 lg:mb-8">
+                  <p className="order-8 text-sm text-gray-500 mb-6 lg:mb-8">
                     {hotelsIntro} <span className="text-gray-700">{hotelsForRegion.join(", ")}</span>
                   </p>
                 )}
 
-                <div className="flex flex-wrap gap-3 mb-6 lg:mb-8">
+                <div className="order-3 flex flex-wrap gap-3 mb-6 lg:mb-8">
                   <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
                     <Clock size={16} className="text-blue-600" strokeWidth={1.5} />
                     <span className="text-sm text-gray-900">~{region.duration_minutes ? formatDuration(region.duration_minutes, locale) : `${region.duration_minutes} ${t("min")}`}</span>
@@ -673,7 +682,7 @@ export default async function RegionPage({
 
                 {/* Pricing Display */}
                 {pricing && (
-                  <div className="flex flex-wrap gap-4 mb-5">
+                  <div className="order-4 flex flex-wrap gap-4 mb-5">
                     <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(0,122,255,0.05)", border: "1px solid rgba(0,122,255,0.12)" }}>
                       <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
                       <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.one_way_price} showLabel={false} /></div>
@@ -688,8 +697,26 @@ export default async function RegionPage({
                     )}
                   </div>
                 )}
+                {/* Phone-only hero CTA. Desktop already reaches booking from
+                    the route-intent block right below the fold, but on a phone
+                    that block sits a full screen further down, so the price had
+                    no action next to it. `routeIntentPrimaryCta` and the href
+                    are the same label and target that block uses — no new
+                    string and no new link destination. */}
+                <Link
+                  href={`/booking?region=${slug}`}
+                  className="order-5 lg:hidden mb-5 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-md transition active:scale-[0.99]"
+                >
+                  {t("routeIntentPrimaryCta")}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+
                 {/* Trust strip */}
-                <div className="flex flex-wrap items-center gap-3">
+                {/* mb only on phones: reordering moved the search-phrase block
+                    below this strip, and with no bottom margin the two ran
+                    together. Desktop keeps this as the last element, so it
+                    stays flush there. */}
+                <div className="order-6 mb-8 lg:mb-0 flex flex-wrap items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
                     <CheckCircle size={12} className="text-emerald-400" />
                     {t("freeCancellation")}
