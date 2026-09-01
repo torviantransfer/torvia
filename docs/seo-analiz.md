@@ -8,6 +8,32 @@
 
 ---
 
+## ⚠ Düzeltme — 1 Eylül 2026, rapordan sonra
+
+**Bu raporun Uber yazısıyla ilgili teşhisi yanlıştı ve aşağıda düzeltildi.**
+
+Rapor, `/en/blog/uber-antalya-havalimani-ulasim` sayfasının pozisyon 6–13
+arasında 388 gösterim alıp sıfır tıklama üretmesini "başlık uyumsuzluğu" ile
+açıklamıştı. Gerçek sebep bu değil: **sayfa yayında değildi, 404 dönüyordu.**
+
+Ne olduğu: yazı `005` numaralı migration'da noktasız ı ile
+(`uber-antalya-havalimanı-ulasim`) eklenmiş. Sonraki yedi migration
+(`016`, `026`, `032`, `035`, `039`, `042`, `049`) noktalı i yazımını hedeflemiş
+ve her biri sessizce **0 satır** güncellemiş. Ardından `050`, noktalı i'li bir
+satırın var olduğunu varsayarak noktasız olanı yayından kaldırmış.
+
+Yani Google sayfayı sıralamaya devam etti, kullanıcı sonucu gördü, tıkladı ve
+404'e düştü. Başlıkta hangi kelimelerin olduğu bu tabloyu değiştirmezdi.
+
+**Migration `054`** yazıyı yeniden yayınladı ve slug'ı noktalı i'ye çevirdi;
+altı dilde de canlı olduğu doğrulandı.
+
+**Sınır:** `050`'nin hangi tarihte çalıştırıldığı depoda kayıtlı değil, bu
+yüzden 92 günlük pencerenin ne kadarını kapsadığı buradan tespit edilemiyor.
+Sayfanın 6.341 gösterimi, sıralamanın kesintiye uğramadığını gösteriyor.
+
+---
+
 ## Özet: üç sayı
 
 | | |
@@ -169,7 +195,15 @@ Bu grup tek başına **1.405 gösterim** taşıyor ve tıklama üretmiyor.
 
 **388 gösterim, pozisyon 6–13, 0 tıklama.** Bu sorguların cevabı tek kelimeyle verilemiyor ("Uber Antalya'da var mı, hangi hizmetler, nasıl kullanılır") — yani C1'deki cevap kutusu açıklaması buraya uymuyor.
 
-**En olası sebep başlık uyumsuzluğu.** Sorgular "availability 2026" ve "current status" içeriyor; sayfa başlığı bu ifadeleri taşımıyor. Bu, veriden çıkan **en somut ve en düzeltilebilir kayıp**.
+~~**En olası sebep başlık uyumsuzluğu.** Sorgular "availability 2026" ve "current status" içeriyor; sayfa başlığı bu ifadeleri taşımıyor.~~
+
+**DÜZELTİLDİ — sebep başlık değil, sayfanın kendisiydi.** Uber yazısı yayından
+kalkmıştı ve URL 404 dönüyordu (bkz. rapor başındaki düzeltme notu). Sıfır
+tıklamanın sebebi budur; başlık kelimeleriyle ilgisi yok. Migration `054` ile
+düzeltildi.
+
+Havaş satırı bu düzeltmenin dışında: o sayfa yayındaydı, 55 gösterim ve 0
+tıklama için ayrı bir açıklama gerekiyor ve veriden çıkarılamıyor.
 
 ---
 
@@ -293,7 +327,7 @@ Aynı konuda iki İngilizce yazı. Gösterimi alan poz 63'te, iyi konumdaki poz 
 
 | Konu | Mevcut sayfa | Durum |
 |---|---|---|
-| Uber | `/en/blog/uber-antalya-havalimani-ulasim` (6.341 gösterim, poz 7,9) | Var — başlık "2026 availability" ifadesini taşımıyor |
+| Uber | `/en/blog/uber-antalya-havalimani-ulasim` (6.341 gösterim, poz 7,9) | **Sayfa 404 dönüyordu, migration `054` ile geri getirildi.** Başlıkla ilgili değil |
 | Havaş | `/en/blog/antalya-havas-mi-vip-transfer-mi` (1.825 gösterim, poz 7,0) | Var |
 | Taksi | 2 çakışan yazı (D3) | Konsolide edilmemiş |
 | Alanya havalimanı | 4 çakışan slug (D2) | Konsolide edilmemiş |
@@ -316,7 +350,7 @@ ICE = Impact × Confidence × Ease (her biri 1–10), skor = ortalama.
 | # | Aksiyon | I | C | E | **ICE** | Etki | Efor | Etkilenen dosyalar |
 |---|---|---:|---:|---:|---:|---|---|---|
 | 1 | **D3'teki taksi yazısı çiftini konsolide et.** `/en/blog/antalya-havalimani-taksi-mi-vip-transfer-mi` (2.894 gösterim, poz 63,6) ile `/en/blog/antalya-taksi-mi-ozel-transfer-mi` (poz 6,5) aynı konuda. Zayıf olanı yayından kaldır, 301 ver. | 8 | 7 | 8 | **7,7** | Yüksek | Düşük | `next.config.ts`, migration (blog_posts) |
-| 2 | **Uber yazısının başlığına "2026" ve "availability" ekle.** 6 varyant poz 6–13, 370 gösterim, 0 tıklama. Sorgular yılı ve "availability/current status" içeriyor, başlık taşımıyor. Yalnızca `title_en`/`excerpt_en`. | 7 | 6 | 9 | **7,3** | Orta-yüksek | Düşük | migration (blog_posts) |
+| 2 | ~~**Uber yazısının başlığına "2026" ve "availability" ekle.**~~ **GEÇERSİZ — teşhis yanlıştı.** Sayfa 404 dönüyordu; başlık kelimeleri sıfır tıklamayı açıklamıyor. Migration `054` ile yayına alındı. Yerine geçen iş: **GSC'de yeniden indekslenmesini izle**, 2–4 hafta sonra bu kümenin TO'suna tekrar bak. Başlık düzenlemesi ancak sayfa çalışırken hâlâ tıklanmıyorsa gündeme gelir. | — | — | — | **iptal** | — | — | tamamlandı (`054`) |
 | 3 | **D2'deki Alanya-havalimanı slug karmaşasını çöz.** 9 URL, 406 gösterim, 2 tıklama. Özellikle `/ru/blog/czy-alanya-ma-lotnisko` (Rusça sayfa, Lehçe slug, poz 5,9) ve 3 ayrı İngilizce URL. | 7 | 7 | 6 | **6,7** | Orta-yüksek | Orta | `blog_posts.slug_*`, `next.config.ts` |
 | 4 | **D1'deki Alanya-süre çiftini kontrol et.** `next.config.ts`'te yönlendirme tanımlı ama GSC iki URL'e de gösterim veriyor. Önce canlıda 301 dönüyor mu test et; dönmüyorsa sebebini bul. | 6 | 8 | 8 | **7,3** | Orta | Düşük | (önce teşhis, kod değişikliği olmayabilir) |
 | 5 | **3 rezervasyonun kanalını GA4/Ads'ten doğrula.** İsviçre ve Macaristan'da 0 organik tıklama var. SEO stratejisinin tamamı bu cevaba bağlı. | 9 | 9 | 9 | **9,0** | Yüksek | Düşük | — (kod yok) |
@@ -331,7 +365,7 @@ ICE = Impact × Confidence × Ease (her biri 1–10), skor = ortalama.
 1. **9,0** — Rezervasyon kanalını doğrula *(kod yok)*
 2. **8,3** — C1 sorgularını SERP'te elle kontrol et *(kod yok)*
 3. **7,7** — Taksi yazısı çiftini konsolide et
-4. **7,3** — Uber başlığına "2026 availability" ekle
+4. ~~**7,3** — Uber başlığına "2026 availability" ekle~~ → **iptal**, sayfa 404'tü; `054` ile düzeltildi, şimdi yalnızca izlenecek
 5. **7,3** — Alanya-süre yönlendirmesini teşhis et
 6. **7,3** — Hollandaca yatırımını durdur *(karar)*
 7. **6,7** — Alanya-havalimanı slug karmaşası
