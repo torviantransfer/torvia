@@ -14,8 +14,8 @@ const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false 
 import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
   ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
-  Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, Headphones, X,
-  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown,
+  Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, X,
+  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown, MessageCircle, Ban,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -369,9 +369,41 @@ function BookingWizardInner(props: Props) {
     }
   }, [step, clientSecret, regionSlug, totalPrice, tripType]);
 
+  /**
+   * How many seats and bags the customer needs.
+   *
+   * The party size used to be asked for on step 2 — after a vehicle was
+   * already chosen — and the counters there clamp to the chosen vehicle's
+   * capacity. So a family of eight could pick a five-seater, then find the
+   * "+" button simply stopped responding at five with no explanation. Asking
+   * first, and marking which vehicles fit, is what stops that.
+   */
+  const partySize = adults + children;
+
+  const vehicleFit = (vehicle: VehicleOption) => {
+    const seatsShort = vehicle.max_passengers < partySize;
+    const bagsShort = vehicle.max_luggage < luggage;
+    return {
+      fits: !seatsShort && !bagsShort,
+      // Seats are the harder constraint, so when both are short the seat
+      // message is the one worth showing.
+      reason: seatsShort
+        ? t("capacityTooSmall", { count: partySize })
+        : bagsShort
+          ? t("luggageTooSmall", { count: luggage })
+          : null,
+    };
+  };
+
+  const anyVehicleFits = vehicles.some((v) => vehicleFit(v).fits);
+
   const selectVehicle = (vehicle: VehicleOption) => {
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!dateAvailable) { setError(t("dateUnavailable")); return; }
+    // The card for a vehicle that cannot take the party is rendered disabled,
+    // but guard here too so a stale click or a keyboard activation cannot slip
+    // an over-capacity booking through.
+    if (!vehicleFit(vehicle).fits) return;
     setSelectedVehicle(vehicle);
     pixelInitiateCheckout(vehicle.oneWayPrice);
     trackBookingStep("vehicle_selected", {
@@ -611,6 +643,79 @@ function BookingWizardInner(props: Props) {
               </div>
             </div>
           )}
+          {/* ── Party size, asked before the vehicle list ──
+              Three steppers rather than dropdowns: on a phone a stepper is one
+              tap per person and never opens a picker over the page. The same
+              adults/children/luggage state drives step 2, so nothing is asked
+              twice. */}
+          <div className="mb-5 rounded-2xl p-4 sm:p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
+            <div className="flex items-start gap-2.5 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <Users size={14} className="text-blue-600" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("partySizeTitle")}</h3>
+                <p className="text-[11px] text-gray-400 leading-snug mt-0.5">{t("partySizeDesc")}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {([
+                { label: t("adults"), icon: <Users size={13} />, value: adults, set: setAdults, min: 1, max: 20 },
+                { label: t("children"), icon: <Baby size={13} />, value: children, set: setChildren, min: 0, max: 10 },
+                { label: t("luggage"), icon: <Luggage size={13} />, value: luggage, set: setLuggage, min: 0, max: 20 },
+              ] as const).map(({ label, icon, value, set, min, max }) => (
+                <div key={label} className="rounded-xl px-2 py-2.5 sm:px-3" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
+                  <span className="flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                    <span className="text-blue-600">{icon}</span>
+                    <span className="truncate">{label}</span>
+                  </span>
+                  <div className="flex items-center justify-between gap-1">
+                    <button
+                      type="button"
+                      aria-label={`${label} −`}
+                      onClick={() => set((v: number) => Math.max(min, v - 1))}
+                      className="w-9 h-9 rounded-lg bg-white text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 disabled:opacity-40"
+                      style={{ border: "1px solid rgba(0,0,0,0.1)" }}
+                      disabled={value <= min}
+                    >−</button>
+                    <span className="text-base font-bold text-gray-900 tabular-nums">{value}</span>
+                    <button
+                      type="button"
+                      aria-label={`${label} +`}
+                      onClick={() => set((v: number) => Math.min(max, v + 1))}
+                      className="w-9 h-9 rounded-lg bg-white text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 disabled:opacity-40"
+                      style={{ border: "1px solid rgba(0,0,0,0.1)" }}
+                      disabled={value >= max}
+                    >+</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Every vehicle is too small. Without this the customer is left
+              staring at a list where nothing can be clicked and no reason is
+              given — a dead end on the page that takes the booking. */}
+          {!loading && vehicles.length > 0 && !anyVehicleFits && (
+            <div className="mb-5 rounded-2xl p-4 sm:p-5" style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.25)" }}>
+              <div className="flex items-start gap-2.5">
+                <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm text-amber-900 leading-relaxed">{t("noVehicleFits")}</p>
+                  <a
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955"}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-[13px] font-semibold text-white transition hover:bg-emerald-700"
+                  >
+                    <MessageCircle size={14} />
+                    {t("noVehicleFitsCta")}
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader2 size={32} className="animate-spin text-blue-600 mb-3" />
@@ -623,11 +728,18 @@ function BookingWizardInner(props: Props) {
             </div>
           ) : (
             <div className="space-y-4">
-              {vehicles.map((vehicle) => (
-                <div key={vehicle.categoryId} className="group rounded-2xl overflow-hidden transition-all hover:shadow-lg" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
+              {vehicles.map((vehicle) => {
+                const { fits, reason } = vehicleFit(vehicle);
+                return (
+                /* A vehicle that cannot take the party stays on the page,
+                   faded and unselectable, carrying the reason. Hiding it
+                   instead would leave the customer wondering where the cheap
+                   option went; greying it out without a reason is worse still,
+                   because the obvious read is that the site is broken. */
+                <div key={vehicle.categoryId} className={`group rounded-2xl overflow-hidden transition-all ${fits ? "hover:shadow-lg" : "opacity-60 saturate-50"}`} style={{ backgroundColor: "#FFFFFF", border: fits ? "1px solid rgba(0,0,0,0.08)" : "1px dashed rgba(0,0,0,0.16)" }}>
                   <div className="flex flex-col sm:flex-row">
                     <div className="relative w-full sm:w-[300px] h-64 sm:h-auto sm:min-h-[220px] bg-gray-50 flex-shrink-0 overflow-hidden">
-                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className="object-contain p-3 sm:p-4 group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 300px" />
+                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className={`object-contain p-3 sm:p-4 transition-transform duration-300 ${fits ? "group-hover:scale-105" : "grayscale"}`} sizes="(max-width: 768px) 100vw, 300px" />
                     </div>
                     {/* Name → capacity → price → CTA, then the extras behind a
                         disclosure. Previously the feature chips and trust
@@ -638,9 +750,15 @@ function BookingWizardInner(props: Props) {
                     <div className="flex-1 p-5 sm:p-6 flex flex-col">
                       <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
                       {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicleDesc(vehicle.slug, vehicle.description)}</p>}
-                      <div className="flex flex-wrap gap-3 mt-3">
+                      <div className="flex flex-wrap items-center gap-3 mt-3">
                         <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
                         <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
+                        {reason && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
+                            <Ban size={11} className="flex-shrink-0" />
+                            {reason}
+                          </span>
+                        )}
                       </div>
 
                       {/* ── Price + CTA ── */}
@@ -663,10 +781,15 @@ function BookingWizardInner(props: Props) {
                           <button
                             type="button"
                             onClick={() => selectVehicle(vehicle)}
-                            disabled={checkingAvailability}
-                            className="w-full sm:w-auto flex-shrink-0 px-4 sm:px-5 py-3 sm:py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
+                            disabled={checkingAvailability || !fits}
+                            title={reason ?? undefined}
+                            className={`w-full sm:w-auto flex-shrink-0 px-4 sm:px-5 py-3 sm:py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                              fits
+                                ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
+                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            }`}
                           >
-                            {checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
+                            {!fits ? <Ban size={15} /> : checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
                             {t("selectVehicle")}
                           </button>
                         </div>
@@ -687,9 +810,18 @@ function BookingWizardInner(props: Props) {
                           {t("vehicleFeatures")}
                           <ChevronDown size={13} className="transition-transform group-open/d:rotate-180" />
                         </summary>
+                        {/* Features only.
+                            "Secure payment / free cancellation / 24-7 support"
+                            used to sit here too, but they describe the company,
+                            not the vehicle — identical text repeated inside
+                            every card in the list, and repeated again in the
+                            summary card one step later. They now appear once,
+                            beside the total the customer is about to pay. This
+                            disclosure is for what actually differs between
+                            vehicles. */}
                         <div className="pt-2.5" style={{ borderTop: "1px dashed rgba(0,0,0,0.08)" }}>
                           {vehicle.features.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-3">
+                            <div className="flex flex-wrap gap-1.5">
                               {vehicle.features.map((f) => (
                                 <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-gray-600" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
                                   <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
@@ -698,17 +830,13 @@ function BookingWizardInner(props: Props) {
                               ))}
                             </div>
                           )}
-                          <div className="flex flex-wrap gap-x-3 gap-y-1.5">
-                            {[{ icon: <Shield size={12} />, text: t("trustSecure") }, { icon: <Check size={12} />, text: t("trustCancel") }, { icon: <Headphones size={12} />, text: t("seo247") }].map(({ icon, text }) => (
-                              <span key={text} className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">{icon} {text}</span>
-                            ))}
-                          </div>
                         </div>
                       </details>
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
