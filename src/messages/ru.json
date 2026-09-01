@@ -100,7 +100,6 @@
     "dateConfirm": "Готово",
     "cardDetails": "Данные карты",
     "stepProgress": "Шаг {current} из {total}",
-    "vehicleFeatures": "Посмотреть оснащение и преимущества",
     "chargedInUsd": "Списание составит {amount}",
     "payAtVehicle": "Оплата в транспорте",
     "payAtVehicleDesc": "Сообщение с подтверждением будет отправлено",
@@ -539,8 +538,7 @@
     "viewTransfer": "Подробнее",
     "imageAlt": "Частный VIP-трансфер из аэропорта Анталии в {name}",
     "callNow": "Позвонить",
-    "whatsappNow": "WhatsApp",
-    "whatsappRegionMessage": "Здравствуйте! Хочу забронировать частный VIP-трансфер из аэропорта Анталии в {name}."
+    "whatsappNow": "WhatsApp"
   },
   "compare": {
     "heading": "Почему Torvian Transfer?",

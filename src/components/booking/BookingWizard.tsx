@@ -15,7 +15,7 @@ import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
   ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
   Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, X,
-  CalendarCheck, Banknote, Sparkles, Clock, ChevronDown, MessageCircle, Ban,
+  CalendarCheck, Banknote, Sparkles, Clock, MessageCircle, Ban,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -139,7 +139,6 @@ function BookingWizardInner(props: Props) {
   const [dateAvailable, setDateAvailable] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [suggestedDates, setSuggestedDates] = useState<string[]>([]);
-  const [suggestedVehicles, setSuggestedVehicles] = useState<Record<string, { name: string; slug: string; max_passengers: number }[]>>({});
 
   const totalPrice = useMemo(() => {
     if (!selectedVehicle) return 0;
@@ -347,7 +346,6 @@ function BookingWizardInner(props: Props) {
         if (typeof data.isAvailable === "boolean") {
           setDateAvailable(data.isAvailable);
           setSuggestedDates(data.suggestedDates ?? []);
-          setSuggestedVehicles(data.suggestedVehicles ?? {});
         }
       })
       .catch(() => { setDateAvailable(true); })
@@ -688,101 +686,105 @@ function BookingWizardInner(props: Props) {
                    option went; greying it out without a reason is worse still,
                    because the obvious read is that the site is broken. */
                 <div key={vehicle.categoryId} className={`group rounded-2xl overflow-hidden transition-all ${fits ? "hover:shadow-lg" : "opacity-60 saturate-50"}`} style={{ backgroundColor: "#FFFFFF", border: fits ? "1px solid rgba(0,0,0,0.08)" : "1px dashed rgba(0,0,0,0.16)" }}>
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="relative w-full sm:w-[300px] h-64 sm:h-auto sm:min-h-[220px] bg-gray-50 flex-shrink-0 overflow-hidden">
-                      <Image src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={vehicle.name} fill className={`object-contain p-3 sm:p-4 transition-transform duration-300 ${fits ? "group-hover:scale-105" : "grayscale"}`} sizes="(max-width: 768px) 100vw, 300px" />
+                  <div className="flex flex-col lg:flex-row">
+                    {/* Photo. A soft gradient panel rather than a flat grey
+                        swatch: the vehicle shots are cut-outs, and flat grey
+                        behind a cut-out reads as a failed image load. */}
+                    <div className="relative w-full h-48 sm:h-56 lg:h-auto lg:w-[260px] xl:w-[290px] flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
+                      <Image
+                        src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
+                        alt={vehicle.name}
+                        fill
+                        className={`object-contain p-4 transition-transform duration-500 ${fits ? "group-hover:scale-[1.04]" : "grayscale"}`}
+                        sizes="(max-width: 1024px) 100vw, 290px"
+                      />
                     </div>
-                    {/* Name → capacity → price → CTA, then the extras behind a
-                        disclosure. Previously the feature chips and trust
-                        badges sat between the capacity and the price at the
-                        same visual weight, so on a phone the price and the
-                        button — the two things the customer is actually here
-                        to act on — were pushed below a wall of small text. */}
-                    <div className="flex-1 p-5 sm:p-6 flex flex-col">
-                      <h3 className="text-lg font-bold text-gray-900">{vehicle.name}</h3>
-                      {vehicle.description && <p className="text-sm text-gray-500 mt-0.5">{vehicleDesc(vehicle.slug, vehicle.description)}</p>}
-                      <div className="flex flex-wrap items-center gap-3 mt-3">
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Users size={15} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}</span>
-                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-600"><Luggage size={15} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}</span>
+
+                    {/* ── What you get ── */}
+                    <div className="flex-1 min-w-0 p-5 lg:p-6 flex flex-col justify-center">
+                      <h3 className="text-lg lg:text-xl font-bold text-gray-900 leading-tight">{vehicle.name}</h3>
+                      {vehicle.description && (
+                        <p className="mt-1 text-sm text-gray-500 leading-relaxed line-clamp-2">
+                          {vehicleDesc(vehicle.slug, vehicle.description)}
+                        </p>
+                      )}
+
+                      <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[13px] font-medium text-gray-700" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+                          <Users size={14} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[13px] font-medium text-gray-700" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
+                          <Luggage size={14} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}
+                        </span>
                         {reason && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
-                            <Ban size={11} className="flex-shrink-0" />
-                            {reason}
+                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[12px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
+                            <Ban size={12} className="flex-shrink-0" />{reason}
                           </span>
                         )}
                       </div>
 
-                      {/* ── Price + CTA ── */}
-                      <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{t("payOnline")}</span>
-                              {vehicle.calculation.roundTripDiscount > 0 && (
-                                <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full whitespace-nowrap" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
-                                  {t("roundTripDiscount")} −{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
-                                </span>
-                              )}
-                            </div>
-                            <span className="block text-[28px] leading-none font-black text-gray-900 tracking-tight">
-                              {fmt(vehicle.calculation.basePrice, exchangeRates)}
+                      {/* Features are shown, not hidden behind a disclosure.
+                          There are only a handful, and they are the whole
+                          reason to pick one vehicle over another — putting
+                          them behind a tap meant most customers never saw
+                          them. */}
+                      {vehicle.features.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {vehicle.features.map((f) => (
+                            <span key={f} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-gray-500" style={{ backgroundColor: "rgba(0,0,0,0.035)" }}>
+                              <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
+                              {featureLabel[f] || f}
                             </span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => selectVehicle(vehicle)}
-                            disabled={checkingAvailability || !fits}
-                            title={reason ?? undefined}
-                            className={`w-full sm:w-auto flex-shrink-0 px-4 sm:px-5 py-3 sm:py-2.5 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                              fits
-                                ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
-                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            {!fits ? <Ban size={15} /> : checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
-                            {t("selectVehicle")}
-                          </button>
+                          ))}
                         </div>
+                      )}
+                    </div>
 
-                        {/* Cash option — a separate lane so it reads as an
-                            alternative rather than a second, competing price. */}
-                        {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                          <div className="flex items-center justify-between gap-2 mt-3 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }}>
-                            <span className="text-[11px] font-medium text-amber-700">{t("payAtVehicle")}</span>
-                            <span className="text-[13px] font-bold text-amber-700">{fmt(vehicle.cashPrice, exchangeRates)}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Features + trust, collapsed by default */}
-                      <details className="group/d mt-3">
-                        <summary className="flex items-center justify-center gap-1.5 py-2 text-[12px] font-medium text-gray-500 hover:text-gray-700 cursor-pointer list-none transition-colors">
-                          {t("vehicleFeatures")}
-                          <ChevronDown size={13} className="transition-transform group-open/d:rotate-180" />
-                        </summary>
-                        {/* Features only.
-                            "Secure payment / free cancellation / 24-7 support"
-                            used to sit here too, but they describe the company,
-                            not the vehicle — identical text repeated inside
-                            every card in the list, and repeated again in the
-                            summary card one step later. They now appear once,
-                            beside the total the customer is about to pay. This
-                            disclosure is for what actually differs between
-                            vehicles. */}
-                        <div className="pt-2.5" style={{ borderTop: "1px dashed rgba(0,0,0,0.08)" }}>
-                          {vehicle.features.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {vehicle.features.map((f) => (
-                                <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs text-gray-600" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
-                                  <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
-                                  {featureLabel[f] || f}
-                                </span>
-                              ))}
-                            </div>
+                    {/* ── What you pay ──
+                        Its own rail, so the figure and the button are never
+                        mixed into the description: the right-hand column on a
+                        desktop, the footer of the card on a phone. That is the
+                        arrangement every booking site converges on, and it is
+                        what makes the card read as a product rather than a
+                        paragraph with a button after it. */}
+                    <div className="flex-shrink-0 lg:w-[212px] p-5 lg:p-6 flex flex-col justify-center gap-3 border-t border-black/[0.06] lg:border-t-0 lg:border-l" style={{ backgroundColor: "rgba(0,0,0,0.015)" }}>
+                      <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-stretch lg:gap-3.5">
+                        <div className="min-w-0">
+                          <span className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{t("payOnline")}</span>
+                          <span className="block mt-1 text-[26px] lg:text-[30px] leading-none font-black text-gray-900 tracking-tight">
+                            {fmt(vehicle.calculation.basePrice, exchangeRates)}
+                          </span>
+                          {vehicle.calculation.roundTripDiscount > 0 && (
+                            <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 whitespace-nowrap" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
+                              {t("roundTripDiscount")} −{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
+                            </span>
                           )}
                         </div>
-                      </details>
+
+                        <button
+                          type="button"
+                          onClick={() => selectVehicle(vehicle)}
+                          disabled={checkingAvailability || !fits}
+                          title={reason ?? undefined}
+                          className={`flex-shrink-0 lg:w-full px-5 py-3 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                            fits
+                              ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
+                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          }`}
+                        >
+                          {!fits ? <Ban size={15} /> : checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
+                          {t("selectVehicle")}
+                        </button>
+                      </div>
+
+                      {/* Cash option — a separate lane so it reads as an
+                          alternative rather than a second, competing price. */}
+                      {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
+                        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                          <span className="text-[11px] font-medium text-amber-700">{t("payAtVehicle")}</span>
+                          <span className="text-[13px] font-bold text-amber-700">{fmt(vehicle.cashPrice, exchangeRates)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

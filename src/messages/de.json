@@ -100,7 +100,6 @@
     "dateConfirm": "Fertig",
     "cardDetails": "Kartendaten",
     "stepProgress": "Schritt {current} von {total}",
-    "vehicleFeatures": "Ausstattung und Vorteile ansehen",
     "chargedInUsd": "Abbuchung erfolgt als {amount}",
     "payAtVehicle": "Im Fahrzeug Zahlen",
     "payAtVehicleDesc": "Bestätigungsnachricht wird gesendet",
@@ -539,8 +538,7 @@
     "viewTransfer": "Transfer ansehen",
     "imageAlt": "Privater VIP-Transfer vom Flughafen Antalya nach {name}",
     "callNow": "Anrufen",
-    "whatsappNow": "WhatsApp",
-    "whatsappRegionMessage": "Hallo! Ich möchte einen privaten VIP-Transfer vom Flughafen Antalya nach {name} buchen."
+    "whatsappNow": "WhatsApp"
   },
   "compare": {
     "heading": "Warum Torvian Transfer?",

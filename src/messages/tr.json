@@ -100,7 +100,6 @@
     "dateConfirm": "Tamam",
     "cardDetails": "Kart Bilgileri",
     "stepProgress": "Adım {current}/{total}",
-    "vehicleFeatures": "Özellikleri ve avantajları gör",
     "chargedInUsd": "Ödeme {amount} olarak tahsil edilir",
     "payAtVehicle": "Araçta Ödeme",
     "payAtVehicleDesc": "Onay mesajı gönderilecek",
@@ -539,8 +538,7 @@
     "viewTransfer": "Transfer Detayı",
     "imageAlt": "Antalya Havalimanı'ndan {name}'e özel VIP transfer",
     "callNow": "Ara",
-    "whatsappNow": "WhatsApp",
-    "whatsappRegionMessage": "Merhaba! Antalya Havalimanı'ndan {name}'e özel VIP transfer rezervasyonu yapmak istiyorum."
+    "whatsappNow": "WhatsApp"
   },
   "compare": {
     "heading": "Neden Torvian Transfer?",

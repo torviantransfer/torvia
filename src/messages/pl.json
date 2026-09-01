@@ -100,7 +100,6 @@
     "dateConfirm": "Gotowe",
     "cardDetails": "Dane karty",
     "stepProgress": "Krok {current} z {total}",
-    "vehicleFeatures": "Zobacz wyposażenie i korzyści",
     "chargedInUsd": "Obciążenie w wysokości {amount}",
     "payAtVehicle": "Płatność w Pojeździe",
     "payAtVehicleDesc": "Wiadomość potwierdzająca zostanie wysłana",
@@ -539,8 +538,7 @@
     "viewTransfer": "Zobacz transfer",
     "imageAlt": "Prywatny VIP transfer z lotniska Antalya do {name}",
     "callNow": "Zadzwoń",
-    "whatsappNow": "WhatsApp",
-    "whatsappRegionMessage": "Cześć! Chciałbym zarezerwować prywatny VIP transfer z lotniska Antalya do {name}."
+    "whatsappNow": "WhatsApp"
   },
   "compare": {
     "heading": "Dlaczego Torvian Transfer?",
