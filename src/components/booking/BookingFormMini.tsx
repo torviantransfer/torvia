@@ -175,7 +175,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
   const openCal = (target: "dep" | "ret") => {
     if (target === "ret" && !depDate) return;
     setCalFor(target);
-    const base = target === "dep" ? depDate : retDate;
+    // Which month to land on. For a return with no date yet, fall back to the
+    // departure month rather than to today: booking an outbound on 29 October
+    // from September used to open the return calendar on September, every day
+    // of it greyed out, with no hint that the month had to be changed.
+    const base = target === "dep" ? depDate : (retDate ?? depDate);
     setCalMonth(base ? new Date(base.getFullYear(), base.getMonth(), 1) : new Date());
     setOpen("cal");
   };
@@ -185,9 +189,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     if (d < now) return;
     if (calFor === "dep") {
       setDepDate(d);
-      if (retDate && retDate < d) setRetDate(null);
+      // Drop a return that the new outbound date has invalidated — including
+      // one that now falls on the same day, which is not a return trip.
+      if (retDate && retDate.getTime() <= d.getTime()) setRetDate(null);
     } else {
-      if (depDate && d < depDate) return;
+      if (depDate && d.getTime() <= depDate.getTime()) return;
       setRetDate(d);
     }
   };
@@ -295,7 +301,8 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
       </div>
       <div className="grid grid-cols-7 text-center px-2 py-1.5 gap-y-0.5">
         {days.map((d, i) => {
-          const past = d.date < today || (calFor === "ret" && depDate && d.date < depDate);
+          // `<=`, not `<`: the departure day itself is not a valid return.
+          const past = d.date < today || (calFor === "ret" && depDate && d.date.getTime() <= depDate.getTime());
           const sel = calFor === "dep" ? depDate?.toDateString() === d.date.toDateString() : retDate?.toDateString() === d.date.toDateString();
           const isToday = d.date.toDateString() === new Date().toDateString();
           return (
