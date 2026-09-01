@@ -403,7 +403,7 @@ export default async function BlogPostPage({
               )}
               <div className="flex items-center gap-1.5">
                 <Clock size={14} className="text-blue-500 shrink-0" />
-                <span>{readingTime} min</span>
+                <span>{t("readingTime", { minutes: readingTime })}</span>
               </div>
             </div>
 
