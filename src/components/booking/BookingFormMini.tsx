@@ -253,11 +253,36 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     </div>
   );
 
+  /**
+   * Lock the page behind the mobile calendar sheet.
+   *
+   * The sheet is `position: fixed`, so without this the page kept scrolling
+   * under it whenever a swipe started on the dimmed backdrop — the month grid
+   * stayed put while the form slid away behind it. Only phones are affected:
+   * from `lg` up the calendar is an inline popover, not a sheet.
+   */
+  useEffect(() => {
+    if (open !== "cal") return;
+    if (typeof window === "undefined" || window.matchMedia("(min-width: 1024px)").matches) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
   /* --- Calendar popup --- */
   const renderCalendar = () => (
     <>
-    <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setOpen(null)} />
-    <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl lg:absolute lg:inset-auto lg:bottom-auto lg:top-full lg:mt-1 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[310px] lg:rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+    {/* z-60 / z-70, not z-40 / z-50.
+        The floating WhatsApp button is `fixed … z-50` and every page that
+        renders this form mounts it after the form, so at equal z-index the
+        button won the tie and painted on top of the sheet — sitting directly
+        over the confirm button in the bottom-right corner. Raising both layers
+        above it puts the button behind the dim, where it belongs while a
+        modal is open. */}
+    <div className="fixed inset-0 z-[60] bg-black/30 lg:hidden" onClick={() => setOpen(null)} />
+    <div className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl lg:absolute lg:inset-auto lg:bottom-auto lg:top-full lg:mt-1 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[310px] lg:rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
       {/* Mobile drag handle */}
       <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
       <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
