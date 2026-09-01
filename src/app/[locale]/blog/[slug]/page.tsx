@@ -364,7 +364,7 @@ export default async function BlogPostPage({
       <Header />
       <main>
         <section
-          className="relative pt-28 pb-16 lg:py-20 overflow-hidden"
+          className="relative pt-24 pb-9 lg:pt-28 lg:pb-12 overflow-hidden"
           style={{
             background:
               "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
@@ -376,47 +376,75 @@ export default async function BlogPostPage({
               style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
+          {/* The back link and the meta row were both `inline-flex`, i.e. two
+              inline-level boxes with nothing block-level between them. A
+              bottom margin on an inline box does not push the next one down,
+              so on every width they landed on the same line and the meta pill
+              sat on top of "Back to blog". The order is now back link, then a
+              block-level h1, then the meta row — and the meta row is a plain
+              `flex`, so it can never share a line with anything again. */}
           <div className="relative max-w-3xl mx-auto px-4">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors mb-8 text-sm"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1.5 text-[13px] font-medium text-gray-600 backdrop-blur transition-colors hover:text-blue-600"
+              style={{ border: "1px solid rgba(0,0,0,0.08)" }}
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
               {t("backToBlog")}
             </Link>
 
-            <div
-              className="inline-flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm font-medium text-gray-500 mb-5 px-3.5 py-2 rounded-full"
-              style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}
-            >
+            {/* Which route the article is about, where it has one. Doubles as
+                the contextual link to the page that takes the booking — the
+                same reasoning as the link under the article body. */}
+            {ctaRegionName && ctaRegionSlug && (
+              <Link
+                href={`/${normalizeRegionPath(ctaRegionSlug)}`}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-700 transition-colors hover:bg-blue-100"
+              >
+                <MapPin size={11} />
+                {ctaRegionName}
+              </Link>
+            )}
+
+            <h1 className="mt-4 text-[27px] leading-[1.22] sm:text-4xl lg:text-[42px] lg:leading-[1.15] font-bold tracking-tight text-gray-900 text-balance">
+              {title}
+            </h1>
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-500">
               {post.published_at && (
-                <div className="flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1.5">
                   <Calendar size={14} className="text-blue-500 shrink-0" />
-                  <time>
+                  <time dateTime={new Date(post.published_at).toISOString()}>
                     {new Date(post.published_at).toLocaleDateString(loc, {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                     })}
                   </time>
-                </div>
+                </span>
               )}
-              <div className="flex items-center gap-1.5">
+              {post.published_at && (
+                <span aria-hidden className="h-1 w-1 rounded-full bg-gray-300" />
+              )}
+              <span className="inline-flex items-center gap-1.5">
                 <Clock size={14} className="text-blue-500 shrink-0" />
-                <span>{t("readingTime", { minutes: readingTime })}</span>
-              </div>
+                {t("readingTime", { minutes: readingTime })}
+              </span>
             </div>
-
-            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-gray-900 leading-snug">
-              {title}
-            </h1>
           </div>
         </section>
 
-        {/* Featured image */}
+        {/* Featured image.
+            The negative `-mt-4` used to tuck this under the hero, which read
+            as a misalignment rather than an overlap. Posts without an image
+            get nothing here at all, and the hero's gradient already resolves
+            into the article, so no placeholder is needed. */}
         {post.image_url && (
-          <section className="max-w-4xl mx-auto px-4 -mt-4">
-            <div className="relative rounded-2xl overflow-hidden aspect-[2/1]">
+          <section className="max-w-4xl mx-auto px-4">
+            <div
+              className="relative rounded-2xl overflow-hidden aspect-[16/9] sm:aspect-[2/1]"
+              style={{ border: "1px solid rgba(0,0,0,0.06)" }}
+            >
               <Image
                 src={post.image_url}
                 alt={title}
