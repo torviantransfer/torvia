@@ -612,10 +612,45 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           </button>
         </div>
 
-        {/* Passengers — its own clear, tappable row. This is a required
-            field on every booking (unlike the optional return trip below),
-            so it gets top billing and an explicit "X Kişi" label + chevron
-            instead of sharing a row and reading as just a bare number. */}
+        {/* Return — sits directly under the departure date, because that
+            is where it belongs: enabling it produces a second date field,
+            and every travel form keeps the two dates together. It was
+            below passengers, which split the pair with an unrelated
+            control. The dashed border still marks it as an add-on, so it
+            does not compete with the required fields for attention. */}
+        <div className="relative">
+          {!hasRet ? (
+            <button
+              type="button"
+              onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
+              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
+            >
+              {/* No "(optional)" suffix. The label is already an offer to add
+                  something — nothing happens unless it is pressed — so the
+                  word restated what the button's own existence says, and cost
+                  a line of width in a narrow form. */}
+              <CornerDownLeft size={14} />{t("addReturn")}
+            </button>
+          ) : (
+            <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
+              <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
+                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                  <CornerDownLeft size={12} className="text-green-600" />
+                  {t("returnDate")}
+                </span>
+                <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
+                  {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
+                </span>
+              </button>
+              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
+            </div>
+          )}
+          {open === "cal" && calFor === "ret" && renderCalendar()}
+        </div>
+
+        {/* Passengers — its own clear, tappable row. Required on every
+            booking, so it gets an explicit "X Kişi" label and a chevron
+            rather than sharing a row and reading as a bare number. */}
         <div className="relative">
           <button
             type="button"
@@ -634,36 +669,6 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             <ChevronRight size={15} className={`text-gray-300 shrink-0 transition-transform ${open === "pax" ? "rotate-90" : ""}`} />
           </button>
           {open === "pax" && renderPassengers()}
-        </div>
-
-        {/* Return — optional add-on, demoted below the required fields with
-            a dashed border so it visually reads as "extra" rather than
-            competing with passengers for attention. */}
-        <div className="relative">
-          {!hasRet ? (
-            <button
-              type="button"
-              onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
-              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
-            >
-              <CornerDownLeft size={14} />{t("addReturn")}
-              <span className="text-[11px] font-normal text-gray-500">({t("optional")})</span>
-            </button>
-          ) : (
-            <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
-              <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
-                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                  <CornerDownLeft size={12} className="text-green-600" />
-                  {t("returnDate")}
-                </span>
-                <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
-                  {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
-                </span>
-              </button>
-              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
-            </div>
-          )}
-          {open === "cal" && calFor === "ret" && renderCalendar()}
         </div>
 
         {/* Submit */}
