@@ -690,7 +690,12 @@ export default async function RegionPage({
                     </div>
                     {pricing.round_trip_price && (
                       <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.15)" }}>
-                        <div className="text-xs text-gray-400 mb-1">{t("roundTrip")}</div>
+                        {/* "From", not "Round trip" — the label under the
+                            figure already says round trip, so repeating it
+                            above read as a copy-paste slip. Both cards now
+                            carry the same "from" caption, which is also what
+                            the figure means: the cheapest vehicle's price. */}
+                        <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
                         <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.round_trip_price} showLabel={false} /></div>
                         <div className="text-xs text-gray-500">{t("roundTrip")} · {t("perVehicle")}</div>
                       </div>
