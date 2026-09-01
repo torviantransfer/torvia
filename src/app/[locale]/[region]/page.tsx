@@ -50,6 +50,12 @@ const regionImages: Record<string, string> = {
   kalkan: "/images/regions/kalkan.jpg",
   fethiye: "/images/regions/fethiye.jpg",
   marmaris: "/images/regions/marmaris.jpg",
+  // Restored by migration 056. manavgat-waterfall.jpg was already in the repo
+  // but unreferenced — the region row it belonged to had been deleted.
+  manavgat: "/images/regions/manavgat-waterfall.jpg",
+  // Konyaaltı has no photo of its own yet; the marina sits at the Konyaaltı
+  // end of the same shoreline, so it is a truthful stand-in until one is added.
+  konyaalti: "/images/regions/antalya-marina.jpg",
 };
 
 /**
