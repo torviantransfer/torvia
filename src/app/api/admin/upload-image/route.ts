@@ -29,8 +29,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Sadece JPG, PNG, WEBP veya GIF yükleyebilirsiniz" }, { status: 400 });
   }
 
+  // Callers may file their uploads under their own prefix; the vehicle
+  // manager uses "vehicles". Restricted to a plain word so a caller cannot
+  // walk out of the bucket with "../".
+  const rawFolder = formData.get("folder");
+  const folder = typeof rawFolder === "string" && /^[a-z0-9-]{1,32}$/.test(rawFolder)
+    ? rawFolder
+    : "blog";
+
   const admin = createAdminClient();
-  const path = `blog/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { error: uploadError } = await admin.storage
     .from(BUCKET)

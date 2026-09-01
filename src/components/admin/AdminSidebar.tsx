@@ -29,6 +29,9 @@ const navDefs = [
   { path: "/availability", label: "Takvim & Kapasite", icon: Calendar },
   { path: "/drivers", label: "Şoförler", icon: Users },
   { path: "/vehicles", label: "Araçlar", icon: Car },
+  // The classes a customer chooses between when booking, as opposed to
+  // /vehicles, which is the physical fleet.
+  { path: "/vehicle-categories", label: "Araç Tipleri", icon: Car },
   { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },
   { path: "/regions", label: "Bölgeler", icon: MapPin },
   { path: "/blog", label: "Blog Yazıları", icon: FileText },
