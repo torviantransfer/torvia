@@ -18,6 +18,32 @@ import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
  */
 const SEO_FAQ_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
+/** The `guideNTitle` / `guideNBody` pairs rendered in the guide section. */
+const GUIDE_SECTIONS = [1, 2, 3, 4] as const;
+
+/**
+ * Destinations linked from the guide, as slug -> label.
+ *
+ * Every one is an active region with its own page, so these are real internal
+ * links from the page that takes the booking to the pages that sell the
+ * routes. The labels are the place names themselves, which are proper nouns
+ * and read the same in all six locales.
+ */
+const GUIDE_DESTINATIONS: [slug: string, label: string][] = [
+  ["belek", "Belek"],
+  ["side", "Side"],
+  ["alanya", "Alanya"],
+  ["kemer", "Kemer"],
+  ["kundu-lara", "Kundu & Lara"],
+  ["kadriye", "Kadriye"],
+  ["bogazkent", "Boğazkent"],
+  ["evrenseki", "Evrenseki"],
+  ["tekirova", "Tekirova"],
+  ["kas", "Kaş"],
+  ["kalkan", "Kalkan"],
+  ["fethiye", "Fethiye"],
+];
+
 export async function generateMetadata({
   params,
 }: {
@@ -324,6 +350,52 @@ export default async function BookingPage({
                   <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* ── Guide ──
+                The page's only prose used to be one ~50-word paragraph at the
+                very bottom, which is nothing to rank on for a head term like
+                "private transfer antalya airport". This answers the questions
+                people actually search around that term — how the transfer
+                works, how the price is set, why not a taxi, where we go — and
+                sits below the booking widget so it never pushes the form or
+                the price down the page.
+
+                Everything asserted here is something the site already
+                supports: flight tracking, per-vehicle pricing, a fixed price
+                at booking time, a round-trip discount the calculation
+                actually applies. No meeting points, no waiting policy, no
+                surcharge claims. */}
+            <div className="max-w-3xl mx-auto mb-14">
+              <h3 className="text-lg font-bold text-gray-900 mb-6 text-center">
+                {t("guideHeading")}
+              </h3>
+              <div className="space-y-6">
+                {GUIDE_SECTIONS.map((n) => (
+                  <article key={n}>
+                    <h4 className="text-[15px] font-semibold text-gray-900 mb-1.5">{t(`guide${n}Title`)}</h4>
+                    <p className="text-sm text-gray-500 leading-[1.85]">{t(`guide${n}Body`)}</p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-8 pt-6" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400">
+                  {t("guideDestinations")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {GUIDE_DESTINATIONS.map(([slug, label]) => (
+                    <Link
+                      key={slug}
+                      href={`/${slug}-transfer`}
+                      className="rounded-full bg-white px-3 py-1.5 text-[13px] font-medium text-gray-600 transition-colors hover:border-blue-200 hover:text-blue-600"
+                      style={{ border: "1px solid rgba(0,0,0,0.08)" }}
+                    >
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* SEO FAQ mini */}
