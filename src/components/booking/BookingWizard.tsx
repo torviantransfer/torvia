@@ -1143,7 +1143,18 @@ function BookingWizardInner(props: Props) {
                     </div>
                   )}
 
-                  {/* Price breakdown */}
+                  {/* Price breakdown.
+                      Only rendered when there is something to break down. On a
+                      plain one-way with no coupon, no child seat and no
+                      discount, the single "One Way $40" row was identical to
+                      the "Total $40" box directly beneath it, so the card
+                      showed the same price twice and read like a mistake. The
+                      trip type moved into the total box instead, where it
+                      still says what the figure covers. */}
+                  {(tripType === "round_trip"
+                    || selectedVehicle.calculation.roundTripDiscount > 0
+                    || childSeat
+                    || (couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0)) && (
                   <div className="space-y-1.5 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-gray-400">{tripType === "round_trip" ? `2 × ${t("oneWay")}` : t("oneWay")}</span>
@@ -1173,6 +1184,7 @@ function BookingWizardInner(props: Props) {
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* Total / Deposit box */}
                   {paymentMethod === "cash" && selectedVehicle.cashDeposit != null ? (
@@ -1202,22 +1214,32 @@ function BookingWizardInner(props: Props) {
                     </div>
                   ) : (
                     <div className="rounded-xl px-4 py-3.5" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.07) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.14)" }}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
-                        <span className="text-xl font-black text-blue-600">{fmt(totalPrice, exchangeRates)}</span>
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="min-w-0">
+                          <span className="block text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
+                          <span className="block text-[10px] text-gray-400 mt-0.5">
+                            {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
+                          </span>
+                        </div>
+                        <span className="text-xl font-black text-blue-600 whitespace-nowrap">{fmt(totalPrice, exchangeRates)}</span>
                       </div>
                     </div>
                   )}
 
-                  {/* Trust badges */}
-                  <div className="space-y-1.5">
+                  {/* Trust badges.
+                      These belong here, next to the figure the customer is
+                      about to pay — that is where the hesitation is. They used
+                      to be three loose grey lines that read as a footnote; the
+                      panel gives them enough weight to be reassurance without
+                      competing with the total. */}
+                  <div className="rounded-xl px-3.5 py-3 space-y-2" style={{ backgroundColor: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.18)" }}>
                     {[
                       { icon: Shield, text: t("trustSecure") },
-                      { icon: Check, text: t("trustCancel") },
+                      { icon: CalendarCheck, text: t("trustCancel") },
                       { icon: Check, text: t("trustNoHidden") },
                     ].map(({ icon: Icon, text }) => (
-                      <div key={text} className="flex items-center gap-2 text-[11px] text-gray-500">
-                        <Icon size={12} className="text-emerald-500 flex-shrink-0" strokeWidth={2.5} />{text}
+                      <div key={text} className="flex items-start gap-2 text-[11px] font-medium text-gray-600 leading-snug">
+                        <Icon size={13} className="text-emerald-600 flex-shrink-0 mt-px" strokeWidth={2.2} />{text}
                       </div>
                     ))}
                   </div>
