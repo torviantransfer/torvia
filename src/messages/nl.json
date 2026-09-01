@@ -122,6 +122,7 @@
     "pricePerWay": "Prijs enkele reis",
     "selectVehicle": "Kies voertuig",
     "partySizeTitle": "Met hoeveel personen reist u?",
+    "changeParty": "Wijzigen",
     "partySizeDesc": "We markeren welke voertuigen passen bij uw gezelschap en bagage.",
     "capacityTooSmall": "Niet genoeg plaatsen voor {count} personen",
     "luggageTooSmall": "Niet genoeg ruimte voor {count} stuks bagage",

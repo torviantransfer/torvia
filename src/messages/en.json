@@ -122,6 +122,7 @@
     "pricePerWay": "One Way Price",
     "selectVehicle": "Select Vehicle",
     "partySizeTitle": "How many of you are travelling?",
+    "changeParty": "Change",
     "partySizeDesc": "We'll mark which vehicles fit your party and luggage.",
     "capacityTooSmall": "Not enough seats for {count}",
     "luggageTooSmall": "Not enough room for {count} bags",

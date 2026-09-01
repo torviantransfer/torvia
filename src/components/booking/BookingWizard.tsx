@@ -121,6 +121,9 @@ function BookingWizardInner(props: Props) {
   const [notes, setNotes] = useState("");
 
   const [luggage, setLuggage] = useState(props.initialLuggage ?? 0);
+  /** Whether the party-size steppers on step 1 are expanded. Collapsed by
+   *  default: the search form already supplied adults and children. */
+  const [editingParty, setEditingParty] = useState(false);
   const [childSeat, setChildSeat] = useState(false);
   const [couponCode, setCouponCode] = useState("");
 
@@ -643,11 +646,34 @@ function BookingWizardInner(props: Props) {
               </div>
             </div>
           )}
-          {/* ── Party size, asked before the vehicle list ──
-              Three steppers rather than dropdowns: on a phone a stepper is one
-              tap per person and never opens a picker over the page. The same
-              adults/children/luggage state drives step 2, so nothing is asked
-              twice. */}
+          {/* ── Party size ──
+              The search form already asked for adults and children and passed
+              them through in the URL, so asking again in full here was a card
+              of screen space spent re-collecting what we know. Collapsed to a
+              single line that states the party and offers to change it.
+
+              It is not dropped altogether for two reasons: luggage is not
+              collected anywhere before this point, and this is the step where
+              a customer discovers the vehicle is too small — that realisation
+              needs a fix within reach, not a trip back to the form. */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl px-3.5 py-2.5" style={{ backgroundColor: "rgba(0,0,0,0.025)", border: "1px solid rgba(0,0,0,0.06)" }}>
+            <span className="inline-flex items-center gap-2 text-[13px] text-gray-500">
+              <Users size={14} className="text-blue-600 flex-shrink-0" />
+              <span><strong className="font-semibold text-gray-900">{partySize}</strong> {t("passengers")}</span>
+              <span aria-hidden className="text-gray-300">·</span>
+              <Luggage size={14} className="text-blue-600 flex-shrink-0" />
+              <span><strong className="font-semibold text-gray-900">{luggage}</strong> {t("luggage")}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setEditingParty((v) => !v)}
+              className="text-[12px] font-semibold text-blue-600 hover:text-blue-700"
+            >
+              {t("changeParty")}
+            </button>
+          </div>
+
+          {editingParty && (
           <div className="mb-5 rounded-2xl p-4 sm:p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
             <div className="flex items-start gap-2.5 mb-4">
               <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
@@ -692,6 +718,7 @@ function BookingWizardInner(props: Props) {
               ))}
             </div>
           </div>
+          )}
 
           {/* Every vehicle is too small. Without this the customer is left
               staring at a list where nothing can be clicked and no reason is

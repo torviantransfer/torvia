@@ -122,6 +122,7 @@
     "pricePerWay": "Cena za Jeden Kierunek",
     "selectVehicle": "Wybierz Pojazd",
     "partySizeTitle": "Ile osób podróżuje?",
+    "changeParty": "Zmień",
     "partySizeDesc": "Zaznaczymy, które pojazdy pomieszczą Twoją grupę i bagaż.",
     "capacityTooSmall": "Za mało miejsc dla {count} osób",
     "luggageTooSmall": "Za mało miejsca na {count} bagaży",

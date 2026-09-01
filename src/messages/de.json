@@ -122,6 +122,7 @@
     "pricePerWay": "Preis pro Fahrt",
     "selectVehicle": "Fahrzeug Wählen",
     "partySizeTitle": "Wie viele Personen reisen mit?",
+    "changeParty": "Ändern",
     "partySizeDesc": "Wir markieren, welche Fahrzeuge zu Ihrer Gruppe und Ihrem Gepäck passen.",
     "capacityTooSmall": "Nicht genug Plätze für {count} Personen",
     "luggageTooSmall": "Nicht genug Platz für {count} Gepäckstücke",

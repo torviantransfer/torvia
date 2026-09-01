@@ -122,6 +122,7 @@
     "pricePerWay": "Tek Yön Fiyat",
     "selectVehicle": "Araç Seçin",
     "partySizeTitle": "Kaç kişi seyahat ediyorsunuz?",
+    "changeParty": "Değiştir",
     "partySizeDesc": "Kişi ve bagaj sayınıza göre uygun araçları işaretleyelim.",
     "capacityTooSmall": "{count} kişi için yeterli değil",
     "luggageTooSmall": "{count} bagaj için yeterli değil",

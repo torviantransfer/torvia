@@ -122,6 +122,7 @@
     "pricePerWay": "Цена в Одну Сторону",
     "selectVehicle": "Выберите Авто",
     "partySizeTitle": "Сколько вас человек?",
+    "changeParty": "Изменить",
     "partySizeDesc": "Мы отметим, какие автомобили подходят по количеству мест и багажа.",
     "capacityTooSmall": "Недостаточно мест для {count} человек",
     "luggageTooSmall": "Недостаточно места для {count} мест багажа",
