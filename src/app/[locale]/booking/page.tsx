@@ -9,6 +9,15 @@ import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
 
+/**
+ * Which `seoFaqNQ`/`seoFaqNA` pairs to render and to mark up.
+ *
+ * One list drives both the visible accordion and the FAQPage JSON-LD. They
+ * must not drift: marking up an answer the page does not show is a structured
+ * data violation, and showing one that is not marked up wastes it.
+ */
+const SEO_FAQ_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -64,65 +73,77 @@ export default async function BookingPage({
 
   const intentKeywords: Record<string, { label: string; href: string }[]> = {
     tr: [
-      { label: "Antalya havalimanı otel transferi", href: "/booking" },
+      { label: "Antalya havalimanı otel transferi", href: "/antalya-airport-transfer" },
       { label: "Belek VIP transfer", href: "/belek-transfer" },
       { label: "Side otel transferi", href: "/side-transfer" },
       { label: "Alanya özel transfer", href: "/alanya-transfer" },
       { label: "Kemer havalimanı transfer", href: "/kemer-transfer" },
       { label: "Antalya VIP transfer", href: "/vip-transfer-antalya" },
       { label: "Otel transferi (her otel)", href: "/hotel-transfer-antalya" },
-      { label: "Sabit fiyatlı transfer", href: "/booking" },
+      { label: "Sabit fiyatlı transfer", href: "/regions" },
     ],
     en: [
-      { label: "Antalya airport hotel transfer", href: "/booking" },
+      { label: "Antalya airport hotel transfer", href: "/antalya-airport-transfer" },
       { label: "VIP transfer to Belek", href: "/belek-transfer" },
       { label: "Private transfer to Side", href: "/side-transfer" },
       { label: "Alanya airport transfer", href: "/alanya-transfer" },
       { label: "Kemer transfer", href: "/kemer-transfer" },
       { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
       { label: "Hotel transfer (any hotel)", href: "/hotel-transfer-antalya" },
-      { label: "Fixed-price transfer", href: "/booking" },
+      { label: "Fixed-price transfer", href: "/regions" },
     ],
     de: [
-      { label: "Flughafen Antalya Hotel Transfer", href: "/booking" },
+      { label: "Flughafen Antalya Hotel Transfer", href: "/antalya-airport-transfer" },
       { label: "VIP Transfer Belek", href: "/belek-transfer" },
       { label: "Privattransfer Side", href: "/side-transfer" },
       { label: "Alanya Flughafentransfer", href: "/alanya-transfer" },
       { label: "Kemer Transfer", href: "/kemer-transfer" },
       { label: "VIP Transfer Antalya", href: "/vip-transfer-antalya" },
       { label: "Hotel Transfer (jedes Hotel)", href: "/hotel-transfer-antalya" },
-      { label: "Festpreis Transfer", href: "/booking" },
+      { label: "Festpreis Transfer", href: "/regions" },
     ],
     pl: [
-      { label: "transfer do hotelu z lotniska Antalya", href: "/booking" },
+      { label: "transfer do hotelu z lotniska Antalya", href: "/antalya-airport-transfer" },
       { label: "VIP transfer do Belek", href: "/belek-transfer" },
       { label: "prywatny transfer do Side", href: "/side-transfer" },
       { label: "transfer do Alanyi", href: "/alanya-transfer" },
       { label: "transfer do Kemer", href: "/kemer-transfer" },
       { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
       { label: "Transfer do hotelu (każdy hotel)", href: "/hotel-transfer-antalya" },
-      { label: "transfer ze stałą ceną", href: "/booking" },
+      { label: "transfer ze stałą ceną", href: "/regions" },
     ],
     ru: [
-      { label: "трансфер в отель из аэропорта Анталии", href: "/booking" },
+      { label: "трансфер в отель из аэропорта Анталии", href: "/antalya-airport-transfer" },
       { label: "VIP трансфер в Белек", href: "/belek-transfer" },
       { label: "частный трансфер в Сиде", href: "/side-transfer" },
       { label: "трансфер в Аланью", href: "/alanya-transfer" },
       { label: "трансфер в Кемер", href: "/kemer-transfer" },
       { label: "VIP трансфер Анталия", href: "/vip-transfer-antalya" },
       { label: "Трансфер в отель (любой отель)", href: "/hotel-transfer-antalya" },
-      { label: "трансфер с фиксированной ценой", href: "/booking" },
+      { label: "трансфер с фиксированной ценой", href: "/regions" },
     ],
     nl: [
-      { label: "luchthaven Antalya hoteltransfer", href: "/booking" },
+      { label: "luchthaven Antalya hoteltransfer", href: "/antalya-airport-transfer" },
       { label: "VIP transfer naar Belek", href: "/belek-transfer" },
       { label: "privétransfer naar Side", href: "/side-transfer" },
       { label: "transfer naar Alanya", href: "/alanya-transfer" },
       { label: "transfer naar Kemer", href: "/kemer-transfer" },
       { label: "VIP transfer Antalya", href: "/vip-transfer-antalya" },
       { label: "Hoteltransfer (elk hotel)", href: "/hotel-transfer-antalya" },
-      { label: "vaste prijs transfer", href: "/booking" },
+      { label: "vaste prijs transfer", href: "/regions" },
     ],
+  };
+
+  // The hero photo is the page's LCP element. Its alt text used to be English
+  // in all six locales, which is dead weight in image search for the ru/de/pl
+  // markets the site actually sells into.
+  const heroAlt: Record<string, string> = {
+    tr: "Antalya Havalimanı VIP transfer aracı",
+    en: "Antalya Airport VIP transfer vehicle",
+    de: "VIP-Transferfahrzeug am Flughafen Antalya",
+    pl: "Pojazd transferu VIP na lotnisku Antalya",
+    ru: "Автомобиль VIP-трансфера в аэропорту Анталии",
+    nl: "VIP-transfervoertuig op de luchthaven Antalya",
   };
 
   const intentLabel: Record<string, string> = {
@@ -144,11 +165,16 @@ export default async function BookingPage({
           <section className="relative min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center pt-16">
             <Image
               src="/images/havaalani-vip-transfer.jpg"
-              alt="Antalya Airport VIP Transfer"
+              alt={heroAlt[locale] ?? heroAlt.en}
               fill
               className="object-cover"
               priority
               quality={80}
+              // `fill` without `sizes` makes Next assume the image is as wide
+              // as the viewport at every breakpoint, so phones pull a far
+              // larger variant than they can show. This is the LCP element, so
+              // that lands directly on Core Web Vitals.
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
             {/* Flex column so phones can put the booking widget above the
@@ -187,15 +213,57 @@ export default async function BookingPage({
       )}
 
       <main className="flex-1" style={{ backgroundColor: "#FFFFFF" }}>
-        {/* Structured data */}
+        {/* Structured data.
+
+            This used to be a bare `Service` with a one-line `areaServed`.
+            Region pages already publish the richer `TaxiService` shape, so the
+            page that actually takes the booking was the weakest marked-up page
+            on the site. It now names the destinations it serves and the
+            languages it is sold in — all facts the page already states in
+            prose. */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Service",
+          "@type": "TaxiService",
           name: "TORVIAN VIP Airport Transfer",
           description: t("subtitle"),
-          provider: { "@type": "Organization", name: "TORVIAN Transfer", url: "https://torviantransfer.com" },
-          areaServed: { "@type": "Place", name: "Antalya, Turkey" },
+          provider: {
+            "@type": "Organization",
+            name: "TORVIAN Transfer",
+            url: "https://torviantransfer.com",
+            areaServed: "Antalya, Turkey",
+          },
           serviceType: "Airport Transfer",
+          availableLanguage: ["tr", "en", "de", "pl", "ru", "nl"],
+          areaServed: [
+            "Antalya", "Belek", "Side", "Alanya", "Kemer", "Lara", "Kundu",
+            "Kadriye", "Manavgat", "Konyaaltı", "Kaş", "Kalkan", "Fethiye",
+          ].map((n) => ({ "@type": "Place", name: n })),
+        }) }} />
+
+        {/* Breadcrumb — the booking page had none, so Google had no path to
+            show above the result. */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "TORVIAN Transfer", item: `https://torviantransfer.com/${locale}` },
+            { "@type": "ListItem", position: 2, name: t("title"), item: `https://torviantransfer.com/${locale}/booking` },
+          ],
+        }) }} />
+
+        {/* FAQPage. The questions below were rendered as plain <details> with
+            no markup at all, so they could never surface as a rich result.
+            Built from the same translation keys the visible accordion uses —
+            marking up text Google cannot see in the DOM is a violation, so the
+            two must stay in lockstep. */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: SEO_FAQ_NUMBERS.map((n) => ({
+            "@type": "Question",
+            name: t(`seoFaq${n}Q`),
+            acceptedAnswer: { "@type": "Answer", text: t(`seoFaq${n}A`) },
+          })),
         }) }} />
 
         {/* When region + date are both known, keep navbar and show wizard directly */}
@@ -264,7 +332,7 @@ export default async function BookingPage({
                 {t("seoFaqTitle")}
               </h3>
               <div className="space-y-3">
-                {[1, 2, 3, 4].map((n) => (
+                {SEO_FAQ_NUMBERS.map((n) => (
                   <details
                     key={n}
                     className="group rounded-xl overflow-hidden"
