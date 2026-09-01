@@ -126,7 +126,15 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(null);
+      const target = e.target as Node;
+      if (!containerRef.current) return;
+      if (containerRef.current.contains(target)) return;
+      // The phone calendar is portalled into <body>, so it is not inside the
+      // ref even though it is part of this form. Without this, every tap on
+      // the month arrows counted as a click outside and closed the sheet
+      // before the month could change.
+      if (target instanceof Element && target.closest("[data-cal-sheet]")) return;
+      setOpen(null);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -392,7 +400,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
       {createPortal(
         <div className="lg:hidden">
           <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
-          <div className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+          <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
             {calendarBody}
           </div>
         </div>,
