@@ -228,7 +228,19 @@ export async function generateMetadata({
     (region.meta_description as string | null) ||
     fallbackDesc.en;
 
-  const regionImg = `${BASE_URL}/images/regions/${regionSlugBase}.jpg`;
+  // Social preview image. This used to be built as
+  // `/images/regions/{slug}.jpg`, but the files on disk are not named after
+  // the slug — belek is belek-golf.jpg, side is side-ancient.jpg, and kemer
+  // and kas are .webp. That made og:image a 404 on six regions (belek, side,
+  // alanya, kemer, kas, goynuk — five of them the popular ones), so those
+  // pages shared with no thumbnail on WhatsApp, Facebook and X. The page body
+  // was always correct because it reads `regionImages`; only the metadata
+  // guessed. Read the same map here, and fall back to the site's default OG
+  // image rather than to a URL that may not exist.
+  const regionImgPath = regionImages[regionSlugBase];
+  const regionImg = regionImgPath
+    ? `${BASE_URL}${regionImgPath}`
+    : `${BASE_URL}/images/og-default.jpg`;
 
   // Which locales have actual content for this region?
   const translatedLocales = getTranslatedLocales(region as Record<string, unknown>);
