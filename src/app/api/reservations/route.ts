@@ -376,9 +376,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If coupon was used, increment used_count
+    // If coupon was used, increment used_count.
+    //
+    // The argument is named `p_coupon_id`, not `coupon_id` — see
+    // increment_coupon_usage in 001_initial_schema.sql. PostgREST resolves a
+    // function by its argument names, so the old `coupon_id` key matched no
+    // function and every call failed silently. used_count therefore stayed at
+    // 0 forever, and because evaluateCoupon gates on
+    // `used_count >= max_uses`, no coupon limit was ever reachable: a coupon
+    // capped at 100 uses could be redeemed without end. Found after booking
+    // VL-UUQG5U redeemed WELCOME10 while its used_count still read 0.
+    //
+    // The result is checked rather than discarded, so the next time this
+    // breaks it appears in the logs instead of quietly uncapping every coupon.
     if (couponId) {
-      await supabase.rpc("increment_coupon_usage", { coupon_id: couponId });
+      const { error: couponUsageErr } = await supabase.rpc(
+        "increment_coupon_usage",
+        { p_coupon_id: couponId }
+      );
+      if (couponUsageErr) {
+        console.error(
+          "Failed to increment coupon usage — usage limits are not being enforced:",
+          couponUsageErr.message,
+          { couponId, reservationCode }
+        );
+      }
     }
 
     // ─── STRIPE PAYMENT INTENT ─────────────────────────────────────────────
