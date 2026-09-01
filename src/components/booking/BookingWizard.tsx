@@ -121,9 +121,6 @@ function BookingWizardInner(props: Props) {
   const [notes, setNotes] = useState("");
 
   const [luggage, setLuggage] = useState(props.initialLuggage ?? 0);
-  /** Whether the party-size steppers on step 1 are expanded. Collapsed by
-   *  default: the search form already supplied adults and children. */
-  const [editingParty, setEditingParty] = useState(false);
   const [childSeat, setChildSeat] = useState(false);
   const [couponCode, setCouponCode] = useState("");
 
@@ -375,11 +372,12 @@ function BookingWizardInner(props: Props) {
   /**
    * How many seats and bags the customer needs.
    *
-   * The party size used to be asked for on step 2 — after a vehicle was
-   * already chosen — and the counters there clamp to the chosen vehicle's
-   * capacity. So a family of eight could pick a five-seater, then find the
-   * "+" button simply stopped responding at five with no explanation. Asking
-   * first, and marking which vehicles fit, is what stops that.
+   * Both come from the search form, through the URL. This step does not ask
+   * again — it only marks which vehicles can take them.
+   *
+   * It matters because the counters on step 2 clamp to the chosen vehicle's
+   * capacity: a family of eight that picked a five-seater would find the "+"
+   * button simply stop responding at five, with no explanation anywhere.
    */
   const partySize = adults + children;
 
@@ -646,80 +644,6 @@ function BookingWizardInner(props: Props) {
               </div>
             </div>
           )}
-          {/* ── Party size ──
-              The search form already asked for adults and children and passed
-              them through in the URL, so asking again in full here was a card
-              of screen space spent re-collecting what we know. Collapsed to a
-              single line that states the party and offers to change it.
-
-              It is not dropped altogether for two reasons: luggage is not
-              collected anywhere before this point, and this is the step where
-              a customer discovers the vehicle is too small — that realisation
-              needs a fix within reach, not a trip back to the form. */}
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-xl px-3.5 py-2.5" style={{ backgroundColor: "rgba(0,0,0,0.025)", border: "1px solid rgba(0,0,0,0.06)" }}>
-            <span className="inline-flex items-center gap-2 text-[13px] text-gray-500">
-              <Users size={14} className="text-blue-600 flex-shrink-0" />
-              <span><strong className="font-semibold text-gray-900">{partySize}</strong> {t("passengers")}</span>
-              <span aria-hidden className="text-gray-300">·</span>
-              <Luggage size={14} className="text-blue-600 flex-shrink-0" />
-              <span><strong className="font-semibold text-gray-900">{luggage}</strong> {t("luggage")}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setEditingParty((v) => !v)}
-              className="text-[12px] font-semibold text-blue-600 hover:text-blue-700"
-            >
-              {t("changeParty")}
-            </button>
-          </div>
-
-          {editingParty && (
-          <div className="mb-5 rounded-2xl p-4 sm:p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" }}>
-            <div className="flex items-start gap-2.5 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Users size={14} className="text-blue-600" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("partySizeTitle")}</h3>
-                <p className="text-[11px] text-gray-400 leading-snug mt-0.5">{t("partySizeDesc")}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {([
-                { label: t("adults"), icon: <Users size={13} />, value: adults, set: setAdults, min: 1, max: 20 },
-                { label: t("children"), icon: <Baby size={13} />, value: children, set: setChildren, min: 0, max: 10 },
-                { label: t("luggage"), icon: <Luggage size={13} />, value: luggage, set: setLuggage, min: 0, max: 20 },
-              ] as const).map(({ label, icon, value, set, min, max }) => (
-                <div key={label} className="rounded-xl px-2 py-2.5 sm:px-3" style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <span className="flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-                    <span className="text-blue-600">{icon}</span>
-                    <span className="truncate">{label}</span>
-                  </span>
-                  <div className="flex items-center justify-between gap-1">
-                    <button
-                      type="button"
-                      aria-label={`${label} −`}
-                      onClick={() => set((v: number) => Math.max(min, v - 1))}
-                      className="w-9 h-9 rounded-lg bg-white text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 disabled:opacity-40"
-                      style={{ border: "1px solid rgba(0,0,0,0.1)" }}
-                      disabled={value <= min}
-                    >−</button>
-                    <span className="text-base font-bold text-gray-900 tabular-nums">{value}</span>
-                    <button
-                      type="button"
-                      aria-label={`${label} +`}
-                      onClick={() => set((v: number) => Math.min(max, v + 1))}
-                      className="w-9 h-9 rounded-lg bg-white text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 disabled:opacity-40"
-                      style={{ border: "1px solid rgba(0,0,0,0.1)" }}
-                      disabled={value >= max}
-                    >+</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          )}
-
           {/* Every vehicle is too small. Without this the customer is left
               staring at a list where nothing can be clicked and no reason is
               given — a dead end on the page that takes the booking. */}
