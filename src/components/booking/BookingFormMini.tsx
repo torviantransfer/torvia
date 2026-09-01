@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/routing";
@@ -271,18 +272,9 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     };
   }, [open]);
 
-  /* --- Calendar popup --- */
-  const renderCalendar = () => (
+  /* --- Calendar contents, rendered into two different shells --- */
+  const calendarBody = (
     <>
-    {/* z-60 / z-70, not z-40 / z-50.
-        The floating WhatsApp button is `fixed … z-50` and every page that
-        renders this form mounts it after the form, so at equal z-index the
-        button won the tie and painted on top of the sheet — sitting directly
-        over the confirm button in the bottom-right corner. Raising both layers
-        above it puts the button behind the dim, where it belongs while a
-        modal is open. */}
-    <div className="fixed inset-0 z-[60] bg-black/30 lg:hidden" onClick={() => setOpen(null)} />
-    <div className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl lg:absolute lg:inset-auto lg:bottom-auto lg:top-full lg:mt-1 lg:left-1/2 lg:right-auto lg:-translate-x-1/2 lg:w-[310px] lg:rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
       {/* Mobile drag handle */}
       <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
       <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
@@ -367,7 +359,45 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           {t("dateConfirm")}
         </button>
       </div>
-    </div>
+    </>
+  );
+
+  /* --- Calendar popup ---
+     Two shells around the same contents, because they need to live in
+     different places in the tree.
+
+     Desktop is a popover anchored under the field, so it has to stay where it
+     is, inside the field's relatively-positioned parent.
+
+     The phone sheet cannot. Raising its z-index — which is what the previous
+     attempt at this did — has no effect, because the form is mounted inside
+     `relative z-30` on the home page and `relative z-10` on /booking. A
+     positioned element with a z-index opens a stacking context, and every
+     z-index inside it is resolved against its siblings only. So the sheet was
+     never competing with the floating WhatsApp button at all: the whole
+     stacking context was, at z-30 against the button's z-50, and it lost. No
+     number written inside could have won.
+
+     A portal moves the sheet out to <body>, into the root stacking context,
+     where its z-index and the button's are finally comparable. */
+  const renderCalendar = () => (
+    <>
+      <div className="hidden lg:block absolute top-full mt-1 left-1/2 -translate-x-1/2 w-[310px] rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden z-50">
+        {calendarBody}
+      </div>
+
+      {/* Safe to touch document at render time: this whole function only runs
+          while `open === "cal"`, which starts null and can only be set by a
+          tap. It is never reached during the server render or hydration. */}
+      {createPortal(
+        <div className="lg:hidden">
+          <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
+          <div className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+            {calendarBody}
+          </div>
+        </div>,
+        document.body,
+      )}
     </>
   );
 
