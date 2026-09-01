@@ -29,29 +29,41 @@ export default function BlogStickyBar({ regionSlug, price }: BlogStickyBarProps)
   const fromLabel = price ? ` · $${Math.round(price)}` : "";
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-40 sm:hidden border-t border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="flex items-stretch gap-2 px-3 py-2">
-        <a
-          href={waHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="WhatsApp"
-          className="flex items-center justify-center w-14 rounded-xl bg-emerald-500/10 text-emerald-700 active:scale-95 transition"
-        >
-          <MessageCircle size={20} strokeWidth={2} />
-        </a>
-        <Link
-          href={bookingHref}
-          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 text-white font-semibold text-sm shadow-md active:scale-[0.99] transition"
-          style={{ backgroundColor: "#F97316" }}
-        >
-          {nav("bookNow")}{fromLabel}
-          <ArrowRight size={16} />
-        </Link>
+    <>
+      {/* The bar is fixed and takes no space, so without this it covered the
+          last rows of the footer. It renders after <Footer /> because that is
+          where the post page mounts this component. */}
+      <div
+        aria-hidden
+        className="sm:hidden"
+        style={{ height: "calc(72px + env(safe-area-inset-bottom))" }}
+      />
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 sm:hidden border-t border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="flex items-stretch gap-2 px-3 py-2.5">
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp"
+            className="flex items-center justify-center w-[52px] h-[52px] shrink-0 rounded-xl bg-emerald-500/10 text-emerald-700 active:scale-95 transition"
+          >
+            <MessageCircle size={20} strokeWidth={2} aria-hidden="true" />
+          </a>
+          {/* Orange matches the in-article CTA on the same page. The element
+              used to carry both `bg-blue-600` and an inline orange, where the
+              inline style silently won — the dead class is gone. */}
+          <Link
+            href={bookingHref}
+            className="flex-1 min-w-0 h-[52px] flex items-center justify-center gap-1.5 rounded-xl bg-orange-500 text-white font-semibold text-[15px] shadow-md active:scale-[0.99] transition"
+          >
+            <span className="truncate">{nav("bookNow")}{fromLabel}</span>
+            <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

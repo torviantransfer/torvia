@@ -614,7 +614,7 @@ export default async function BlogPostPage({
         )}
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton hideOnMobile />
       <BlogStickyBar regionSlug={ctaRegionSlug} price={ctaOneWayPrice} />
     </>
   );

@@ -1051,7 +1051,7 @@ export default async function RegionPage({
         </section>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton hideOnMobile />
       <RegionStickyBar regionSlug={slug} whatsappMessage={t("whatsappRegionMessage", { name })} />
     </>
   );
