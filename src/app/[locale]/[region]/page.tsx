@@ -52,6 +52,16 @@ const regionImages: Record<string, string> = {
   marmaris: "/images/regions/marmaris.jpg",
 };
 
+/**
+ * Social-preview replacements for the two regions whose photo is a .webp.
+ * Both are 1200x630 JPGs, matching the dimensions the og:image tags declare.
+ * Only metadata reads this — the rendered page still uses `regionImages`.
+ */
+const ogImageOverrides: Record<string, string> = {
+  kemer: "/images/regions/kemer-coast-og.jpg",
+  kas: "/images/regions/kas-beach-og.jpg",
+};
+
 type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
 const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
@@ -237,7 +247,13 @@ export async function generateMetadata({
   // was always correct because it reads `regionImages`; only the metadata
   // guessed. Read the same map here, and fall back to the site's default OG
   // image rather than to a URL that may not exist.
-  const regionImgPath = regionImages[regionSlugBase];
+  //
+  // Two of those photos are stored as .webp, which Facebook's crawler still
+  // renders inconsistently, so they get a JPG sibling cut to the 1200x630 the
+  // og:image tags below declare. Those two files exist only to be the social
+  // preview — the page body keeps using the .webp original, which next/image
+  // serves better.
+  const regionImgPath = ogImageOverrides[regionSlugBase] ?? regionImages[regionSlugBase];
   const regionImg = regionImgPath
     ? `${BASE_URL}${regionImgPath}`
     : `${BASE_URL}/images/og-default.jpg`;
