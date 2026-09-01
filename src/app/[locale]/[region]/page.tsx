@@ -165,11 +165,18 @@ export async function generateMetadata({
   // Fetch pricing to include in meta title/description for better SERP CTR.
   // Google Trends (Jun 2026): "private transfer antalya airport" +100% Worldwide,
   // "antalya to belek transfer" +60%. Price in title improves qualified CTR.
+  // Lowest price across every vehicle for this region. The label this feeds
+  // is "From / İtibaren / Ab", so the cheapest vehicle is the honest number.
+  // `.single()` used to be fine because there was exactly one vehicle
+  // category; the moment a second one is added it errors and the price
+  // silently vanishes from all 144 region titles.
   const { data: pricingMeta } = await supabase
     .from("pricing")
     .select("one_way_price")
     .eq("region_id", region.id)
-    .single();
+    .order("one_way_price", { ascending: true })
+    .limit(1)
+    .maybeSingle();
   const oneWayPrice = pricingMeta?.one_way_price as number | null | undefined;
   // one_way_price is stored in USD (see supabase/seed.sql) — labeling it with
   // "€" without conversion misrepresented the price in every title tag across
@@ -324,12 +331,16 @@ export default async function RegionPage({
   const regionPath = normalizeRegionPath(region.slug);
   const slug = stripTransferSuffix(regionPath);
 
-  // Fetch pricing
+  // Cheapest vehicle for this region — same reasoning as in generateMetadata.
+  // Region pages show a single "from" price rather than a per-vehicle list;
+  // the vehicle choice belongs to the booking flow.
   const { data: pricing } = await supabase
     .from("pricing")
     .select("one_way_price, round_trip_price")
     .eq("region_id", region.id)
-    .single();
+    .order("one_way_price", { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
   // Fetch reviews for this region
   const { data: reviews } = await supabase

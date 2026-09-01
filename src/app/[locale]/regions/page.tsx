@@ -151,7 +151,27 @@ export default async function RegionsPage({
                 const slug = region.slug as string;
                 const regionPath = normalizeRegionPath(slug);
                 const img = regionImages[stripTransferSuffix(regionPath)];
-                const pricingData = region.pricing as { one_way_price?: number } | null;
+                // An embedded select returns an object while a region has one
+                // pricing row and an ARRAY once it has several — one per
+                // vehicle. Reading `.one_way_price` off the array yields
+                // undefined and the price badge disappears, so normalise to a
+                // list and take the cheapest. "Fiyat" here is a starting
+                // price; the per-vehicle prices live in the booking flow.
+                const pricingRows = (
+                  Array.isArray(region.pricing)
+                    ? region.pricing
+                    : region.pricing
+                      ? [region.pricing]
+                      : []
+                ) as { one_way_price?: number }[];
+                const lowestOneWay = pricingRows.reduce<number | null>(
+                  (min, row) =>
+                    typeof row.one_way_price === "number" &&
+                    (min === null || row.one_way_price < min)
+                      ? row.one_way_price
+                      : min,
+                  null
+                );
 
                 return (
                   <Link
@@ -170,9 +190,9 @@ export default async function RegionsPage({
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 384px"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        {pricingData?.one_way_price && (
+                        {lowestOneWay !== null && (
                           <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-900" style={{ backgroundColor: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", color: "#1d1d1f" }}>
-                            <PriceTag amount={pricingData.one_way_price} />
+                            <PriceTag amount={lowestOneWay} />
                           </div>
                         )}
                       </div>
