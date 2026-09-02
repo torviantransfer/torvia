@@ -21,6 +21,7 @@ import { buildAuditRows } from "../src/lib/seoAuditLog";
 import { fieldSource } from "../src/components/admin/seo/EffectiveField";
 import { detectBlocked, parseInspection } from "../src/lib/seoInspect";
 import { auditPage } from "../src/lib/seoAudit";
+import { scoreSeo } from "../src/lib/seoScore";
 
 let failures = 0;
 function check(name: string, before: Metadata, row: Record<string, unknown>) {
@@ -485,6 +486,157 @@ assert(
 assert(
   "okunamayan alan 'değer yok' sayılmıyor",
   fieldSource("", null) === "none" && fieldSource("", "Login – Vercel") === "runtime"
+);
+
+// -------------------------------------------------------------------------
+console.log("\n--- KONTRAT: skor effective değer üzerinden hesaplanmalı ---");
+
+const LONG_TITLE =
+  "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon | TORVIAN Transfer"; // 91
+const DESC_164 = "x".repeat(164);
+
+/** Pulls one named check out of a score, for asserting on its wording. */
+function scoreCheck(id: string, score: ReturnType<typeof scoreSeo>) {
+  return score.checks.find((c) => c.id === id);
+}
+
+// The exact failure reported: overrides empty, page serves a real title.
+const overrideOnly = scoreSeo({
+  title: "",
+  description: "",
+  focusKeyword: "",
+  keywords: "",
+  slug: "antalya-airport-transfer",
+});
+assert(
+  "override boşken (eski davranış) 'boş' diyordu",
+  scoreCheck("title-present", overrideOnly)?.detail.includes("boş") === true
+);
+
+const withEffective = scoreSeo({
+  title: LONG_TITLE,
+  description: DESC_164,
+  focusKeyword: "",
+  keywords: "",
+  slug: "antalya-airport-transfer",
+  contentWordCount: 652,
+  h1: "Antalya Havalimanı Transfer",
+  ogImageUrl: "https://torviantransfer.com/images/antalya-airport.jpg",
+  imageAlt: "Antalya Havalimanı Transfer",
+});
+
+assert(
+  "effective title varken 'boş' denmiyor",
+  scoreCheck("title-present", withEffective)?.detail.includes("boş") === false,
+  scoreCheck("title-present", withEffective)?.detail
+);
+assert(
+  "uzun başlık için istenen metin veriliyor",
+  scoreCheck("title-present", withEffective)?.detail.startsWith("Meta başlık mevcut ancak uzun: 91 karakter") === true,
+  scoreCheck("title-present", withEffective)?.detail
+);
+assert("uzun başlık fail değil, warn", scoreCheck("title-present", withEffective)?.status === "warn");
+
+assert(
+  "effective description varken 'boş' denmiyor",
+  scoreCheck("desc-present", withEffective)?.detail.includes("boş") === false
+);
+assert(
+  "164 karakter açıklama için istenen metin veriliyor",
+  scoreCheck("desc-present", withEffective)?.detail.startsWith("Meta açıklama mevcut ancak uzun: 164 karakter") === true,
+  scoreCheck("desc-present", withEffective)?.detail
+);
+assert("uzun açıklama fail değil, warn", scoreCheck("desc-present", withEffective)?.status === "warn");
+
+// The band boundary that produced "164/158 — ideal aralıkta".
+assert(
+  "IDEAL_MAX ile MAX arası 'ideal aralıkta' demiyor",
+  scoreCheck("desc-present", scoreSeo({ title: LONG_TITLE, description: "y".repeat(160), focusKeyword: "", keywords: "", slug: "a" }))
+    ?.detail.includes("ideal aralıkta") === false
+);
+assert(
+  "gerçekten ideal aralıktaki açıklama pass",
+  scoreCheck("desc-present", scoreSeo({ title: LONG_TITLE, description: "y".repeat(150), focusKeyword: "", keywords: "", slug: "a" }))?.status === "pass"
+);
+
+// Hiçbir alanı olmayan sayfa hâlâ "boş" demeli — aksi halde kontrol anlamsızlaşır.
+assert(
+  "gerçekten boş title hâlâ fail",
+  scoreCheck("title-present", scoreSeo({ title: "", description: "", focusKeyword: "", keywords: "", slug: "a" }))?.status === "fail"
+);
+
+// -------------------------------------------------------------------------
+console.log("\n--- KONTRAT: keyword alanları teknik hata sayılmamalı ---");
+
+// Everything else healthy, so the assertion below measures the keyword
+// fields alone. Without the image this case was failing on a missing OG
+// image and blaming the keywords for it.
+const noKeywords = scoreSeo({
+  title: LONG_TITLE,
+  description: "y".repeat(150),
+  focusKeyword: "",
+  keywords: "",
+  slug: "a",
+  contentWordCount: 652,
+  h1: "Antalya Havalimanı Transfer",
+  ogImageUrl: "https://torviantransfer.com/images/antalya-airport.jpg",
+  imageAlt: "Antalya Havalimanı",
+});
+assert("odak kelime eksikliği fail değil", scoreCheck("focus-present", noKeywords)?.status === "warn");
+assert("yan kelime eksikliği fail değil", scoreCheck("keywords", noKeywords)?.status === "warn");
+assert(
+  "odak kelime açıklaması yayınlanmadığını söylüyor",
+  scoreCheck("focus-present", noKeywords)?.detail.includes("sitede yayınlanmaz") === true
+);
+assert(
+  "keyword eksikliği tek başına skoru zayıfa düşürmüyor",
+  noKeywords.percent >= 65,
+  `skor: ${noKeywords.percent}`
+);
+
+// The technical audit is the other half of the split and must not mention
+// keywords at all -- they are never emitted as tags.
+const techFindings = auditPage(
+  parseInspection(
+    "https://torviantransfer.com/tr/a",
+    200,
+    `<html lang="tr"><head><title>${LONG_TITLE}</title>
+     <meta name="description" content="d" />
+     <link rel="canonical" href="https://torviantransfer.com/tr/a" />
+     <meta name="robots" content="index, follow" />
+     <meta name="googlebot" content="index, follow, max-image-preview:large" />
+     <link rel="alternate" hreflang="tr" href="https://torviantransfer.com/tr/a" />
+     <meta property="og:image" content="https://torviantransfer.com/i.jpg" />
+     </head><body><main><h1>Başlık</h1></main></body></html>`
+  ),
+  { route: "a", locale: "tr", pageType: "landing", shouldIndex: true, translatedLocales: ["tr"] }
+);
+assert(
+  "teknik denetim keyword'den hiç bahsetmiyor",
+  !techFindings.some((f) => /keyword|anahtar kelime/i.test(`${f.label} ${f.detail}`)),
+  JSON.stringify(techFindings.map((f) => f.label))
+);
+
+// -------------------------------------------------------------------------
+console.log("\n--- KONTRAT: içerik uzunluğu yayındaki sayfadan ölçülmeli ---");
+
+// A landing page's copy lives in its component, so the editable intro is
+// blank while the page carries hundreds of words.
+assert(
+  "düzenlenebilir metin boş ama sayfa 652 kelime -> pass",
+  scoreCheck("content-length", withEffective)?.status === "pass",
+  scoreCheck("content-length", withEffective)?.detail
+);
+assert(
+  "kelime sayısı yayındaki sayfadan alınıyor",
+  scoreCheck("content-length", withEffective)?.detail.includes("652") === true
+);
+assert(
+  "ölçülebilir metin yokken yoğunluk kontrolü yapılmıyor",
+  scoreCheck("keyword-density", scoreSeo({
+    title: LONG_TITLE, description: "y".repeat(150), focusKeyword: "belek transfer",
+    keywords: "", slug: "a", contentWordCount: 652,
+  })) === undefined
 );
 
 console.log(

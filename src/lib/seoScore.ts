@@ -8,6 +8,24 @@
  * The score is a weighted percentage, not a verdict. Its job is to tell an
  * editor which field to fix next, so every check carries the concrete number
  * it wants ("53/60 characters") rather than a bare pass/fail.
+ *
+ * Two rules govern what may be passed in, and both exist because breaking
+ * them produced wrong, actively harmful advice:
+ *
+ * 1. Every field here is an EFFECTIVE value — the admin override when there
+ *    is one, otherwise what the page actually serves. Scoring the override
+ *    column alone reported "Meta başlık boş" for
+ *    /tr/antalya-airport-transfer, a page that has carried a 91-character
+ *    Turkish title from a hardcoded map for months. An editor acting on that
+ *    would have replaced working copy to fix a problem that did not exist.
+ *
+ * 2. This is content optimisation, not technical SEO. A missing focus keyword
+ *    is a note to the person writing the page; it is not a defect in what the
+ *    site serves, because focus and secondary keywords are never emitted as
+ *    tags. Nothing here is a hard failure unless the crawler-visible value is
+ *    genuinely absent. Facts about the delivered HTML — a broken canonical,
+ *    two H1s, an invalid schema — belong in `auditPage`, which reports
+ *    error/warning/info rather than a percentage.
  */
 
 export type CheckStatus = "pass" | "warn" | "fail";
@@ -43,6 +61,16 @@ export interface SeoInput {
   slug: string;
   /** Body copy used for the density and length checks. Optional. */
   content?: string;
+  /**
+   * Word count measured from the rendered page, for when the body text itself
+   * is not available to the admin.
+   *
+   * A landing page's copy lives in its component, not in a column, so the
+   * intro override is usually blank while the page carries 800 words. Without
+   * this the length check called every such page thin, which is the same
+   * false alarm as the title one.
+   */
+  contentWordCount?: number;
   h1?: string;
   imageUrl?: string;
   ogImageUrl?: string;
@@ -132,7 +160,10 @@ interface ScoreOptions {
 }
 
 export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore {
-  const { mode = "full", hasContent = Boolean(input.content?.trim()) } = options;
+  const {
+    mode = "full",
+    hasContent = Boolean(input.content?.trim()) || (input.contentWordCount ?? 0) > 0,
+  } = options;
   const checks: SeoCheck[] = [];
 
   const title = (input.title ?? "").trim();
@@ -148,6 +179,9 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       label: "Meta başlık",
       status: "fail",
       weight: 20,
+      // Reached only when neither an override nor the live page has a title,
+      // so this really is "the page serves no title" and not "the admin has
+      // not typed one".
       detail: "Meta başlık boş. Google sayfanın <h1>'ini veya rastgele bir metni kullanır.",
       field: "meta_title",
     });
@@ -157,16 +191,19 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       label: "Meta başlık uzunluğu",
       status: "fail",
       weight: 20,
-      detail: `${title.length} karakter — çok kısa. ${TITLE_IDEAL_MIN}-${TITLE_IDEAL_MAX} arası hedefleyin.`,
+      detail: `Meta başlık mevcut ancak çok kısa: ${title.length} karakter. ${TITLE_IDEAL_MIN}-${TITLE_IDEAL_MAX} arası hedefleyin.`,
       field: "meta_title",
     });
-  } else if (title.length > TITLE_MAX) {
+  } else if (title.length > TITLE_IDEAL_MAX) {
     checks.push({
       id: "title-present",
       label: "Meta başlık uzunluğu",
       status: "warn",
       weight: 20,
-      detail: `${title.length} karakter — Google sonuçta sonunu kesecek. En fazla ${TITLE_IDEAL_MAX}.`,
+      detail:
+        title.length > TITLE_MAX
+          ? `Meta başlık mevcut ancak uzun: ${title.length} karakter. Google sonuçta sonunu keser; en fazla ${TITLE_IDEAL_MAX} önerilir.`
+          : `Meta başlık mevcut ancak uzun: ${title.length} karakter. Önerilen üst sınır ${TITLE_IDEAL_MAX}; bu uzunlukta kesilme riski var.`,
       field: "meta_title",
     });
   } else if (title.length < TITLE_IDEAL_MIN) {
@@ -175,7 +212,7 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       label: "Meta başlık uzunluğu",
       status: "warn",
       weight: 20,
-      detail: `${title.length} karakter — kullanılabilir alanın bir kısmı boş kalıyor. ${TITLE_IDEAL_MIN}-${TITLE_IDEAL_MAX} ideal.`,
+      detail: `Meta başlık mevcut ancak kısa: ${title.length} karakter — kullanılabilir alanın bir kısmı boş kalıyor. ${TITLE_IDEAL_MIN}-${TITLE_IDEAL_MAX} ideal.`,
       field: "meta_title",
     });
   } else {
@@ -205,16 +242,19 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       label: "Meta açıklama uzunluğu",
       status: "fail",
       weight: 18,
-      detail: `${description.length} karakter — çok kısa. ${DESC_IDEAL_MIN}-${DESC_IDEAL_MAX} hedefleyin.`,
+      detail: `Meta açıklama mevcut ancak çok kısa: ${description.length} karakter. ${DESC_IDEAL_MIN}-${DESC_IDEAL_MAX} hedefleyin.`,
       field: "meta_description",
     });
-  } else if (description.length > DESC_MAX) {
+  } else if (description.length > DESC_IDEAL_MAX) {
     checks.push({
       id: "desc-present",
       label: "Meta açıklama uzunluğu",
       status: "warn",
       weight: 18,
-      detail: `${description.length} karakter — sonu "..." ile kesilir. En fazla ${DESC_IDEAL_MAX}.`,
+      detail:
+        description.length > DESC_MAX
+          ? `Meta açıklama mevcut ancak uzun: ${description.length} karakter. Sonu "..." ile kesilir; en fazla ${DESC_IDEAL_MAX} önerilir.`
+          : `Meta açıklama mevcut ancak uzun: ${description.length} karakter. Önerilen üst sınır ${DESC_IDEAL_MAX}; bu uzunlukta kesilme riski var.`,
       field: "meta_description",
     });
   } else if (description.length < DESC_IDEAL_MIN) {
@@ -223,7 +263,7 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       label: "Meta açıklama uzunluğu",
       status: "warn",
       weight: 18,
-      detail: `${description.length} karakter — daha fazla alan kullanılabilir. ${DESC_IDEAL_MIN}-${DESC_IDEAL_MAX} ideal.`,
+      detail: `Meta açıklama mevcut ancak kısa: ${description.length} karakter — daha fazla alan kullanılabilir. ${DESC_IDEAL_MIN}-${DESC_IDEAL_MAX} ideal.`,
       field: "meta_description",
     });
   } else {
@@ -260,9 +300,10 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
     checks.push({
       id: "focus-present",
       label: "Odak anahtar kelime",
-      status: "fail",
-      weight: 12,
-      detail: "Belirlenmemiş. Sayfanın hangi aramada çıkmasını istediğinizi yazın.",
+      status: "warn",
+      weight: 6,
+      detail:
+        "Belirlenmemiş. Bu alan sitede yayınlanmaz — sadece bu paneldeki puanlama için kullanılır, teknik bir SEO eksikliği değildir.",
       field: "focus_keyword",
     });
   } else {
@@ -279,7 +320,7 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
     checks.push({
       id: "focus-in-title",
       label: "Odak kelime başlıkta",
-      status: inTitle ? "pass" : "fail",
+      status: inTitle ? "pass" : "warn",
       weight: 10,
       detail: inTitle
         ? "Meta başlıkta geçiyor."
@@ -333,14 +374,14 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
   checks.push({
     id: "keywords",
     label: "Yan anahtar kelimeler",
-    status: keywords.length >= 3 ? "pass" : keywords.length > 0 ? "warn" : "fail",
-    weight: 5,
+    status: keywords.length >= 3 ? "pass" : "warn",
+    weight: 4,
     detail:
       keywords.length >= 3
         ? `${keywords.length} terim tanımlı.`
         : keywords.length > 0
           ? `Sadece ${keywords.length} terim. En az 3 önerilir.`
-          : "Hiç yan anahtar kelime yok.",
+          : "Hiç yan anahtar kelime yok. Bu alan sitede meta etiketi olarak yayınlanmaz — teknik bir eksiklik değildir.",
     field: "keywords",
   });
 
@@ -362,7 +403,11 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
 
   // ---- Content ----------------------------------------------------------
   if (hasContent) {
-    const words = wordCount(content);
+    // Prefer the count measured from the rendered page. A landing page's copy
+    // lives in its component rather than in a column, so counting only the
+    // editable intro would report an 800-word page as thin.
+    const editableWords = wordCount(content);
+    const words = Math.max(editableWords, input.contentWordCount ?? 0);
     checks.push({
       id: "content-length",
       label: "İçerik uzunluğu",
@@ -375,7 +420,10 @@ export function scoreSeo(input: SeoInput, options: ScoreOptions = {}): SeoScore 
       field: "content",
     });
 
-    if (focus) {
+    // Density is only measurable over text we actually hold. When the copy
+    // lives in the page component there is nothing to count, and guessing
+    // would be worse than staying quiet.
+    if (focus && editableWords > 0) {
       const density = keywordDensity(content, focus);
       checks.push({
         id: "keyword-density",

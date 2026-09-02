@@ -164,9 +164,10 @@ export default function SeoManager({
 
   const scores = useMemo(() => {
     const map = new Map<string, SeoScore>();
-    for (const e of entries) map.set(e.id, scoreEntry(e, locale, duplicates));
+    for (const e of entries)
+      map.set(e.id, scoreEntry(e, locale, duplicates, inspections[pathOf(e, locale)]));
     return map;
-  }, [entries, locale, duplicates]);
+  }, [entries, locale, duplicates, inspections, pathOf]);
 
   const audits = useMemo(() => {
     const map = new Map<string, AuditFinding[]>();
@@ -732,22 +733,66 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok
   );
 }
 
-function scoreEntry(entry: Entry, locale: Loc, duplicates?: DuplicateIndex): SeoScore {
+/**
+ * Scores a page on its EFFECTIVE values, not its overrides.
+ *
+ * This is the whole correctness question for the score. Reading only the
+ * override columns reported "Meta başlık boş" for /tr/antalya-airport-transfer
+ * — a page whose real title has come from a hardcoded map for months — and an
+ * editor acting on that advice would have overwritten ranking copy to fix
+ * nothing. So each field resolves override first, then the page's own DB
+ * column, then what the rendered HTML actually carries.
+ *
+ * `inspection` is optional because the list renders before any scan finishes;
+ * until it arrives the score falls back to the database values alone, which is
+ * the same information the panel had before and no worse.
+ */
+function scoreEntry(
+  entry: Entry,
+  locale: Loc,
+  duplicates?: DuplicateIndex,
+  inspection?: PageInspection | null
+): SeoScore {
   const g = (name: FieldName) => str(entry.row, field(entry.fieldMap, name, locale));
+
+  // A blocked reading carries no values; using it would score the Vercel
+  // login page rather than ours.
+  const live = inspection && !inspection.blocked ? inspection : null;
+
+  /** override -> page's own column -> what the HTML serves. */
+  const effective = (...candidates: (string | null | undefined)[]): string => {
+    for (const c of candidates) {
+      const v = (c ?? "").trim();
+      if (v) return v;
+    }
+    return "";
+  };
+
   const base = scoreSeo(
     {
-      // A post with no meta_title falls back to its own title, which is what
-      // the page actually emits — scoring it as "missing" would be false.
-      title: g("metaTitle") || str(entry.row, `title_${locale}`),
-      description: g("metaDescription") || str(entry.row, `excerpt_${locale}`),
+      title: effective(g("metaTitle"), str(entry.row, `title_${locale}`), live?.title),
+      description: effective(
+        g("metaDescription"),
+        str(entry.row, `excerpt_${locale}`),
+        live?.description
+      ),
+      // Focus and secondary keywords have no runtime counterpart: they are
+      // never emitted as tags, so there is nothing to fall back to.
       focusKeyword: g("focusKeyword"),
       keywords: g("keywords"),
       slug: entry.routeFor(locale),
-      content: g("intro") || str(entry.row, `content_${locale}`),
-      h1: g("h1") || str(entry.row, `title_${locale}`) || str(entry.row, `name_${locale}`),
-      imageUrl: str(entry.row, "image_url"),
-      ogImageUrl: str(entry.row, "og_image_url"),
-      imageAlt: str(entry.row, "image_alt"),
+      content: effective(g("intro"), str(entry.row, `content_${locale}`)),
+      // The rendered page is the only place a landing page's body copy exists.
+      contentWordCount: live?.wordCount,
+      h1: effective(
+        g("h1"),
+        str(entry.row, `title_${locale}`),
+        str(entry.row, `name_${locale}`),
+        live?.h1s[0]
+      ),
+      imageUrl: effective(str(entry.row, "image_url"), live?.ogImage),
+      ogImageUrl: effective(str(entry.row, "og_image_url"), live?.ogImage),
+      imageAlt: effective(str(entry.row, "image_alt"), live?.ogImageAlt),
     },
     { mode: LITE_KEYS.has(entry.key) ? "lite" : "full" }
   );
@@ -841,8 +886,8 @@ function SeoEditor({
   const dirty = changes.length > 0;
 
   const score = useMemo(
-    () => scoreEntry({ ...entry, row: draft }, locale, duplicates),
-    [entry, draft, locale, duplicates]
+    () => scoreEntry({ ...entry, row: draft }, locale, duplicates, inspection),
+    [entry, draft, locale, duplicates, inspection]
   );
 
   const findings = useMemo(

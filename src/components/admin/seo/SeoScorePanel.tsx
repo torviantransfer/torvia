@@ -86,11 +86,19 @@ export default function SeoScorePanel({
         <ScoreRing percent={score.percent} />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-900">
-            SEO skoru — {GRADE_LABEL[score.grade]}
+            İçerik SEO skoru — {GRADE_LABEL[score.grade]}
           </p>
           <p className="text-[12px] text-slate-500 mt-0.5">
             {score.passed}/{score.total} kontrol geçti
             {problems > 0 && ` · ${problems} iyileştirme mevcut`}
+          </p>
+          {/* Named apart from the technical panel on purpose: this grades the
+              copy, that one reports facts about the delivered HTML. Merging
+              them would let a missing focus keyword — a planning field the
+              site never emits — read like a defect in the page. */}
+          <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">
+            Yayındaki değerler üzerinden hesaplanır. Teknik hatalar üstteki
+            &quot;Teknik SEO kontrolleri&quot; bölümündedir.
           </p>
         </div>
       </div>
