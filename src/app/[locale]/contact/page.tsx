@@ -7,7 +7,7 @@ import ContactForm from "@/components/ContactForm";
 import { Link } from "@/i18n/routing";
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowRight, HelpCircle, Globe, Shield, Headphones } from "lucide-react";
 import type { Metadata } from "next";
-import { getSeoPage, applySeoPage } from "@/lib/seoPages";
+import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 
 export async function generateMetadata({
   params,
@@ -30,7 +30,15 @@ export async function generateMetadata({
   }, seoRow, locale);
 }
 
-export default async function ContactPage() {
+export default async function ContactPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // The locale was only needed by generateMetadata until the admin
+  // gained editable H1 and intro copy, which is per language.
+  const { locale } = await params;
+  const seoRow = await getSeoPage("contact");
   const t = await getTranslations("contact");
 
   const contactSchema = {
@@ -76,8 +84,8 @@ export default async function ContactPage() {
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("tag")}</p>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">{t("heading")}</h1>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t("subtitle")}</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">{seoH1(seoRow, locale) ?? t("heading")}</h1>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">{seoIntro(seoRow, locale) ?? t("subtitle")}</p>
           </div>
         </section>
 

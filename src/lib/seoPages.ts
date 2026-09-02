@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
@@ -27,12 +28,16 @@ export interface SeoPage {
 /**
  * Reads one page's row.
  *
+ * Wrapped in React's `cache` so generateMetadata and the page component,
+ * which both need the row, share one query per request rather than issuing
+ * two.
+ *
  * Returns null rather than throwing on any failure — a missing table (the
  * migration has not been applied yet), a network blip, or a missing row all
  * mean the same thing to the caller: use the hardcoded values. An SEO edit
  * failing to load must never turn into a 500 on a public page.
  */
-export async function getSeoPage(pageKey: string): Promise<SeoPage | null> {
+export const getSeoPage = cache(async (pageKey: string): Promise<SeoPage | null> => {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
   try {
     const supabase = createAdminClient();
@@ -46,7 +51,7 @@ export async function getSeoPage(pageKey: string): Promise<SeoPage | null> {
   } catch {
     return null;
   }
-}
+});
 
 /** A trimmed string, or undefined if the column is null/blank. */
 function value(page: SeoPage | null, field: string): string | undefined {

@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { revalidateForTable } from "@/lib/revalidate";
 
 const ALLOWED_TABLES = [
   "drivers",
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
+        await revalidateForTable(table, result);
         return NextResponse.json({ data: result });
       }
 
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
+        await revalidateForTable(table, result);
         return NextResponse.json({ data: result });
       }
 
@@ -93,6 +96,9 @@ export async function POST(request: NextRequest) {
         if (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
+        // No row to key off after a delete, so this purges the table's whole
+        // surface rather than one path -- which is what a deletion needs anyway.
+        await revalidateForTable(table, null);
         return NextResponse.json({ success: true });
       }
 
@@ -124,6 +130,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
+        await revalidateForTable(table, result);
         return NextResponse.json({ data: result });
       }
 

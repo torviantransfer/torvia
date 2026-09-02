@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import {
   Search, Home, Rocket, FileText, MapPin, Save, Loader2, Check,
-  ExternalLink, ChevronLeft, AlertCircle, Plus, X,
+  ExternalLink, ChevronLeft, AlertCircle, Plus, X, Wand2, CopyX,
 } from "lucide-react";
 import {
   scoreSeo, TITLE_MIN, TITLE_IDEAL_MIN, TITLE_IDEAL_MAX, TITLE_MAX,
@@ -17,6 +17,13 @@ import {
   LOCALES, type Loc, LocaleTabs, CountedField, TextField, KeywordField,
   ImageField, Section,
 } from "./seo/fields";
+import BulkFillDialog, { type BulkTarget } from "./seo/BulkFillDialog";
+import {
+  buildDuplicateIndex,
+  duplicateChecks,
+  duplicateCount,
+  type DuplicateIndex,
+} from "@/lib/seoDuplicates";
 
 const SITE_URL = "https://torviantransfer.com";
 
@@ -95,6 +102,7 @@ export default function SeoManager({
   const [groupFilter, setGroupFilter] = useState<string>("all");
   const [locale, setLocale] = useState<Loc>("tr");
   const [creating, setCreating] = useState(false);
+  const [bulk, setBulk] = useState(false);
 
   const entries: Entry[] = useMemo(() => {
     const fromPages: Entry[] = pages.map((p) => ({
@@ -122,6 +130,10 @@ export default function SeoManager({
     return [...fromPages, ...fromRegions];
   }, [pages, regions]);
 
+  // Collisions are a property of the whole set, not of one page, so they are
+  // computed once here and folded into each row's score below.
+  const duplicates = useMemo(() => buildDuplicateIndex(entries, locale), [entries, locale]);
+
   /**
    * Scores are computed for the currently selected language only. Scoring all
    * six for every row on every keystroke is what would make this list crawl
@@ -129,9 +141,9 @@ export default function SeoManager({
    */
   const scores = useMemo(() => {
     const map = new Map<string, SeoScore>();
-    for (const e of entries) map.set(e.id, scoreEntry(e, locale));
+    for (const e of entries) map.set(e.id, scoreEntry(e, locale, duplicates));
     return map;
-  }, [entries, locale]);
+  }, [entries, locale, duplicates]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -155,19 +167,20 @@ export default function SeoManager({
   // ---- Overview stats ---------------------------------------------------
   const stats = useMemo(() => {
     const all = [...scores.values()];
-    if (all.length === 0) return { avg: 0, poor: 0, good: 0 };
+    if (all.length === 0) return { avg: 0, poor: 0, dup: 0 };
     return {
       avg: Math.round(all.reduce((s, x) => s + x.percent, 0) / all.length),
       poor: all.filter((x) => x.percent < 65).length,
-      good: all.filter((x) => x.percent >= 85).length,
+      dup: duplicateCount(duplicates),
     };
-  }, [scores]);
+  }, [scores, duplicates]);
 
   if (current) {
     return (
       <SeoEditor
         entry={current}
         locale={locale}
+        duplicates={duplicates}
         onLocale={setLocale}
         onBack={() => setSelected(null)}
         onSaved={(next) => applyRow(current, next)}
@@ -182,7 +195,11 @@ export default function SeoManager({
         <Stat label="Toplam sayfa" value={String(entries.length)} />
         <Stat label={`Ortalama skor (${locale.toUpperCase()})`} value={`%${stats.avg}`} />
         <Stat label="İyileştirme gereken" value={String(stats.poor)} tone={stats.poor > 0 ? "warn" : "ok"} />
-        <Stat label="Mükemmel" value={String(stats.good)} tone="ok" />
+        <Stat
+          label="Yinelenen metin"
+          value={String(stats.dup)}
+          tone={stats.dup > 0 ? "warn" : "ok"}
+        />
       </div>
 
       {/* Controls */}
@@ -196,6 +213,12 @@ export default function SeoManager({
             className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
           />
         </div>
+        <button
+          onClick={() => setBulk(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
+        >
+          <Wand2 size={15} /> Toplu doldur
+        </button>
         <button
           onClick={() => setCreating(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
@@ -289,6 +312,14 @@ export default function SeoManager({
                             noindex
                           </span>
                         )}
+                        {duplicates.titles.has(e.id) && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700"
+                            title="Meta başlığı başka bir sayfayla aynı"
+                          >
+                            <CopyX size={10} /> yinelenen
+                          </span>
+                        )}
                       </span>
                       <span className="block text-[11.5px] text-slate-500 truncate mt-0.5">
                         /{locale}
@@ -307,6 +338,28 @@ export default function SeoManager({
           </ul>
         )}
       </div>
+
+      {bulk && (
+        <BulkFillDialog
+          // Only what the list is currently showing, so the filter above is
+          // also the way an editor scopes a bulk run to, say, regions only.
+          targets={filtered.map<BulkTarget>((e) => ({
+            id: e.id,
+            table: e.table,
+            name: e.label,
+            route: e.route,
+            row: e.row,
+          }))}
+          locale={locale}
+          onClose={() => setBulk(false)}
+          onApplied={(updates) => {
+            for (const u of updates) {
+              const entry = entries.find((e) => e.id === u.id);
+              if (entry) applyRow(entry, u.data);
+            }
+          }}
+        />
+      )}
 
       {creating && (
         <NewRegionDialog
@@ -339,9 +392,9 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok
 }
 
 /** Shared by the list and the editor so a row's badge and its panel agree. */
-function scoreEntry(entry: Entry, locale: Loc): SeoScore {
+function scoreEntry(entry: Entry, locale: Loc, duplicates?: DuplicateIndex): SeoScore {
   const row = entry.row;
-  return scoreSeo(
+  const base = scoreSeo(
     {
       title: str(row, `meta_title_${locale}`),
       description: str(row, `meta_description_${locale}`),
@@ -356,6 +409,27 @@ function scoreEntry(entry: Entry, locale: Loc): SeoScore {
     },
     { mode: LITE_KEYS.has(entry.key) ? "lite" : "full" }
   );
+
+  const extra = duplicates ? duplicateChecks(duplicates, entry.id) : [];
+  if (extra.length === 0) return base;
+
+  // Re-derive the percentage over the combined set rather than averaging two
+  // scores, so a duplicate title costs the same whether or not the page had
+  // other problems.
+  const checks = [...base.checks, ...extra];
+  const total = checks.reduce((sum, c) => sum + c.weight, 0);
+  const earned = checks.reduce(
+    (sum, c) => sum + (c.status === "pass" ? c.weight : c.status === "warn" ? c.weight / 2 : 0),
+    0
+  );
+  const percent = total === 0 ? 0 : Math.round((earned / total) * 100);
+  return {
+    percent,
+    grade: percent >= 85 ? "excellent" : percent >= 65 ? "good" : percent >= 40 ? "fair" : "poor",
+    checks,
+    passed: checks.filter((c) => c.status === "pass").length,
+    total: checks.length,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -365,12 +439,14 @@ function scoreEntry(entry: Entry, locale: Loc): SeoScore {
 function SeoEditor({
   entry,
   locale,
+  duplicates,
   onLocale,
   onBack,
   onSaved,
 }: {
   entry: Entry;
   locale: Loc;
+  duplicates: DuplicateIndex;
   onLocale: (l: Loc) => void;
   onBack: () => void;
   onSaved: (next: Record<string, unknown>) => void;
@@ -392,8 +468,8 @@ function SeoEditor({
   );
 
   const score = useMemo(
-    () => scoreEntry({ ...entry, row: draft }, locale),
-    [entry, draft, locale]
+    () => scoreEntry({ ...entry, row: draft }, locale, duplicates),
+    [entry, draft, locale, duplicates]
   );
 
   /** Per-language dots on the tab strip. */
@@ -407,11 +483,40 @@ function SeoEditor({
     return out;
   }, [draft]);
 
+  // Ctrl/Cmd+S saves, and the browser asks before a reload or tab close
+  // discards the draft. Both hang off `dirty`, so a clean editor is silent.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (dirty && !saving) void save();
+      }
+    };
+    const onUnload = (e: BeforeUnloadEvent) => {
+      if (dirty) e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", onUnload);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("beforeunload", onUnload);
+    };
+  });
+
   const focusField = (field: string) => {
     const id = `seo-${field}`;
     const el = document.getElementById(id) ?? document.getElementById(`${id}_${locale}`);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     (el as HTMLInputElement | null)?.focus();
+  };
+
+  // Leaving the editor with edits in the draft used to discard them without
+  // a word — six languages of copy gone on one misclick.
+  const leave = () => {
+    if (dirty && !confirm("Kaydedilmemiş değişiklikler var. Yine de listeye dönülsün mü?")) {
+      return;
+    }
+    onBack();
   };
 
   const save = async () => {
@@ -458,7 +563,7 @@ function SeoEditor({
           never have to scroll back up to find Save. */}
       <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b border-slate-200 flex items-center gap-3 flex-wrap">
         <button
-          onClick={onBack}
+          onClick={leave}
           className="inline-flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
         >
           <ChevronLeft size={16} /> Liste
