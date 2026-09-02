@@ -19,6 +19,8 @@ import type { Metadata } from "next";
 import { computeChanges } from "../src/components/admin/seo/SaveDiffDialog";
 import { buildAuditRows } from "../src/lib/seoAuditLog";
 import { fieldSource } from "../src/components/admin/seo/EffectiveField";
+import { detectBlocked, parseInspection } from "../src/lib/seoInspect";
+import { auditPage } from "../src/lib/seoAudit";
 
 let failures = 0;
 function check(name: string, before: Metadata, row: Record<string, unknown>) {
@@ -362,7 +364,131 @@ assert(
   }).length === 0
 );
 
+// -------------------------------------------------------------------------
+console.log("\n--- KONTRAT: inspector koruma sayfasını SEO verisi sanmamalı ---");
+
+// A verbatim-shaped Vercel Deployment Protection page. Perfectly valid HTML
+// with its own title, canonical and og:title -- which is exactly why parsing
+// it naively surfaced `Title: Login – Vercel` in the admin.
+const VERCEL_LOGIN_HTML = `<!DOCTYPE html><html lang="en"><head>
+<title>Login – Vercel</title>
+<meta name="description" content="Log in to your Vercel account" />
+<link rel="canonical" href="https://vercel.com/login" />
+<meta property="og:title" content="Protected Deployment – Vercel" />
+<meta property="og:image" content="https://vercel.com/og.png" />
+<meta name="twitter:card" content="summary" />
+</head><body><main><h1>Log in to Vercel</h1></main></body></html>`;
+
+const loginBlocked = detectBlocked(
+  "https://torvia-git-branch.vercel.app/tr/antalya-airport-transfer",
+  "https://torvia-git-branch.vercel.app/tr/antalya-airport-transfer",
+  200,
+  VERCEL_LOGIN_HTML
+);
+assert("Vercel login HTML'i koruma sayfası olarak tespit ediliyor", loginBlocked !== null);
+assert(
+  "hata mesajı istenen metni veriyor",
+  loginBlocked?.message.includes("protected Vercel deployment") === true,
+  loginBlocked?.message
+);
+
+assert(
+  "vercel.com'a yönlendirme tespit ediliyor",
+  detectBlocked(
+    "https://torvia-git-branch.vercel.app/tr/x",
+    "https://vercel.com/login?next=%2Ftr%2Fx",
+    200,
+    "<html><head><title>Login</title></head></html>"
+  )?.kind === "vercel-protection"
+);
+
+assert(
+  "HTTP 401 koruma olarak tespit ediliyor",
+  detectBlocked("https://x.vercel.app/tr/a", "https://x.vercel.app/tr/a", 401, "")?.kind ===
+    "auth-required"
+);
+assert(
+  "HTTP 403 koruma olarak tespit ediliyor",
+  detectBlocked("https://x.vercel.app/tr/a", "https://x.vercel.app/tr/a", 403, "")?.kind ===
+    "auth-required"
+);
+
+// The gate must not fire on a real page. A false positive here hides working
+// SEO from the panel, which is the opposite failure but just as damaging.
+const REAL_PAGE_HTML = `<!DOCTYPE html><html lang="tr"><head>
+<title>Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon</title>
+<meta name="description" content="Özel Antalya Havalimanı transferi." />
+<link rel="canonical" href="https://torviantransfer.com/tr/antalya-airport-transfer" />
+<meta property="og:title" content="Antalya Havalimanı Transfer" />
+</head><body><main><h1>Antalya Havalimanı Transfer</h1></main></body></html>`;
+
+assert(
+  "gerçek sayfa koruma sanılmıyor",
+  detectBlocked(
+    "https://torviantransfer.com/tr/antalya-airport-transfer",
+    "https://torviantransfer.com/tr/antalya-airport-transfer",
+    200,
+    REAL_PAGE_HTML
+  ) === null
+);
+
+// A same-host redirect is legitimate: region slugs normalise and blog slugs
+// localise, and refusing those would break the panel for real pages.
+assert(
+  "aynı host içindeki yönlendirme engellenmiyor",
+  detectBlocked(
+    "https://torviantransfer.com/tr/belek",
+    "https://torviantransfer.com/tr/belek-transfer",
+    200,
+    REAL_PAGE_HTML
+  ) === null
+);
+
+// Parsing the login page in isolation still yields its own tags -- that is
+// what `parseInspection` is for. The guarantee is that `inspectPage` never
+// reaches it, so the two are asserted separately.
+const parsedLogin = parseInspection("https://x.vercel.app/tr/a", 200, VERCEL_LOGIN_HTML);
+assert(
+  "parser tek başına login sayfasını okuyabiliyor (guard ayrı katman)",
+  parsedLogin.title === "Login – Vercel"
+);
+
+// The panel's own rule: a blocked reading must not produce a wall of
+// "missing" findings about a page that was never fetched.
+const blockedInspection = {
+  ...parsedLogin,
+  blocked: loginBlocked!,
+  title: null,
+  description: null,
+  canonical: null,
+  h1s: [],
+  ogTitle: null,
+  ogImage: null,
+  alternates: [],
+  schemas: [],
+  images: [],
+};
+const blockedFindings = auditPage(blockedInspection, {
+  route: "antalya-airport-transfer",
+  locale: "tr",
+  pageType: "landing",
+  shouldIndex: true,
+});
+assert("engellenen okuma tek bir hata üretiyor", blockedFindings.length === 1, JSON.stringify(blockedFindings.map((f) => f.id)));
+assert("o hata 'blocked' olarak işaretli", blockedFindings[0]?.id === "blocked");
+assert(
+  "'title-missing' gibi yanlış alarm üretilmiyor",
+  !blockedFindings.some((f) => f.id.includes("missing"))
+);
+
+// The field-level rule: unreadable is not the same as empty.
+assert(
+  "okunamayan alan 'değer yok' sayılmıyor",
+  fieldSource("", null) === "none" && fieldSource("", "Login – Vercel") === "runtime"
+);
+
 console.log(
-  `\n${failures === 0 ? "\x1b[32mTÜM KONTRATLAR GEÇTİ\x1b[0m" : `\x1b[31m${failures} KONTRAT BAŞARISIZ\x1b[0m`}`
+  `
+${failures === 0 ? "[32mTÜM KONTRATLAR GEÇTİ[0m" : `[31m${failures} KONTRAT BAŞARISIZ[0m`}`
 );
 process.exit(failures === 0 ? 0 : 1);

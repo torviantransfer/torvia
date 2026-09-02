@@ -7,25 +7,42 @@ import { locales } from "@/i18n/config";
  * Reads what a page actually serves, so the admin panel can show effective
  * values instead of only the overrides stored in the database.
  *
- * The fetch happens here rather than in the browser because the pages are
- * same-origin only from the server's point of view once the panel is used
- * from a different host, and because an admin session must gate it: this
- * endpoint will fetch any path on this deployment, and an unauthenticated
- * caller must not be able to use the server as a proxy.
+ * Which deployment it reads is the whole question, and getting it wrong is
+ * not a cosmetic bug. This originally used the requesting deployment's own
+ * origin, on the reasoning that a preview should report on itself. But a
+ * preview with Vercel Deployment Protection enabled answers every request
+ * with Vercel's login page — valid HTML, with its own <title>, canonical and
+ * og:title. The panel dutifully displayed `Title: Login – Vercel` and
+ * `Canonical: https://vercel.com/login` as though they were this site's SEO,
+ * which is worse than showing nothing: it tells an editor their working,
+ * ranking metadata is broken and invites them to overwrite it.
  *
- * The origin is taken from the incoming request, not from a constant, so a
- * preview deployment reports on itself. Verifying a change before it ships is
- * the main reason this exists, and pointing it at production would defeat it.
+ * So the default source is the public production domain, which is what Google
+ * actually crawls and therefore what "effective value" means. Reading the
+ * current deployment is still possible but has to be asked for explicitly and
+ * is labelled as such in the response, because a preview's values and
+ * production's values must never be presented as the same number.
  */
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+/**
+ * The public site, as a crawler sees it. Overridable per environment for a
+ * staging domain, but never silently derived from the request — that is the
+ * mistake described above.
+ */
+const PUBLIC_ORIGIN = (
+  process.env.SEO_INSPECT_BASE_URL ?? "https://torviantransfer.com"
+).replace(/\/+$/, "");
+
+type Target = "public" | "deployment";
+
 /** Paths are restricted to this site's own public routes. */
 function safePath(raw: string): string | null {
   if (!raw.startsWith("/")) return null;
-  // A protocol-relative "//evil.com" is still a valid pathname to URL(), so
-  // it has to be rejected explicitly or this becomes an open proxy.
+  // A protocol-relative "//evil.com" is still a valid pathname to URL(), so it
+  // has to be rejected explicitly or this becomes an open proxy.
   if (raw.startsWith("//")) return null;
   if (raw.includes("..")) return null;
   const [pathname] = raw.split(/[?#]/);
@@ -42,12 +59,15 @@ export async function POST(request: NextRequest) {
   const { error: authError } = await requireAdmin();
   if (authError) return authError;
 
-  let body: { paths?: unknown };
+  let body: { paths?: unknown; target?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Geçersiz istek gövdesi" }, { status: 400 });
   }
+
+  const target: Target = body.target === "deployment" ? "deployment" : "public";
+  const origin = target === "deployment" ? request.nextUrl.origin : PUBLIC_ORIGIN;
 
   const raw = Array.isArray(body.paths) ? body.paths : [];
   const paths = raw
@@ -67,11 +87,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const origin = request.nextUrl.origin;
-
   // Rendering a region page hits Supabase several times, so the batch runs
-  // with a small concurrency rather than all at once — twelve parallel
-  // renders is enough to exhaust the connection pool on a cold instance.
+  // with a small concurrency rather than all at once — twelve parallel renders
+  // is enough to exhaust the connection pool on a cold instance.
   const results: Record<string, PageInspection> = {};
   const queue = [...paths];
   const workers = Array.from({ length: Math.min(3, queue.length) }, async () => {
@@ -83,5 +101,16 @@ export async function POST(request: NextRequest) {
   });
   await Promise.all(workers);
 
-  return NextResponse.json({ origin, results });
+  const blocked = Object.values(results).filter((r) => r.blocked).length;
+
+  return NextResponse.json({
+    origin,
+    target,
+    // The panel labels every value with where it came from, so this is not
+    // decoration — it is what keeps a preview reading from being mistaken for
+    // production.
+    isPublicSource: target === "public",
+    blockedCount: blocked,
+    results,
+  });
 }

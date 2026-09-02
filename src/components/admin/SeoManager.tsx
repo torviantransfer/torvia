@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import {
   Search, Home, Rocket, FileText, MapPin, Newspaper, Save, Loader2, Check,
   ExternalLink, ChevronLeft, AlertCircle, Plus, Wand2, CopyX, RefreshCw,
-  AlertOctagon, AlertTriangle, EyeOff, Link2,
+  AlertOctagon, AlertTriangle, EyeOff, Link2, ShieldAlert, Globe,
 } from "lucide-react";
 import {
   scoreSeo, TITLE_MIN, TITLE_IDEAL_MIN, TITLE_IDEAL_MAX, TITLE_MAX,
@@ -93,6 +93,15 @@ export default function SeoManager({
    */
   const [inspections, setInspections] = useState<Record<string, PageInspection>>({});
   const [scanning, setScanning] = useState<Set<string>>(new Set());
+  /**
+   * Which deployment the readings came from. Shown next to every value,
+   * because a preview's numbers and production's numbers are different facts
+   * and must never be presented as one.
+   */
+  const [source, setSource] = useState<{ origin: string; target: "public" | "deployment" } | null>(
+    null
+  );
+  const [target, setTarget] = useState<"public" | "deployment">("public");
 
   const entries: Entry[] = useMemo(
     () => [...pages.map(pageEntry), ...regions.map(regionEntry), ...posts.map(blogEntry)],
@@ -118,9 +127,10 @@ export default function SeoManager({
           const res = await fetch("/api/admin/seo-inspect", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paths: batch }),
+            body: JSON.stringify({ paths: batch, target }),
           });
           const json = await res.json();
+          if (json.origin) setSource({ origin: json.origin, target: json.target });
           if (json.results) setInspections((prev) => ({ ...prev, ...json.results }));
         } catch {
           // A failed batch simply leaves those paths uninspected, which the UI
@@ -134,8 +144,14 @@ export default function SeoManager({
         }
       }
     },
-    [pathOf]
+    [pathOf, target]
   );
+
+  const switchTarget = useCallback((next: "public" | "deployment") => {
+    setTarget(next);
+    setInspections({});
+    setSource(null);
+  }, []);
 
   const duplicates = useMemo(
     () =>
@@ -231,6 +247,7 @@ export default function SeoManager({
   }
 
   const unscanned = filtered.filter((e) => !inspections[pathOf(e, locale)]).length;
+  const blockedCount = Object.values(inspections).filter((i) => i.blocked).length;
 
   return (
     <div className="space-y-5">
@@ -242,8 +259,26 @@ export default function SeoManager({
         <Stat label="Yinelenen metin" value={String(stats.dup)} tone={stats.dup > 0 ? "warn" : "ok"} />
       </div>
 
+      {blockedCount > 0 && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <ShieldAlert size={16} className="text-amber-700 mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-[12.5px] font-semibold text-amber-900">
+              {blockedCount} sayfa okunamadı — koruma sayfasına yönlendirildi
+            </p>
+            <p className="text-[11.5px] text-amber-800 mt-0.5 leading-snug">
+              Bu sayfalar için hiçbir SEO değeri gösterilmiyor. Okuma kaynağı{" "}
+              <code className="font-mono">SEO_INSPECT_BASE_URL</code> ile ayarlanır; varsayılan
+              public production adresidir. &quot;Bu deployment&quot; seçiliyken Vercel Deployment
+              Protection açıksa bu beklenen bir sonuçtur.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Scanning is the only way this panel knows what the site actually
-          serves, so its state is stated rather than left implicit. */}
+          serves, so its state is stated rather than left implicit -- including
+          which deployment was read. */}
       <div className="flex items-center gap-3 flex-wrap rounded-xl border border-slate-200 bg-white px-4 py-3">
         <div className="min-w-0 flex-1">
           <p className="text-[12.5px] font-medium text-slate-800">Yayındaki değerleri oku</p>
@@ -252,7 +287,35 @@ export default function SeoManager({
             hreflang ve schema değerlerini gösterir.{" "}
             {unscanned > 0 ? `${unscanned} sayfa henüz taranmadı.` : "Listedeki tüm sayfalar tarandı."}
           </p>
+          <p className="flex items-center gap-1.5 text-[11.5px] mt-1">
+            <Globe size={11} className="text-slate-400" />
+            <span className="text-slate-500">Kaynak:</span>
+            <span className="font-medium text-slate-800">
+              {source ? source.origin.replace(/^https?:\/\//, "") : "henüz okunmadı"}
+            </span>
+            {source && (
+              <span
+                className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                style={
+                  source.target === "public"
+                    ? { color: "#0369a1", backgroundColor: "#f0f9ff" }
+                    : { color: "#b45309", backgroundColor: "#fffbeb" }
+                }
+              >
+                {source.target === "public" ? "public production" : "bu deployment"}
+              </span>
+            )}
+          </p>
         </div>
+        <Pills
+          value={target}
+          onChange={(v) => switchTarget(v as "public" | "deployment")}
+          options={[
+            ["public", "Public site"],
+            ["deployment", "Bu deployment"],
+          ]}
+          compact
+        />
         <button
           onClick={() => scan(filtered.map((entry) => ({ entry, loc: locale })))}
           disabled={scanning.size > 0}
@@ -450,7 +513,7 @@ function ListRow({
   const robotsText = `${inspection?.robots ?? ""} ${inspection?.googlebot ?? ""}`;
   const noindexed = entry.row.noindex === true || /noindex/i.test(robotsText);
 
-  const canonicalState: "ok" | "other" | "missing" | "unknown" = !inspection
+  const canonicalState: "ok" | "other" | "missing" | "unknown" = !inspection || inspection.blocked
     ? "unknown"
     : !inspection.canonical
       ? "missing"
@@ -514,6 +577,10 @@ function ListRow({
             />
             <span className="text-[12px] text-slate-700 truncate">{effectiveTitle}</span>
           </span>
+        ) : inspection?.blocked ? (
+          <span className="inline-flex items-center gap-1 text-[11.5px] text-amber-700">
+            <ShieldAlert size={11} /> okunamadı
+          </span>
         ) : inspection ? (
           <span className="text-[11.5px] text-red-600">yok</span>
         ) : (
@@ -522,7 +589,7 @@ function ListRow({
       </td>
 
       <td className="px-3 py-2.5 text-center">
-        {!inspection ? (
+        {!inspection || inspection.blocked ? (
           <Dash />
         ) : noindexed ? (
           <Chip
@@ -555,7 +622,7 @@ function ListRow({
       </td>
 
       <td className="px-3 py-2.5 text-center">
-        {!inspection ? (
+        {!inspection || inspection.blocked ? (
           <Dash />
         ) : hreflangCount === 0 ? (
           <Chip label="yok" color="#d97706" bg="#fffbeb" />
@@ -858,9 +925,17 @@ function SeoEditor({
   const liveUrl = `${SITE_URL}/${locale}${route ? `/${route}` : ""}`;
   const lite = LITE_KEYS.has(entry.key);
 
-  const effTitle = get("metaTitle") || inspection?.title || "";
-  const effDesc = get("metaDescription") || inspection?.description || "";
-  const effOgImage = str(draft, "og_image_url") || str(draft, "image_url") || inspection?.ogImage || "";
+  // Every field receives this, so none of them can render a value that was
+  // never read -- or claim a value is missing when it simply was not fetched.
+  const unreadable = inspection?.blocked?.message ?? null;
+
+  const effTitle = get("metaTitle") || (unreadable ? "" : inspection?.title) || "";
+  const effDesc = get("metaDescription") || (unreadable ? "" : inspection?.description) || "";
+  const effOgImage =
+    str(draft, "og_image_url") ||
+    str(draft, "image_url") ||
+    (unreadable ? "" : inspection?.ogImage) ||
+    "";
 
   const canonicalDraft = get("canonical");
   const canonicalSafe = safeCanonical(canonicalDraft);
@@ -923,6 +998,22 @@ function SeoEditor({
         </p>
       )}
 
+      {inspection?.blocked && (
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-300">
+          <ShieldAlert size={15} className="text-amber-700 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[12.5px] font-semibold text-amber-900">
+              {inspection.blocked.message}
+            </p>
+            <p className="text-[11.5px] text-amber-800 mt-0.5">{inspection.blocked.detail}</p>
+            <p className="text-[11.5px] text-slate-600 mt-1">
+              Aşağıdaki alanların hiçbirinde &quot;mevcut değer&quot; gösterilmiyor. Boş
+              görünenleri doldurmayın — gerçek değerleri bilinmiyor.
+            </p>
+          </div>
+        </div>
+      )}
+
       {!entry.isPublic && (
         <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-[12.5px] text-slate-600">
           <EyeOff size={14} /> Bu sayfa yayında değil — sitemap&apos;te yok. SEO alanları yine de
@@ -945,6 +1036,7 @@ function SeoEditor({
               onChange={(v) => set("metaTitle", v)}
               live={inspection?.title}
               loading={scanning}
+              unreadable={unreadable}
               counter={{ min: TITLE_MIN, ideal: [TITLE_IDEAL_MIN, TITLE_IDEAL_MAX], max: TITLE_MAX }}
             />
             <EffectiveField
@@ -956,6 +1048,7 @@ function SeoEditor({
               onChange={(v) => set("metaDescription", v)}
               live={inspection?.description}
               loading={scanning}
+              unreadable={unreadable}
               counter={{ min: DESC_MIN, ideal: [DESC_IDEAL_MIN, DESC_IDEAL_MAX], max: DESC_MAX }}
             />
           </Section>
@@ -971,6 +1064,7 @@ function SeoEditor({
               onChange={(v) => set("canonical", v)}
               live={inspection?.canonical}
               loading={scanning}
+              unreadable={unreadable}
               warning={canonicalWarning}
               hint="Boş bırakılırsa sistem otomatik üretir — normal durumda doğrusu budur."
             />
@@ -1032,13 +1126,14 @@ function SeoEditor({
                 onChange={(v) => set("h1", v)}
                 live={inspection?.h1s[0]}
                 loading={scanning}
+                unreadable={unreadable}
               />
             ) : (
               <EffectiveField
                 label="H1 başlığı"
                 override=""
                 onChange={() => {}}
-                live={inspection?.h1s[0] ?? str(draft, `title_${locale}`)}
+                live={(unreadable ? undefined : inspection?.h1s[0]) ?? str(draft, `title_${locale}`)}
                 readOnly={{
                   reason:
                     "Blog yazılarında H1, yazının başlığıdır ve Blog Yazıları ekranından düzenlenir. Arama sonucundaki başlığı ondan ayırmak için yukarıdaki meta başlığı doldurun.",
@@ -1087,6 +1182,7 @@ function SeoEditor({
               onChange={(v) => set("ogTitle", v)}
               live={inspection?.ogTitle}
               loading={scanning}
+              unreadable={unreadable}
             />
             <EffectiveField
               id={`seo-og_description-${locale}`}
@@ -1097,6 +1193,7 @@ function SeoEditor({
               onChange={(v) => set("ogDescription", v)}
               live={inspection?.ogDescription}
               loading={scanning}
+              unreadable={unreadable}
             />
             <ImageField
               label="OG görseli (1200×630)"
@@ -1123,6 +1220,7 @@ function SeoEditor({
               onChange={(v) => set("twitterTitle", v)}
               live={inspection?.twitterTitle}
               loading={scanning}
+              unreadable={unreadable}
             />
             <EffectiveField
               id={`seo-twitter_description-${locale}`}
@@ -1133,6 +1231,7 @@ function SeoEditor({
               onChange={(v) => set("twitterDescription", v)}
               live={inspection?.twitterDescription}
               loading={scanning}
+              unreadable={unreadable}
             />
             <ImageField
               label="Twitter görseli"

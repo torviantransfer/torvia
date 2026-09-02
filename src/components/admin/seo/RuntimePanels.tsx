@@ -7,6 +7,7 @@ import {
 import type { AuditFinding, AuditLevel } from "@/lib/seoAudit";
 import type { PageInspection } from "@/lib/seoInspect";
 import { locales } from "@/i18n/config";
+import { ShieldAlert } from "lucide-react";
 
 /**
  * The read-only half of the SEO editor: what the page actually serves.
@@ -118,6 +119,7 @@ export function HreflangPanel({
   inspection: PageInspection | null;
   locale: string;
 }) {
+  if (inspection?.blocked) return <Unreadable label="Hreflang" reason={inspection.blocked.message} />;
   const map = new Map((inspection?.alternates ?? []).map((a) => [a.hreflang.toLowerCase(), a.href]));
   const xDefault = map.get("x-default");
 
@@ -174,6 +176,8 @@ export function HreflangPanel({
 }
 
 export function SchemaPanel({ inspection }: { inspection: PageInspection | null }) {
+  if (inspection?.blocked)
+    return <Unreadable label="Structured data" reason={inspection.blocked.message} />;
   const schemas = inspection?.schemas ?? [];
 
   // Counted across blocks so a type emitted twice is visible as such.
@@ -261,6 +265,27 @@ export function RuntimeSummary({
   }
   if (!inspection) return null;
 
+  // A blocked read is rendered as a refusal, never as values. The
+  // intercepting page's own title and canonical are already discarded in
+  // seoInspect; this is the visible half of the same rule.
+  if (inspection.blocked) {
+    return (
+      <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+        <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-amber-900">
+          <ShieldAlert size={14} /> {inspection.blocked.message}
+        </p>
+        <p className="text-[11.5px] text-amber-800 mt-1 leading-snug">
+          {inspection.blocked.detail}
+        </p>
+        <p className="text-[11.5px] text-slate-600 mt-2 leading-snug">
+          Panel bu sayfanın gerçek SEO değerlerini okuyamadı, bu yüzden hiçbir değer
+          gösterilmiyor. Okuma kaynağı <code className="font-mono">SEO_INSPECT_BASE_URL</code>{" "}
+          ile ayarlanır; varsayılan public production adresidir.
+        </p>
+      </div>
+    );
+  }
+
   if (inspection.error || inspection.status >= 400) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
@@ -291,7 +316,14 @@ export function RuntimeSummary({
   return (
     <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-        <p className="text-[13px] font-semibold text-slate-900">Yayındaki HTML değerleri</p>
+        <div className="min-w-0">
+          <p className="text-[13px] font-semibold text-slate-900">Yayındaki HTML değerleri</p>
+          {inspection.origin && (
+            <p className="text-[10.5px] text-slate-500 mt-0.5 truncate">
+              kaynak: {inspection.origin.replace(/^https?:\/\//, "")}
+            </p>
+          )}
+        </div>
         <a
           href={inspection.url}
           target="_blank"
@@ -322,6 +354,28 @@ export function RuntimeSummary({
           </dd>
         </div>
       </dl>
+    </div>
+  );
+}
+
+/**
+ * Stands in for a panel whose data could not be read.
+ *
+ * Rendering the empty state instead would say "this page has no hreflang",
+ * which is a claim about the page rather than about the reading — and the
+ * whole point of the blocked path is never to make claims about a page that
+ * was not actually fetched.
+ */
+function Unreadable({ label, reason }: { label: string; reason: string }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="px-4 py-3 border-b border-slate-100">
+        <p className="text-[13px] font-semibold text-slate-900">{label}</p>
+      </div>
+      <p className="flex items-start gap-2 px-4 py-3 text-[12px] text-amber-800">
+        <ShieldAlert size={14} className="mt-0.5 shrink-0" />
+        {reason}
+      </p>
     </div>
   );
 }

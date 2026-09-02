@@ -46,6 +46,13 @@ export interface EffectiveFieldProps {
   warning?: string | null;
   /** Read-only fields (slug) explain why rather than just being disabled. */
   readOnly?: { reason: string };
+  /**
+   * Set when the live value could not be read at all — a protected preview,
+   * an auth wall, a failed fetch. Distinct from "the page has no value here",
+   * because the two demand opposite actions: one needs the inspector pointed
+   * somewhere else, the other needs an editor to write something.
+   */
+  unreadable?: string | null;
 }
 
 export function fieldSource(override: string, live: string | null | undefined): FieldSource {
@@ -74,8 +81,12 @@ export default function EffectiveField({
   counter,
   warning,
   readOnly,
+  unreadable,
 }: EffectiveFieldProps) {
-  const source = fieldSource(override, live);
+  // When the live value is unreadable, `live` is null and must stay null:
+  // treating "could not read" as "no value" is what would let a protected
+  // preview's own metadata be mistaken for this page's.
+  const source = fieldSource(override, unreadable ? null : live);
   const [editing, setEditing] = useState(source === "admin");
   const [showDetail, setShowDetail] = useState(false);
 
@@ -115,7 +126,11 @@ export default function EffectiveField({
             style={{ color: meta.color, backgroundColor: meta.bg }}
           >
             {source === "admin" ? <Database size={9} /> : source === "runtime" ? <Globe size={9} /> : null}
-            {loading && source !== "admin" ? "Okunuyor…" : meta.label}
+            {loading && source !== "admin"
+              ? "Okunuyor…"
+              : unreadable && source !== "admin"
+                ? "Okunamadı"
+                : meta.label}
           </span>
         </div>
       </div>
@@ -174,6 +189,14 @@ export default function EffectiveField({
         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
           {loading ? (
             <p className="text-[13px] text-slate-400">Sayfadan okunuyor…</p>
+          ) : unreadable ? (
+            <p className="text-[13px] text-amber-700 leading-snug">
+              {unreadable}
+              <br />
+              <span className="text-[11.5px] text-slate-500">
+                Bu alanın gerçek değeri bilinmiyor — boş sanıp doldurmayın.
+              </span>
+            </p>
           ) : effective ? (
             <p className="text-[13px] text-slate-800 leading-snug break-words">{effective}</p>
           ) : (
@@ -209,7 +232,10 @@ export default function EffectiveField({
           {showDetail && (
             <dl className="mt-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 space-y-1">
               <Row term="Admin override" value={override.trim() || "—"} />
-              <Row term="Sayfadaki mevcut değer" value={live?.trim() || "—"} />
+              <Row
+                term="Sayfadaki mevcut değer"
+                value={unreadable ? "okunamadı" : live?.trim() || "—"}
+              />
               <Row term="Yayınlanan (effective)" value={effective || "—"} strong />
               <Row term="Kaynak" value={meta.label} />
             </dl>

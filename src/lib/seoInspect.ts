@@ -21,6 +21,15 @@
  * for this is not worth it. The one place that needs real leniency —
  * JSON-LD — is parsed with JSON.parse and failures are reported rather than
  * thrown, because an invalid schema block is itself a finding.
+ *
+ * One thing this must never do is report someone else's page as ours. A
+ * password-protected Vercel preview answers every request with its own login
+ * page, which is valid HTML with a perfectly good <title>, canonical and
+ * og:title — all of them describing Vercel. Parsed naively that surfaced in
+ * the admin as `Title: Login – Vercel`, `Canonical: https://vercel.com/login`,
+ * which is worse than showing nothing: it invites an editor to "fix" SEO that
+ * was never broken. So an interception is detected and returned as a refusal
+ * with every SEO field null, never as content.
  */
 
 export interface InspectedAlternate {
@@ -48,11 +57,32 @@ export interface InspectedImage {
   isHero: boolean;
 }
 
+/**
+ * Why a fetch produced no usable SEO data. Kept separate from `error` because
+ * these are not failures of the network — the request succeeded and returned
+ * HTML, it just was not our page.
+ */
+export interface BlockedReason {
+  kind: "vercel-protection" | "auth-required" | "wrong-host";
+  /** Shown to the admin verbatim. */
+  message: string;
+  /** What was actually observed, so the cause is diagnosable. */
+  detail: string;
+}
+
 export interface PageInspection {
   url: string;
   status: number;
   /** Present when the fetch itself failed. */
   error?: string;
+  /**
+   * Set when the response was an interception rather than the page. Every SEO
+   * field is null in that case; the intercepting page's own tags are
+   * discarded rather than reported.
+   */
+  blocked?: BlockedReason;
+  /** The origin the inspection actually read, for display. */
+  origin?: string;
 
   title: string | null;
   description: string | null;
@@ -88,6 +118,121 @@ export interface PageInspection {
 }
 
 const HEAD_LIMIT = 400_000;
+
+/**
+ * Markers of a deployment-protection or auth interstitial standing in for the
+ * page. Matched against the raw HTML rather than the parsed title so a
+ * variant wording still trips at least one of them.
+ *
+ * The list is intentionally narrow. A false positive here hides a real page
+ * from the panel, so nothing generic like "login" or "sign in" appears —
+ * only strings Vercel's own protection pages actually ship.
+ */
+const PROTECTION_MARKERS = [
+  "Login \u2013 Vercel",
+  "Login &#x2013; Vercel",
+  "Login - Vercel",
+  "Protected Deployment \u2013 Vercel",
+  "Protected Deployment &#x2013; Vercel",
+  "Protected Deployment - Vercel",
+  "vercel.com/login",
+  "Authentication Required \u2013 Vercel",
+  "_vercel/protection",
+  "vercel-deployment-protection",
+];
+
+/** Hosts that are never us, no matter what they serve. */
+const FOREIGN_HOSTS = ["vercel.com", "vercel.app.vercel.com"];
+
+/**
+ * Decides whether a response is our page or something standing in front of it.
+ *
+ * Checked before parsing, and the result short-circuits the whole inspection:
+ * a blocked response yields nulls, not the interstitial's own metadata.
+ */
+export function detectBlocked(
+  requestedUrl: string,
+  finalUrl: string,
+  status: number,
+  html: string
+): BlockedReason | null {
+  // A redirect off our own host is the clearest signal and needs no string
+  // matching -- whatever answered, it is not the page that was asked for.
+  try {
+    const requestedHost = new URL(requestedUrl).host;
+    const finalHost = new URL(finalUrl).host;
+    if (finalHost !== requestedHost) {
+      if (FOREIGN_HOSTS.some((h) => finalHost === h || finalHost.endsWith(`.${h}`))) {
+        return {
+          kind: "vercel-protection",
+          message:
+            "Inspector protected Vercel deployment'a y\u00f6nlendirildi; public SEO okunamad\u0131.",
+          detail: `${requestedUrl} \u2192 ${finalUrl}`,
+        };
+      }
+      return {
+        kind: "wrong-host",
+        message: "\u0130stek ba\u015fka bir alan ad\u0131na y\u00f6nlendirildi; okunan sayfa bu site de\u011fil.",
+        detail: `${requestedUrl} \u2192 ${finalUrl}`,
+      };
+    }
+  } catch {
+    // An unparseable URL is handled by the checks below.
+  }
+
+  if (status === 401 || status === 403) {
+    return {
+      kind: "auth-required",
+      message:
+        "Sayfa kimlik do\u011frulamas\u0131 istiyor; public SEO okunamad\u0131. Deployment Protection a\u00e7\u0131k olabilir.",
+      detail: `HTTP ${status} \u2014 ${finalUrl}`,
+    };
+  }
+
+  const marker = PROTECTION_MARKERS.find((m) => html.includes(m));
+  if (marker) {
+    return {
+      kind: "vercel-protection",
+      message:
+        "Inspector protected Vercel deployment'a y\u00f6nlendirildi; public SEO okunamad\u0131.",
+      detail: `Yan\u0131t Vercel koruma sayfas\u0131 \u2014 \"${marker}\" i\u00e7eriyor (${finalUrl})`,
+    };
+  }
+
+  return null;
+}
+
+/** An inspection carrying no SEO data, for a failed or intercepted fetch. */
+function emptyInspection(url: string, status: number): PageInspection {
+  return {
+    url,
+    status,
+    title: null,
+    description: null,
+    canonical: null,
+    robots: null,
+    googlebot: null,
+    alternates: [],
+    ogTitle: null,
+    ogDescription: null,
+    ogImage: null,
+    ogImageAlt: null,
+    ogType: null,
+    ogUrl: null,
+    ogLocale: null,
+    twitterTitle: null,
+    twitterDescription: null,
+    twitterImage: null,
+    twitterCard: null,
+    htmlLang: null,
+    h1s: [],
+    h2Count: 0,
+    images: [],
+    wordCount: 0,
+    schemas: [],
+    fetchedAt: new Date().toISOString(),
+  };
+}
 
 function decodeEntities(value: string): string {
   return value
@@ -298,40 +443,26 @@ export async function inspectPage(origin: string, path: string): Promise<PageIns
       },
     });
     const html = await res.text();
+    const finalUrl = res.url || url;
+
+    // Checked before parsing, deliberately. Parsing first and filtering after
+    // is how an interstitial's title reaches the UI in the first place.
+    const blocked = detectBlocked(url, finalUrl, res.status, html);
+    if (blocked) {
+      return { ...emptyInspection(url, res.status), blocked, origin };
+    }
+
     const inspection = parseInspection(url, res.status, html);
-    // A redirect means the URL the panel holds is not the live one; the
-    // caller compares res.url to spot it.
-    if (res.redirected) inspection.url = res.url;
+    inspection.origin = origin;
+    // A redirect within our own host is legitimate -- region slugs normalise,
+    // blog slugs localise -- so the URL is updated rather than refused.
+    if (res.redirected) inspection.url = finalUrl;
     return inspection;
   } catch (err) {
     return {
-      url,
-      status: 0,
-      error: err instanceof Error ? err.message : "Sayfa okunamadı",
-      title: null,
-      description: null,
-      canonical: null,
-      robots: null,
-      googlebot: null,
-      alternates: [],
-      ogTitle: null,
-      ogDescription: null,
-      ogImage: null,
-      ogImageAlt: null,
-      ogType: null,
-      ogUrl: null,
-      ogLocale: null,
-      twitterTitle: null,
-      twitterDescription: null,
-      twitterImage: null,
-      twitterCard: null,
-      htmlLang: null,
-      h1s: [],
-      h2Count: 0,
-      images: [],
-      wordCount: 0,
-      schemas: [],
-      fetchedAt: new Date().toISOString(),
+      ...emptyInspection(url, 0),
+      error: err instanceof Error ? err.message : "Sayfa okunamad\u0131",
+      origin,
     };
   }
 }

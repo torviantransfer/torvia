@@ -69,6 +69,14 @@ export function auditPage(inspection: PageInspection, ctx: AuditContext): AuditF
   ) => f.push({ id, level, label, detail, field });
 
   // ---- Reachability -----------------------------------------------------
+  // An interception has to be reported as itself and stop the audit. Falling
+  // through would emit "title missing", "canonical missing", "H1 missing" and
+  // a dozen more -- a page of alarming findings about a page that was never
+  // read, which is exactly the false alarm this guard exists to prevent.
+  if (inspection.blocked) {
+    add("blocked", "error", inspection.blocked.message, inspection.blocked.detail);
+    return f;
+  }
   if (inspection.error || inspection.status === 0) {
     add("fetch-failed", "error", "Sayfa okunamadı", inspection.error ?? "Bilinmeyen hata");
     return f;
