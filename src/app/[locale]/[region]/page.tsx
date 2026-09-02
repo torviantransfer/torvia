@@ -1,4 +1,13 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
+import { regionImagePath, regionImageUrl } from "@/lib/regionImages";
+import {
+  aggregate as aggregateReviews,
+  authorName,
+  forLocale,
+  productSchema,
+  type ReviewRow,
+} from "@/lib/reviews";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -24,49 +33,6 @@ import {
   Navigation,
   CalendarCheck,
 } from "lucide-react";
-
-const regionImages: Record<string, string> = {
-  belek: "/images/regions/belek-golf.jpg",
-  kemer: "/images/regions/kemer-coast.webp",
-  "kundu-lara": "/images/regions/kundu-lara.jpg",
-  sehirici: "/images/regions/sehirici.jpg",
-  alanya: "/images/regions/alanya-castle.jpg",
-  side: "/images/regions/side-ancient.jpg",
-  kadriye: "/images/regions/kadriye.jpg",
-  bogazkent: "/images/regions/bogazkent.jpg",
-  evrenseki: "/images/regions/evrenseki.jpg",
-  kizilagac: "/images/regions/kizilagac.jpg",
-  okurcalar: "/images/regions/okurcalar.jpg",
-  turkler: "/images/regions/turkler.jpg",
-  mahmutlar: "/images/regions/mahmutlar.jpg",
-  kargicak: "/images/regions/kargicak.jpg",
-  beldibi: "/images/regions/beldibi.jpg",
-  goynuk: "/images/regions/goynuk-canyon.jpg",
-  tekirova: "/images/regions/tekirova.jpg",
-  camyuva: "/images/regions/camyuva.jpg",
-  kiris: "/images/regions/kiris.jpg",
-  adrasan: "/images/regions/adrasan.jpg",
-  kas: "/images/regions/kas-beach.webp",
-  kalkan: "/images/regions/kalkan.jpg",
-  fethiye: "/images/regions/fethiye.jpg",
-  marmaris: "/images/regions/marmaris.jpg",
-  // Restored by migration 056. manavgat-waterfall.jpg was already in the repo
-  // but unreferenced — the region row it belonged to had been deleted.
-  manavgat: "/images/regions/manavgat-waterfall.jpg",
-  // Konyaaltı has no photo of its own yet; the marina sits at the Konyaaltı
-  // end of the same shoreline, so it is a truthful stand-in until one is added.
-  konyaalti: "/images/regions/antalya-marina.jpg",
-};
-
-/**
- * Social-preview replacements for the two regions whose photo is a .webp.
- * Both are 1200x630 JPGs, matching the dimensions the og:image tags declare.
- * Only metadata reads this — the rendered page still uses `regionImages`.
- */
-const ogImageOverrides: Record<string, string> = {
-  kemer: "/images/regions/kemer-coast-og.jpg",
-  kas: "/images/regions/kas-beach-og.jpg",
-};
 
 type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
@@ -266,10 +232,18 @@ export async function generateMetadata({
   // og:image tags below declare. Those two files exist only to be the social
   // preview — the page body keeps using the .webp original, which next/image
   // serves better.
-  const regionImgPath = ogImageOverrides[regionSlugBase] ?? regionImages[regionSlugBase];
-  const regionImg = regionImgPath
-    ? `${BASE_URL}${regionImgPath}`
-    : `${BASE_URL}/images/og-default.jpg`;
+  //
+  // The region row's own image_url / og_image_url now win when an admin has
+  // set them; the map stays as the fallback so an unedited region — or a
+  // database that has not run migration 057 — keeps the picture it has today.
+  const regionImg =
+    regionImageUrl(
+      regionSlugBase,
+      BASE_URL,
+      region.og_image_url as string | null,
+      region.image_url as string | null
+    ) ?? `${BASE_URL}/images/og-default.jpg`;
+  const regionImgAlt = ((region.image_alt as string | null) ?? "").trim() || `${name} Transfer`;
 
   // Which locales have actual content for this region?
   const translatedLocales = getTranslatedLocales(region as Record<string, unknown>);
@@ -293,14 +267,14 @@ export async function generateMetadata({
           // GSC "duplicate without user-selected canonical" errors.
           canonical: `${BASE_URL}/tr/${regionPath}`,
         },
-    robots: isTranslated ? undefined : { index: false, follow: true },
+    robots: isTranslated ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     openGraph: {
       title: metaTitle,
       description: metaDesc,
       url: `${BASE_URL}/${locale}/${regionPath}`,
       type: "website",
       siteName: "TORVIAN Transfer",
-      images: [{ url: regionImg, width: 1200, height: 630, alt: `${name} Transfer` }],
+      images: [{ url: regionImg, width: 1200, height: 630, alt: regionImgAlt }],
     },
     twitter: {
       card: "summary_large_image" as const,
@@ -348,12 +322,27 @@ export default async function RegionPage({
     .limit(1)
     .maybeSingle();
 
-  // Fetch reviews for this region
-  const { data: reviews } = await supabase
+  // Reviews for this region.
+  //
+  // This query used to have no region filter at all, so every one of the ~30
+  // region pages rendered the same six reviews. `region_id` is NULL for every
+  // review collected before migration 057, so those are pulled in too rather
+  // than being orphaned — they are genuine reviews of the service, just not
+  // attributed to a destination yet.
+  const { data: reviewRows } = await supabase
     .from("reviews")
-    .select("rating, comment, created_at, customers(first_name)")
+    .select(
+      "id, rating, comment, created_at, published_at, author_name, author_country, locale, source, is_featured, region_id, customers(first_name)"
+    )
     .eq("is_approved", true)
-    .limit(6);
+    .or(`region_id.eq.${region.id},region_id.is.null`)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(12);
+
+  // Locale filtering happens in memory: a review with no locale belongs on
+  // every language's page, which is not expressible as one PostgREST filter
+  // alongside the region clause above.
+  const reviews = forLocale((reviewRows ?? []) as unknown as ReviewRow[], locale).slice(0, 6);
 
   // Cross-links to other regions.
   //
@@ -370,7 +359,7 @@ export default async function RegionPage({
   // pages around it on the coast.
   const { data: allRegions } = await supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km, is_popular, latitude, longitude")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km, is_popular, latitude, longitude, image_url")
     .eq("is_active", true)
     .neq("slug", region.slug)
     .order("sort_order", { ascending: true });
@@ -384,6 +373,7 @@ export default async function RegionPage({
     is_popular: boolean | null;
     latitude: number | null;
     longitude: number | null;
+    image_url: string | null;
   };
 
   const otherRegions = (() => {
@@ -421,27 +411,41 @@ export default async function RegionPage({
   const name = region[`name_${locale as Locale}`] || region.name_en;
   const description =
     region[`description_${locale as Locale}`] || region.description_en;
-  const regionImage = regionImages[slug] || null;
+  const regionImage = regionImagePath(slug, region.image_url as string | null);
 
   // Schema.org structured data
-  const avgRating = reviews && reviews.length > 0
-    ? (reviews.reduce((sum, r) => sum + (r.rating as number), 0) / reviews.length).toFixed(1)
-    : null;
+  const ratings = aggregateReviews(reviews);
 
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "TaxiService",
     name: `TORVIAN ${name} Transfer`,
     description: description || t("defaultDesc", { name }),
+    // Google picks the thumbnail for a rich result from the entity's `image`,
+    // and this schema had none — the region pages ranked with no picture
+    // beside them. Prefer the JPG sibling cut for social (ogImageOverrides)
+    // over the .webp original, since it is already 1200x630 and every
+    // consumer renders JPG. Absolute URL: schema.org image must not be
+    // relative or Google drops it silently.
+    image:
+      regionImageUrl(
+        slug,
+        BASE_URL,
+        region.og_image_url as string | null,
+        region.image_url as string | null
+      ) ?? `${BASE_URL}/images/og-default.jpg`,
     provider: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
       url: "https://torviantransfer.com",
       telephone: "+90-546-940-79-55",
+      logo: `${BASE_URL}/images/logo.png`,
+      image: `${BASE_URL}/images/logo.png`,
     },
     areaServed: {
       "@type": "Place",
       name: name,
+      ...(regionImage ? { image: `${BASE_URL}${regionImage}` } : {}),
     },
     serviceType: "Airport Transfer",
     availableChannel: {
@@ -474,16 +478,29 @@ export default async function RegionPage({
             : []),
         ]
       : undefined,
-    ...(avgRating && reviews ? {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: avgRating,
-        reviewCount: reviews.length,
-        bestRating: 5,
-        worstRating: 1,
-      },
-    } : {}),
+    // No aggregateRating here on purpose. Google renders review snippets only
+    // for a fixed list of types and TaxiService is not one of them, so the
+    // rating this node used to carry could never produce stars. It moved to
+    // the Product node below, which is a type Google does render.
   };
+
+  // The node that can actually earn stars in the SERP. Returns null unless
+  // there are enough approved reviews to back a rating, in which case nothing
+  // is emitted -- see src/lib/reviews.ts.
+  const reviewProductSchema = productSchema({
+    name: `Antalya Havalimani - ${name} Transfer`,
+    description: description || t("defaultDesc", { name }),
+    url: `${BASE_URL}/${locale}/${regionPath}`,
+    image:
+      regionImageUrl(
+        slug,
+        BASE_URL,
+        region.og_image_url as string | null,
+        region.image_url as string | null
+      ) ?? `${BASE_URL}/images/og-default.jpg`,
+    price: pricing?.one_way_price as number | null | undefined,
+    reviews,
+  });
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -611,6 +628,12 @@ export default async function RegionPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      {reviewProductSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewProductSchema) }}
+        />
+      )}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "HowTo",
@@ -947,21 +970,38 @@ export default async function RegionPage({
         {reviews && reviews.length > 0 && (
           <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
             <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center tracking-tight">{t("customerReviews")}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center tracking-tight">{t("customerReviews")}</h2>
+              {/* The visible counterpart of the aggregateRating in the Product
+                  schema. Google cross-checks that a rating it is asked to show
+                  as a snippet is also visible on the page. */}
+              {ratings.value !== null && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <span className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, j) => (
+                      <Star
+                        key={j}
+                        size={15}
+                        className={j < Math.round(ratings.value!) ? "text-amber-400 fill-amber-400" : "text-gray-300"}
+                      />
+                    ))}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-900">{ratings.value.toFixed(1)}</span>
+                  <span className="text-sm text-gray-500">({ratings.count})</span>
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {reviews.map((review: Record<string, unknown>, i: number) => {
-                  const cust = review.customers as Record<string, string> | null;
+                {reviews.map((review, i) => {
                   return (
                     <div key={i} className="rounded-xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
                       <div className="flex items-center gap-1 mb-3">
                         {[...Array(5)].map((_, j) => (
-                          <Star key={j} size={14} className={j < (review.rating as number) ? "text-amber-400 fill-amber-400" : "text-[#333]"} />
+                          <Star key={j} size={14} className={j < review.rating ? "text-amber-400 fill-amber-400" : "text-[#333]"} />
                         ))}
                       </div>
-                      {typeof review.comment === "string" && review.comment && (
+                      {review.comment && (
                         <p className="text-sm text-gray-500 mb-2">&ldquo;{review.comment}&rdquo;</p>
                       )}
-                      <p className="text-xs text-gray-500">{cust?.first_name ?? t("guest")}</p>
+                      <p className="text-xs text-gray-500">{authorName(review, t("guest"))}</p>
                     </div>
                   );
                 })}
@@ -1013,7 +1053,7 @@ export default async function RegionPage({
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {otherRegions.map((r) => {
                   const rName = r[`name_${locale as Locale}`] || r.name_en;
-                  const rImage = regionImages[stripTransferSuffix(r.slug)];
+                  const rImage = regionImagePath(stripTransferSuffix(r.slug), r.image_url);
                   return (
                     <Link
                       key={r.slug}

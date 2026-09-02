@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import Image from "next/image";
 import { getTranslations, getLocale } from "next-intl/server";
 import Header from "@/components/Header";
@@ -202,6 +203,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("land-of-legends-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
   const c = content[loc];
   const path = "/land-of-legends-transfer";
@@ -217,7 +221,7 @@ export async function generateMetadata({
     ],
   };
 
-  return {
+  return applySeoPage({
     title: c.title,
     description: c.metaDesc,
     alternates: {
@@ -234,7 +238,7 @@ export async function generateMetadata({
     },
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
     twitter: seoTwitter(c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
-  };
+  }, seoRow, locale);
 }
 
 export default async function LandOfLegendsPage({

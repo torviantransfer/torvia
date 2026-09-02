@@ -1,6 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
@@ -54,6 +55,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const supabase = createAdminClient();
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("regions");
   const t = await getTranslations({ locale, namespace: "regions" });
   const title = locale === "tr"
     ? "Antalya Havalimanı Transfer Bölgeleri | Belek, Side, Alanya, Kemer"
@@ -77,13 +81,13 @@ export async function generateMetadata({
           : locale === "nl"
             ? "Boek uw privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en meer dan 25 bestemmingen."
             : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/regions"),
     openGraph: seoOpenGraph(locale, "/regions", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
 export default async function RegionsPage({

@@ -1,9 +1,10 @@
-import { getTranslations } from "next-intl/server";
+﻿import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 
 export async function generateMetadata({
   params,
@@ -11,16 +12,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("cookies");
   const t = await getTranslations({ locale, namespace: "cookies" });
   const title = `${t("heading")} | TORVIAN Transfer`;
   const description = t("subtitle");
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/cookies"),
     openGraph: seoOpenGraph(locale, "/cookies", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
 export default async function CookiesPage() {

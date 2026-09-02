@@ -1,6 +1,7 @@
 ﻿import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { localizedBlogSlug } from "@/lib/seo";
+import { regionImageUrl } from "@/lib/regionImages";
 import { locales as ALL_LOCALES } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
@@ -24,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug, is_popular, description_de, description_pl, description_ru, description_nl, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl")
+    .select("slug, is_popular, image_url, og_image_url, description_de, description_pl, description_ru, description_nl, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl")
     .eq("is_active", true);
 
   // Mirror the region page's translation logic: tr/en are always indexed;
@@ -99,11 +100,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!regionHasLocale(region as Record<string, unknown>, locale)) continue;
       const isPopular = region.is_popular === true;
       const regionPath = region.slug.endsWith("-transfer") ? region.slug : `${region.slug}-transfer`;
+      // Region pages render their photo exclusively through next/image, so the
+      // only URL in the HTML is the /_next/image proxy — the underlying file is
+      // never named anywhere Googlebot-Image can find it. Declaring it here is
+      // what actually gets these photos into Google Images.
+      const regionImg = regionImageUrl(
+        region.slug.replace(/-transfer$/, ""),
+        BASE_URL,
+        region.og_image_url as string | null,
+        region.image_url as string | null
+      );
       entries.push({
         url: `${BASE_URL}/${locale}/${regionPath}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
         priority: isPopular && isPrimary ? 0.9 : isPopular ? 0.7 : isPrimary ? 0.6 : 0.4,
+        ...(regionImg ? { images: [regionImg] } : {}),
       });
     }
   }

@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -475,16 +476,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("antalya-airport-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
   const c = content[loc];
 
-  return {
+  return applySeoPage({
     title: c.title,
     description: c.metaDesc,
     alternates: seoAlternates(locale, PATH),
     openGraph: seoOpenGraph(loc, PATH, c.title, c.metaDesc, "/images/antalya-airport.jpg"),
     twitter: seoTwitter(c.title, c.metaDesc, "/images/antalya-airport.jpg"),
-  };
+  }, seoRow, locale);
 }
 
 export default async function AntalyaAirportTransferPage({

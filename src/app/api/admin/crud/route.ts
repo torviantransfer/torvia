@@ -13,6 +13,7 @@ const ALLOWED_TABLES = [
   "settings",
   "exchange_rates",
   "blog_posts",
+  "seo_pages",
 ] as const;
 
 type AllowedTable = (typeof ALLOWED_TABLES)[number];

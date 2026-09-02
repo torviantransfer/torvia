@@ -1,6 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import { seoAlternates, seoOpenGraph, seoTwitter, localizedBlogSlug } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
@@ -18,16 +19,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const supabase = createAdminClient();
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("blog");
   const t = await getTranslations({ locale, namespace: "blog" });
   const title = t("heading");
   const description = t("subtitle");
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/blog"),
     openGraph: seoOpenGraph(locale, "/blog", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
 export default async function BlogPage({

@@ -7,6 +7,8 @@ import {
   normalizeSlug,
   localizedBlogSlug,
   allBlogSlugs,
+  INDEXABLE_ROBOTS,
+  NOINDEX_ROBOTS,
 } from "@/lib/seo";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
@@ -175,7 +177,7 @@ export async function generateMetadata({
             primaryLocale
           )}`,
         },
-    robots: isTranslated ? undefined : { index: false, follow: true },
+    robots: isTranslated ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
     twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
   };

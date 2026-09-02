@@ -19,6 +19,7 @@ import {
   FileText,
   Calendar,
   Radio,
+  Search,
   X,
 } from "lucide-react";
 
@@ -35,6 +36,7 @@ const navDefs = [
   { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },
   { path: "/regions", label: "Bölgeler", icon: MapPin },
   { path: "/blog", label: "Blog Yazıları", icon: FileText },
+  { path: "/seo", label: "SEO Yönetimi", icon: Search },
   { path: "/coupons", label: "Kuponlar", icon: Ticket },
   { path: "/reviews", label: "Değerlendirmeler", icon: Star },
   { path: "/driver-payments", label: "Şoför Ödemeleri", icon: Wallet },

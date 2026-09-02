@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+﻿import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -6,6 +6,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, MessageCircle, HelpCircle, Search } from "lucide-react";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 
 export async function generateMetadata({
   params,
@@ -13,16 +14,19 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("faq");
   const t = await getTranslations({ locale, namespace: "faq" });
   const title = t("title");
   const description = t("subtitle");
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/faq"),
     openGraph: seoOpenGraph(locale, "/faq", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
 export default async function FAQPage() {
