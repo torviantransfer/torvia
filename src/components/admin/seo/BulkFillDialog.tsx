@@ -30,7 +30,7 @@ import { LOCALES, LOCALE_LABELS, type Loc } from "./fields";
 
 export interface BulkTarget {
   id: string;
-  table: "seo_pages" | "regions";
+  table: "seo_pages" | "regions" | "blog_posts";
   /** Region or page name, for the {ad} token. */
   name: string;
   /** Path after the locale segment, for the {url} token. */

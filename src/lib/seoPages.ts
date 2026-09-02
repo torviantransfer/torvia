@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
+import { applyOverrides } from "@/lib/seoOverrides";
 
 const BASE_URL = "https://torviantransfer.com";
 
@@ -102,41 +102,8 @@ export function applySeoPage(
   page: SeoPage | null,
   locale: string
 ): Metadata {
-  if (!page) return fallback;
-
-  const title = seoTitle(page, locale);
-  const description = seoDescription(page, locale);
-  const image = seoOgImage(page);
-  const alt = value(page, "image_alt");
-
-  const next: Metadata = { ...fallback };
-
-  if (title) next.title = title;
-  if (description) next.description = description;
-
-  if (title || description || image) {
-    const og = { ...(fallback.openGraph ?? {}) } as Record<string, unknown>;
-    if (title) og.title = title;
-    if (description) og.description = description;
-    if (image) og.images = [{ url: image, width: 1200, height: 630, ...(alt ? { alt } : {}) }];
-    next.openGraph = og as Metadata["openGraph"];
-
-    const tw = { ...(fallback.twitter ?? {}) } as Record<string, unknown>;
-    if (title) tw.title = title;
-    if (description) tw.description = description;
-    if (image) tw.images = [image];
-    next.twitter = tw as Metadata["twitter"];
-  }
-
-  // `noindex` is tri-state on purpose. NULL — the default for every seeded
-  // row — leaves whatever the page already declared untouched, so this column
-  // cannot deindex anything by accident. Only an explicit true or false from
-  // the admin overrides it.
-  if (page.noindex === true) {
-    next.robots = NOINDEX_ROBOTS;
-  } else if (page.noindex === false) {
-    next.robots = INDEXABLE_ROBOTS;
-  }
-
-  return next;
+  // The whole rule set now lives in seoOverrides, shared with the region and
+  // blog pages so all three cannot drift apart. This wrapper stays because
+  // sixteen pages import it by name.
+  return applyOverrides(fallback, { row: page, locale });
 }

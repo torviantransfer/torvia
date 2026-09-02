@@ -10,6 +10,7 @@ import {
   INDEXABLE_ROBOTS,
   NOINDEX_ROBOTS,
 } from "@/lib/seo";
+import { applyOverrides } from "@/lib/seoOverrides";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
@@ -160,7 +161,10 @@ export async function generateMetadata({
   const primaryLocale = translatedLocales[0] ?? "tr";
   const BASE = "https://torviantransfer.com";
 
-  return {
+  // Admin overrides last. A post with no SEO columns filled in keeps the
+  // title/excerpt behaviour it has today.
+  return applyOverrides(
+    {
     title,
     description,
     alternates: isTranslated
@@ -180,7 +184,9 @@ export async function generateMetadata({
     robots: isTranslated ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
     twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
-  };
+    },
+    { row: post as Record<string, unknown>, locale: loc }
+  );
 }
 
 export default async function BlogPostPage({

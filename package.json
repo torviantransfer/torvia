@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:seo": "npx --yes tsx scripts/verify-seo-overrides.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.1.0",

@@ -1,179 +1,218 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import {
-  Search, Home, Rocket, FileText, MapPin, Save, Loader2, Check,
-  ExternalLink, ChevronLeft, AlertCircle, Plus, X, Wand2, CopyX,
+  Search, Home, Rocket, FileText, MapPin, Newspaper, Save, Loader2, Check,
+  ExternalLink, ChevronLeft, AlertCircle, Plus, Wand2, CopyX, RefreshCw,
+  AlertOctagon, AlertTriangle, EyeOff, Link2,
 } from "lucide-react";
 import {
   scoreSeo, TITLE_MIN, TITLE_IDEAL_MIN, TITLE_IDEAL_MAX, TITLE_MAX,
   DESC_MIN, DESC_IDEAL_MIN, DESC_IDEAL_MAX, DESC_MAX,
   parseKeywords, type SeoScore,
 } from "@/lib/seoScore";
+import { auditPage, auditSummary, type AuditFinding } from "@/lib/seoAudit";
+import type { PageInspection } from "@/lib/seoInspect";
+import { safeCanonical } from "@/lib/seoOverrides";
+import {
+  buildDuplicateIndex, duplicateChecks, duplicateCount, type DuplicateIndex,
+} from "@/lib/seoDuplicates";
+import { locales } from "@/i18n/config";
 import SerpPreview from "./seo/SerpPreview";
 import SocialPreview from "./seo/SocialPreview";
 import SeoScorePanel, { ScoreBadge } from "./seo/SeoScorePanel";
-import {
-  LOCALES, type Loc, LocaleTabs, CountedField, TextField, KeywordField,
-  ImageField, Section,
-} from "./seo/fields";
+import EffectiveField, { fieldSource } from "./seo/EffectiveField";
+import { TechnicalChecks, HreflangPanel, SchemaPanel, RuntimeSummary } from "./seo/RuntimePanels";
+import SaveDiffDialog, { criticalReason, type FieldChange } from "./seo/SaveDiffDialog";
 import BulkFillDialog, { type BulkTarget } from "./seo/BulkFillDialog";
 import {
-  buildDuplicateIndex,
-  duplicateChecks,
-  duplicateCount,
-  type DuplicateIndex,
-} from "@/lib/seoDuplicates";
+  LOCALES, type Loc, LocaleTabs, TextField, KeywordField, ImageField, Section,
+} from "./seo/fields";
+import {
+  pageEntry, regionEntry, blogEntry, field, str, translatedLocales,
+  type Entry, type FieldMap,
+} from "./seo/entries";
 
 const SITE_URL = "https://torviantransfer.com";
 
 /**
- * Two different tables are edited through one screen: `seo_pages` (homepage,
- * landing pages, static pages) and `regions`. They are unified here rather
- * than given two admin screens because the editor's question is "which of my
- * pages has bad SEO", and that question does not care which table a page
- * happens to live in.
+ * The SEO control panel.
+ *
+ * Its central job is not editing — it is telling the truth about what the site
+ * currently serves. An earlier version showed only the override columns, so
+ * /en/antalya-airport-transfer appeared to have no title at all when in fact
+ * it has had one from a hardcoded map for months. An editor reading that as
+ * "SEO missing" and typing a replacement would overwrite ranking copy without
+ * ever seeing it.
+ *
+ * So every field is shown three ways: the admin override, the value the page
+ * actually serves (fetched from the rendered HTML rather than recomputed), and
+ * the effective result with its source labelled. A field with no override does
+ * not render an empty box; it renders the live value and an explicit "create
+ * an override" action, which makes editing a deliberate act.
  */
-export interface SeoPageRow {
-  id: string;
-  page_key: string;
-  page_type: "home" | "landing" | "static";
-  route: string;
-  label: string;
-  image_url: string | null;
-  og_image_url: string | null;
-  image_alt: string | null;
-  noindex: boolean | null;
-  [key: string]: unknown;
-}
 
-export interface RegionRow {
-  id: string;
-  slug: string;
-  is_active: boolean;
-  image_url: string | null;
-  og_image_url: string | null;
-  image_alt: string | null;
-  [key: string]: unknown;
-}
-
-type Kind = "page" | "region";
-
-interface Entry {
-  kind: Kind;
-  /** DB table the save writes to. */
-  table: "seo_pages" | "regions";
-  id: string;
-  key: string;
-  label: string;
-  /** 'home' | 'landing' | 'static' | 'region' */
-  group: string;
-  /** Path after the locale segment. */
-  route: string;
-  row: Record<string, unknown>;
-}
+type FieldName = keyof FieldMap;
 
 const GROUP_META: Record<string, { label: string; icon: typeof Home; color: string }> = {
   home: { label: "Ana Sayfa", icon: Home, color: "#f97316" },
-  landing: { label: "Landing Sayfaları", icon: Rocket, color: "#8b5cf6" },
-  static: { label: "Statik Sayfalar", icon: FileText, color: "#0ea5e9" },
-  region: { label: "Bölge Sayfaları", icon: MapPin, color: "#10b981" },
+  landing: { label: "Landing", icon: Rocket, color: "#8b5cf6" },
+  static: { label: "Statik", icon: FileText, color: "#0ea5e9" },
+  region: { label: "Bölge", icon: MapPin, color: "#10b981" },
+  blog: { label: "Blog", icon: Newspaper, color: "#ec4899" },
 };
 
-/** Legal/utility pages are scored leniently — see scoreSeo's "lite" mode. */
+/** Legal and utility pages are scored leniently — see scoreSeo's "lite" mode. */
 const LITE_KEYS = new Set(["privacy", "terms", "cookies", "kvkk", "cancellation"]);
 
-function str(row: Record<string, unknown>, field: string): string {
-  const v = row[field];
-  return typeof v === "string" ? v : "";
-}
+const TWITTER_CARDS = ["summary_large_image", "summary"] as const;
 
 export default function SeoManager({
   initialPages,
   initialRegions,
+  initialPosts,
 }: {
-  initialPages: SeoPageRow[];
-  initialRegions: RegionRow[];
+  initialPages: Record<string, unknown>[];
+  initialRegions: Record<string, unknown>[];
+  initialPosts: Record<string, unknown>[];
 }) {
   const [pages, setPages] = useState(initialPages);
   const [regions, setRegions] = useState(initialRegions);
+  const [posts, setPosts] = useState(initialPosts);
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState<string>("all");
+  const [issueFilter, setIssueFilter] = useState<"all" | "problems" | "missing" | "noindex">("all");
   const [locale, setLocale] = useState<Loc>("tr");
   const [creating, setCreating] = useState(false);
   const [bulk, setBulk] = useState(false);
 
-  const entries: Entry[] = useMemo(() => {
-    const fromPages: Entry[] = pages.map((p) => ({
-      kind: "page" as const,
-      table: "seo_pages" as const,
-      id: p.id,
-      key: p.page_key,
-      label: p.label,
-      group: p.page_type,
-      route: p.route,
-      row: p as Record<string, unknown>,
-    }));
-    const fromRegions: Entry[] = regions.map((r) => ({
-      kind: "region" as const,
-      table: "regions" as const,
-      id: r.id,
-      key: r.slug,
-      label: str(r, "name_tr") || str(r, "name_en") || r.slug,
-      group: "region",
-      // Region routes always carry the -transfer suffix; the DB slug may or
-      // may not, and the live route is what the preview must show.
-      route: r.slug.endsWith("-transfer") ? r.slug : `${r.slug}-transfer`,
-      row: r as Record<string, unknown>,
-    }));
-    return [...fromPages, ...fromRegions];
-  }, [pages, regions]);
-
-  // Collisions are a property of the whole set, not of one page, so they are
-  // computed once here and folded into each row's score below.
-  const duplicates = useMemo(() => buildDuplicateIndex(entries, locale), [entries, locale]);
-
   /**
-   * Scores are computed for the currently selected language only. Scoring all
-   * six for every row on every keystroke is what would make this list crawl
-   * once there are 40 regions.
+   * Inspections keyed by the path they were taken from. Held at this level so
+   * a whole-list scan survives navigating in and out of individual pages.
    */
+  const [inspections, setInspections] = useState<Record<string, PageInspection>>({});
+  const [scanning, setScanning] = useState<Set<string>>(new Set());
+
+  const entries: Entry[] = useMemo(
+    () => [...pages.map(pageEntry), ...regions.map(regionEntry), ...posts.map(blogEntry)],
+    [pages, regions, posts]
+  );
+
+  const pathOf = useCallback((entry: Entry, loc: string) => {
+    const route = entry.routeFor(loc);
+    return `/${loc}${route ? `/${route}` : ""}`;
+  }, []);
+
+  /** Reads the live SEO surface for a set of pages, in batches. */
+  const scan = useCallback(
+    async (targets: { entry: Entry; loc: string }[]) => {
+      const paths = [...new Set(targets.map((t) => pathOf(t.entry, t.loc)))];
+      if (paths.length === 0) return;
+      setScanning((prev) => new Set([...prev, ...paths]));
+      // The endpoint caps a request at 12 renders so one call stays inside the
+      // serverless timeout; a full-site scan is therefore several calls.
+      for (let i = 0; i < paths.length; i += 10) {
+        const batch = paths.slice(i, i + 10);
+        try {
+          const res = await fetch("/api/admin/seo-inspect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paths: batch }),
+          });
+          const json = await res.json();
+          if (json.results) setInspections((prev) => ({ ...prev, ...json.results }));
+        } catch {
+          // A failed batch simply leaves those paths uninspected, which the UI
+          // renders as "taranmadı" rather than as "no value".
+        } finally {
+          setScanning((prev) => {
+            const next = new Set(prev);
+            for (const p of batch) next.delete(p);
+            return next;
+          });
+        }
+      }
+    },
+    [pathOf]
+  );
+
+  const duplicates = useMemo(
+    () =>
+      buildDuplicateIndex(
+        entries.map((e) => ({ id: e.id, label: e.label, row: e.row })),
+        locale
+      ),
+    [entries, locale]
+  );
+
   const scores = useMemo(() => {
     const map = new Map<string, SeoScore>();
     for (const e of entries) map.set(e.id, scoreEntry(e, locale, duplicates));
     return map;
   }, [entries, locale, duplicates]);
 
+  const audits = useMemo(() => {
+    const map = new Map<string, AuditFinding[]>();
+    for (const e of entries) {
+      const insp = inspections[pathOf(e, locale)];
+      if (!insp) continue;
+      map.set(e.id, auditFor(e, locale, insp, duplicates));
+    }
+    return map;
+  }, [entries, inspections, locale, duplicates, pathOf]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return entries.filter((e) => {
-      if (groupFilter !== "all" && e.group !== groupFilter) return false;
+      if (groupFilter !== "all" && e.pageType !== groupFilter) return false;
+
+      if (issueFilter === "problems") {
+        const a = audits.get(e.id);
+        if (!a || auditSummary(a).level === "ok") return false;
+      } else if (issueFilter === "missing") {
+        const insp = inspections[pathOf(e, locale)];
+        const hasTitle = str(e.row, field(e.fieldMap, "metaTitle", locale)) || insp?.title;
+        const hasDesc = str(e.row, field(e.fieldMap, "metaDescription", locale)) || insp?.description;
+        if (hasTitle && hasDesc) return false;
+      } else if (issueFilter === "noindex") {
+        const insp = inspections[pathOf(e, locale)];
+        const off =
+          e.row.noindex === true || /noindex/i.test(`${insp?.robots ?? ""} ${insp?.googlebot ?? ""}`);
+        if (!off) return false;
+      }
+
       if (!q) return true;
-      return e.label.toLowerCase().includes(q) || e.key.toLowerCase().includes(q);
+      return (
+        e.label.toLowerCase().includes(q) ||
+        e.key.toLowerCase().includes(q) ||
+        e.routeFor(locale).toLowerCase().includes(q) ||
+        str(e.row, field(e.fieldMap, "metaTitle", locale)).toLowerCase().includes(q)
+      );
     });
-  }, [entries, query, groupFilter]);
+  }, [entries, query, groupFilter, issueFilter, audits, inspections, locale, pathOf]);
 
   const current = entries.find((e) => e.id === selected) ?? null;
 
   const applyRow = useCallback((entry: Entry, next: Record<string, unknown>) => {
-    if (entry.table === "seo_pages") {
-      setPages((prev) => prev.map((p) => (p.id === entry.id ? ({ ...p, ...next } as SeoPageRow) : p)));
-    } else {
-      setRegions((prev) => prev.map((r) => (r.id === entry.id ? ({ ...r, ...next } as RegionRow) : r)));
-    }
+    const update = (rows: Record<string, unknown>[]) =>
+      rows.map((r) => (String(r.id) === entry.id ? { ...r, ...next } : r));
+    if (entry.table === "seo_pages") setPages(update);
+    else if (entry.table === "regions") setRegions(update);
+    else setPosts(update);
   }, []);
 
-  // ---- Overview stats ---------------------------------------------------
   const stats = useMemo(() => {
     const all = [...scores.values()];
-    if (all.length === 0) return { avg: 0, poor: 0, dup: 0 };
+    const findings = [...audits.values()].flat();
     return {
-      avg: Math.round(all.reduce((s, x) => s + x.percent, 0) / all.length),
-      poor: all.filter((x) => x.percent < 65).length,
+      total: entries.length,
+      avg: all.length ? Math.round(all.reduce((s, x) => s + x.percent, 0) / all.length) : 0,
+      errors: findings.filter((x) => x.level === "error").length,
       dup: duplicateCount(duplicates),
+      scanned: audits.size,
     };
-  }, [scores, duplicates]);
+  }, [scores, audits, duplicates, entries.length]);
 
   if (current) {
     return (
@@ -181,6 +220,9 @@ export default function SeoManager({
         entry={current}
         locale={locale}
         duplicates={duplicates}
+        inspection={inspections[pathOf(current, locale)] ?? null}
+        scanning={scanning.has(pathOf(current, locale))}
+        onScan={() => scan([{ entry: current, loc: locale }])}
         onLocale={setLocale}
         onBack={() => setSelected(null)}
         onSaved={(next) => applyRow(current, next)}
@@ -188,173 +230,157 @@ export default function SeoManager({
     );
   }
 
+  const unscanned = filtered.filter((e) => !inspections[pathOf(e, locale)]).length;
+
   return (
     <div className="space-y-5">
-      {/* Overview */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Stat label="Toplam sayfa" value={String(entries.length)} />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <Stat label="Sayfa" value={String(stats.total)} />
         <Stat label={`Ortalama skor (${locale.toUpperCase()})`} value={`%${stats.avg}`} />
-        <Stat label="İyileştirme gereken" value={String(stats.poor)} tone={stats.poor > 0 ? "warn" : "ok"} />
-        <Stat
-          label="Yinelenen metin"
-          value={String(stats.dup)}
-          tone={stats.dup > 0 ? "warn" : "ok"}
-        />
+        <Stat label="Taranan" value={`${stats.scanned}/${stats.total}`} />
+        <Stat label="Teknik hata" value={String(stats.errors)} tone={stats.errors > 0 ? "warn" : "ok"} />
+        <Stat label="Yinelenen metin" value={String(stats.dup)} tone={stats.dup > 0 ? "warn" : "ok"} />
       </div>
 
-      {/* Controls */}
+      {/* Scanning is the only way this panel knows what the site actually
+          serves, so its state is stated rather than left implicit. */}
+      <div className="flex items-center gap-3 flex-wrap rounded-xl border border-slate-200 bg-white px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[12.5px] font-medium text-slate-800">Yayındaki değerleri oku</p>
+          <p className="text-[11.5px] text-slate-500 mt-0.5">
+            Panel, sayfaların gerçek HTML çıktısını okuyarak mevcut title, canonical, robots,
+            hreflang ve schema değerlerini gösterir.{" "}
+            {unscanned > 0 ? `${unscanned} sayfa henüz taranmadı.` : "Listedeki tüm sayfalar tarandı."}
+          </p>
+        </div>
+        <button
+          onClick={() => scan(filtered.map((entry) => ({ entry, loc: locale })))}
+          disabled={scanning.size > 0}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-[12.5px] font-semibold cursor-pointer shrink-0"
+        >
+          {scanning.size > 0 ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+          {scanning.size > 0 ? `Taranıyor (${scanning.size})…` : `${filtered.length} sayfayı tara`}
+        </button>
+      </div>
+
       <div className="flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Sayfa veya bölge ara…"
+            placeholder="Sayfa adı, URL, slug veya başlık ara…"
             className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
           />
         </div>
         <button
           onClick={() => setBulk(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold cursor-pointer shrink-0"
         >
           <Wand2 size={15} /> Toplu doldur
         </button>
         <button
           onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold cursor-pointer shrink-0"
         >
           <Plus size={15} /> Yeni bölge
         </button>
-        <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100">
-          {["all", "home", "landing", "static", "region"].map((g) => {
-            const on = groupFilter === g;
-            const meta = GROUP_META[g];
-            return (
-              <button
-                key={g}
-                onClick={() => setGroupFilter(g)}
-                className="px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer"
-                style={{
-                  backgroundColor: on ? "#fff" : "transparent",
-                  color: on ? "#0f172a" : "#64748b",
-                  boxShadow: on ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                }}
-              >
-                {g === "all" ? "Tümü" : meta.label}
-              </button>
-            );
-          })}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Pills
+          value={groupFilter}
+          onChange={setGroupFilter}
+          options={[
+            ["all", "Tümü"],
+            ["home", "Ana sayfa"],
+            ["landing", "Landing"],
+            ["static", "Statik"],
+            ["region", "Bölge"],
+            ["blog", "Blog"],
+          ]}
+        />
+        <Pills
+          value={issueFilter}
+          onChange={(v) => setIssueFilter(v as typeof issueFilter)}
+          options={[
+            ["all", "Hepsi"],
+            ["problems", "Sorunlu"],
+            ["missing", "Eksik metadata"],
+            ["noindex", "noindex"],
+          ]}
+        />
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] text-slate-500">Dil:</span>
+          <Pills
+            value={locale}
+            onChange={(v) => setLocale(v as Loc)}
+            options={LOCALES.map((l) => [l, l.toUpperCase()] as [string, string])}
+            compact
+          />
         </div>
       </div>
 
-      {/* The language picker is global on this screen: it decides which
-          translation the whole list is scored against. */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-[12px] text-slate-500">Puanlanan dil:</span>
-        <div className="flex gap-1 p-1 rounded-xl bg-slate-100">
-          {LOCALES.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLocale(l)}
-              className="px-3 py-1 rounded-lg text-[12px] font-semibold uppercase transition-all cursor-pointer"
-              style={{
-                backgroundColor: locale === l ? "#0f172a" : "transparent",
-                color: locale === l ? "#fff" : "#64748b",
-              }}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* List */}
       <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-        {filtered.length === 0 ? (
-          <p className="px-4 py-10 text-center text-[13px] text-slate-500">Sonuç bulunamadı.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {filtered.map((e) => {
-              const score = scores.get(e.id)!;
-              const meta = GROUP_META[e.group] ?? GROUP_META.static;
-              const title = str(e.row, `meta_title_${locale}`);
-              const desc = str(e.row, `meta_description_${locale}`);
-              const missing: string[] = [];
-              if (!title) missing.push("başlık");
-              if (!desc) missing.push("açıklama");
-              if (!e.row.og_image_url && !e.row.image_url) missing.push("görsel");
-
-              return (
-                <li key={e.id}>
-                  <button
-                    onClick={() => setSelected(e.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left cursor-pointer"
-                  >
-                    <span
-                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${meta.color}14` }}
-                    >
-                      <meta.icon size={15} style={{ color: meta.color }} />
-                    </span>
-
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-2">
-                        <span className="text-[13.5px] font-medium text-slate-900 truncate">
-                          {e.label}
-                        </span>
-                        {e.kind === "region" && e.row.is_active === false && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500">
-                            pasif
-                          </span>
-                        )}
-                        {e.row.noindex === true && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-600">
-                            noindex
-                          </span>
-                        )}
-                        {duplicates.titles.has(e.id) && (
-                          <span
-                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700"
-                            title="Meta başlığı başka bir sayfayla aynı"
-                          >
-                            <CopyX size={10} /> yinelenen
-                          </span>
-                        )}
-                      </span>
-                      <span className="block text-[11.5px] text-slate-500 truncate mt-0.5">
-                        /{locale}
-                        {e.route ? `/${e.route}` : ""}
-                        {missing.length > 0 && (
-                          <span className="text-amber-600"> · eksik: {missing.join(", ")}</span>
-                        )}
-                      </span>
-                    </span>
-
-                    <ScoreBadge percent={score.percent} />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-2.5 font-semibold">Sayfa</th>
+                <th className="px-3 py-2.5 font-semibold">URL</th>
+                <th className="px-3 py-2.5 font-semibold">Title</th>
+                <th className="px-3 py-2.5 font-semibold text-center">Index</th>
+                <th className="px-3 py-2.5 font-semibold text-center">Canonical</th>
+                <th className="px-3 py-2.5 font-semibold text-center">Hreflang</th>
+                <th className="px-3 py-2.5 font-semibold text-center">Sağlık</th>
+                <th className="px-3 py-2.5 font-semibold text-center">Skor</th>
+                <th className="px-3 py-2.5 font-semibold">Güncelleme</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-[13px] text-slate-500">
+                    Bu filtreye uyan sayfa yok.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((e) => (
+                  <ListRow
+                    key={e.id}
+                    entry={e}
+                    locale={locale}
+                    score={scores.get(e.id)!}
+                    findings={audits.get(e.id)}
+                    inspection={inspections[pathOf(e, locale)]}
+                    scanning={scanning.has(pathOf(e, locale))}
+                    duplicate={duplicates.titles.has(e.id)}
+                    onOpen={() => {
+                      setSelected(e.id);
+                      if (!inspections[pathOf(e, locale)]) scan([{ entry: e, loc: locale }]);
+                    }}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {bulk && (
         <BulkFillDialog
-          // Only what the list is currently showing, so the filter above is
-          // also the way an editor scopes a bulk run to, say, regions only.
           targets={filtered.map<BulkTarget>((e) => ({
             id: e.id,
             table: e.table,
             name: e.label,
-            route: e.route,
+            route: e.routeFor(locale),
             row: e.row,
           }))}
           locale={locale}
           onClose={() => setBulk(false)}
           onApplied={(updates) => {
             for (const u of updates) {
-              const entry = entries.find((e) => e.id === u.id);
+              const entry = entries.find((x) => x.id === u.id);
               if (entry) applyRow(entry, u.data);
             }
           }}
@@ -367,12 +393,260 @@ export default function SeoManager({
           onCreated={(row) => {
             setRegions((prev) => [...prev, row]);
             setCreating(false);
-            // Drop straight into the SEO editor for the region just created,
-            // which is the only reason to add one from this screen.
-            setSelected(row.id);
+            setSelected(String(row.id));
           }}
         />
       )}
+    </div>
+  );
+}
+
+function auditFor(
+  entry: Entry,
+  locale: string,
+  inspection: PageInspection,
+  duplicates: DuplicateIndex
+): AuditFinding[] {
+  return auditPage(inspection, {
+    route: entry.routeFor(locale),
+    locale,
+    translatedLocales: translatedLocales(entry, locales),
+    isActive: entry.isPublic,
+    shouldIndex: entry.shouldIndex,
+    pageType: entry.pageType,
+    duplicateTitleWith: duplicates.titles.get(entry.id)?.map((id) => duplicates.labels.get(id) ?? id),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// List row
+// ---------------------------------------------------------------------------
+
+function ListRow({
+  entry,
+  locale,
+  score,
+  findings,
+  inspection,
+  scanning,
+  duplicate,
+  onOpen,
+}: {
+  entry: Entry;
+  locale: Loc;
+  score: SeoScore;
+  findings?: AuditFinding[];
+  inspection?: PageInspection;
+  scanning: boolean;
+  duplicate: boolean;
+  onOpen: () => void;
+}) {
+  const meta = GROUP_META[entry.pageType] ?? GROUP_META.static;
+  const route = entry.routeFor(locale);
+  const override = str(entry.row, field(entry.fieldMap, "metaTitle", locale));
+  const effectiveTitle = override || inspection?.title || "";
+  const source = fieldSource(override, inspection?.title);
+
+  const robotsText = `${inspection?.robots ?? ""} ${inspection?.googlebot ?? ""}`;
+  const noindexed = entry.row.noindex === true || /noindex/i.test(robotsText);
+
+  const canonicalState: "ok" | "other" | "missing" | "unknown" = !inspection
+    ? "unknown"
+    : !inspection.canonical
+      ? "missing"
+      : inspection.canonical.replace(/\/+$/, "") === inspection.url.replace(/\/+$/, "")
+        ? "ok"
+        : "other";
+
+  const hreflangCount = inspection?.alternates.filter((a) => a.hreflang !== "x-default").length ?? 0;
+  const health = findings ? auditSummary(findings) : null;
+
+  return (
+    <tr className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={onOpen}>
+      <td className="px-4 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            style={{ backgroundColor: `${meta.color}14` }}
+          >
+            <meta.icon size={14} style={{ color: meta.color }} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-medium text-slate-900 truncate max-w-[220px]">
+              {entry.label}
+            </span>
+            <span className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10.5px] text-slate-500">{meta.label}</span>
+              {!entry.isPublic && (
+                <span className="px-1 py-0.5 rounded text-[9.5px] font-medium bg-slate-100 text-slate-500">
+                  yayında değil
+                </span>
+              )}
+              {duplicate && (
+                <span
+                  className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9.5px] font-medium bg-amber-50 text-amber-700"
+                  title="Meta başlığı başka bir sayfayla aynı"
+                >
+                  <CopyX size={9} /> yinelenen
+                </span>
+              )}
+            </span>
+          </span>
+        </div>
+      </td>
+
+      <td className="px-3 py-2.5">
+        <span className="text-[11.5px] text-slate-600 font-mono whitespace-nowrap">
+          /{locale}
+          {route ? `/${route}` : ""}
+        </span>
+      </td>
+
+      <td className="px-3 py-2.5 max-w-[240px]">
+        {scanning ? (
+          <span className="text-[11.5px] text-slate-400">okunuyor…</span>
+        ) : effectiveTitle ? (
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: source === "admin" ? "#7c3aed" : "#0ea5e9" }}
+              title={source === "admin" ? "Admin override" : "Sayfa kodu / varsayılan"}
+            />
+            <span className="text-[12px] text-slate-700 truncate">{effectiveTitle}</span>
+          </span>
+        ) : inspection ? (
+          <span className="text-[11.5px] text-red-600">yok</span>
+        ) : (
+          <span className="text-[11.5px] text-slate-400">taranmadı</span>
+        )}
+      </td>
+
+      <td className="px-3 py-2.5 text-center">
+        {!inspection ? (
+          <Dash />
+        ) : noindexed ? (
+          <Chip
+            icon={EyeOff}
+            label="noindex"
+            color={entry.shouldIndex ? "#dc2626" : "#64748b"}
+            bg={entry.shouldIndex ? "#fef2f2" : "#f1f5f9"}
+          />
+        ) : (
+          <Chip label="index" color="#16a34a" bg="#f0fdf4" />
+        )}
+      </td>
+
+      <td className="px-3 py-2.5 text-center">
+        {canonicalState === "unknown" ? (
+          <Dash />
+        ) : canonicalState === "ok" ? (
+          <Chip icon={Link2} label="self" color="#16a34a" bg="#f0fdf4" />
+        ) : canonicalState === "other" ? (
+          <Chip
+            icon={Link2}
+            label="başka"
+            color="#d97706"
+            bg="#fffbeb"
+            title={inspection?.canonical ?? undefined}
+          />
+        ) : (
+          <Chip label="yok" color="#dc2626" bg="#fef2f2" />
+        )}
+      </td>
+
+      <td className="px-3 py-2.5 text-center">
+        {!inspection ? (
+          <Dash />
+        ) : hreflangCount === 0 ? (
+          <Chip label="yok" color="#d97706" bg="#fffbeb" />
+        ) : (
+          <span className="text-[11.5px] text-slate-600 tabular-nums">
+            {hreflangCount}/{locales.length}
+          </span>
+        )}
+      </td>
+
+      <td className="px-3 py-2.5 text-center">
+        {!health ? (
+          <Dash />
+        ) : health.level === "ok" ? (
+          <Chip label="temiz" color="#16a34a" bg="#f0fdf4" />
+        ) : health.level === "error" ? (
+          <Chip icon={AlertOctagon} label={String(health.errors)} color="#dc2626" bg="#fef2f2" />
+        ) : (
+          <Chip icon={AlertTriangle} label={String(health.warnings)} color="#d97706" bg="#fffbeb" />
+        )}
+      </td>
+
+      <td className="px-3 py-2.5 text-center">
+        <ScoreBadge percent={score.percent} />
+      </td>
+
+      <td className="px-3 py-2.5">
+        <span className="text-[11px] text-slate-500 whitespace-nowrap">
+          {entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString("tr-TR") : "—"}
+        </span>
+      </td>
+    </tr>
+  );
+}
+
+function Dash() {
+  return <span className="text-[11.5px] text-slate-300">—</span>;
+}
+
+function Chip({
+  label,
+  color,
+  bg,
+  icon: Icon,
+  title,
+}: {
+  label: string;
+  color: string;
+  bg: string;
+  icon?: typeof AlertOctagon;
+  title?: string;
+}) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold whitespace-nowrap"
+      style={{ color, backgroundColor: bg }}
+      title={title}
+    >
+      {Icon && <Icon size={10} />}
+      {label}
+    </span>
+  );
+}
+
+function Pills({
+  value,
+  onChange,
+  options,
+  compact,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: [string, string][];
+  compact?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100">
+      {options.map(([id, label]) => (
+        <button
+          key={id}
+          onClick={() => onChange(id)}
+          className={`${compact ? "px-2.5 py-1" : "px-3 py-1.5"} rounded-lg text-[12px] font-medium transition-all cursor-pointer`}
+          style={{
+            backgroundColor: value === id ? "#fff" : "transparent",
+            color: value === id ? "#0f172a" : "#64748b",
+            boxShadow: value === id ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+          }}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -391,21 +665,22 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok
   );
 }
 
-/** Shared by the list and the editor so a row's badge and its panel agree. */
 function scoreEntry(entry: Entry, locale: Loc, duplicates?: DuplicateIndex): SeoScore {
-  const row = entry.row;
+  const g = (name: FieldName) => str(entry.row, field(entry.fieldMap, name, locale));
   const base = scoreSeo(
     {
-      title: str(row, `meta_title_${locale}`),
-      description: str(row, `meta_description_${locale}`),
-      focusKeyword: str(row, `focus_keyword_${locale}`),
-      keywords: str(row, `keywords_${locale}`),
-      slug: entry.route,
-      content: str(row, `intro_${locale}`) || str(row, `description_${locale}`),
-      h1: str(row, `h1_${locale}`) || str(row, `name_${locale}`),
-      imageUrl: str(row, "image_url"),
-      ogImageUrl: str(row, "og_image_url"),
-      imageAlt: str(row, "image_alt"),
+      // A post with no meta_title falls back to its own title, which is what
+      // the page actually emits — scoring it as "missing" would be false.
+      title: g("metaTitle") || str(entry.row, `title_${locale}`),
+      description: g("metaDescription") || str(entry.row, `excerpt_${locale}`),
+      focusKeyword: g("focusKeyword"),
+      keywords: g("keywords"),
+      slug: entry.routeFor(locale),
+      content: g("intro") || str(entry.row, `content_${locale}`),
+      h1: g("h1") || str(entry.row, `title_${locale}`) || str(entry.row, `name_${locale}`),
+      imageUrl: str(entry.row, "image_url"),
+      ogImageUrl: str(entry.row, "og_image_url"),
+      imageAlt: str(entry.row, "image_alt"),
     },
     { mode: LITE_KEYS.has(entry.key) ? "lite" : "full" }
   );
@@ -413,9 +688,6 @@ function scoreEntry(entry: Entry, locale: Loc, duplicates?: DuplicateIndex): Seo
   const extra = duplicates ? duplicateChecks(duplicates, entry.id) : [];
   if (extra.length === 0) return base;
 
-  // Re-derive the percentage over the combined set rather than averaging two
-  // scores, so a duplicate title costs the same whether or not the page had
-  // other problems.
   const checks = [...base.checks, ...extra];
   const total = checks.reduce((sum, c) => sum + c.weight, 0);
   const earned = checks.reduce(
@@ -440,6 +712,9 @@ function SeoEditor({
   entry,
   locale,
   duplicates,
+  inspection,
+  scanning,
+  onScan,
   onLocale,
   onBack,
   onSaved,
@@ -447,6 +722,9 @@ function SeoEditor({
   entry: Entry;
   locale: Loc;
   duplicates: DuplicateIndex;
+  inspection: PageInspection | null;
+  scanning: boolean;
+  onScan: () => void;
   onLocale: (l: Loc) => void;
   onBack: () => void;
   onSaved: (next: Record<string, unknown>) => void;
@@ -455,41 +733,116 @@ function SeoEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const requested = useRef<string | null>(null);
 
-  const set = (field: string, value: unknown) => {
-    setDraft((d) => ({ ...d, [field]: value }));
+  const path = `${locale}${entry.routeFor(locale)}`;
+
+  // The editor can open on a page whose live values have not been read yet.
+  // Without them every field would claim "no value", which is precisely the
+  // misreading this panel exists to prevent.
+  useEffect(() => {
+    if (!inspection && !scanning && requested.current !== path) {
+      requested.current = path;
+      onScan();
+    }
+  }, [inspection, scanning, onScan, path]);
+
+  const col = useCallback(
+    (name: FieldName) => field(entry.fieldMap, name, locale),
+    [entry.fieldMap, locale]
+  );
+  const get = (name: FieldName) => str(draft, col(name));
+  const set = (name: FieldName, v: unknown) => {
+    const c = col(name);
+    if (!c) return;
+    setDraft((d) => ({ ...d, [c]: v }));
     setSaved(false);
   };
-  const get = (field: string) => str(draft, field);
+  const setRaw = (column: string, v: unknown) => {
+    setDraft((d) => ({ ...d, [column]: v }));
+    setSaved(false);
+  };
 
-  const dirty = useMemo(
-    () => JSON.stringify(draft) !== JSON.stringify(entry.row),
-    [draft, entry.row]
-  );
+  const changes: FieldChange[] = useMemo(() => {
+    const out: FieldChange[] = [];
+    for (const [k, v] of Object.entries(draft)) {
+      const before = entry.row[k];
+      if (JSON.stringify(v) === JSON.stringify(before)) continue;
+      out.push({
+        field: k,
+        label: k,
+        before: before === null || before === undefined ? "" : String(before),
+        after: v === null || v === undefined ? "" : String(v),
+        critical: criticalReason(k),
+      });
+    }
+    return out;
+  }, [draft, entry.row]);
+
+  const dirty = changes.length > 0;
 
   const score = useMemo(
     () => scoreEntry({ ...entry, row: draft }, locale, duplicates),
     [entry, draft, locale, duplicates]
   );
 
-  /** Per-language dots on the tab strip. */
+  const findings = useMemo(
+    () => (inspection ? auditFor(entry, locale, inspection, duplicates) : []),
+    [inspection, entry, locale, duplicates]
+  );
+
   const localeStatus = useMemo(() => {
     const out: Record<string, "full" | "partial" | "empty"> = {};
     for (const l of LOCALES) {
-      const t = str(draft, `meta_title_${l}`);
-      const d = str(draft, `meta_description_${l}`);
+      const t = str(draft, field(entry.fieldMap, "metaTitle", l));
+      const d = str(draft, field(entry.fieldMap, "metaDescription", l));
       out[l] = t && d ? "full" : t || d ? "partial" : "empty";
     }
     return out;
-  }, [draft]);
+  }, [draft, entry.fieldMap]);
 
-  // Ctrl/Cmd+S saves, and the browser asks before a reload or tab close
-  // discards the draft. Both hang off `dirty`, so a clean editor is silent.
+  const leave = () => {
+    if (dirty && !confirm("Kaydedilmemiş değişiklikler var. Yine de listeye dönülsün mü?")) return;
+    onBack();
+  };
+
+  const commit = async () => {
+    setSaving(true);
+    setError(null);
+    // Only changed columns are sent. A whole-row update would resend fields
+    // this screen does not manage — pricing joins, coordinates — and any stale
+    // value in the client copy would overwrite a newer one.
+    const payload: Record<string, unknown> = {};
+    for (const c of changes) payload[c.field] = draft[c.field];
+    payload.updated_at = new Date().toISOString();
+    try {
+      const res = await fetch("/api/admin/crud", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: entry.table, action: "update", id: entry.id, data: payload }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? "Kaydedilemedi");
+      onSaved(json.data ?? payload);
+      setSaved(true);
+      setConfirming(false);
+      // The save revalidated the page server-side; re-reading it is what
+      // proves the change actually reached the HTML.
+      requested.current = null;
+      setTimeout(onScan, 1500);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        if (dirty && !saving) void save();
+        if (dirty && !saving) setConfirming(true);
       }
     };
     const onUnload = (e: BeforeUnloadEvent) => {
@@ -503,64 +856,36 @@ function SeoEditor({
     };
   });
 
-  const focusField = (field: string) => {
-    const id = `seo-${field}`;
-    const el = document.getElementById(id) ?? document.getElementById(`${id}_${locale}`);
+  const focusField = (name: string) => {
+    const el =
+      document.getElementById(`seo-${name}-${locale}`) ?? document.getElementById(`seo-${name}`);
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     (el as HTMLInputElement | null)?.focus();
   };
 
-  // Leaving the editor with edits in the draft used to discard them without
-  // a word — six languages of copy gone on one misclick.
-  const leave = () => {
-    if (dirty && !confirm("Kaydedilmemiş değişiklikler var. Yine de listeye dönülsün mü?")) {
-      return;
-    }
-    onBack();
-  };
-
-  const save = async () => {
-    setSaving(true);
-    setError(null);
-    // Only send what changed. A full-row update would resend every column,
-    // including ones this screen does not manage (pricing joins, coordinates),
-    // and any stale value in the client copy would overwrite a newer one.
-    const payload: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(draft)) {
-      if (JSON.stringify(v) !== JSON.stringify(entry.row[k])) payload[k] = v;
-    }
-    if (Object.keys(payload).length === 0) {
-      setSaving(false);
-      setSaved(true);
-      return;
-    }
-    payload.updated_at = new Date().toISOString();
-    try {
-      const res = await fetch("/api/admin/crud", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table: entry.table, action: "update", id: entry.id, data: payload }),
-      });
-      const json = await res.json();
-      if (!res.ok || json.error) throw new Error(json.error ?? "Kaydedilemedi");
-      onSaved(json.data ?? payload);
-      setSaved(true);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Kaydedilemedi");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const isRegion = entry.kind === "region";
+  const route = entry.routeFor(locale);
+  const liveUrl = `${SITE_URL}/${locale}${route ? `/${route}` : ""}`;
   const lite = LITE_KEYS.has(entry.key);
-  const liveUrl = `${SITE_URL}/${locale}${entry.route ? `/${entry.route}` : ""}`;
-  const socialImage = get("og_image_url") || get("image_url");
+
+  const effTitle = get("metaTitle") || inspection?.title || "";
+  const effDesc = get("metaDescription") || inspection?.description || "";
+  const effOgImage = str(draft, "og_image_url") || str(draft, "image_url") || inspection?.ogImage || "";
+
+  const canonicalDraft = get("canonical");
+  const canonicalSafe = safeCanonical(canonicalDraft);
+  const canonicalWarning = !canonicalDraft
+    ? null
+    : !canonicalSafe
+      ? "Geçersiz veya site dışı bir adres — bu haliyle yok sayılır. Sadece torviantransfer.com adresleri kabul edilir."
+      : canonicalSafe !== canonicalDraft
+        ? `Kaydedilecek hali: ${canonicalSafe}`
+        : null;
+
+  const uploadFolder =
+    entry.kind === "region" ? "regions" : entry.kind === "blog" ? "blog" : "pages";
 
   return (
     <div className="space-y-4">
-      {/* Sticky action bar — an editor moving between six languages should
-          never have to scroll back up to find Save. */}
       <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b border-slate-200 flex items-center gap-3 flex-wrap">
         <button
           onClick={leave}
@@ -581,9 +906,9 @@ function SeoEditor({
         </div>
         <ScoreBadge percent={score.percent} />
         <button
-          onClick={save}
+          onClick={() => setConfirming(true)}
           disabled={saving || !dirty}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold text-white disabled:opacity-50 cursor-pointer"
           style={{ backgroundColor: saved && !dirty ? "#16a34a" : "#f97316" }}
         >
           {saving ? (
@@ -593,7 +918,11 @@ function SeoEditor({
           ) : (
             <Save size={14} />
           )}
-          {saving ? "Kaydediliyor…" : saved && !dirty ? "Kaydedildi" : "Kaydet"}
+          {saving
+            ? "Kaydediliyor…"
+            : saved && !dirty
+              ? "Kaydedildi"
+              : `Kaydet${dirty ? ` (${changes.length})` : ""}`}
         </button>
       </div>
 
@@ -603,186 +932,385 @@ function SeoEditor({
         </p>
       )}
 
+      {!entry.isPublic && (
+        <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-[12.5px] text-slate-600">
+          <EyeOff size={14} /> Bu sayfa yayında değil — sitemap&apos;te yok. SEO alanları yine de
+          doldurulabilir.
+        </p>
+      )}
+
       <LocaleTabs active={locale} onChange={onLocale} status={localeStatus} />
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start">
-        {/* ---- Form ---- */}
+      <div className="grid xl:grid-cols-[minmax(0,1fr)_400px] gap-4 items-start">
         <div className="space-y-4 min-w-0">
           <Section
             title="Arama sonucu"
-            description="Google'da bu sayfanın başlığı ve açıklaması olarak çıkacak metinler."
+            description="Boş bırakılan alanlar sayfanın mevcut değerini kullanmaya devam eder. Kutunun üstündeki etiket değerin nereden geldiğini gösterir."
           >
-            <CountedField
-              id={`seo-meta_title_${locale}`}
+            <EffectiveField
+              id={`seo-meta_title-${locale}`}
               label="Meta başlık"
-              value={get(`meta_title_${locale}`)}
-              onChange={(v) => set(`meta_title_${locale}`, v)}
-              min={TITLE_MIN}
-              ideal={[TITLE_IDEAL_MIN, TITLE_IDEAL_MAX]}
-              max={TITLE_MAX}
-              placeholder="Antalya Havalimanı Belek Transfer | TORVIAN"
-              hint="Boş bırakılırsa sayfanın kodundaki mevcut başlık kullanılmaya devam eder."
+              override={get("metaTitle")}
+              onChange={(v) => set("metaTitle", v)}
+              live={inspection?.title}
+              loading={scanning}
+              counter={{ min: TITLE_MIN, ideal: [TITLE_IDEAL_MIN, TITLE_IDEAL_MAX], max: TITLE_MAX }}
             />
-            <CountedField
-              id={`seo-meta_description_${locale}`}
+            <EffectiveField
+              id={`seo-meta_description-${locale}`}
               label="Meta açıklama"
               multiline
               rows={3}
-              value={get(`meta_description_${locale}`)}
-              onChange={(v) => set(`meta_description_${locale}`, v)}
-              min={DESC_MIN}
-              ideal={[DESC_IDEAL_MIN, DESC_IDEAL_MAX]}
-              max={DESC_MAX}
-              placeholder="Antalya Havalimanı'ndan Belek'e sabit fiyatlı özel VIP transfer…"
-              hint="Boş bırakılırsa mevcut açıklama korunur."
+              override={get("metaDescription")}
+              onChange={(v) => set("metaDescription", v)}
+              live={inspection?.description}
+              loading={scanning}
+              counter={{ min: DESC_MIN, ideal: [DESC_IDEAL_MIN, DESC_IDEAL_MAX], max: DESC_MAX }}
             />
           </Section>
 
-          {!lite && (
-            <Section
-              title="Anahtar kelimeler"
-              description="Sayfanın hangi aramalarda çıkmasını istediğiniz. Sitede meta etiketi olarak yayınlanmaz — puanlama bunlara göre yapılır."
-            >
-              <TextField
-                id={`seo-focus_keyword_${locale}`}
-                label="Odak anahtar kelime"
-                value={get(`focus_keyword_${locale}`)}
-                onChange={(v) => set(`focus_keyword_${locale}`, v)}
-                placeholder="belek transfer"
-                hint="Tek bir terim. Başlık, açıklama ve URL bu terime göre puanlanır."
-              />
-              <KeywordField
-                id={`seo-keywords_${locale}`}
-                label="Yan anahtar kelimeler"
-                value={get(`keywords_${locale}`)}
-                onChange={(v) => set(`keywords_${locale}`, v)}
-                hint="Virgülle ayırın veya Enter'a basın."
-              />
-            </Section>
-          )}
-
-          {!isRegion && !lite && (
-            <Section title="Sayfa metni" description="Sayfada görünen başlık ve giriş paragrafı.">
-              <TextField
-                id={`seo-h1_${locale}`}
-                label="H1 başlığı"
-                value={get(`h1_${locale}`)}
-                onChange={(v) => set(`h1_${locale}`, v)}
-                hint="Boş bırakılırsa sayfanın mevcut başlığı korunur."
-              />
-              <TextField
-                id={`seo-intro_${locale}`}
-                label="Giriş paragrafı"
-                multiline
-                rows={5}
-                value={get(`intro_${locale}`)}
-                onChange={(v) => set(`intro_${locale}`, v)}
-              />
-            </Section>
-          )}
-
-          {isRegion && (
-            <Section title="Bölge metni" description="Bölge sayfasında görünen açıklama.">
-              <TextField
-                id={`seo-name_${locale}`}
-                label="Bölge adı"
-                value={get(`name_${locale}`)}
-                onChange={(v) => set(`name_${locale}`, v)}
-              />
-              <TextField
-                id={`seo-description_${locale}`}
-                label="Açıklama"
-                multiline
-                rows={6}
-                value={get(`description_${locale}`)}
-                onChange={(v) => set(`description_${locale}`, v)}
-                hint="Bu dilde boş bırakılan bölgeler o dilde indekslenmez — mevcut davranış korunur."
-              />
-            </Section>
-          )}
-
           <Section
-            title="Görseller"
-            description="Kart görseli sayfada ve Google Görseller'de; paylaşım görseli WhatsApp, Facebook ve X'te çıkar."
+            title="Canonical"
+            description="Aynı içeriğin asıl adresi. Yanlış bir değer sayfayı Google'dan düşürür."
           >
-            <ImageField
-              label="Kart / sayfa görseli"
-              value={get("image_url")}
-              onChange={(v) => set("image_url", v)}
-              folder={isRegion ? "regions" : "pages"}
-              hint="Repodaki bir dosyayı kullanmak için yolu yapıştırın: /images/regions/belek-golf.jpg"
-            />
-            <ImageField
-              label="Paylaşım görseli (1200×630)"
-              value={get("og_image_url")}
-              onChange={(v) => set("og_image_url", v)}
-              folder={isRegion ? "regions" : "pages"}
-              aspect="1.91/1"
-              hint="Boş bırakılırsa kart görseli kullanılır. WebP dosyaları Facebook'ta tutarsız görünür — JPG tercih edin."
-            />
-            <TextField
-              id="seo-image_alt"
-              label="Görsel alt metni"
-              value={get("image_alt")}
-              onChange={(v) => set("image_alt", v)}
-              placeholder="Belek golf sahası ve TORVIAN transfer aracı"
-              hint="Google Görseller bu metinle eşleştirir."
+            <EffectiveField
+              id={`seo-canonical_url-${locale}`}
+              label="Canonical URL"
+              override={canonicalDraft}
+              onChange={(v) => set("canonical", v)}
+              live={inspection?.canonical}
+              loading={scanning}
+              warning={canonicalWarning}
+              hint="Boş bırakılırsa sistem otomatik üretir — normal durumda doğrusu budur."
             />
           </Section>
 
           <Section
             title="İndeksleme"
-            description="Bu ayarları değiştirmek sıralamayı doğrudan etkiler — emin olmadan dokunmayın."
+            description="Bu iki ayar sayfanın Google'da olup olmayacağını doğrudan belirler."
           >
-            <label className="flex items-start gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={draft.noindex === true}
-                onChange={(e) => set("noindex", e.target.checked ? true : null)}
-                className="mt-0.5 w-4 h-4 accent-red-600 cursor-pointer"
+            <TriToggle
+              label="Google'dan gizle (noindex)"
+              description="Açılırsa sayfa arama sonuçlarından çıkarılır. Sıralaması olan bir sayfada bu trafiği kaybettirir."
+              value={draft.noindex === true ? true : draft.noindex === false ? false : null}
+              onChange={(v) => setRaw("noindex", v)}
+            />
+            <TriToggle
+              label="Linkleri izleme (nofollow)"
+              description="Açılırsa bu sayfadaki linkler taranmaz, iç link gücü aktarılmaz."
+              value={draft.nofollow === true ? true : draft.nofollow === false ? false : null}
+              onChange={(v) => setRaw("nofollow", v)}
+            />
+            {inspection && (
+              <p className="text-[11.5px] text-slate-500">
+                Şu an yayında:{" "}
+                <code className="font-mono text-slate-700">
+                  {inspection.googlebot ?? inspection.robots ?? "direktif yok"}
+                </code>
+              </p>
+            )}
+          </Section>
+
+          {!lite && (
+            <Section
+              title="Anahtar kelimeler"
+              description="Sitede meta etiketi olarak yayınlanmaz — puanlama bunlara göre yapılır."
+            >
+              <TextField
+                id={`seo-focus_keyword-${locale}`}
+                label="Odak anahtar kelime"
+                value={get("focusKeyword")}
+                onChange={(v) => set("focusKeyword", v)}
+                placeholder="belek transfer"
               />
-              <span>
-                <span className="block text-[13px] font-medium text-slate-800">
-                  Google&apos;dan gizle (noindex)
-                </span>
-                <span className="block text-[11.5px] text-slate-500 mt-0.5">
-                  İşaretlenirse bu sayfa arama sonuçlarından çıkarılır. Şu anda sıralaması olan bir
-                  sayfada bunu açmak o trafiği kaybettirir.
-                </span>
-              </span>
-            </label>
+              <KeywordField
+                id={`seo-keywords-${locale}`}
+                label="Yan anahtar kelimeler"
+                value={get("keywords")}
+                onChange={(v) => set("keywords", v)}
+              />
+            </Section>
+          )}
+
+          <Section title="Sayfa metni">
+            {entry.fieldMap.h1 ? (
+              <EffectiveField
+                id={`seo-h1-${locale}`}
+                label="H1 başlığı"
+                override={get("h1")}
+                onChange={(v) => set("h1", v)}
+                live={inspection?.h1s[0]}
+                loading={scanning}
+              />
+            ) : (
+              <EffectiveField
+                label="H1 başlığı"
+                override=""
+                onChange={() => {}}
+                live={inspection?.h1s[0] ?? str(draft, `title_${locale}`)}
+                readOnly={{
+                  reason:
+                    "Blog yazılarında H1, yazının başlığıdır ve Blog Yazıları ekranından düzenlenir. Arama sonucundaki başlığı ondan ayırmak için yukarıdaki meta başlığı doldurun.",
+                }}
+              />
+            )}
+            {entry.fieldMap.intro && (
+              <TextField
+                id={`seo-intro-${locale}`}
+                label={
+                  entry.kind === "region"
+                    ? "Bölge açıklaması"
+                    : entry.kind === "blog"
+                      ? "Özet (excerpt)"
+                      : "Giriş paragrafı"
+                }
+                multiline
+                rows={5}
+                value={get("intro")}
+                onChange={(v) => set("intro", v)}
+                hint={
+                  entry.kind === "region"
+                    ? "Bu dilde boş bırakılan bölgeler o dilde indekslenmez — mevcut davranış korunur."
+                    : undefined
+                }
+              />
+            )}
+            {entry.kind === "region" && (
+              <TextField
+                id={`seo-name-${locale}`}
+                label="Bölge adı"
+                value={str(draft, `name_${locale}`)}
+                onChange={(v) => setRaw(`name_${locale}`, v)}
+              />
+            )}
+          </Section>
+
+          <Section
+            title="Open Graph"
+            description="WhatsApp ve Facebook paylaşımlarında görünen bilgiler. Boş bırakılırsa yukarıdaki meta başlık ve açıklama kullanılır."
+          >
+            <EffectiveField
+              id={`seo-og_title-${locale}`}
+              label="OG başlık"
+              override={get("ogTitle")}
+              onChange={(v) => set("ogTitle", v)}
+              live={inspection?.ogTitle}
+              loading={scanning}
+            />
+            <EffectiveField
+              id={`seo-og_description-${locale}`}
+              label="OG açıklama"
+              multiline
+              rows={2}
+              override={get("ogDescription")}
+              onChange={(v) => set("ogDescription", v)}
+              live={inspection?.ogDescription}
+              loading={scanning}
+            />
+            <ImageField
+              label="OG görseli (1200×630)"
+              value={str(draft, "og_image_url")}
+              onChange={(v) => setRaw("og_image_url", v)}
+              folder={uploadFolder}
+              aspect="1.91/1"
+              hint={
+                inspection?.ogImage
+                  ? `Şu an yayında: ${inspection.ogImage.replace(SITE_URL, "")}`
+                  : "Boş bırakılırsa kart görseli kullanılır."
+              }
+            />
+          </Section>
+
+          <Section
+            title="X / Twitter"
+            description="Boş bırakılan alanlar önce Open Graph, sonra meta değerlerine düşer."
+          >
+            <EffectiveField
+              id={`seo-twitter_title-${locale}`}
+              label="Twitter başlık"
+              override={get("twitterTitle")}
+              onChange={(v) => set("twitterTitle", v)}
+              live={inspection?.twitterTitle}
+              loading={scanning}
+            />
+            <EffectiveField
+              id={`seo-twitter_description-${locale}`}
+              label="Twitter açıklama"
+              multiline
+              rows={2}
+              override={get("twitterDescription")}
+              onChange={(v) => set("twitterDescription", v)}
+              live={inspection?.twitterDescription}
+              loading={scanning}
+            />
+            <ImageField
+              label="Twitter görseli"
+              value={str(draft, "twitter_image_url")}
+              onChange={(v) => setRaw("twitter_image_url", v)}
+              folder={uploadFolder}
+              aspect="1.91/1"
+              hint="Boş bırakılırsa OG görseli kullanılır."
+            />
+            <div>
+              <label
+                htmlFor="seo-twitter_card"
+                className="block text-[12.5px] font-medium text-slate-700 mb-1.5"
+              >
+                Kart tipi
+              </label>
+              <select
+                id="seo-twitter_card"
+                value={str(draft, "twitter_card")}
+                onChange={(e) => setRaw("twitter_card", e.target.value || null)}
+                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+              >
+                <option value="">
+                  Varsayılan ({inspection?.twitterCard ?? "summary_large_image"})
+                </option>
+                {TWITTER_CARDS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </Section>
+
+          <Section title="Görsel ve alt metni">
+            <ImageField
+              label="Kart / sayfa görseli"
+              value={str(draft, "image_url")}
+              onChange={(v) => setRaw("image_url", v)}
+              folder={uploadFolder}
+              hint="Repodaki bir dosyayı kullanmak için yolu yapıştırın: /images/regions/belek-golf.jpg"
+            />
+            <TextField
+              id="seo-image_alt"
+              label="Görsel alt metni"
+              value={str(draft, "image_alt")}
+              onChange={(v) => setRaw("image_alt", v)}
+              hint={
+                inspection && inspection.images.filter((i) => i.alt === null).length > 0
+                  ? `Sayfada alt metni olmayan ${inspection.images.filter((i) => i.alt === null).length} görsel var.`
+                  : "Google Görseller bu metinle eşleştirir."
+              }
+            />
+          </Section>
+
+          <Section
+            title="URL"
+            description="URL değiştirmek 301 yönlendirme gerektirir; bu panel yönlendirme yönetmediği için adres salt okunurdur."
+          >
+            <EffectiveField
+              label="Sayfa adresi"
+              override=""
+              onChange={() => {}}
+              live={liveUrl}
+              readOnly={{
+                reason:
+                  entry.kind === "region"
+                    ? "Bölge URL'i değiştirilirse mevcut sıralama sıfırlanır. Değişiklik gerekiyorsa önce 301 yönlendirme kurulmalıdır."
+                    : "URL değişiklikleri bu panelden yapılmaz; 301 yönlendirme kurulumu gerekir.",
+              }}
+            />
           </Section>
         </div>
 
-        {/* ---- Previews + score ---- */}
-        <div className="space-y-4 lg:sticky lg:top-20">
+        <div className="space-y-4 xl:sticky xl:top-20">
           <SerpPreview
-            title={get(`meta_title_${locale}`)}
-            description={get(`meta_description_${locale}`)}
-            path={entry.route}
+            title={effTitle}
+            description={effDesc}
+            path={route}
             locale={locale}
-            keywords={[
-              get(`focus_keyword_${locale}`),
-              ...parseKeywords(get(`keywords_${locale}`)),
-            ].filter(Boolean)}
-            imageUrl={socialImage || null}
+            keywords={[get("focusKeyword"), ...parseKeywords(get("keywords"))].filter(Boolean)}
+            imageUrl={effOgImage || null}
           />
           <SocialPreview
-            title={get(`meta_title_${locale}`)}
-            description={get(`meta_description_${locale}`)}
-            imageUrl={socialImage || null}
-            path={entry.route}
+            title={get("ogTitle") || effTitle}
+            description={get("ogDescription") || effDesc}
+            imageUrl={effOgImage || null}
+            path={route}
             locale={locale}
           />
-          <SeoScorePanel
-            score={score}
-            onFieldClick={(field) => {
-              // Locale-scoped fields carry a suffix; shared ones do not.
-              const scoped = ["meta_title", "meta_description", "focus_keyword", "keywords", "h1", "content"];
-              focusField(scoped.includes(field) ? `${field}_${locale}` : field);
-            }}
+          <TechnicalChecks
+            findings={findings}
+            loading={scanning}
+            onRefresh={onScan}
+            onFieldClick={focusField}
+            fetchedAt={inspection?.fetchedAt}
           />
+          <SeoScorePanel score={score} onFieldClick={focusField} />
+          <RuntimeSummary inspection={inspection} loading={scanning} />
+          <HreflangPanel inspection={inspection} locale={locale} />
+          <SchemaPanel inspection={inspection} />
         </div>
+      </div>
+
+      {confirming && (
+        <SaveDiffDialog
+          changes={changes}
+          saving={saving}
+          onConfirm={commit}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * A three-state switch for the tri-state boolean columns.
+ *
+ * "Varsayılan" is a real, distinct value and the default: it means the page's
+ * own decision stands. Collapsing it into false would make every save assert
+ * "definitely index this", overriding the deliberate noindex that region and
+ * blog pages apply to locales they are not translated into.
+ */
+function TriToggle({
+  label,
+  description,
+  value,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  value: boolean | null;
+  onChange: (v: boolean | null) => void;
+}) {
+  const options: [string, boolean | null][] = [
+    ["Varsayılan", null],
+    ["Kapalı", false],
+    ["Açık", true],
+  ];
+  return (
+    <div>
+      <p className="text-[13px] font-medium text-slate-800">{label}</p>
+      <p className="text-[11.5px] text-slate-500 mt-0.5 mb-2 leading-snug">{description}</p>
+      <div className="flex gap-1 p-1 rounded-xl bg-slate-100 w-fit">
+        {options.map(([text, v]) => {
+          const on = value === v;
+          const danger = v === true;
+          return (
+            <button
+              key={text}
+              type="button"
+              onClick={() => {
+                if (v === true && !confirm(`"${label}" açılıyor.\n\n${description}\n\nDevam edilsin mi?`)) {
+                  return;
+                }
+                onChange(v);
+              }}
+              className="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all cursor-pointer"
+              style={{
+                backgroundColor: on ? (danger ? "#dc2626" : "#fff") : "transparent",
+                color: on ? (danger ? "#fff" : "#0f172a") : "#64748b",
+                boxShadow: on && !danger ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
+              }}
+            >
+              {text}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -792,19 +1320,12 @@ function SeoEditor({
 // New region
 // ---------------------------------------------------------------------------
 
-/**
- * Creating a region needs only the columns the database insists on plus the
- * two the route depends on. Everything SEO — meta copy, keywords, images —
- * is deliberately left to the editor this dialog hands off to, so the person
- * filling those fields in can see the Google preview and the score while they
- * type rather than guessing in a create form.
- */
 function NewRegionDialog({
   onClose,
   onCreated,
 }: {
   onClose: () => void;
-  onCreated: (row: RegionRow) => void;
+  onCreated: (row: Record<string, unknown>) => void;
 }) {
   const [slug, setSlug] = useState("");
   const [names, setNames] = useState<Record<string, string>>({});
@@ -813,9 +1334,6 @@ function NewRegionDialog({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The live route is always "<bare slug>-transfer"; the region page redirects
-  // anything else. Storing the bare slug keeps it consistent with every row
-  // already in the table.
   const bare = slug
     .toLowerCase()
     .replace(/-transfer$/, "")
@@ -823,8 +1341,7 @@ function NewRegionDialog({
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-  // name_tr … name_ru are NOT NULL in the schema, so the form cannot submit
-  // without them; Dutch was added later and is nullable.
+  // name_tr … name_ru are NOT NULL in the schema; Dutch was added later.
   const required: Loc[] = ["tr", "en", "de", "pl", "ru"];
   const missing = required.filter((l) => !(names[l] ?? "").trim());
   const canSave = bare.length > 1 && missing.length === 0 && !saving;
@@ -849,9 +1366,9 @@ function NewRegionDialog({
             name_nl: (names.nl ?? "").trim() || null,
             distance_km: distance ? parseFloat(distance) : null,
             duration_minutes: duration ? parseInt(duration, 10) : null,
-            // Created inactive on purpose: a region with no meta copy, no
-            // photo and no price should not go straight into the sitemap.
-            // Activate it from Bölgeler once its SEO is filled in.
+            // Inactive on purpose: a region with no copy, no photo and no price
+            // should not enter the sitemap. Activate it from Bölgeler once its
+            // SEO is filled in.
             is_active: false,
             is_popular: false,
             sort_order: 999,
@@ -860,7 +1377,7 @@ function NewRegionDialog({
       });
       const json = await res.json();
       if (!res.ok || json.error) throw new Error(json.error ?? "Bölge eklenemedi");
-      onCreated(json.data as RegionRow);
+      onCreated(json.data as Record<string, unknown>);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Bölge eklenemedi");
     } finally {
@@ -878,10 +1395,10 @@ function NewRegionDialog({
           <h2 className="text-[15px] font-semibold text-slate-900">Yeni bölge</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 cursor-pointer text-lg leading-none"
             aria-label="Kapat"
           >
-            <X size={18} />
+            ×
           </button>
         </div>
 
@@ -957,8 +1474,7 @@ function NewRegionDialog({
 
           <p className="text-[11.5px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">
             Bölge <b>pasif</b> olarak oluşturulur — sitemap&apos;e ve site menüsüne girmez.
-            Kaydettikten sonra SEO editörü açılır; meta metinleri, anahtar kelimeleri ve
-            görselleri doldurup Bölgeler sayfasından aktifleştirin.
+            Kaydettikten sonra SEO editörü açılır.
           </p>
 
           {error && (

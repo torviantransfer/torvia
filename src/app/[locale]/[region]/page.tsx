@@ -1,5 +1,6 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
+import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { regionImagePath, regionImageUrl } from "@/lib/regionImages";
 import {
   aggregate as aggregateReviews,
@@ -249,7 +250,10 @@ export async function generateMetadata({
   const translatedLocales = getTranslatedLocales(region as Record<string, unknown>);
   const isTranslated = translatedLocales.includes(locale as Locale);
 
-  return {
+  // Admin overrides on top of everything computed above. A region row with no
+  // SEO fields filled in produces byte-identical metadata to before.
+  return applyOverrides(
+    {
     title: metaTitle,
     description: metaDesc,
     alternates: isTranslated
@@ -282,7 +286,9 @@ export async function generateMetadata({
       description: metaDesc,
       images: [regionImg],
     },
-  };
+    },
+    { row: region as Record<string, unknown>, locale }
+  );
 }
 
 export default async function RegionPage({
@@ -576,7 +582,9 @@ export default async function RegionPage({
     ],
   };
 
-  const heroTitle = locale === "tr"
+  // An admin-set H1 wins; the locale templates below stay as the fallback.
+  const heroTitleOverride = ov(region as Record<string, unknown>, `h1_${locale}`);
+  const heroTitle = heroTitleOverride ?? (locale === "tr"
     ? `${name} Özel Transfer | Antalya Havalimanı → ${name}`
     : locale === "de"
       ? `Privater Transfer nach ${name} | Flughafen Antalya → ${name}`
@@ -586,7 +594,7 @@ export default async function RegionPage({
           ? `Частный трансфер в ${name} | Аэропорт Анталии → ${name}`
           : locale === "nl"
             ? `Privétransfer naar ${name} | Luchthaven Antalya → ${name}`
-            : `Private Transfer to ${name} | Antalya Airport → ${name}`;
+            : `Private Transfer to ${name} | Antalya Airport → ${name}`);
 
   const heroDescription = locale === "tr"
     ? `${name} için Antalya Havalimanı'ndan özel VIP transfer. Sabit fiyat, profesyonel şoför, uçuş takibi ve online rezervasyon.`

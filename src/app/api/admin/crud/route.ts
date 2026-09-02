@@ -2,6 +2,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { revalidateForTable } from "@/lib/revalidate";
+import { logSeoChange } from "@/lib/seoAuditLog";
 
 const ALLOWED_TABLES = [
   "drivers",
@@ -25,8 +26,9 @@ function isAllowedTable(table: string): table is AllowedTable {
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
-  const { error: authError } = await requireAdmin();
+  const { error: authError, user } = await requireAdmin();
   if (authError) return authError;
+  const changedBy = user?.email ?? null;
 
   try {
     const body = await request.json();
@@ -60,6 +62,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
         await revalidateForTable(table, result);
+        await logSeoChange({
+          table,
+          recordId: String(result?.id ?? ""),
+          before: null,
+          changes: data,
+          after: result,
+          changedBy,
+        });
         return NextResponse.json({ data: result });
       }
 
@@ -71,6 +81,13 @@ export async function POST(request: NextRequest) {
           );
         }
         const idCol = table === "settings" ? "key" : "id";
+        // Read before writing: the audit log needs the value being replaced,
+        // and after the update it is gone.
+        const { data: before } = await supabase
+          .from(table)
+          .select("*")
+          .eq(idCol, id)
+          .maybeSingle();
         const { data: result, error } = await supabase
           .from(table)
           .update(data)
@@ -81,6 +98,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
         await revalidateForTable(table, result);
+        await logSeoChange({
+          table,
+          recordId: String(id),
+          before: before as Record<string, unknown> | null,
+          changes: data,
+          after: result,
+          changedBy,
+        });
         return NextResponse.json({ data: result });
       }
 
@@ -131,6 +156,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: error.message }, { status: 500 });
         }
         await revalidateForTable(table, result);
+        await logSeoChange({
+          table,
+          recordId: String(id),
+          before: current as unknown as Record<string, unknown>,
+          changes: { [field]: result?.[field] },
+          after: result,
+          changedBy,
+        });
         return NextResponse.json({ data: result });
       }
 
