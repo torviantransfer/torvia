@@ -72,7 +72,7 @@ function labelFor(row: Record<string, unknown> | null): string | null {
   return null;
 }
 
-export async function logSeoChange(params: {
+export interface SeoChangeParams {
   table: string;
   recordId: string;
   /** The row as it was before the write. Null for a create. */
@@ -82,9 +82,15 @@ export async function logSeoChange(params: {
   /** The row after the write, used only for the label. */
   after?: Record<string, unknown> | null;
   changedBy: string | null;
-}): Promise<void> {
+}
+
+/**
+ * Turns one write into the log rows it deserves. Pure, so the old/new-value
+ * contract can be asserted without a database — see scripts/verify-seo-overrides.ts.
+ */
+export function buildAuditRows(params: SeoChangeParams): Record<string, unknown>[] {
   const { table, recordId, before, changes, after, changedBy } = params;
-  if (!TRACKED_TABLES.has(table)) return;
+  if (!TRACKED_TABLES.has(table)) return [];
 
   const rows: Record<string, unknown>[] = [];
   const label = labelFor(after ?? before);
@@ -105,6 +111,12 @@ export async function logSeoChange(params: {
       changed_by: changedBy,
     });
   }
+  return rows;
+}
+
+export async function logSeoChange(params: SeoChangeParams): Promise<void> {
+  const { table, recordId } = params;
+  const rows = buildAuditRows(params);
 
   if (rows.length === 0) return;
 

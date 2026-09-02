@@ -35,6 +35,37 @@ export const CRITICAL_FIELDS: Record<string, string> = {
   is_published: "Yazı yayından kaldırılırsa Google zamanla indeksten düşürür.",
 };
 
+/**
+ * The fields a save would actually write.
+ *
+ * Extracted from the editor so the "diff shows only what changed" contract is
+ * assertable without rendering React — and so the save payload and the
+ * confirmation screen are computed from one function rather than two that can
+ * disagree about what changed.
+ *
+ * Equality is by JSON, which correctly treats null and "" as different (one
+ * means "no override", the other is a value an editor typed and cleared) while
+ * still ignoring object key order.
+ */
+export function computeChanges(
+  original: Record<string, unknown>,
+  draft: Record<string, unknown>
+): FieldChange[] {
+  const out: FieldChange[] = [];
+  for (const [key, next] of Object.entries(draft)) {
+    const before = original[key];
+    if (JSON.stringify(next) === JSON.stringify(before)) continue;
+    out.push({
+      field: key,
+      label: key,
+      before: before === null || before === undefined ? "" : String(before),
+      after: next === null || next === undefined ? "" : String(next),
+      critical: criticalReason(key),
+    });
+  }
+  return out;
+}
+
 export function criticalReason(field: string): string | undefined {
   for (const [key, reason] of Object.entries(CRITICAL_FIELDS)) {
     if (field === key || field.startsWith(`${key}_`)) return reason;

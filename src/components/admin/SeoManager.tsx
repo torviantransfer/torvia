@@ -23,7 +23,7 @@ import SocialPreview from "./seo/SocialPreview";
 import SeoScorePanel, { ScoreBadge } from "./seo/SeoScorePanel";
 import EffectiveField, { fieldSource } from "./seo/EffectiveField";
 import { TechnicalChecks, HreflangPanel, SchemaPanel, RuntimeSummary } from "./seo/RuntimePanels";
-import SaveDiffDialog, { criticalReason, type FieldChange } from "./seo/SaveDiffDialog";
+import SaveDiffDialog, { computeChanges, type FieldChange } from "./seo/SaveDiffDialog";
 import BulkFillDialog, { type BulkTarget } from "./seo/BulkFillDialog";
 import {
   LOCALES, type Loc, LocaleTabs, TextField, KeywordField, ImageField, Section,
@@ -764,21 +764,12 @@ function SeoEditor({
     setSaved(false);
   };
 
-  const changes: FieldChange[] = useMemo(() => {
-    const out: FieldChange[] = [];
-    for (const [k, v] of Object.entries(draft)) {
-      const before = entry.row[k];
-      if (JSON.stringify(v) === JSON.stringify(before)) continue;
-      out.push({
-        field: k,
-        label: k,
-        before: before === null || before === undefined ? "" : String(before),
-        after: v === null || v === undefined ? "" : String(v),
-        critical: criticalReason(k),
-      });
-    }
-    return out;
-  }, [draft, entry.row]);
+  // The same function builds the confirmation diff and the save payload, so
+  // the screen can never show one set of changes while writing another.
+  const changes: FieldChange[] = useMemo(
+    () => computeChanges(entry.row, draft),
+    [draft, entry.row]
+  );
 
   const dirty = changes.length > 0;
 
