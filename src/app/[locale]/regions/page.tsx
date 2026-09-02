@@ -1,6 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Image from "next/image";
 import Header from "@/components/Header";
@@ -54,6 +55,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const supabase = createAdminClient();
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("regions");
   const t = await getTranslations({ locale, namespace: "regions" });
   const title = locale === "tr"
     ? "Antalya Havalimanı Transfer Bölgeleri | Belek, Side, Alanya, Kemer"
@@ -77,13 +81,13 @@ export async function generateMetadata({
           : locale === "nl"
             ? "Boek uw privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en meer dan 25 bestemmingen."
             : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/regions"),
     openGraph: seoOpenGraph(locale, "/regions", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
 export default async function RegionsPage({
@@ -93,6 +97,9 @@ export default async function RegionsPage({
 }) {
   const supabase = createAdminClient();
   const { locale } = await params;
+  // Admin-editable page copy. Every getter returns undefined when the
+  // field is blank, so the existing expression stays the fallback.
+  const seoRow = await getSeoPage("regions");
   const t = await getTranslations({ locale, namespace: "regions" });
   const c = await getTranslations({ locale, namespace: "common" });
 
@@ -125,8 +132,8 @@ export default async function RegionsPage({
           </div>
           <div className="relative max-w-7xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("destinations")}</p>
-            <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">{t("title")}</h1>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">{t("subtitle")}</p>
+            <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">{seoH1(seoRow, locale) ?? t("title")}</h1>
+            <p className="text-gray-500 text-lg max-w-2xl mx-auto">{seoIntro(seoRow, locale) ?? t("subtitle")}</p>
             <div className="mt-8 flex justify-center">
               <Link
                 href="/booking"

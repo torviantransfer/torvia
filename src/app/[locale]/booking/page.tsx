@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph } from "@/lib/seo";
 import Header from "@/components/Header";
@@ -72,12 +73,17 @@ export async function generateMetadata({
 
   const title = titleByLocale[locale] ?? `${t("title")} | Private Airport Transfer Antalya`;
   const description = descriptionByLocale[locale] ?? `${t("subtitle")} Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and all resort destinations with fixed prices and instant confirmation.`;
-  return {
-    title,
-    description,
-    alternates: seoAlternates(locale, "/booking"),
-    openGraph: seoOpenGraph(locale, "/booking", title, description),
-  };
+  const seoRow = await getSeoPage("booking");
+  return applySeoPage(
+    {
+      title,
+      description,
+      alternates: seoAlternates(locale, "/booking"),
+      openGraph: seoOpenGraph(locale, "/booking", title, description),
+    },
+    seoRow,
+    locale
+  );
 }
 
 export default async function BookingPage({

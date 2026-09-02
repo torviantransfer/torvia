@@ -171,3 +171,35 @@ export function seoTwitter(title: string, description: string, image?: string) {
     site: "@torviantransfer",
   };
 }
+
+// Next.js treats an explicit `robots: undefined` on a page as "unset this
+// field", not "inherit from the root layout" — so a page that wrote
+// `robots: isTranslated ? undefined : {...}` shipped with no robots meta at
+// all, dropping the root layout's `max-image-preview: large`. Without that
+// directive Google falls back to `standard` previews, which is why the
+// region and blog listings ranked but showed no thumbnail. Pages that want
+// the site default must state it, so export it once here.
+export const INDEXABLE_ROBOTS = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-video-preview": -1,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+  },
+} as const;
+
+// A page excluded from the index still wants large previews wherever Google
+// does surface it (e.g. the canonical it points at), and `follow: true` keeps
+// the link equity flowing.
+export const NOINDEX_ROBOTS = {
+  index: false,
+  follow: true,
+  googleBot: {
+    index: false,
+    follow: true,
+    "max-image-preview": "large",
+  },
+} as const;

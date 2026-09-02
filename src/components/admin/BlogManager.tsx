@@ -3,8 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Plus, Edit2, Trash2, Power, Eye, EyeOff, Upload, Image as ImageIcon,
-  Loader2, X, Search, Globe, Check, AlertCircle,
+  Loader2, X,
 } from "lucide-react";
+import {
+  scoreSeo,
+  parseKeywords,
+  TITLE_IDEAL_MAX,
+  DESC_IDEAL_MAX,
+} from "@/lib/seoScore";
+import SerpPreview from "./seo/SerpPreview";
+import SocialPreview from "./seo/SocialPreview";
+import SeoScorePanel, { ScoreBadge } from "./seo/SeoScorePanel";
 
 interface BlogPost {
   id: string;
@@ -72,8 +81,6 @@ const LOCALE_LABELS: Record<string, string> = {
   ru: "Русский",
   nl: "Nederlands",
 };
-
-const SITE_URL = "torviantransfer.com";
 
 const emptyForm = {
   slug: "",
@@ -245,13 +252,30 @@ export default function BlogManager({ initialPosts }: Props) {
   const activeFocusKeyword = form[`focus_keyword_${activeLang}` as keyof FormState];
   const activeSecondaryKeywords = form[`secondary_keywords_${activeLang}` as keyof FormState];
   const activeSlugOverride = form[`slug_${activeLang}` as keyof FormState];
-  const focusKeywordLower = activeFocusKeyword.trim().toLowerCase();
-  const keywordInTitle = focusKeywordLower !== "" && activeTitle.toLowerCase().includes(focusKeywordLower);
-  const keywordInExcerpt = focusKeywordLower !== "" && activeExcerpt.toLowerCase().includes(focusKeywordLower);
   const activeContent = form[`content_${activeLang}` as keyof FormState];
-  const keywordInContent = focusKeywordLower !== "" && activeContent.toLowerCase().includes(focusKeywordLower);
   const previewSlug = activeSlugOverride || form.slug || "yazi-basligi";
-  const previewUrl = `${SITE_URL} › ${activeLang} › blog › ${previewSlug}`;
+
+  // The same scorer the SEO screen uses, so a post and a region page are
+  // judged by one rule set rather than two that drift apart. The post's
+  // excerpt is its meta description; there is no separate column.
+  const score = scoreSeo({
+    title: activeTitle,
+    description: activeExcerpt,
+    focusKeyword: activeFocusKeyword,
+    keywords: activeSecondaryKeywords,
+    slug: previewSlug,
+    content: activeContent,
+    h1: activeTitle,
+    imageUrl: form.image_url,
+    ogImageUrl: form.image_url,
+    imageAlt: activeTitle,
+  });
+
+  const focusField = (field: string) => {
+    const el = document.getElementById(`blog-${field}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    (el as HTMLInputElement | null)?.focus();
+  };
 
   return (
     <div>
@@ -394,6 +418,7 @@ export default function BlogManager({ initialPosts }: Props) {
                 Odak Anahtar Kelime <span className="text-gray-400 font-normal">({LOCALE_LABELS[activeLang]})</span>
               </label>
               <input
+                id="blog-focus_keyword"
                 type="text"
                 value={activeFocusKeyword}
                 onChange={(e) => updateField(`focus_keyword_${activeLang}`, e.target.value)}
@@ -406,6 +431,7 @@ export default function BlogManager({ initialPosts }: Props) {
                 Yan Kelimeler <span className="text-gray-400 font-normal">(virgülle ayırın)</span>
               </label>
               <input
+                id="blog-keywords"
                 type="text"
                 value={activeSecondaryKeywords}
                 onChange={(e) => updateField(`secondary_keywords_${activeLang}`, e.target.value)}
@@ -413,13 +439,7 @@ export default function BlogManager({ initialPosts }: Props) {
                 placeholder="ör. belek transfer, vip transfer"
               />
             </div>
-            {focusKeywordLower && (
-              <div className="sm:col-span-2 flex flex-wrap gap-3 -mt-1">
-                <KeywordCheck ok={keywordInTitle} label="Başlıkta geçiyor" />
-                <KeywordCheck ok={keywordInExcerpt} label="Meta açıklamada geçiyor" />
-                <KeywordCheck ok={keywordInContent} label="İçerikte geçiyor" />
-              </div>
-            )}
+
           </div>
 
           {/* Title */}
@@ -428,9 +448,10 @@ export default function BlogManager({ initialPosts }: Props) {
               <label className="block text-sm font-medium text-gray-700">
                 Başlık <span className="text-gray-400 font-normal">(sayfa H1 + Google başlığı)</span>
               </label>
-              <span className={`text-xs ${activeTitle.length > 60 ? "text-amber-600" : "text-gray-400"}`}>{activeTitle.length}/60</span>
+              <span className={`text-xs ${activeTitle.length > TITLE_IDEAL_MAX ? "text-amber-600" : "text-gray-400"}`}>{activeTitle.length}/{TITLE_IDEAL_MAX}</span>
             </div>
             <input
+              id="blog-meta_title"
               type="text"
               value={activeTitle}
               onChange={(e) => updateField(`title_${activeLang}`, e.target.value)}
@@ -445,9 +466,10 @@ export default function BlogManager({ initialPosts }: Props) {
               <label className="block text-sm font-medium text-gray-700">
                 Meta Açıklama <span className="text-gray-400 font-normal">(Google&apos;da başlığın altında görünür)</span>
               </label>
-              <span className={`text-xs ${activeExcerpt.length > 160 ? "text-amber-600" : "text-gray-400"}`}>{activeExcerpt.length}/160</span>
+              <span className={`text-xs ${activeExcerpt.length > DESC_IDEAL_MAX ? "text-amber-600" : "text-gray-400"}`}>{activeExcerpt.length}/{DESC_IDEAL_MAX}</span>
             </div>
             <textarea
+              id="blog-meta_description"
               value={activeExcerpt}
               onChange={(e) => updateField(`excerpt_${activeLang}`, e.target.value)}
               rows={2}
@@ -457,29 +479,33 @@ export default function BlogManager({ initialPosts }: Props) {
             <p className="mt-1 text-xs text-gray-500">Boş bırakılırsa içerikten otomatik kısaltılır — ama tıklanma oranı için elle yazmanız önerilir.</p>
           </div>
 
-          {/* Google SERP preview */}
-          <div className="rounded-xl p-4 bg-gray-50 border border-gray-200">
-            <p className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              <Search size={12} /> Google&apos;da Böyle Görünecek
-            </p>
-            <div className="bg-white rounded-lg p-3.5 border border-gray-100">
-              <div className="flex items-center gap-1.5 text-[13px] text-gray-700 mb-0.5">
-                <Globe size={12} className="text-gray-400" />
-                <span className="truncate">{previewUrl}</span>
-              </div>
-              <p className="text-[19px] leading-snug text-blue-700 truncate" style={{ fontFamily: "arial, sans-serif" }}>
-                {(activeTitle || "Blog yazısı başlığı").slice(0, 65)}
-              </p>
-              <p className="text-[13px] leading-snug text-gray-600 line-clamp-2" style={{ fontFamily: "arial, sans-serif" }}>
-                {(activeExcerpt || "Bu yazı için meta açıklama girilmedi — Google, içerikten otomatik bir özet gösterecek.").slice(0, 160)}
-              </p>
+          {/* Previews and score, the same components the SEO screen uses. */}
+          <div className="grid lg:grid-cols-2 gap-4 items-start">
+            <div className="space-y-4">
+              <SerpPreview
+                title={activeTitle}
+                description={activeExcerpt}
+                path={`blog/${previewSlug}`}
+                locale={activeLang}
+                keywords={[activeFocusKeyword, ...parseKeywords(activeSecondaryKeywords)].filter(Boolean)}
+                imageUrl={form.image_url || null}
+              />
+              <SocialPreview
+                title={activeTitle}
+                description={activeExcerpt}
+                imageUrl={form.image_url || null}
+                path={`blog/${previewSlug}`}
+                locale={activeLang}
+              />
             </div>
+            <SeoScorePanel score={score} onFieldClick={focusField} />
           </div>
 
           {/* URL slug for this language */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">URL slug ({LOCALE_LABELS[activeLang]})</label>
             <input
+              id="blog-slug"
               type="text"
               value={activeSlugOverride}
               onChange={(e) => updateField(`slug_${activeLang}`, slugify(e.target.value))}
@@ -495,6 +521,7 @@ export default function BlogManager({ initialPosts }: Props) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">İçerik ({LOCALE_LABELS[activeLang]})</label>
             <textarea
+              id="blog-content"
               value={form[`content_${activeLang}` as keyof FormState]}
               onChange={(e) => updateField(`content_${activeLang}`, e.target.value)}
               rows={12}
@@ -532,6 +559,7 @@ export default function BlogManager({ initialPosts }: Props) {
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Yazı</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Slug</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-700">SEO</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-700">Durum</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-700">Tarih</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700">İşlemler</th>
@@ -556,6 +584,12 @@ export default function BlogManager({ initialPosts }: Props) {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-500 font-mono text-xs">{post.slug}</td>
+                  <td className="px-4 py-3 text-center">
+                    {/* Scored in the post's own primary language rather than a
+                        fixed one, so a Turkish-only post is not marked down
+                        for having no English copy. */}
+                    <ScoreBadge percent={postScore(post)} />
+                  </td>
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -590,7 +624,7 @@ export default function BlogManager({ initialPosts }: Props) {
               ))}
               {posts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
                     Henüz blog yazısı yok. İlk yazınızı oluşturun!
                   </td>
                 </tr>
@@ -604,11 +638,27 @@ export default function BlogManager({ initialPosts }: Props) {
   );
 }
 
-function KeywordCheck({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium ${ok ? "text-emerald-600" : "text-gray-400"}`}>
-      {ok ? <Check size={12} /> : <AlertCircle size={12} />}
-      {label}
-    </span>
-  );
+/**
+ * Row-level score for the posts table.
+ *
+ * Uses the first locale the post actually has a title in. Scoring every row
+ * against a single fixed language would mark a Turkish-only post as broken
+ * for a reason that is not a defect.
+ */
+function postScore(post: BlogPost): number {
+  const lang = LOCALES.find((l) => (post[`title_${l}` as keyof BlogPost] as string | null)?.trim()) ?? "en";
+  const pick = (prefix: string) =>
+    ((post[`${prefix}_${lang}` as keyof BlogPost] as string | null) ?? "");
+  return scoreSeo({
+    title: pick("title"),
+    description: pick("excerpt"),
+    focusKeyword: pick("focus_keyword"),
+    keywords: pick("secondary_keywords"),
+    slug: pick("slug") || post.slug,
+    content: pick("content"),
+    h1: pick("title"),
+    imageUrl: post.image_url ?? "",
+    ogImageUrl: post.image_url ?? "",
+    imageAlt: pick("title"),
+  }).percent;
 }

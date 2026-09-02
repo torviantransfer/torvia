@@ -1,5 +1,12 @@
-import { getTranslations } from "next-intl/server";
+﻿import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage } from "@/lib/seoPages";
+import {
+  aggregate as aggregateReviews,
+  forLocale,
+  productSchema,
+  type ReviewRow,
+} from "@/lib/reviews";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -24,6 +31,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("home");
   const t = await getTranslations({ locale, namespace: "meta" });
 
   // Titles lead with the exact high-volume head term per market (Google Trends
@@ -48,7 +58,7 @@ export async function generateMetadata({
     nl: "Antalya Airport transfer naar Belek, Side, Alanya, Kemer en alle hotels. Privétransfer van deur tot deur, vaste prijs, Mercedes Vito, vluchtmonitoring, direct boeken.",
   };
 
-  return {
+  return applySeoPage({
     title: titleByLocale[locale] ?? t("title"),
     description: descriptionByLocale[locale] ?? t("description"),
     alternates: {
@@ -89,7 +99,7 @@ export async function generateMetadata({
       : locale === "nl"
       ? "antalya airport transfer, antalya private transfer, transfer luchthaven Antalya, privétransfer Antalya, VIP transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, hotel transfer Antalya, luchthaven Antalya naar hotel, Land of Legends transfer, nachttransfer luchthaven Antalya, transfer in plaats van taxi, Titanic Deluxe Lara transfer"
       : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, antalya airport hotel transfer, private transfer from antalya airport to hotel, vip transfer antalya airport to belek, side hotel transfer antalya airport, Land of Legends private transfer, late night airport transfer, fixed price transfer instead of taxi, Titanic Deluxe Lara transfer",
-  };
+  }, seoRow, locale);
 }
 
 export default async function HomePage({
@@ -99,17 +109,21 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
 
-  // Fetch approved reviews for AggregateRating schema
+  // Approved reviews, for both the LocalBusiness aggregateRating below and the
+  // Product node that can actually render stars in the SERP.
   const supabase = createAdminClient();
   const { data: reviewData } = await supabase
     .from("reviews")
-    .select("rating")
-    .eq("is_approved", true);
-  const reviewList = reviewData ?? [];
-  const reviewCount = reviewList.length;
-  const avgRating = reviewCount >= 5
-    ? (reviewList.reduce((s, r) => s + (r.rating as number), 0) / reviewCount).toFixed(1)
-    : null;
+    .select(
+      "id, rating, comment, created_at, published_at, author_name, locale, customers(first_name)"
+    )
+    .eq("is_approved", true)
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(50);
+  const reviewList = forLocale((reviewData ?? []) as unknown as ReviewRow[], locale);
+  const ratings = aggregateReviews(reviewList);
+  const avgRating = ratings.count >= 5 ? ratings.value?.toFixed(1) ?? null : null;
+  const reviewCount = ratings.count;
 
   // JSON-LD Structured Data
   const organizationSchema = {
@@ -177,6 +191,20 @@ export default async function HomePage({
       },
     } : {}),
   };
+
+  // LocalBusiness keeps its aggregateRating above for the knowledge-panel
+  // signal, but Google has not rendered star snippets for self-serving
+  // LocalBusiness reviews since 2019. This Product node is the one that can
+  // -- see the note at the top of src/lib/reviews.ts. It emits nothing when
+  // there are too few approved reviews to back a rating honestly.
+  const reviewProductSchema = productSchema({
+    name: "Antalya Havalimani Transfer",
+    description:
+      "Antalya Havalimani'ndan Belek, Side, Alanya, Kemer ve tum otellere sabit fiyatli ozel VIP transfer.",
+    url: `${BASE_URL}/${locale}`,
+    image: `${BASE_URL}/images/og-default.jpg`,
+    reviews: reviewList,
+  });
 
   const webSiteSchema = {
     "@context": "https://schema.org",
@@ -264,6 +292,12 @@ export default async function HomePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {reviewProductSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewProductSchema) }}
+        />
+      )}
 
       <Header />
       <main className="flex-1">

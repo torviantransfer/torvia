@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
+import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -241,6 +242,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("lara-beach-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
   const c = content[loc];
   const path = "/lara-beach-transfer";
@@ -258,7 +262,7 @@ export async function generateMetadata({
     ],
   };
 
-  return {
+  return applySeoPage({
     title: c.title,
     description: c.metaDesc,
     alternates: {
@@ -278,7 +282,7 @@ export async function generateMetadata({
     other: {
       "schema-faq": JSON.stringify(faqSchema),
     },
-  };
+  }, seoRow, locale);
 }
 
 export default async function LaraBeachTransferPage({
@@ -287,6 +291,9 @@ export default async function LaraBeachTransferPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // Admin-editable page copy. Every getter returns undefined when the
+  // field is blank, so the existing expression stays the fallback.
+  const seoRow = await getSeoPage("lara-beach-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
   const c = content[loc];
 
@@ -339,10 +346,10 @@ export default async function LaraBeachTransferPage({
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               <div>
                 <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">
-                  {c.heading}
+                  {seoH1(seoRow, locale) ?? c.heading}
                 </h1>
                 <p className="text-base lg:text-lg text-gray-500 mb-4 leading-relaxed">
-                  {c.desc}
+                  {seoIntro(seoRow, locale) ?? c.desc}
                 </p>
                 <p className="text-sm text-gray-400 mb-6 italic">{c.hotels}</p>
 

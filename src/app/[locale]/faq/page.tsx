@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+﻿import { getTranslations } from "next-intl/server";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -6,6 +6,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { ArrowRight, MessageCircle, HelpCircle, Search } from "lucide-react";
 import type { Metadata } from "next";
+import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 
 export async function generateMetadata({
   params,
@@ -13,19 +14,30 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // Admin-editable overrides. Null when the row is empty or the
+  // table is missing, in which case the values below are used verbatim.
+  const seoRow = await getSeoPage("faq");
   const t = await getTranslations({ locale, namespace: "faq" });
   const title = t("title");
   const description = t("subtitle");
-  return {
+  return applySeoPage({
     title,
     description,
     alternates: seoAlternates(locale, "/faq"),
     openGraph: seoOpenGraph(locale, "/faq", title, description),
     twitter: seoTwitter(title, description),
-  };
+  }, seoRow, locale);
 }
 
-export default async function FAQPage() {
+export default async function FAQPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  // The locale was only needed by generateMetadata until the admin
+  // gained editable H1 and intro copy, which is per language.
+  const { locale } = await params;
+  const seoRow = await getSeoPage("faq");
   const t = await getTranslations("faq");
 
   const faqKeys = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -40,8 +52,8 @@ export default async function FAQPage() {
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("title")}</p>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">{t("heading")}</h1>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">{t("subtitle")}</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 tracking-tight text-gray-900">{seoH1(seoRow, locale) ?? t("heading")}</h1>
+            <p className="text-gray-500 text-lg max-w-xl mx-auto">{seoIntro(seoRow, locale) ?? t("subtitle")}</p>
           </div>
         </section>
 
