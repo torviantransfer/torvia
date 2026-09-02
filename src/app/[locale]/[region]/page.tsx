@@ -287,7 +287,7 @@ export async function generateMetadata({
       images: [regionImg],
     },
     },
-    { row: region as Record<string, unknown>, locale }
+    { row: region as Record<string, unknown>, locale, rowOwnsMetaText: true }
   );
 }
 

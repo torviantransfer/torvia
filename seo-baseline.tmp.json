@@ -1,0 +1,367 @@
+{
+  "/tr/antalya-airport-transfer": {
+    "status": 200,
+    "blocked": false,
+    "title": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon | TORVIAN Transfer",
+    "description": "Antalya Havalimanı özel transfer: araç başına sabit fiyat, gerçek zamanlı uçuş takibi ve varış salonunda sizi bekleyen şoför. 24 saat öncesine kadar ücretsiz iptal.",
+    "canonical": "https://torviantransfer.com/tr/antalya-airport-transfer",
+    "h1": [
+      "Antalya Havalimanı Transfer"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "tr",
+    "ogTitle": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon",
+    "ogDescription": "Antalya Havalimanı özel transfer: araç başına sabit fiyat, gerçek zamanlı uçuş takibi ve varış salonunda sizi bekleyen şoför. 24 saat öncesine kadar ücretsiz iptal.",
+    "ogImage": "https://torviantransfer.com/images/antalya-airport.jpg",
+    "ogImageAlt": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon",
+    "ogUrl": "https://torviantransfer.com/tr/antalya-airport-transfer",
+    "ogLocale": "tr_TR",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon",
+    "twitterDescription": "Antalya Havalimanı özel transfer: araç başına sabit fiyat, gerçek zamanlı uçuş takibi ve varış salonunda sizi bekleyen şoför. 24 saat öncesine kadar ücretsiz iptal.",
+    "twitterImage": "https://torviantransfer.com/images/antalya-airport.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/antalya-airport-transfer",
+      "en=https://torviantransfer.com/en/antalya-airport-transfer",
+      "nl=https://torviantransfer.com/nl/antalya-airport-transfer",
+      "pl=https://torviantransfer.com/pl/antalya-airport-transfer",
+      "ru=https://torviantransfer.com/ru/antalya-airport-transfer",
+      "tr=https://torviantransfer.com/tr/antalya-airport-transfer",
+      "x-default=https://torviantransfer.com/en/antalya-airport-transfer"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "TaxiService"
+    ],
+    "wordCount": 652,
+    "images": 9
+  },
+  "/en/antalya-airport-transfer": {
+    "status": 200,
+    "blocked": false,
+    "title": "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online | TORVIAN Transfer",
+    "description": "Private Antalya Airport transfer: one fixed price per vehicle, real-time flight tracking and your driver waiting in the arrivals hall. Free cancellation up to 24h.",
+    "canonical": "https://torviantransfer.com/en/antalya-airport-transfer",
+    "h1": [
+      "Antalya Airport Transfer"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "en",
+    "ogTitle": "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online",
+    "ogDescription": "Private Antalya Airport transfer: one fixed price per vehicle, real-time flight tracking and your driver waiting in the arrivals hall. Free cancellation up to 24h.",
+    "ogImage": "https://torviantransfer.com/images/antalya-airport.jpg",
+    "ogImageAlt": "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online",
+    "ogUrl": "https://torviantransfer.com/en/antalya-airport-transfer",
+    "ogLocale": "en_US",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online",
+    "twitterDescription": "Private Antalya Airport transfer: one fixed price per vehicle, real-time flight tracking and your driver waiting in the arrivals hall. Free cancellation up to 24h.",
+    "twitterImage": "https://torviantransfer.com/images/antalya-airport.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/antalya-airport-transfer",
+      "en=https://torviantransfer.com/en/antalya-airport-transfer",
+      "nl=https://torviantransfer.com/nl/antalya-airport-transfer",
+      "pl=https://torviantransfer.com/pl/antalya-airport-transfer",
+      "ru=https://torviantransfer.com/ru/antalya-airport-transfer",
+      "tr=https://torviantransfer.com/tr/antalya-airport-transfer",
+      "x-default=https://torviantransfer.com/en/antalya-airport-transfer"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "TaxiService"
+    ],
+    "wordCount": 793,
+    "images": 9
+  },
+  "/tr": {
+    "status": 200,
+    "blocked": false,
+    "title": "Antalya Havalimanı Transfer | Özel Transfer Belek, Side, Alanya, Kemer | TORVIAN Transfer",
+    "description": "Antalya Havalimanı transfer hizmeti: Belek, Side, Alanya, Kemer ve tüm otellere özel transfer. Sabit fiyat, Mercedes Vito, uçuş takibi, anında online rezervasyon.",
+    "canonical": "https://torviantransfer.com/tr",
+    "h1": [
+      "Antalya Havalimanı Özel Transfer — Sabit Fiyat, Anında Rezervasyon"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "tr",
+    "ogTitle": "Antalya Havalimanı VIP Transfer | Belek, Side, Alanya, Kemer 2026",
+    "ogDescription": "Antalya Havalimanı (AYT) VIP özel transfer. Belek 30dk, Side 75dk, Alanya 2,5sa, Kemer 45dk. Sabit fiyat, Mercedes Vito, uçuş takibi, 7/24. Online rezervasyon yapın.",
+    "ogImage": "https://torviantransfer.com/images/og-default.jpg",
+    "ogImageAlt": "TORVIAN Transfer - Antalya Airport VIP Transfer",
+    "ogUrl": "https://torviantransfer.com/tr",
+    "ogLocale": "tr_TR",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Antalya Havalimanı VIP Transfer | Belek, Side, Alanya, Kemer 2026",
+    "twitterDescription": "Antalya Havalimanı (AYT) VIP özel transfer. Belek 30dk, Side 75dk, Alanya 2,5sa, Kemer 45dk. Sabit fiyat, Mercedes Vito, uçuş takibi, 7/24. Online rezervasyon yapın.",
+    "twitterImage": "https://torviantransfer.com/images/og-default.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de",
+      "en=https://torviantransfer.com/en",
+      "nl=https://torviantransfer.com/nl",
+      "pl=https://torviantransfer.com/pl",
+      "ru=https://torviantransfer.com/ru",
+      "tr=https://torviantransfer.com/tr",
+      "x-default=https://torviantransfer.com/en"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "LocalBusiness",
+      "Organization",
+      "TaxiService",
+      "WebSite"
+    ],
+    "wordCount": 1146,
+    "images": 12
+  },
+  "/en": {
+    "status": 200,
+    "blocked": false,
+    "title": "Antalya Airport Transfer | Private Transfer to Belek, Side, Alanya, Kemer | TORVIAN Transfer",
+    "description": "Antalya Airport transfer to Belek, Side, Alanya, Kemer and all resorts. Private door-to-door transfer, fixed price, Mercedes Vito, flight tracking, instant booking.",
+    "canonical": "https://torviantransfer.com/en",
+    "h1": [
+      "Private Transfer Antalya Airport — Fixed Price, Instant Booking"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "en",
+    "ogTitle": "Antalya Airport VIP Transfer | Belek, Side, Alanya, Kemer 2026",
+    "ogDescription": "VIP private transfer from Antalya Airport (AYT). Belek 30min, Side 75min, Alanya 2.5h, Kemer 45min. Fixed price, Mercedes Vito, flight tracking, 24/7. Book online instantly.",
+    "ogImage": "https://torviantransfer.com/images/og-default.jpg",
+    "ogImageAlt": "TORVIAN Transfer - Antalya Airport VIP Transfer",
+    "ogUrl": "https://torviantransfer.com/en",
+    "ogLocale": "en_US",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Antalya Airport VIP Transfer | Belek, Side, Alanya, Kemer 2026",
+    "twitterDescription": "VIP private transfer from Antalya Airport (AYT). Belek 30min, Side 75min, Alanya 2.5h, Kemer 45min. Fixed price, Mercedes Vito, flight tracking, 24/7. Book online instantly.",
+    "twitterImage": "https://torviantransfer.com/images/og-default.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de",
+      "en=https://torviantransfer.com/en",
+      "nl=https://torviantransfer.com/nl",
+      "pl=https://torviantransfer.com/pl",
+      "ru=https://torviantransfer.com/ru",
+      "tr=https://torviantransfer.com/tr",
+      "x-default=https://torviantransfer.com/en"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "LocalBusiness",
+      "Organization",
+      "TaxiService",
+      "WebSite"
+    ],
+    "wordCount": 1329,
+    "images": 12
+  },
+  "/tr/belek-transfer": {
+    "status": 200,
+    "blocked": false,
+    "title": "Antalya Havalimanı Belek Özel Transfer | VIP · 30 Dk. · Sabit Fiyat · $55'den | TORVIAN Transfer",
+    "description": "Belek için Antalya Havalimanı'ndan özel VIP transfer. 30 dakika · 33.0 km. Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi, 24 saat ücretsiz iptal. Online rezervasyon.",
+    "canonical": "https://torviantransfer.com/tr/belek-transfer",
+    "h1": [
+      "Belek Özel Transfer | Antalya Havalimanı → Belek"
+    ],
+    "robots": null,
+    "googlebot": null,
+    "htmlLang": "tr",
+    "ogTitle": "Antalya Havalimanı Belek Özel Transfer | VIP · 30 Dk. · Sabit Fiyat · $55'den",
+    "ogDescription": "Belek için Antalya Havalimanı'ndan özel VIP transfer. 30 dakika · 33.0 km. Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi, 24 saat ücretsiz iptal. Online rezervasyon.",
+    "ogImage": "https://torviantransfer.com/images/regions/belek-golf.jpg",
+    "ogImageAlt": "Belek Transfer",
+    "ogUrl": "https://torviantransfer.com/tr/belek-transfer",
+    "ogLocale": null,
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Antalya Havalimanı Belek Özel Transfer | VIP · 30 Dk. · Sabit Fiyat · $55'den",
+    "twitterDescription": "Belek için Antalya Havalimanı'ndan özel VIP transfer. 30 dakika · 33.0 km. Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi, 24 saat ücretsiz iptal. Online rezervasyon.",
+    "twitterImage": "https://torviantransfer.com/images/regions/belek-golf.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/belek-transfer",
+      "en=https://torviantransfer.com/en/belek-transfer",
+      "nl=https://torviantransfer.com/nl/belek-transfer",
+      "pl=https://torviantransfer.com/pl/belek-transfer",
+      "ru=https://torviantransfer.com/ru/belek-transfer",
+      "tr=https://torviantransfer.com/tr/belek-transfer",
+      "x-default=https://torviantransfer.com/en/belek-transfer"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "HowTo",
+      "TaxiService"
+    ],
+    "wordCount": 1301,
+    "images": 7
+  },
+  "/pl/side-transfer": {
+    "status": 200,
+    "blocked": false,
+    "title": "Transfer z lotniska Antalya do Side | VIP Prywatny · 55 min · Od $60 | TORVIAN Transfer",
+    "description": "Prywatny transfer VIP z lotniska Antalya do Side. 55 min · 65.0 km. Stała cena, Mercedes Vito, spotkanie na lotnisku, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.",
+    "canonical": "https://torviantransfer.com/pl/side-transfer",
+    "h1": [
+      "Prywatny transfer do Side | Lotnisko Antalya → Side"
+    ],
+    "robots": null,
+    "googlebot": null,
+    "htmlLang": "pl",
+    "ogTitle": "Transfer z lotniska Antalya do Side | VIP Prywatny · 55 min · Od $60",
+    "ogDescription": "Prywatny transfer VIP z lotniska Antalya do Side. 55 min · 65.0 km. Stała cena, Mercedes Vito, spotkanie na lotnisku, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.",
+    "ogImage": "https://torviantransfer.com/images/regions/side-ancient.jpg",
+    "ogImageAlt": "Side Transfer",
+    "ogUrl": "https://torviantransfer.com/pl/side-transfer",
+    "ogLocale": null,
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Transfer z lotniska Antalya do Side | VIP Prywatny · 55 min · Od $60",
+    "twitterDescription": "Prywatny transfer VIP z lotniska Antalya do Side. 55 min · 65.0 km. Stała cena, Mercedes Vito, spotkanie na lotnisku, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.",
+    "twitterImage": "https://torviantransfer.com/images/regions/side-ancient.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/side-transfer",
+      "en=https://torviantransfer.com/en/side-transfer",
+      "nl=https://torviantransfer.com/nl/side-transfer",
+      "pl=https://torviantransfer.com/pl/side-transfer",
+      "ru=https://torviantransfer.com/ru/side-transfer",
+      "tr=https://torviantransfer.com/tr/side-transfer",
+      "x-default=https://torviantransfer.com/en/side-transfer"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "HowTo",
+      "TaxiService"
+    ],
+    "wordCount": 1197,
+    "images": 7
+  },
+  "/ru/alanya-transfer": {
+    "status": 200,
+    "blocked": false,
+    "title": "Трансфер Аэропорт Анталия → Аланья | VIP Частный · 2ч 0 мин. · От $80 | TORVIAN Transfer",
+    "description": "Частный VIP-трансфер из аэропорта Анталии в Аланья. 2ч 0 мин. · 132.0 км. Фиксированная цена, Mercedes Vito, встреча в аэропорту, отслеживание рейса, отмена за 24ч. Бронировать онлайн.",
+    "canonical": "https://torviantransfer.com/ru/alanya-transfer",
+    "h1": [
+      "Частный трансфер в Аланья | Аэропорт Анталии → Аланья"
+    ],
+    "robots": null,
+    "googlebot": null,
+    "htmlLang": "ru",
+    "ogTitle": "Трансфер Аэропорт Анталия → Аланья | VIP Частный · 2ч 0 мин. · От $80",
+    "ogDescription": "Частный VIP-трансфер из аэропорта Анталии в Аланья. 2ч 0 мин. · 132.0 км. Фиксированная цена, Mercedes Vito, встреча в аэропорту, отслеживание рейса, отмена за 24ч. Бронировать онлайн.",
+    "ogImage": "https://torviantransfer.com/images/regions/alanya-castle.jpg",
+    "ogImageAlt": "Аланья Transfer",
+    "ogUrl": "https://torviantransfer.com/ru/alanya-transfer",
+    "ogLocale": null,
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Трансфер Аэропорт Анталия → Аланья | VIP Частный · 2ч 0 мин. · От $80",
+    "twitterDescription": "Частный VIP-трансфер из аэропорта Анталии в Аланья. 2ч 0 мин. · 132.0 км. Фиксированная цена, Mercedes Vito, встреча в аэропорту, отслеживание рейса, отмена за 24ч. Бронировать онлайн.",
+    "twitterImage": "https://torviantransfer.com/images/regions/alanya-castle.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/alanya-transfer",
+      "en=https://torviantransfer.com/en/alanya-transfer",
+      "nl=https://torviantransfer.com/nl/alanya-transfer",
+      "pl=https://torviantransfer.com/pl/alanya-transfer",
+      "ru=https://torviantransfer.com/ru/alanya-transfer",
+      "tr=https://torviantransfer.com/tr/alanya-transfer",
+      "x-default=https://torviantransfer.com/en/alanya-transfer"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "HowTo",
+      "TaxiService"
+    ],
+    "wordCount": 1188,
+    "images": 7
+  },
+  "/en/booking": {
+    "status": 200,
+    "blocked": false,
+    "title": "Private Transfer Antalya Airport | Book Hotel Transfer to Belek, Side, Alanya, Kemer | TORVIAN Transfer",
+    "description": "Book your Antalya Airport hotel transfer and private VIP transfer to Belek, Side, Alanya, Kemer and all resorts. Fixed-price door-to-door service with flight tracking, child seat options and instant confirmation.",
+    "canonical": "https://torviantransfer.com/en/booking",
+    "h1": [
+      "Book Antalya Airport Transfer | Fixed Price, Instant Confirmation"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "en",
+    "ogTitle": "Private Transfer Antalya Airport | Book Hotel Transfer to Belek, Side, Alanya, Kemer",
+    "ogDescription": "Book your Antalya Airport hotel transfer and private VIP transfer to Belek, Side, Alanya, Kemer and all resorts. Fixed-price door-to-door service with flight tracking, child seat options and instant confirmation.",
+    "ogImage": "https://torviantransfer.com/images/og-default.jpg",
+    "ogImageAlt": "Private Transfer Antalya Airport | Book Hotel Transfer to Belek, Side, Alanya, Kemer",
+    "ogUrl": "https://torviantransfer.com/en/booking",
+    "ogLocale": "en_US",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Private Transfer Antalya Airport | Book Hotel Transfer to Belek, Side, Alanya, Kemer",
+    "twitterDescription": "Book your Antalya Airport hotel transfer and private VIP transfer to Belek, Side, Alanya, Kemer and all resorts. Fixed-price door-to-door service with flight tracking, child seat options and instant confirmation.",
+    "twitterImage": "https://torviantransfer.com/images/og-default.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/booking",
+      "en=https://torviantransfer.com/en/booking",
+      "nl=https://torviantransfer.com/nl/booking",
+      "pl=https://torviantransfer.com/pl/booking",
+      "ru=https://torviantransfer.com/ru/booking",
+      "tr=https://torviantransfer.com/tr/booking",
+      "x-default=https://torviantransfer.com/en/booking"
+    ],
+    "schemas": [
+      "BreadcrumbList",
+      "FAQPage",
+      "TaxiService"
+    ],
+    "wordCount": 805,
+    "images": 1
+  },
+  "/en/privacy": {
+    "status": 200,
+    "blocked": false,
+    "title": "Privacy Policy | TORVIAN Transfer | TORVIAN Transfer",
+    "description": "How we collect, use, and protect your personal information.",
+    "canonical": "https://torviantransfer.com/en/privacy",
+    "h1": [
+      "Privacy Policy"
+    ],
+    "robots": "index, follow",
+    "googlebot": "index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1",
+    "htmlLang": "en",
+    "ogTitle": "Privacy Policy | TORVIAN Transfer",
+    "ogDescription": "How we collect, use, and protect your personal information.",
+    "ogImage": "https://torviantransfer.com/images/og-default.jpg",
+    "ogImageAlt": "Privacy Policy | TORVIAN Transfer",
+    "ogUrl": "https://torviantransfer.com/en/privacy",
+    "ogLocale": "en_US",
+    "ogType": "website",
+    "twitterCard": "summary_large_image",
+    "twitterTitle": "Privacy Policy | TORVIAN Transfer",
+    "twitterDescription": "How we collect, use, and protect your personal information.",
+    "twitterImage": "https://torviantransfer.com/images/og-default.jpg",
+    "hreflang": [
+      "de=https://torviantransfer.com/de/privacy",
+      "en=https://torviantransfer.com/en/privacy",
+      "nl=https://torviantransfer.com/nl/privacy",
+      "pl=https://torviantransfer.com/pl/privacy",
+      "ru=https://torviantransfer.com/ru/privacy",
+      "tr=https://torviantransfer.com/tr/privacy",
+      "x-default=https://torviantransfer.com/en/privacy"
+    ],
+    "schemas": [],
+    "wordCount": 340,
+    "images": 0
+  }
+}

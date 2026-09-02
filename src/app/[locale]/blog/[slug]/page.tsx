@@ -185,7 +185,7 @@ export async function generateMetadata({
     openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
     twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
     },
-    { row: post as Record<string, unknown>, locale: loc }
+    { row: post as Record<string, unknown>, locale: loc, rowOwnsMetaText: true }
   );
 }
 

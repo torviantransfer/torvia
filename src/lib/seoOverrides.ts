@@ -124,6 +124,21 @@ export interface ApplyOptions {
    * everywhere, but blog posts also use it as the article's hero.
    */
   imageField?: string;
+  /**
+   * Set when the caller has already read `meta_title_*` / `meta_description_*`
+   * from this row and built its own value from them.
+   *
+   * Region and blog pages do exactly that, and they do not just copy the
+   * column: a region appends the cheapest price to it, so
+   * `meta_title_tr` = "… | VIP · 30 Dk. · Sabit Fiyat" becomes
+   * "… · Sabit Fiyat · $55'den". Re-applying the raw column here overwrote
+   * that with the unprocessed string and stripped the price out of every
+   * region title, in every locale, the moment this shipped.
+   *
+   * `seo_pages` rows are different: those pages never look at their row, so
+   * for them applying the column IS the override and this stays false.
+   */
+  rowOwnsMetaText?: boolean;
 }
 
 /**
@@ -131,13 +146,16 @@ export interface ApplyOptions {
  * no row or nothing is overridden.
  */
 export function applyOverrides(fallback: Metadata, options: ApplyOptions): Metadata {
-  const { row, locale, imageField = "image_url" } = options;
+  const { row, locale, imageField = "image_url", rowOwnsMetaText = false } = options;
   if (!row) return fallback;
 
   const next: Metadata = { ...fallback };
 
-  const title = ov(row, `meta_title_${locale}`);
-  const description = ov(row, `meta_description_${locale}`);
+  // Skipped entirely when the caller already consumed these columns; see
+  // `rowOwnsMetaText`. `undefined` here also stops them leaking into the
+  // Open Graph chain below, which would reintroduce the same loss on og:title.
+  const title = rowOwnsMetaText ? undefined : ov(row, `meta_title_${locale}`);
+  const description = rowOwnsMetaText ? undefined : ov(row, `meta_description_${locale}`);
   if (title) next.title = title;
   if (description) next.description = description;
 

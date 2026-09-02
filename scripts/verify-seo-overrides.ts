@@ -639,6 +639,102 @@ assert(
   })) === undefined
 );
 
+// -------------------------------------------------------------------------
+console.log("\n--- KONTRAT: sayfa kendi meta kolonunu işlediyse üzerine yazılmamalı ---");
+
+// The exact production regression. A region reads meta_title_tr itself and
+// appends the cheapest price to it; re-applying the raw column here stripped
+// the price out of every region title in every locale.
+const regionRow = {
+  id: "r1",
+  slug: "belek",
+  meta_title_tr: "Antalya Havalimanı Belek Özel Transfer | VIP · 30 Dk. · Sabit Fiyat",
+  meta_description_tr: "Bölge açıklaması.",
+  image_url: "/images/regions/belek-golf.jpg",
+  og_image_url: null,
+  image_alt: null,
+  canonical_url_tr: null,
+  noindex: null,
+  nofollow: null,
+};
+
+const COMPUTED_TITLE =
+  "Antalya Havalimanı Belek Özel Transfer | VIP · 30 Dk. · Sabit Fiyat · $55'den";
+
+const regionMeta = applyOverrides(
+  {
+    title: COMPUTED_TITLE,
+    description: "Bölge açıklaması. Araç başına $55'den.",
+    openGraph: {
+      title: COMPUTED_TITLE,
+      description: "Bölge açıklaması. Araç başına $55'den.",
+      images: [
+        {
+          url: "https://torviantransfer.com/images/regions/belek-golf.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Belek Transfer",
+        },
+      ],
+    },
+    twitter: { card: "summary_large_image" as const, title: COMPUTED_TITLE },
+  } as Metadata,
+  { row: regionRow, locale: "tr", rowOwnsMetaText: true }
+);
+
+assert(
+  "işlenmiş title korunuyor (fiyat silinmiyor)",
+  regionMeta.title === COMPUTED_TITLE,
+  String(regionMeta.title)
+);
+assert(
+  "og:title da korunuyor",
+  (regionMeta.openGraph as { title?: string } | undefined)?.title === COMPUTED_TITLE,
+  JSON.stringify((regionMeta.openGraph as { title?: string })?.title)
+);
+assert(
+  "twitter:title da korunuyor",
+  (regionMeta.twitter as { title?: string } | undefined)?.title === COMPUTED_TITLE
+);
+assert(
+  "işlenmiş description korunuyor",
+  regionMeta.description === "Bölge açıklaması. Araç başına $55'den."
+);
+
+// The flag must not disable the columns the page does NOT read.
+const regionWithNewFields = applyOverrides(
+  { title: COMPUTED_TITLE, alternates: { canonical: "https://torviantransfer.com/tr/belek-transfer" } },
+  {
+    row: {
+      ...regionRow,
+      canonical_url_tr: "https://torviantransfer.com/tr/belek",
+      noindex: true,
+      og_image_url: "/images/regions/yeni.jpg",
+    },
+    locale: "tr",
+    rowOwnsMetaText: true,
+  }
+);
+assert(
+  "canonical override yine de uygulanıyor",
+  regionWithNewFields.alternates?.canonical === "https://torviantransfer.com/tr/belek"
+);
+assert("noindex override yine de uygulanıyor", regionWithNewFields.robots !== undefined);
+assert(
+  "og görsel override yine de uygulanıyor",
+  JSON.stringify(regionWithNewFields.openGraph).includes("yeni.jpg")
+);
+
+// seo_pages rows are the opposite case: those pages never read their row, so
+// applying the column IS the override.
+assert(
+  "seo_pages sayfasında title override hâlâ uygulanıyor",
+  applyOverrides({ title: "Koddan gelen" }, {
+    row: { ...emptySeoPage, meta_title_en: "Adminden gelen" },
+    locale: "en",
+  }).title === "Adminden gelen"
+);
+
 console.log(
   `
 ${failures === 0 ? "[32mTÜM KONTRATLAR GEÇTİ[0m" : `[31m${failures} KONTRAT BAŞARISIZ[0m`}`
