@@ -458,7 +458,7 @@ export default async function BookingPage({
         </section>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton aboveStickyBar />
     </>
   );
 }

@@ -220,7 +220,14 @@
     "seePriceAndBook": "Fiyatı Gör & Rezervasyon Yap",
     "trustFixedPrice": "Sabit fiyat",
     "trustSupport247": "7/24 destek",
-    "trustNoHiddenShort": "Gizli ücret yok"
+    "trustNoHiddenShort": "Gizli ücret yok",
+    "vehicleStepSubtitle": "Yolcu sayınıza ve konfor ihtiyacınıza uygun aracı seçin",
+    "selectThisVehicle": "Bu Aracı Seç",
+    "vehicleSelected": "Seçildi",
+    "allInclusiveNote": "Tüm fiyatlara karşılama ve uçuş takibi dahildir.",
+    "selectedVehicleLabel": "Seçilen Araç",
+    "changeVehicle": "Değiştir",
+    "continueStep": "Devam Et"
   },
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",

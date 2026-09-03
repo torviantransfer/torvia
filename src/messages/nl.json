@@ -220,7 +220,14 @@
     "seePriceAndBook": "Bekijk prijs & boek nu",
     "trustFixedPrice": "Vaste prijs",
     "trustSupport247": "24/7 support",
-    "trustNoHiddenShort": "Geen toeslagen"
+    "trustNoHiddenShort": "Geen toeslagen",
+    "vehicleStepSubtitle": "Kies het voertuig dat past bij uw gezelschap en comfort",
+    "selectThisVehicle": "Kies dit voertuig",
+    "vehicleSelected": "Gekozen",
+    "allInclusiveNote": "Meet & greet en vluchtmonitoring zijn bij elke prijs inbegrepen.",
+    "selectedVehicleLabel": "Gekozen voertuig",
+    "changeVehicle": "Wijzig",
+    "continueStep": "Doorgaan"
   },
   "trust": {
     "heading": "Waarom reizigers voor TORVIAN kiezen.",

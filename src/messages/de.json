@@ -220,7 +220,14 @@
     "seePriceAndBook": "Preis ansehen & buchen",
     "trustFixedPrice": "Festpreis",
     "trustSupport247": "24/7 Support",
-    "trustNoHiddenShort": "Ohne Aufpreis"
+    "trustNoHiddenShort": "Ohne Aufpreis",
+    "vehicleStepSubtitle": "Wählen Sie das Fahrzeug passend zu Personenzahl und Komfort",
+    "selectThisVehicle": "Dieses Fahrzeug wählen",
+    "vehicleSelected": "Ausgewählt",
+    "allInclusiveNote": "Meet & Greet und Flugverfolgung sind in jedem Preis enthalten.",
+    "selectedVehicleLabel": "Gewähltes Fahrzeug",
+    "changeVehicle": "Ändern",
+    "continueStep": "Weiter"
   },
   "trust": {
     "heading": "Warum Reisende TORVIAN wählen.",

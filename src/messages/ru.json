@@ -220,7 +220,14 @@
     "seePriceAndBook": "Узнать цену и забронировать",
     "trustFixedPrice": "Фикс. цена",
     "trustSupport247": "Поддержка 24/7",
-    "trustNoHiddenShort": "Без доплат"
+    "trustNoHiddenShort": "Без доплат",
+    "vehicleStepSubtitle": "Выберите автомобиль под количество пассажиров и комфорт",
+    "selectThisVehicle": "Выбрать этот автомобиль",
+    "vehicleSelected": "Выбрано",
+    "allInclusiveNote": "Встреча и отслеживание рейса включены во все цены.",
+    "selectedVehicleLabel": "Выбранный автомобиль",
+    "changeVehicle": "Изменить",
+    "continueStep": "Продолжить"
   },
   "trust": {
     "heading": "Почему путешественники выбирают TORVIAN.",
