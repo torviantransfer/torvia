@@ -14,8 +14,8 @@ const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false 
 import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
   ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
-  Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, Car, X,
-  CalendarCheck, Banknote, Sparkles, Clock, MessageCircle, Ban,
+  Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, X,
+  CalendarCheck, Banknote, Sparkles, Clock, MessageCircle, Ban, ShieldCheck,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -409,8 +409,8 @@ function BookingWizardInner(props: Props) {
       region: regionSlug,
       metadata: { vehicle: vehicle.slug, price: vehicle.oneWayPrice },
     });
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Deliberately does not advance. The card turns green and the list stays
+    // put so the three can be compared; the sticky bar carries the booking on.
   };
 
   const handleSubmit = async () => {
@@ -486,11 +486,6 @@ function BookingWizardInner(props: Props) {
     ac: t("featureAc"), wifi: t("featureWifi"), water: t("featureWater"),
     leather: t("featureLeather"), usb: t("featureUsb"), tv: t("featureTv"), minibar: t("featureMinibar"),
   };
-  const vehicleDesc = (slug: string, fallback: string | null) => {
-    const key = `vehicleDesc${slug.charAt(0).toUpperCase() + slug.slice(1)}` as never;
-    try { const v = t(key); return v !== key ? v : (fallback ?? ""); } catch { return fallback ?? ""; }
-  };
-
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     try { return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(new Date(dateStr + "T00:00:00")); }
@@ -601,11 +596,12 @@ function BookingWizardInner(props: Props) {
         </div>
       )}
       {/* STEP 1: Vehicle Selection */}
+      {/* The bottom padding clears the sticky bar, so the last card can still
+          be scrolled into full view once a vehicle is chosen. */}
       {step === 1 && (
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Car size={22} className="text-blue-600" />{t("step2")}
-          </h2>
+        <div className="pb-24">
+          <h2 className="text-[22px] font-bold leading-tight text-gray-900">{t("selectVehicle")}</h2>
+          <p className="mt-1 mb-5 text-[13px] text-gray-500">{t("vehicleStepSubtitle")}</p>
 
           {/* Date unavailability warning */}
           {!dateAvailable && (
@@ -676,89 +672,88 @@ function BookingWizardInner(props: Props) {
               <p className="text-gray-500">{t("errorGeneric")}</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {vehicles.map((vehicle) => {
                 const { fits, reason } = vehicleFit(vehicle);
+                const chosen = selectedVehicle?.categoryId === vehicle.categoryId;
                 return (
                 /* A vehicle that cannot take the party stays on the page,
                    faded and unselectable, carrying the reason. Hiding it
                    instead would leave the customer wondering where the cheap
                    option went; greying it out without a reason is worse still,
                    because the obvious read is that the site is broken. */
-                <div key={vehicle.categoryId} className={`group rounded-2xl overflow-hidden transition-all ${fits ? "hover:shadow-lg" : "opacity-60 saturate-50"}`} style={{ backgroundColor: "#FFFFFF", border: fits ? "1px solid rgba(0,0,0,0.08)" : "1px dashed rgba(0,0,0,0.16)" }}>
-                  <div className="flex flex-col lg:flex-row">
-                    {/* Photo. A soft gradient panel rather than a flat grey
-                        swatch: the vehicle shots are cut-outs, and flat grey
-                        behind a cut-out reads as a failed image load. */}
-                    <div className="relative w-full h-48 sm:h-56 lg:h-auto lg:w-[260px] xl:w-[290px] flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
+                <div
+                  key={vehicle.categoryId}
+                  className={`rounded-2xl p-3 sm:p-4 transition-all ${
+                    !fits
+                      ? "opacity-60 saturate-50 border border-dashed border-black/[0.16] bg-white"
+                      : chosen
+                        ? "border border-[#0e8a61] bg-[#EDF8F4]/60 shadow-[0_6px_20px_-8px_rgba(14,138,97,0.45)]"
+                        : "border border-black/[0.08] bg-white hover:shadow-md"
+                  }`}
+                >
+                  <div className="flex items-start gap-3 p-3">
+                    {/* Photo. The whole vehicle, never cropped: a 16:9 box with
+                        `object-contain` inside it. No panel behind it — the
+                        shots are cut-outs on transparency, so they sit straight
+                        on the card and the vehicle reads as floating rather
+                        than boxed. It is the largest thing on the card because
+                        it is what the customer is choosing between. */}
+                    <div className="relative aspect-[16/9] w-[128px] shrink-0 sm:w-[164px]">
                       <Image
                         src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
                         alt={vehicle.name}
                         fill
-                        className={`object-contain p-4 transition-transform duration-500 ${fits ? "group-hover:scale-[1.04]" : "grayscale"}`}
-                        sizes="(max-width: 1024px) 100vw, 290px"
+                        sizes="172px"
+                        className={`object-contain ${fits ? "" : "grayscale"}`}
                       />
                     </div>
 
-                    {/* ── What you get ── */}
-                    <div className="flex-1 min-w-0 p-5 lg:p-6 flex flex-col justify-center">
-                      <h3 className="text-lg lg:text-xl font-bold text-gray-900 leading-tight">{vehicle.name}</h3>
-                      {vehicle.description && (
-                        <p className="mt-1 text-sm text-gray-500 leading-relaxed line-clamp-2">
-                          {vehicleDesc(vehicle.slug, vehicle.description)}
-                        </p>
-                      )}
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      {/* `text-balance` so a two-line name splits evenly —
+                          "Mercedes-Benz / Vito VIP" rather than leaving "VIP"
+                          alone on the second line. */}
+                      <h3 className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-balance text-gray-900">
+                        {vehicle.name}
+                      </h3>
 
-                      <div className="mt-3.5 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[13px] font-medium text-gray-700" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                          <Users size={14} className="text-blue-600" />{vehicle.max_passengers} {t("passengers")}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-gray-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Users size={13} className="shrink-0 text-gray-400" />
+                          1&ndash;{vehicle.max_passengers} {t("passengers")}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[13px] font-medium text-gray-700" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                          <Luggage size={14} className="text-blue-600" />{vehicle.max_luggage} {t("luggageCapacity")}
+                        <span className="inline-flex items-center gap-1.5">
+                          <Luggage size={13} className="shrink-0 text-gray-400" />
+                          {vehicle.max_luggage} {t("luggageCapacity")}
                         </span>
-                        {reason && (
-                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[12px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
-                            <Ban size={12} className="flex-shrink-0" />{reason}
-                          </span>
-                        )}
                       </div>
 
-                      {/* Features are shown, not hidden behind a disclosure.
-                          There are only a handful, and they are the whole
-                          reason to pick one vehicle over another — putting
-                          them behind a tap meant most customers never saw
-                          them. */}
-                      {vehicle.features.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {vehicle.features.map((f) => (
-                            <span key={f} className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-gray-500" style={{ backgroundColor: "rgba(0,0,0,0.035)" }}>
-                              <span className="text-blue-600">{featureIcon[f] ?? <Check size={11} />}</span>
-                              {featureLabel[f] || f}
-                            </span>
-                          ))}
-                        </div>
+                      {reason && (
+                        <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
+                          <Ban size={11} className="flex-shrink-0" />{reason}
+                        </span>
                       )}
-                    </div>
 
-                    {/* ── What you pay ──
-                        Its own rail, so the figure and the button are never
-                        mixed into the description: the right-hand column on a
-                        desktop, the footer of the card on a phone. That is the
-                        arrangement every booking site converges on, and it is
-                        what makes the card read as a product rather than a
-                        paragraph with a button after it. */}
-                    <div className="flex-shrink-0 lg:w-[212px] p-5 lg:p-6 flex flex-col justify-center gap-3 border-t border-black/[0.06] lg:border-t-0 lg:border-l" style={{ backgroundColor: "rgba(0,0,0,0.015)" }}>
-                      <div className="flex items-center justify-between gap-4 lg:flex-col lg:items-stretch lg:gap-3.5">
+                      {vehicle.calculation.roundTripDiscount > 0 && (
+                        <span className="inline-block w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
+                          {t("roundTripDiscount")} &minus;{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
+                        </span>
+                      )}
+
+                      {/* Price and choice share the last line of the column, so
+                          the figure and the thing you press are next to each
+                          other rather than at opposite corners of the card. */}
+                      {/* flex-wrap is the safety valve: a long currency string
+                          (₺ figures run wide) drops the button to its own line
+                          rather than squeezing the price into an ellipsis. */}
+                      <div className="mt-auto flex flex-wrap items-end justify-between gap-x-2 gap-y-2 pt-1">
                         <div className="min-w-0">
-                          <span className="block text-[10px] font-semibold text-blue-600 uppercase tracking-wider">{t("payOnline")}</span>
-                          <span className="block mt-1 text-[26px] lg:text-[30px] leading-none font-black text-gray-900 tracking-tight">
+                          <span className="block text-[20px] font-extrabold leading-none tracking-tight text-gray-900">
                             {fmt(vehicle.calculation.basePrice, exchangeRates)}
                           </span>
-                          {vehicle.calculation.roundTripDiscount > 0 && (
-                            <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 whitespace-nowrap" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
-                              {t("roundTripDiscount")} −{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
-                            </span>
-                          )}
+                          <span className="mt-1 block text-[10.5px] leading-none text-gray-500">
+                            {t("trustFixedPrice")}
+                          </span>
                         </div>
 
                         <button
@@ -766,32 +761,129 @@ function BookingWizardInner(props: Props) {
                           onClick={() => selectVehicle(vehicle)}
                           disabled={checkingAvailability || !fits}
                           title={reason ?? undefined}
-                          className={`flex-shrink-0 lg:w-full px-5 py-3 text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 ${
-                            fits
-                              ? "bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-md shadow-blue-600/20 hover:shadow-blue-600/30"
-                              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          aria-pressed={chosen}
+                          className={`flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[12.5px] font-semibold transition-all ${
+                            !fits
+                              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                              : chosen
+                                ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
+                                : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
                           }`}
                         >
-                          {!fits ? <Ban size={15} /> : checkingAvailability ? <Loader2 size={15} className="animate-spin" /> : <ArrowRight size={15} />}
-                          {t("selectVehicle")}
+                          {!fits ? <Ban size={13} /> : checkingAvailability ? <Loader2 size={13} className="animate-spin" /> : chosen ? <Check size={13} /> : null}
+                          {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
                         </button>
                       </div>
-
-                      {/* Cash option — a separate lane so it reads as an
-                          alternative rather than a second, competing price. */}
-                      {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg" style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)" }}>
-                          <span className="text-[11px] font-medium text-amber-700">{t("payAtVehicle")}</span>
-                          <span className="text-[13px] font-bold text-amber-700">{fmt(vehicle.cashPrice, exchangeRates)}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
+
+                  {/* Footer strip: what the vehicle has, and the other way to
+                      pay for it. Kept out of the column above so the top of the
+                      card stays down to the four things being compared — the
+                      picture, the name, the capacity and the price.
+
+                      One flat wrapping row, not a chip group beside a chip.
+                      Nesting the features in their own box and spacing the two
+                      apart with `justify-between` looked right only while
+                      everything fitted on one line: as soon as the features
+                      wrapped, the last one was stranded on a line of its own
+                      with the cash figure still pinned up beside the first row.
+                      Flat, every chip flows, and `ml-auto` keeps the cash
+                      figure to the right of whichever line it lands on. */}
+                  {(vehicle.features.length > 0 || (vehicle.cashPrice != null && settingsData.cashPaymentEnabled)) && (
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2">
+                      {/* Capped at three: the cards are compared side by side,
+                          and a vehicle with eight features would turn its strip
+                          into a paragraph. */}
+                      {vehicle.features.slice(0, 3).map((f) => (
+                        <span
+                          key={f}
+                          className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-black/[0.08] bg-white px-1.5 py-1 text-[10.5px] text-gray-600"
+                        >
+                          <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
+                          {featureLabel[f] || f}
+                        </span>
+                      ))}
+
+                      {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
+                        <span className="ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
+                          <Banknote size={11} className="shrink-0" />
+                          {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 );
               })}
+
+              {/* What every price already covers, said once under the list
+                  rather than repeated as a chip on all three cards. */}
+              <p className="flex items-center justify-center gap-2 rounded-xl bg-[#EDF8F4]/60 px-3 py-2.5 text-center text-[12px] text-gray-600">
+                <ShieldCheck size={15} className="shrink-0 text-[#0e8a61]" />
+                {t("allInclusiveNote")}
+              </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* The bar that carries the booking forward.
+          Choosing a vehicle no longer jumps to the next step — the card turns
+          green and stays put, so the three can be compared without losing the
+          list. That makes an explicit way onward necessary, and it doubles as
+          the running total. Fixed at z-40, which is the convention this
+          codebase already uses for its phone bars; /booking passes
+          `aboveStickyBar` so the floating WhatsApp button clears it. */}
+      {step === 1 && selectedVehicle && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.07] bg-white/95 backdrop-blur"
+          style={{ paddingBottom: "max(0px, env(safe-area-inset-bottom))" }}
+        >
+          {/* Three zones, each its own, separated by hairlines: what was
+              chosen, what it costs, and the way on. The total keeps a zone of
+              its own at every width rather than folding into the button —
+              the figure is the thing being confirmed, so it should not have to
+              share a control with the action. */}
+          <div className="mx-auto flex max-w-5xl items-stretch px-2 py-1.5 sm:px-4">
+            <div className="flex min-w-0 flex-1 flex-col justify-center py-1 pl-1 pr-3">
+              <span className="block text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
+                {t("selectedVehicleLabel")}
+              </span>
+              <span className="mt-1 truncate text-[12.5px] font-semibold leading-tight text-gray-900">
+                {selectedVehicle.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setSelectedVehicle(null); }}
+                className="mt-0.5 w-fit text-[10.5px] font-medium text-[#0e8a61] underline underline-offset-2"
+              >
+                {t("changeVehicle")}
+              </button>
+            </div>
+
+            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
+
+            <div className="flex shrink-0 flex-col justify-center px-3 text-right">
+              <span className="block whitespace-nowrap text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
+                {t("totalPrice")}
+              </span>
+              <span className="mt-1.5 block text-[17px] font-extrabold leading-none tracking-tight text-gray-900 tabular-nums">
+                {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
+              </span>
+            </div>
+
+            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
+
+            <button
+              type="button"
+              onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              className="my-1 ml-2 flex h-[42px] shrink-0 items-center gap-1.5 self-center whitespace-nowrap rounded-xl bg-[#0e8a61] px-3.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
+            >
+              {t("continueStep")}
+              <ArrowRight size={15} className="shrink-0" />
+            </button>
+          </div>
         </div>
       )}
       {/* STEP 2: Passenger Info + Extras

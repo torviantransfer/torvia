@@ -44,7 +44,10 @@
     "trustCancel": "Free cancellation 24h before",
     "trustNoHidden": "No hidden fees",
     "callNow": "Call Now",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "mobileTitleLead": "Antalya Airport",
+    "mobileTitleAccent": "Transfer",
+    "mobileSubtitle": "Comfortable, safe and on time."
   },
   "booking": {
     "title": "Book Antalya Airport Transfer | Fixed Price, Instant Confirmation",
@@ -208,7 +211,23 @@
     "featureUsb": "USB Charging",
     "featureTv": "TV",
     "featureMinibar": "Minibar",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer with premium features"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer with premium features",
+    "pickupPlaceholder": "Enter your pickup location",
+    "dropoffPlaceholder": "Enter your drop-off location",
+    "selectDateShort": "Select date",
+    "selectTimeShort": "Select time",
+    "addReturnTransfer": "Add return transfer",
+    "seePriceAndBook": "See Price & Book Now",
+    "trustFixedPrice": "Fixed price",
+    "trustSupport247": "24/7 support",
+    "trustNoHiddenShort": "No hidden fees",
+    "vehicleStepSubtitle": "Pick the vehicle that suits your party size and comfort",
+    "selectThisVehicle": "Select This Vehicle",
+    "vehicleSelected": "Selected",
+    "allInclusiveNote": "Meet & greet and flight tracking are included in every price.",
+    "selectedVehicleLabel": "Selected Vehicle",
+    "changeVehicle": "Change",
+    "continueStep": "Continue"
   },
   "trust": {
     "heading": "Why travelers choose TORVIAN.",

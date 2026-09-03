@@ -194,42 +194,59 @@ export default async function BookingPage({
       {/* Hero shown until we have both a region and a date */}
       {!hasDate && (
         <>
-          <section className="relative min-h-[420px] sm:min-h-[480px] flex flex-col items-center justify-center pt-16">
-            <Image
-              src="/images/havaalani-vip-transfer.jpg"
-              alt={heroAlt[locale] ?? heroAlt.en}
-              fill
-              className="object-cover"
-              priority
-              quality={80}
-              // `fill` without `sizes` makes Next assume the image is as wide
-              // as the viewport at every breakpoint, so phones pull a far
-              // larger variant than they can show. This is the LCP element, so
-              // that lands directly on Core Web Vitals.
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/70" />
+          {/* Same backdrop treatment as the home hero: on phones the photo is
+              a band across the top that darkens as it falls and then dissolves
+              into the white the page below paints, so the booking card lands
+              on the boundary with nothing showing a hard edge. Desktop keeps
+              the original full-bleed image and its single wash. */}
+          <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
+            <div className="absolute inset-x-0 top-0 h-[240px] lg:h-full overflow-hidden">
+              <Image
+                src="/images/havaalani-vip-transfer.jpg"
+                alt={heroAlt[locale] ?? heroAlt.en}
+                fill
+                className="object-cover"
+                priority
+                quality={80}
+                // `fill` without `sizes` makes Next assume the image is as wide
+                // as the viewport at every breakpoint, so phones pull a far
+                // larger variant than they can show. This is the LCP element, so
+                // that lands directly on Core Web Vitals.
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
+              {/* Run long and weighted late, so the extra length softens the
+                  landing without hazing the strip of photograph above the
+                  card. Same curve as the home hero, onto white. */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-36 lg:hidden"
+                style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.45) 72%, rgba(255,255,255,0.85) 90%, #FFFFFF 100%)" }}
+              />
+            </div>
             {/* Flex column so phones can put the booking widget above the
                 headline and keyword chips without reordering the DOM — the h1
                 stays first in the markup for search engines and screen
                 readers, only the visual order changes. */}
-            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-4 pt-16 sm:pt-20 pb-10">
+            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-3 sm:px-4 pt-[88px] lg:pt-20 pb-10">
+              {/* Below the card on phones, so it reads on the white side of
+                  the dissolve rather than on the photograph — hence the dark
+                  variants, which `lg:` puts straight back to white. */}
               <div className="order-2 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#111827] lg:text-white mb-3 lg:drop-shadow-lg">
                   {t("title")}
                 </h1>
-                <p className="text-base sm:text-lg text-white/85 max-w-2xl mx-auto drop-shadow">
+                <p className="text-[15px] sm:text-lg text-[#4B5563] lg:text-white/85 max-w-2xl mx-auto lg:drop-shadow">
                   {t("subtitle")}
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
-                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-white/80 mr-1">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-[#6B7280] lg:text-white/80 mr-1">
                     {intentLabel[locale] ?? intentLabel.en}
                   </span>
                   {(intentKeywords[locale] ?? intentKeywords.en).map(({ label, href }) => (
                     <Link
                       key={label}
                       href={href}
-                      className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] sm:text-xs text-white/90 backdrop-blur transition-colors hover:bg-white/20 hover:border-white/30"
+                      className="rounded-full border border-black/10 bg-black/[0.03] px-3 py-1 text-[11px] sm:text-xs text-[#4B5563] transition-colors hover:bg-black/[0.06] lg:border-white/15 lg:bg-white/10 lg:text-white/90 lg:backdrop-blur lg:hover:bg-white/20 lg:hover:border-white/30"
                     >
                       {label}
                     </Link>
@@ -441,7 +458,7 @@ export default async function BookingPage({
         </section>
       </main>
       <Footer />
-      <WhatsAppButton />
+      <WhatsAppButton aboveStickyBar />
     </>
   );
 }

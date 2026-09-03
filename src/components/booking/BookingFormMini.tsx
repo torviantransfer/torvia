@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
@@ -18,6 +18,12 @@ import {
   ChevronUp,
   ChevronDown,
   Clock,
+  RefreshCw,
+  ArrowUpDown,
+  User,
+  ShieldCheck,
+  Tag,
+  Headphones,
 } from "lucide-react";
 
 interface Region {
@@ -47,6 +53,106 @@ function getCalDays(year: number, month: number) {
       date: new Date(year, month + 1, days.length - first - total + 1),
     });
   return days;
+}
+
+/* --- Time wheel ---
+ *
+ * `<input type="time">` gives an iPhone the drum picker we want and gives
+ * every other browser a dropdown of two scrolling lists, which is what the
+ * phone preview was showing. This is the drum, drawn the same everywhere.
+ *
+ * It is CSS scroll snapping, not a gesture library: each column is an ordinary
+ * scroller whose children snap to its centre, so the fling physics, the
+ * momentum and the keyboard and screen-reader behaviour are the platform's
+ * own. The column is padded by half its height top and bottom, which is what
+ * lets the first and last value reach the middle — and it makes the maths
+ * fall out: value i is centred exactly at scrollTop = i * ITEM.
+ */
+const WHEEL_ITEM = 40;
+const WHEEL_VISIBLE = 5;
+const WHEEL_H = WHEEL_ITEM * WHEEL_VISIBLE;
+const WHEEL_PAD = (WHEEL_H - WHEEL_ITEM) / 2;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = Array.from({ length: 12 }, (_, i) => i * 5);
+
+function TimeWheel({
+  values,
+  value,
+  onChange,
+  label,
+}: {
+  values: number[];
+  value: number;
+  onChange: (v: number) => void;
+  label: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Nearest offered value — a restored time need not be on the 5-minute grid. */
+  const nearest = (v: number) => {
+    let best = 0;
+    for (let i = 1; i < values.length; i++) {
+      if (Math.abs(values[i] - v) < Math.abs(values[best] - v)) best = i;
+    }
+    return best;
+  };
+
+  // Land on the current value when the wheel appears. Mount only: after that
+  // the scroll position is the source of truth, and writing to it mid-gesture
+  // would fight the finger.
+  useEffect(() => {
+    const el = ref.current;
+    if (el) el.scrollTop = nearest(value) * WHEEL_ITEM;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => () => { if (settle.current) clearTimeout(settle.current); }, []);
+
+  /* Read the value out once the fling has stopped. Reading on every scroll
+     event would fire onChange dozens of times per swipe. */
+  const handleScroll = () => {
+    if (settle.current) clearTimeout(settle.current);
+    settle.current = setTimeout(() => {
+      const el = ref.current;
+      if (!el) return;
+      const i = Math.min(values.length - 1, Math.max(0, Math.round(el.scrollTop / WHEEL_ITEM)));
+      if (values[i] !== value) onChange(values[i]);
+    }, 90);
+  };
+
+  return (
+    <div
+      ref={ref}
+      onScroll={handleScroll}
+      role="listbox"
+      aria-label={label}
+      tabIndex={0}
+      className="h-[200px] flex-1 snap-y snap-mandatory overflow-y-auto overscroll-contain outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      style={{ paddingTop: WHEEL_PAD, paddingBottom: WHEEL_PAD }}
+    >
+      {values.map((v) => {
+        const active = v === value;
+        return (
+          <button
+            key={v}
+            type="button"
+            role="option"
+            aria-selected={active}
+            onClick={() => {
+              onChange(v);
+              ref.current?.scrollTo({ top: nearest(v) * WHEEL_ITEM, behavior: "smooth" });
+            }}
+            className={`flex h-10 w-full snap-center items-center justify-center text-[22px] tabular-nums transition-colors ${
+              active ? "font-semibold text-[#111827]" : "text-[#9CA3AF]"
+            }`}
+          >
+            {String(v).padStart(2, "0")}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 interface BookingFormMiniProps {
@@ -161,16 +267,9 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
   const swap = () => { const tmp = from; setFrom(to); setTo(tmp); };
 
-  /* Time as the "HH:MM" that <input type="time"> speaks, both ways. */
+  /* Whichever leg the pickers are currently editing. */
   const activeH = calFor === "dep" ? depH : retH;
   const activeM = calFor === "dep" ? depM : retM;
-  const timeValue = `${String(activeH).padStart(2, "0")}:${String(activeM).padStart(2, "0")}`;
-  const setTimeFromInput = (value: string) => {
-    const [h, m] = value.split(":").map(Number);
-    // Clearing the field yields "", which parses to NaN — keep the old time.
-    if (Number.isNaN(h) || Number.isNaN(m)) return;
-    if (calFor === "dep") { setDepH(h); setDepM(m); } else { setRetH(h); setRetM(m); }
-  };
 
   const openCal = (target: "dep" | "ret") => {
     if (target === "ret" && !depDate) return;
@@ -182,6 +281,14 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     const base = target === "dep" ? depDate : (retDate ?? depDate);
     setCalMonth(base ? new Date(base.getFullYear(), base.getMonth(), 1) : new Date());
     setOpen("cal");
+  };
+
+  /** The phone's "Saat" fields, which open the time sheet on its own. The
+   *  desktop bar never calls this: it has one date button that sets both. */
+  const openTime = (target: "dep" | "ret") => {
+    if (target === "ret" && !depDate) return;
+    setCalFor(target);
+    setOpen("time");
   };
 
   const pickDay = (d: Date) => {
@@ -253,12 +360,12 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           key={l.value}
           type="button"
           onClick={() => { field === "from" ? setFrom(l.value) : setTo(l.value); setOpen(null); }}
-          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-blue-50 transition-colors ${
-            (field === "from" ? from : to) === l.value ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
+          className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 text-left text-[15px] lg:text-sm hover:bg-[#EDF8F4] lg:hover:bg-blue-50 transition-colors ${
+            (field === "from" ? from : to) === l.value ? "text-[#0e8a61] lg:text-blue-600 font-semibold bg-[#EDF8F4]/60 lg:bg-blue-50/50" : "text-gray-700"
           }`}
         >
           {l.type === "airport" ? (
-            <Plane size={15} className="text-blue-600 shrink-0" />
+            <Plane size={15} className="text-[#0e8a61] lg:text-blue-600 shrink-0" />
           ) : (
             <MapPin size={15} className="text-gray-500 shrink-0" />
           )}
@@ -277,7 +384,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
    * from `lg` up the calendar is an inline popover, not a sheet.
    */
   useEffect(() => {
-    if (open !== "cal") return;
+    if (open !== "cal" && open !== "time") return;
     if (typeof window === "undefined" || window.matchMedia("(min-width: 1024px)").matches) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -286,17 +393,25 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     };
   }, [open]);
 
-  /* --- Calendar contents, rendered into two different shells --- */
-  const calendarBody = (
+  /* --- Calendar contents ---
+   *
+   * Split into a grid and a time section, because the phone and the pointer
+   * layouts want different combinations of them.
+   *
+   * On a phone the form has its own date field and its own time field, so
+   * tapping "Gidiş Tarihi" opens the month grid alone and tapping "Saat"
+   * opens the time picker alone — a sheet that answers exactly the field that
+   * was pressed. The desktop bar has no separate time field: its single date
+   * button has to set both, so its popover keeps the grid and the stepper
+   * together the way it always has. */
+  const calendarGrid = (
     <>
-      {/* Mobile drag handle */}
-      <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-      <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
-        <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
+      <div className="bg-[#0e8a61] lg:bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
+        <button type="button" aria-label="−1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
         <span className="font-semibold text-sm capitalize">{mName} {calMonth.getFullYear()}</span>
-        <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
+        <button type="button" aria-label="+1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-blue-600 border-b border-gray-100 py-1.5 px-2">
+      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-[#0e8a61] lg:text-blue-600 border-b border-gray-100 py-1.5 px-2">
         {wk.map((d) => <span key={d}>{d}</span>)}
       </div>
       <div className="grid grid-cols-7 text-center px-2 py-1.5 gap-y-0.5">
@@ -308,78 +423,126 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           return (
             <button key={i} type="button" disabled={past || !d.inMonth} onClick={() => pickDay(d.date)}
               className={[
-                "w-8 h-8 rounded-lg text-xs mx-auto flex items-center justify-center transition-colors",
-                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-blue-50 cursor-pointer",
-                sel ? "bg-blue-600 text-white font-bold" : "",
-                isToday && !sel ? "ring-1 ring-blue-300" : "",
+                // 40px on phones so every day clears the 44px-ish touch
+                // guidance; the pointer-device popover keeps its 32px grid.
+                "w-10 h-10 lg:w-8 lg:h-8 rounded-lg text-[13px] lg:text-xs mx-auto flex items-center justify-center transition-colors",
+                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-[#EDF8F4] lg:hover:bg-blue-50 cursor-pointer",
+                sel ? "bg-[#0e8a61] lg:bg-blue-600 text-white font-bold" : "",
+                isToday && !sel ? "ring-1 ring-[#0e8a61]/40 lg:ring-blue-300" : "",
                 d.inMonth && !past && !sel ? "text-gray-700 font-medium" : "",
               ].join(" ")}
             >{d.day}</button>
           );
         })}
       </div>
-      {/* Time.
-          Phones get the platform's own time picker — the wheel on iOS, the
-          dial on Android — because the stepper below needs about fifteen taps
-          on 11px arrows to get from the default 12:00 to something like 03:30.
-          Pointer devices keep the stepper, where those arrows are fine. */}
-      <div className="border-t border-gray-100 px-4 py-3">
-        <label className="lg:hidden block">
-          <span className="block text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1.5">{t("hour")}</span>
-          <input
-            type="time"
-            step={300}
-            value={timeValue}
-            onChange={(e) => setTimeFromInput(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-        </label>
-
-        <div className="hidden lg:flex items-center justify-center gap-5">
-          <div className="text-center">
-            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
-            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
-              <div className="flex flex-col">
-                <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
-              </div>
-            </div>
-          </div>
-          <span className="text-base font-bold text-gray-300 mt-4">:</span>
-          <div className="text-center">
-            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
-            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
-              <div className="flex flex-col">
-                <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Closing the sheet used to mean tapping the dimmed area behind it,
-          which is not obvious. The padding clears the iPhone home indicator. */}
-      <div
-        className="lg:hidden px-4 pt-1"
-        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen(null)}
-          className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
-        >
-          {t("dateConfirm")}
-        </button>
-      </div>
     </>
   );
 
-  /* --- Calendar popup ---
-     Two shells around the same contents, because they need to live in
-     different places in the tree.
+  /* The phone's picker: two drums under one highlighted row, the way iOS
+     draws a time. The minute column runs in fives, which is the granularity
+     the form has always used — the old input carried step={300} and the
+     pointer stepper moves in fives too, so nothing about the values changes,
+     only the way they are chosen. Pointer devices keep that stepper. */
+  const timeWheels = (
+    <div className="relative select-none">
+      <div className="mb-1 flex text-center">
+        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("hour")}</span>
+        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("minute")}</span>
+      </div>
+      <div className="relative">
+        {/* The selected row, painted behind the numbers. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 z-0 h-10 rounded-xl bg-[#EDF8F4] ring-1 ring-[#0e8a61]/25"
+          style={{ top: WHEEL_PAD }}
+        />
+        <div className="relative z-10 flex">
+          <TimeWheel
+            values={HOURS}
+            value={activeH}
+            label={t("hour")}
+            onChange={(v) => (calFor === "dep" ? setDepH(v) : setRetH(v))}
+          />
+          <TimeWheel
+            values={MINUTES}
+            value={activeM}
+            label={t("minute")}
+            onChange={(v) => (calFor === "dep" ? setDepM(v) : setRetM(v))}
+          />
+        </div>
+        {/* Feathered top and bottom, so the drums read as curving away. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-gradient-to-b from-white via-white/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-white via-white/80 to-transparent" />
+      </div>
+    </div>
+  );
+
+  const timeStepper = (
+    <div className="hidden lg:flex items-center justify-center gap-5">
+      <div className="text-center">
+        <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
+        <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+          <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
+          <div className="flex flex-col">
+            <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+            <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+          </div>
+        </div>
+      </div>
+      <span className="text-base font-bold text-gray-300 mt-4">:</span>
+      <div className="text-center">
+        <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
+        <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+          <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
+          <div className="flex flex-col">
+            <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+            <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* Modal furniture. Dismissing used to mean tapping the dimmed area, which
+     is not obvious on its own, so every modal ends in an explicit button. */
+  const sheetConfirm = (
+    <div className="px-4 pb-4 pt-3">
+      <button
+        type="button"
+        onClick={() => setOpen(null)}
+        className="w-full h-[48px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+      >
+        {t("dateConfirm")}
+      </button>
+    </div>
+  );
+
+  /**
+   * The phone shell for both pickers: a box in the middle of the screen over a
+   * dimmed page, rather than a panel sliding up from the bottom edge.
+   *
+   * `max-h`/`overflow-y` matter more here than they would in a sheet — a
+   * centred box has the viewport above *and* below it, so on a short screen
+   * (or with the keyboard up) it has to be able to scroll inside itself
+   * instead of running off both ends.
+   */
+  const modalShell = (label: string, body: ReactNode) => (
+    <div className="lg:hidden">
+      <div className="fixed inset-0 z-[60] bg-black/40" onClick={() => setOpen(null)} />
+      <div
+        data-cal-sheet
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        className="fixed left-1/2 top-1/2 z-[70] w-[min(340px,calc(100vw-32px))] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white shadow-2xl"
+      >
+        {body}
+      </div>
+    </div>
+  );
+
+  /* --- Date popup ---
+     Two shells around the same grid, because they need to live in different
+     places in the tree.
 
      Desktop is a popover anchored under the field, so it has to stay where it
      is, inside the field's relatively-positioned parent.
@@ -398,23 +561,47 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
   const renderCalendar = () => (
     <>
       <div className="hidden lg:block absolute top-full mt-1 left-1/2 -translate-x-1/2 w-[310px] rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden z-50">
-        {calendarBody}
+        {calendarGrid}
+        <div className="border-t border-gray-100 px-4 py-3">{timeStepper}</div>
       </div>
 
       {/* Safe to touch document at render time: this whole function only runs
           while `open === "cal"`, which starts null and can only be set by a
           tap. It is never reached during the server render or hydration. */}
       {createPortal(
-        <div className="lg:hidden">
-          <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
-          <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
-            {calendarBody}
-          </div>
-        </div>,
+        modalShell(
+          calFor === "dep" ? t("departureDate") : t("returnDate"),
+          <>
+            {calendarGrid}
+            {sheetConfirm}
+          </>,
+        ),
         document.body,
       )}
     </>
   );
+
+  /* --- Time popup (phones only) ---
+     The counterpart to the date sheet: the form's own "Saat" field opens this
+     and nothing else, so the sheet answers the field that was pressed. There
+     is no desktop shell because the desktop bar has no separate time field —
+     its date popover carries the stepper instead. */
+  const renderTimeSheet = () => {
+    const label = calFor === "dep" ? t("departureTime") : t("returnTime");
+    return createPortal(
+      modalShell(
+        label,
+        <>
+          <div className="bg-[#0e8a61] text-white px-4 py-2.5 text-center">
+            <span className="font-semibold text-sm">{label}</span>
+          </div>
+          <div className="px-4 pt-3">{timeWheels}</div>
+          {sheetConfirm}
+        </>,
+      ),
+      document.body,
+    );
+  };
 
   /* --- Passenger popup ---
    * Spans the full width of its row on phones. It used to be a fixed 220px
@@ -422,7 +609,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
    * full-width row left it hanging off the edge of the card, with the two
    * counters squeezed into a narrow column. */
   const stepperBtn =
-    "w-9 h-9 sm:w-7 sm:h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
+    "w-11 h-11 sm:w-7 sm:h-7 rounded-lg border border-[#E5E7EB] sm:border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
 
   const renderPassengers = () => (
     <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 lg:left-auto lg:w-[240px]">
@@ -529,159 +716,259 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         </button>
       </div>
 
-      {/* MOBILE CARD (<lg) — full-width stacked rows (label above, value
-          below) instead of cramped icon+text pills, so each field reads
-          clearly and has a generous tap target. */}
-      <div className="lg:hidden bg-white rounded-2xl shadow-2xl shadow-black/20 p-3 space-y-2">
-        {/* From */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen(open === "from" ? null : "from")}
-            aria-haspopup="listbox"
-            aria-expanded={open === "from"}
-            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
-          >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <MapPin size={12} className="text-blue-600" />
-              {t("pickup")}
-            </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${from ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
-              {from ? getName(from) : t("pickup")}
-            </span>
-          </button>
-          {open === "from" && renderLocDrop("from")}
-        </div>
+      {/* MOBILE CARD (<lg) — the reference layout at a restrained scale:
+          56px route rows with a 36px mint icon tile, a 52px date/time pair,
+          46px option rows, a 52px CTA and a 28px trust strip with hairline
+          dividers. Roughly 410px in total, so the whole form still reads as
+          one glance on a phone rather than a page of its own.
 
-        {/* Swap — floats between the From/To rows */}
-        <div className="relative h-0">
+          The date/time cells carry small icons and 15px values on purpose:
+          at the reference's 26px icon and 16px text, "Tarih seçin" ran out of
+          room and truncated to "Tarih s...".
+
+          Desktop keeps the compact horizontal bar above. The only markup the
+          two layouts share is the calendar and passenger popups, which take
+          `lg:` overrides so each viewport gets its own accent out of the same
+          elements. */}
+      <div className="lg:hidden rounded-[20px] border border-[#E5E7EB] bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12),0_3px_10px_rgba(15,23,42,0.05)]">
+        {/* Route — pickup and dropoff share one relative box so the swap
+            button can float on the seam between them. */}
+        <div className="relative grid gap-2">
+          {/* From */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setOpen(open === "from" ? null : "from")}
+              aria-haspopup="listbox"
+              aria-expanded={open === "from"}
+              aria-label={`${t("pickup")}: ${from ? getName(from) : t("pickupPlaceholder")}`}
+              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
+                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] leading-none text-[#6B7280]">{t("pickup")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${from ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {from ? getName(from) : t("pickupPlaceholder")}
+                </span>
+              </span>
+            </button>
+            {open === "from" && renderLocDrop("from")}
+          </div>
+
+          {/* To */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setOpen(open === "to" ? null : "to")}
+              aria-haspopup="listbox"
+              aria-expanded={open === "to"}
+              aria-label={`${t("dropoff")}: ${to ? getName(to) : t("dropoffPlaceholder")}`}
+              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
+                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] leading-none text-[#6B7280]">{t("dropoff")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${to ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {to ? getName(to) : t("dropoffPlaceholder")}
+                </span>
+              </span>
+            </button>
+            {open === "to" && renderLocDrop("to")}
+          </div>
+
+          {/* Swap — a rounded square floating on the seam, white with a
+              shadow so it reads as sitting on top of the two fields rather
+              than as a third action competing with the CTA. Draws at 40px but
+              keeps a 44px hit area. */}
           <button
             type="button"
             onClick={swap}
             aria-label={swapLabel}
-            className="absolute -top-[27px] right-4 w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center shadow-md active:scale-95 z-10"
+            className="absolute right-1.5 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center transition-transform active:scale-95"
           >
-            <ArrowLeftRight size={14} className="text-white rotate-90" />
+            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+              <ArrowUpDown size={18} className="text-[#0e8a61]" aria-hidden="true" />
+            </span>
           </button>
         </div>
 
-        {/* To */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen(open === "to" ? null : "to")}
-            aria-haspopup="listbox"
-            aria-expanded={open === "to"}
-            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
-          >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <MapPin size={12} className="text-blue-600" />
-              {t("dropoff")}
-            </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${to ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
-              {to ? getName(to) : t("dropoff")}
-            </span>
-          </button>
-          {open === "to" && renderLocDrop("to")}
-        </div>
-
-        {/* Date + Time — same picker, split into two columns like the
-            pickup/dropoff rows above so each half reads as its own field. */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Date + time — 50/50, both on the same minimum height so the row
+            never reflows when a value replaces a placeholder. */}
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <div className="relative">
             <button
               type="button"
               onClick={() => { setDateError(false); openCal("dep"); }}
-              className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+              aria-haspopup="dialog"
+              aria-expanded={open === "cal" && calFor === "dep"}
+              aria-label={`${t("departureDate")}: ${depFmt ? depFmt.text : t("selectDateShort")}`}
+              className={`flex min-h-[52px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
             >
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                <Calendar size={12} className={dateError ? "text-red-500" : "text-green-600"} />
-                {t("departureDate")}
+              <Calendar size={18} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("departureDate")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {depFmt ? depFmt.text : t("selectDateShort")}
+                </span>
               </span>
-              <span className={`block text-[15px] font-bold mt-0.5 truncate ${dateError ? "text-red-500" : depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
-                {dateError ? t("selectDate") : depFmt ? depFmt.text : "—"}
-              </span>
+              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
           </div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => openTime("dep")}
+              aria-haspopup="dialog"
+              aria-expanded={open === "time" && calFor === "dep"}
+              aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
+              className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+            >
+              <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {depFmt ? depFmt.time : t("selectTimeShort")}
+                </span>
+              </span>
+              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+            </button>
+            {open === "time" && calFor === "dep" && renderTimeSheet()}
+          </div>
+        </div>
+
+        {/* Return — a switch row rather than a dashed "add" button, which read
+            as a broken field. Flipping it on reveals the same return date/time
+            pair the form always had. The switch stays dimmed until there is an
+            outbound date, because a return can only be picked relative to
+            one. */}
+        <div className={`mt-2 flex min-h-[46px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
+          <span className="flex min-w-0 items-center gap-2.5">
+            <RefreshCw size={18} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
+            <span className={`truncate text-[14px] ${depDate ? "text-[#4B5563]" : "text-[#9CA3AF]"}`}>
+              {t("addReturnTransfer")}
+            </span>
+          </span>
           <button
             type="button"
-            onClick={() => { setDateError(false); openCal("dep"); }}
-            className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+            role="switch"
+            aria-checked={hasRet}
+            aria-label={t("addReturnTransfer")}
+            disabled={!depDate}
+            onClick={() => {
+              if (!depDate) return;
+              if (hasRet) { setHasRet(false); setRetDate(null); }
+              else { setHasRet(true); openCal("ret"); }
+            }}
+            className="-mr-1.5 flex h-11 shrink-0 items-center justify-end pl-3 pr-1.5 disabled:cursor-not-allowed"
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <Clock size={12} className="text-blue-600" />
-              {t("hour")}
-            </span>
-            <span className={`block text-[15px] font-bold mt-0.5 truncate ${depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
-              {depFmt ? depFmt.time : "—"}
+            <span className={`relative block h-[22px] w-10 rounded-full transition-colors ${!depDate ? "bg-[#E5E7EB]" : hasRet ? "bg-[#0e8a61]" : "bg-[#D1D5DB]"}`}>
+              <span className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${hasRet ? "left-[21px]" : "left-[3px]"}`} />
             </span>
           </button>
         </div>
 
-        {/* Return — sits directly under the departure date, because that
-            is where it belongs: enabling it produces a second date field,
-            and every travel form keeps the two dates together. It was
-            below passengers, which split the pair with an unrelated
-            control. The dashed border still marks it as an add-on, so it
-            does not compete with the required fields for attention. */}
-        <div className="relative">
-          {!hasRet ? (
-            <button
-              type="button"
-              onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
-              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
-            >
-              {/* No "(optional)" suffix. The label is already an offer to add
-                  something — nothing happens unless it is pressed — so the
-                  word restated what the button's own existence says, and cost
-                  a line of width in a narrow form. */}
-              <CornerDownLeft size={14} />{t("addReturn")}
-            </button>
-          ) : (
-            <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
-              <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
-                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                  <CornerDownLeft size={12} className="text-green-600" />
-                  {t("returnDate")}
+        {/* Return date + time — the same pair as the outbound, shown only
+            once the switch is on. */}
+        {hasRet && (
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => openCal("ret")}
+                aria-haspopup="dialog"
+                aria-expanded={open === "cal" && calFor === "ret"}
+                aria-label={`${t("returnDate")}: ${retFmt ? retFmt.text : t("selectDateShort")}`}
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+              >
+                <Calendar size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("returnDate")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                    {retFmt ? retFmt.text : t("selectDateShort")}
+                  </span>
                 </span>
-                <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
-                  {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
-                </span>
+                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
               </button>
-              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
+              {open === "cal" && calFor === "ret" && renderCalendar()}
             </div>
-          )}
-          {open === "cal" && calFor === "ret" && renderCalendar()}
-        </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => openTime("ret")}
+                aria-haspopup="dialog"
+                aria-expanded={open === "time" && calFor === "ret"}
+                aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+              >
+                <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                    {retFmt ? retFmt.time : t("selectTimeShort")}
+                  </span>
+                </span>
+                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+              </button>
+              {open === "time" && calFor === "ret" && renderTimeSheet()}
+            </div>
+          </div>
+        )}
 
-        {/* Passengers — its own clear, tappable row. Required on every
-            booking, so it gets an explicit "X Kişi" label and a chevron
-            rather than sharing a row and reading as a bare number. */}
+        {/* Passengers — a single line. The adult/child split lives in the
+            popup it opens, so the closed row carries only the one number that
+            matters. */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setOpen(open === "pax" ? null : "pax")}
             aria-haspopup="dialog"
             aria-expanded={open === "pax"}
-            className={`w-full flex items-center justify-between gap-3 border rounded-xl px-4 py-2.5 ${open === "pax" ? "border-blue-400 bg-blue-50/50" : "border-gray-200"}`}
+            aria-label={`${adults + kids} ${t("passengers")}`}
+            className={`mt-2 flex min-h-[46px] w-full items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
-            <span className="flex items-center gap-2.5">
-              <Users size={16} className="text-blue-600 shrink-0" />
-              <span className="text-left">
-                <span className="block text-[15px] font-bold text-gray-900">{adults + kids} {t("person")}</span>
-                <span className="block text-[10.5px] text-gray-500 leading-tight">{t("adult")} &amp; {t("child")}</span>
-              </span>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <User size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="truncate text-[15px] font-semibold text-[#111827]">{adults + kids} {t("passengers")}</span>
             </span>
-            <ChevronRight size={15} className={`text-gray-300 shrink-0 transition-transform ${open === "pax" ? "rotate-90" : ""}`} />
+            <ChevronDown size={16} className={`shrink-0 text-[#9CA3AF] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {open === "pax" && renderPassengers()}
         </div>
 
-        {/* Submit */}
-        <button type="button" onClick={submit} className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[15px] transition-colors active:scale-[0.98] shadow-md shadow-blue-600/20">
-          {bookingHint}
+        {/* Submit — the label is centred in the free column so the chevron
+            sits hard against the right edge without pulling the text
+            off-centre. */}
+        <button
+          type="button"
+          onClick={submit}
+          className="mt-2.5 grid h-[52px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-xl bg-[#0e8a61] px-4 text-[15px] font-bold text-white shadow-[0_10px_20px_-6px_rgba(14,138,97,0.45)] transition-transform active:scale-[0.985]"
+        >
+          <span className="truncate text-center">{t("seePriceAndBook")}</span>
+          <ChevronRight size={20} className="shrink-0" aria-hidden="true" />
         </button>
+
+        {/* Trust strip — the three objections people have at exactly this
+            moment, answered right where the thumb already is. */}
+        <ul className="mt-2.5 grid min-h-[28px] grid-cols-[1fr_auto_1fr_auto_1fr] items-center">
+          {[
+            { Icon: ShieldCheck, label: t("trustFixedPrice") },
+            { Icon: Tag, label: t("trustNoHiddenShort") },
+            { Icon: Headphones, label: t("trustSupport247") },
+          ].map(({ Icon, label }, i) => (
+            <Fragment key={label}>
+              {i > 0 && <li aria-hidden="true" className="h-4 w-px bg-[#E5E7EB]" />}
+              <li className="flex items-center justify-center gap-1.5 px-1 text-center text-[10.5px] font-medium leading-tight text-[#4B5563]">
+                <Icon size={13} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span>{label}</span>
+              </li>
+            </Fragment>
+          ))}
+        </ul>
       </div>
     </div>
   );

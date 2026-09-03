@@ -44,7 +44,10 @@
     "trustCancel": "24 saat öncesine kadar ücretsiz iptal",
     "trustNoHidden": "Gizli ücret yok",
     "callNow": "Hemen Ara",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "mobileTitleLead": "Antalya Havalimanı",
+    "mobileTitleAccent": "Transferi",
+    "mobileSubtitle": "Konforlu, güvenli ve zamanında."
   },
   "booking": {
     "title": "Antalya Havalimanı Transfer Rezervasyonu | Sabit Fiyat, Anında Onay",
@@ -208,7 +211,23 @@
     "featureUsb": "USB Şarj",
     "featureTv": "TV",
     "featureMinibar": "Minibar",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP premium özellikler ile"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP premium özellikler ile",
+    "pickupPlaceholder": "Alınacak yerinizi girin",
+    "dropoffPlaceholder": "Bırakılacak yerinizi girin",
+    "selectDateShort": "Tarih seçin",
+    "selectTimeShort": "Saat seçin",
+    "addReturnTransfer": "Dönüş transferi ekle",
+    "seePriceAndBook": "Fiyatı Gör & Rezervasyon Yap",
+    "trustFixedPrice": "Sabit fiyat",
+    "trustSupport247": "7/24 destek",
+    "trustNoHiddenShort": "Gizli ücret yok",
+    "vehicleStepSubtitle": "Yolcu sayınıza ve konfor ihtiyacınıza uygun aracı seçin",
+    "selectThisVehicle": "Bu Aracı Seç",
+    "vehicleSelected": "Seçildi",
+    "allInclusiveNote": "Tüm fiyatlara karşılama ve uçuş takibi dahildir.",
+    "selectedVehicleLabel": "Seçilen Araç",
+    "changeVehicle": "Değiştir",
+    "continueStep": "Devam Et"
   },
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",

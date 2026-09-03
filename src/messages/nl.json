@@ -44,7 +44,10 @@
     "keywordVipBelek": "VIP-transfer luchthaven Antalya naar Belek",
     "keywordBelekHotel": "Belek hoteltransfer vanaf luchthaven Antalya",
     "keywordSideHotel": "Side hoteltransfer luchthaven Antalya",
-    "keywordAlanyaPrivate": "Alanya privé luchthaventransfer"
+    "keywordAlanyaPrivate": "Alanya privé luchthaventransfer",
+    "mobileTitleLead": "Luchthaven Antalya",
+    "mobileTitleAccent": "Transfer",
+    "mobileSubtitle": "Comfortabel, veilig en op tijd."
   },
   "booking": {
     "title": "Boek uw Antalya luchthaventransfer | Vaste prijs, directe bevestiging",
@@ -208,7 +211,23 @@
     "bookNow": "Nu boeken",
     "selectDate": "Kies alstublieft een datum",
     "hour": "Uur",
-    "minute": "Minuut"
+    "minute": "Minuut",
+    "pickupPlaceholder": "Voer uw ophaallocatie in",
+    "dropoffPlaceholder": "Voer uw bestemming in",
+    "selectDateShort": "Kies datum",
+    "selectTimeShort": "Kies tijd",
+    "addReturnTransfer": "Retourtransfer toevoegen",
+    "seePriceAndBook": "Bekijk prijs & boek nu",
+    "trustFixedPrice": "Vaste prijs",
+    "trustSupport247": "24/7 support",
+    "trustNoHiddenShort": "Geen toeslagen",
+    "vehicleStepSubtitle": "Kies het voertuig dat past bij uw gezelschap en comfort",
+    "selectThisVehicle": "Kies dit voertuig",
+    "vehicleSelected": "Gekozen",
+    "allInclusiveNote": "Meet & greet en vluchtmonitoring zijn bij elke prijs inbegrepen.",
+    "selectedVehicleLabel": "Gekozen voertuig",
+    "changeVehicle": "Wijzig",
+    "continueStep": "Doorgaan"
   },
   "trust": {
     "heading": "Waarom reizigers voor TORVIAN kiezen.",
