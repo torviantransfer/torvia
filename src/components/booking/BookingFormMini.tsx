@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Fragment } from "react";
+import { useState, useRef, useEffect, Fragment, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
@@ -53,6 +53,106 @@ function getCalDays(year: number, month: number) {
       date: new Date(year, month + 1, days.length - first - total + 1),
     });
   return days;
+}
+
+/* --- Time wheel ---
+ *
+ * `<input type="time">` gives an iPhone the drum picker we want and gives
+ * every other browser a dropdown of two scrolling lists, which is what the
+ * phone preview was showing. This is the drum, drawn the same everywhere.
+ *
+ * It is CSS scroll snapping, not a gesture library: each column is an ordinary
+ * scroller whose children snap to its centre, so the fling physics, the
+ * momentum and the keyboard and screen-reader behaviour are the platform's
+ * own. The column is padded by half its height top and bottom, which is what
+ * lets the first and last value reach the middle — and it makes the maths
+ * fall out: value i is centred exactly at scrollTop = i * ITEM.
+ */
+const WHEEL_ITEM = 40;
+const WHEEL_VISIBLE = 5;
+const WHEEL_H = WHEEL_ITEM * WHEEL_VISIBLE;
+const WHEEL_PAD = (WHEEL_H - WHEEL_ITEM) / 2;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const MINUTES = Array.from({ length: 12 }, (_, i) => i * 5);
+
+function TimeWheel({
+  values,
+  value,
+  onChange,
+  label,
+}: {
+  values: number[];
+  value: number;
+  onChange: (v: number) => void;
+  label: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Nearest offered value — a restored time need not be on the 5-minute grid. */
+  const nearest = (v: number) => {
+    let best = 0;
+    for (let i = 1; i < values.length; i++) {
+      if (Math.abs(values[i] - v) < Math.abs(values[best] - v)) best = i;
+    }
+    return best;
+  };
+
+  // Land on the current value when the wheel appears. Mount only: after that
+  // the scroll position is the source of truth, and writing to it mid-gesture
+  // would fight the finger.
+  useEffect(() => {
+    const el = ref.current;
+    if (el) el.scrollTop = nearest(value) * WHEEL_ITEM;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => () => { if (settle.current) clearTimeout(settle.current); }, []);
+
+  /* Read the value out once the fling has stopped. Reading on every scroll
+     event would fire onChange dozens of times per swipe. */
+  const handleScroll = () => {
+    if (settle.current) clearTimeout(settle.current);
+    settle.current = setTimeout(() => {
+      const el = ref.current;
+      if (!el) return;
+      const i = Math.min(values.length - 1, Math.max(0, Math.round(el.scrollTop / WHEEL_ITEM)));
+      if (values[i] !== value) onChange(values[i]);
+    }, 90);
+  };
+
+  return (
+    <div
+      ref={ref}
+      onScroll={handleScroll}
+      role="listbox"
+      aria-label={label}
+      tabIndex={0}
+      className="h-[200px] flex-1 snap-y snap-mandatory overflow-y-auto overscroll-contain outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      style={{ paddingTop: WHEEL_PAD, paddingBottom: WHEEL_PAD }}
+    >
+      {values.map((v) => {
+        const active = v === value;
+        return (
+          <button
+            key={v}
+            type="button"
+            role="option"
+            aria-selected={active}
+            onClick={() => {
+              onChange(v);
+              ref.current?.scrollTo({ top: nearest(v) * WHEEL_ITEM, behavior: "smooth" });
+            }}
+            className={`flex h-10 w-full snap-center items-center justify-center text-[22px] tabular-nums transition-colors ${
+              active ? "font-semibold text-[#111827]" : "text-[#9CA3AF]"
+            }`}
+          >
+            {String(v).padStart(2, "0")}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 interface BookingFormMiniProps {
@@ -167,16 +267,9 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
   const swap = () => { const tmp = from; setFrom(to); setTo(tmp); };
 
-  /* Time as the "HH:MM" that <input type="time"> speaks, both ways. */
+  /* Whichever leg the pickers are currently editing. */
   const activeH = calFor === "dep" ? depH : retH;
   const activeM = calFor === "dep" ? depM : retM;
-  const timeValue = `${String(activeH).padStart(2, "0")}:${String(activeM).padStart(2, "0")}`;
-  const setTimeFromInput = (value: string) => {
-    const [h, m] = value.split(":").map(Number);
-    // Clearing the field yields "", which parses to NaN — keep the old time.
-    if (Number.isNaN(h) || Number.isNaN(m)) return;
-    if (calFor === "dep") { setDepH(h); setDepM(m); } else { setRetH(h); setRetM(m); }
-  };
 
   const openCal = (target: "dep" | "ret") => {
     if (target === "ret" && !depDate) return;
@@ -345,21 +438,42 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     </>
   );
 
-  /* Phones get the platform's own time picker — the wheel on iOS, the dial on
-     Android — because the stepper beside it needs about fifteen taps on 11px
-     arrows to get from the default 12:00 to something like 03:30. Pointer
-     devices keep the stepper, where those arrows are fine. */
-  const timeInput = (
-    <label className="block">
-      <span className="block text-[10px] font-bold text-[#0e8a61] uppercase tracking-wider mb-1.5">{t("hour")}</span>
-      <input
-        type="time"
-        step={300}
-        value={timeValue}
-        onChange={(e) => setTimeFromInput(e.target.value)}
-        className="w-full border border-[#E5E7EB] rounded-xl px-3 py-3 text-base font-bold text-[#111827] focus:ring-2 focus:ring-[#0e8a61] outline-none"
-      />
-    </label>
+  /* The phone's picker: two drums under one highlighted row, the way iOS
+     draws a time. The minute column runs in fives, which is the granularity
+     the form has always used — the old input carried step={300} and the
+     pointer stepper moves in fives too, so nothing about the values changes,
+     only the way they are chosen. Pointer devices keep that stepper. */
+  const timeWheels = (
+    <div className="relative select-none">
+      <div className="mb-1 flex text-center">
+        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("hour")}</span>
+        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("minute")}</span>
+      </div>
+      <div className="relative">
+        {/* The selected row, painted behind the numbers. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 z-0 h-10 rounded-xl bg-[#EDF8F4] ring-1 ring-[#0e8a61]/25"
+          style={{ top: WHEEL_PAD }}
+        />
+        <div className="relative z-10 flex">
+          <TimeWheel
+            values={HOURS}
+            value={activeH}
+            label={t("hour")}
+            onChange={(v) => (calFor === "dep" ? setDepH(v) : setRetH(v))}
+          />
+          <TimeWheel
+            values={MINUTES}
+            value={activeM}
+            label={t("minute")}
+            onChange={(v) => (calFor === "dep" ? setDepM(v) : setRetM(v))}
+          />
+        </div>
+        {/* Feathered top and bottom, so the drums read as curving away. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-gradient-to-b from-white via-white/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-white via-white/80 to-transparent" />
+      </div>
+    </div>
   );
 
   const timeStepper = (
@@ -411,7 +525,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
    * (or with the keyboard up) it has to be able to scroll inside itself
    * instead of running off both ends.
    */
-  const modalShell = (label: string, body: React.ReactNode) => (
+  const modalShell = (label: string, body: ReactNode) => (
     <div className="lg:hidden">
       <div className="fixed inset-0 z-[60] bg-black/40" onClick={() => setOpen(null)} />
       <div
@@ -481,7 +595,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           <div className="bg-[#0e8a61] text-white px-4 py-2.5 text-center">
             <span className="font-semibold text-sm">{label}</span>
           </div>
-          <div className="px-4 pt-4">{timeInput}</div>
+          <div className="px-4 pt-3">{timeWheels}</div>
           {sheetConfirm}
         </>,
       ),

@@ -215,9 +215,12 @@ export default async function BookingPage({
                 sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
+              {/* Run long and weighted late, so the extra length softens the
+                  landing without hazing the strip of photograph above the
+                  card. Same curve as the home hero, onto white. */}
               <div
-                className="absolute inset-x-0 bottom-0 h-20 lg:hidden"
-                style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 55%, #FFFFFF 100%)" }}
+                className="absolute inset-x-0 bottom-0 h-36 lg:hidden"
+                style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.45) 72%, rgba(255,255,255,0.85) 90%, #FFFFFF 100%)" }}
               />
             </div>
             {/* Flex column so phones can put the booking widget above the

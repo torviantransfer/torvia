@@ -47,11 +47,15 @@ export default function HeroSection() {
         />
         {/* Legibility wash. */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/15 lg:from-black/50 lg:via-black/30 lg:to-black/70" />
-        {/* The dissolve. Tall enough that the gradient reads as light falling
-            off rather than as a band of its own. */}
+        {/* The dissolve, run long and weighted late. Its stops matter as much
+            as its height: most of the whitening is packed into the last third,
+            so the extra length buys a softer landing without hazing over the
+            strip of photograph the visitor actually sees above the card. */}
         <div
-          className="absolute inset-x-0 bottom-0 h-24 lg:hidden"
-          style={{ backgroundImage: `linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.6) 55%, ${PAGE} 100%)` }}
+          className="absolute inset-x-0 bottom-0 h-40 lg:hidden"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.10) 45%, rgba(250,250,250,0.45) 72%, rgba(250,250,250,0.85) 90%, ${PAGE} 100%)`,
+          }}
         />
       </div>
 
