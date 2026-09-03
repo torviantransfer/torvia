@@ -161,18 +161,14 @@ export async function POST(request: NextRequest) {
       if (isDeposit) {
         notifyNewCashBooking({
           code: reservationCode ?? "?",
-          amount: `${((paymentIntent.amount ?? 0) / 100).toFixed(2)} USD depozit`,
-          cashTotal: `${(resData.total_price ?? 0).toFixed(2)} USD toplam`,
-          driverAmount: `${(resData.driver_amount ?? 0).toFixed(2)} USD şöföre`,
           email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
-          region: String(resData.regions?.name_en ?? ""),
+          region: String(resData.regions?.name_tr ?? resData.regions?.name_en ?? ""),
         }).catch(() => {});
       } else {
         notifyNewPayment({
           code: reservationCode ?? "?",
-          amount: `${((paymentIntent.amount ?? 0) / 100).toFixed(2)} USD`,
           email: paymentIntent.receipt_email ?? resData.customers?.email ?? "?",
-          region: String(resData.regions?.name_en ?? ""),
+          region: String(resData.regions?.name_tr ?? resData.regions?.name_en ?? ""),
         }).catch(() => {});
       }
 

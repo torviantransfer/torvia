@@ -2,7 +2,7 @@
  * TORVIAN Transfer — Telegram Notification Helper
  * Sends beautifully formatted HTML messages to Telegram group
  */
-import { formatBookingDateLong, formatBookingTime } from "@/lib/datetime";
+import { formatBookingDate, formatBookingTime } from "@/lib/datetime";
 import { legEndpoints } from "@/lib/transfer-route";
 
 const TELEGRAM_API = "https://api.telegram.org/bot";
@@ -95,18 +95,18 @@ export async function sendTelegram(options: TelegramMessageOptions): Promise<voi
 
 // ────────── Pre-built notification types ──────────
 
+// Amounts are deliberately absent from every group message: the transfer group
+// is where drivers pick up jobs, and the operator reads the money in the panel.
 export function notifyNewPayment(data: {
   code: string;
-  amount: string;
   email: string;
   region?: string;
 }) {
   return sendTelegram({
-    icon: "\u{1F4B3}",  // credit card emoji
+    icon: "\u2705",
     title: "ODEME ALINDI",
     fields: [
       { label: "Kod:", value: data.code },
-      { label: "Tutar:", value: data.amount },
       { label: "E-posta:", value: data.email },
       { label: "Guzergah:", value: data.region },
     ],
@@ -115,24 +115,18 @@ export function notifyNewPayment(data: {
 
 export function notifyNewCashBooking(data: {
   code: string;
-  amount: string;
-  cashTotal?: string;
-  driverAmount?: string;
   email: string;
   region?: string;
 }) {
   return sendTelegram({
-    icon: "\u{1F4B5}",  // banknote emoji
+    icon: "\u2705",
     title: "DEPOZITLI REZERVASYON",
     fields: [
       { label: "Kod:", value: data.code },
-      { label: "Depozit:", value: data.amount },
-      { label: "Toplam:", value: data.cashTotal },
-      { label: "Soföre:", value: data.driverAmount },
       { label: "E-posta:", value: data.email },
       { label: "Guzergah:", value: data.region },
     ],
-    footer: "ARAÇTA ÖDEME",
+    footer: "ARACTA ODEME",
   });
 }
 
@@ -277,6 +271,8 @@ export interface DriverVoucherData {
   direction?: string | null;
   pickupDatetime: string;
   returnDatetime?: string;
+  /** Hotel pickup time agreed for the return leg, when one has been set. */
+  returnPickupTime?: string | null;
   flightCode?: string;
   hotelName?: string;
   hotelAddress?: string;
@@ -290,53 +286,86 @@ export interface DriverVoucherData {
   notes?: string;
 }
 
-/**
- * Telegram renders a plain message inline; an HTML attachment has to be
- * downloaded and opened in a browser before anyone can read it. The driver
- * sheet is short enough to be a message, so it is sent as one — and it is also
- * the text an operator can forward straight to a driver on WhatsApp.
- */
-function buildDriverVoucherText(data: DriverVoucherData): string {
-  const { from, to } = legEndpoints(data.direction, "outbound", data.regionName);
-  const passengers =
-    `${data.adults} yetiskin` + (data.children > 0 ? ` + ${data.children} cocuk` : "");
-
-  const lines: string[] = [
-    `<b>TORVIAN — TRANSFER GOREVI</b>`,
-    `<code>${esc(data.reservationCode)}</code>`,
-    ``,
-    `<b>${esc(from)} → ${esc(to)}</b>`,
-    data.distanceKm ? `${data.distanceKm} km · ${data.durationMinutes ?? "?"} dk` : "",
-    ``,
-    `Tarih : <b>${formatBookingDateLong(data.pickupDatetime)}</b>`,
-    `Saat  : <b>${formatBookingTime(data.pickupDatetime)}</b>`,
-  ].filter(Boolean);
-
-  if (data.tripType === "round_trip" && data.returnDatetime) {
-    lines.push(
-      `Donus : <b>${formatBookingDateLong(data.returnDatetime)} ${formatBookingTime(data.returnDatetime)}</b>`
-    );
-  }
-  if (data.flightCode) lines.push(`Ucus  : <b>${esc(data.flightCode)}</b>`);
-
-  lines.push("", `Musteri: <b>${esc(data.customerFirstName)} ${esc(data.customerLastName)}</b>`);
-  if (data.customerPhone) lines.push(`Telefon: <b>${esc(data.customerPhone)}</b>`);
-  lines.push(`Yolcu  : ${esc(passengers)} · ${data.luggageCount} bagaj`);
-  if (data.childSeat) lines.push(`Ekstra : Cocuk koltugu`);
-
-  if (data.hotelName) {
-    lines.push("", `Otel: <b>${esc(data.hotelName)}</b>`);
-    if (data.hotelAddress) lines.push(esc(data.hotelAddress));
-  }
-  if (data.notes) lines.push("", `Not: ${esc(data.notes)}`);
-
-  lines.push("", `7/24 Destek: 0546 940 79 55`);
-  return lines.join("\n");
+/** Clock face matching the time, e.g. 10:10 -> 🕙 and 06:30 -> 🕡. */
+function clockEmoji(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  if (!Number.isFinite(h)) return "\u{1F550}";
+  const hour12 = ((h + 11) % 12) + 1;
+  // U+1F550 is 1 o'clock and U+1F55C is 1:30, so each series starts at hour 1.
+  const base = m >= 30 ? 0x1f55c : 0x1f550;
+  return String.fromCodePoint(base + (hour12 - 1));
 }
 
+/** "26.09.2026 Cumartesi" */
+function longDay(value: string): string {
+  const weekday = new Date(value).toLocaleDateString("tr-TR", {
+    timeZone: "UTC",
+    weekday: "long",
+  });
+  return `${formatBookingDate(value)} ${weekday}`;
+}
+
+/**
+ * The message the transfer group reads.
+ *
+ * It deliberately carries no prices: the operator sees those in the panel, and
+ * this message is what drivers pick a job from, so money does not belong in it.
+ */
+export function buildTransferMessage(data: DriverVoucherData): string {
+  const out = legEndpoints(data.direction, "outbound", data.regionName);
+  const ret = legEndpoints(data.direction, "return", data.regionName);
+  const isRoundTrip = data.tripType === "round_trip" && !!data.returnDatetime;
+
+  const passengers =
+    `${data.adults} Yetişkin` + (data.children > 0 ? `, ${data.children} Çocuk` : "");
+
+  const L: string[] = [];
+  L.push(`<b>${esc(data.reservationCode)}</b>`, "");
+
+  // ── outbound ──
+  L.push(`<b>${isRoundTrip ? "GİDİŞ TRANSFERİ" : "TRANSFER"}</b>`, "");
+  L.push(`📅 ${esc(longDay(data.pickupDatetime))}`);
+  if (data.flightCode) L.push(`✈️ Uçuş Kodu: ${esc(data.flightCode)}`);
+
+  // Leaving the airport, the time is the flight's; leaving a hotel it is when
+  // the driver collects the passenger — so the label cannot be fixed.
+  const outTime = formatBookingTime(data.pickupDatetime);
+  const outFromAirport = out.from !== data.regionName;
+  L.push(
+    `${clockEmoji(outTime)} ${outFromAirport ? "Uçuş Saati" : "Otelden Alınış Saati"}: ${esc(outTime)}`
+  );
+  L.push(`📍 ${esc(out.from)} → ${esc(out.to)}`);
+  if (data.hotelName) L.push(`🏨 Otel: ${esc(data.hotelName)}`);
+  L.push(`👥 ${esc(passengers)}`);
+  L.push(`🧳 ${data.luggageCount} Bagaj`);
+  if (data.childSeat) L.push(`🪑 Çocuk koltuğu istendi`);
+
+  // ── return ──
+  if (isRoundTrip) {
+    L.push("", `<b>DÖNÜŞ TRANSFERİ</b>`, "");
+    L.push(`📅 ${esc(longDay(data.returnDatetime!))}`);
+
+    const retTime = data.returnPickupTime || formatBookingTime(data.returnDatetime!);
+    const retFromAirport = ret.from !== data.regionName;
+    L.push(
+      `${clockEmoji(retTime)} ${retFromAirport ? "Uçuş Saati" : "Otelden Alınış Saati"}: ${esc(retTime)}`
+    );
+    L.push(`📍 ${esc(ret.from)} → ${esc(ret.to)}`);
+    if (data.hotelName) L.push(`🏨 Otel: ${esc(data.hotelName)}`);
+    if (!retFromAirport) L.push(`✈️ Dönüş uçuş saati kontrol edilecektir.`);
+  }
+
+  // ── customer ──
+  L.push("", `👤 ${esc(data.customerFirstName)} ${esc(data.customerLastName)}`);
+  if (data.customerPhone) L.push(`📞 Telefon: ${esc(data.customerPhone)}`);
+
+  if (data.notes) L.push("", `📝 Not: ${esc(data.notes)}`);
+
+  return L.join("\n");
+}
 
 export async function sendDriverVoucherToTelegram(data: DriverVoucherData): Promise<void> {
-  await sendTelegramRaw(buildDriverVoucherText(data));
+  await sendTelegramRaw(buildTransferMessage(data));
 }
 
 // ────────── Send price list table to Telegram ──────────

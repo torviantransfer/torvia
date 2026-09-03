@@ -21,6 +21,7 @@ import {
   Phone,
   Plane,
   Search,
+  Send,
   Trash2,
   UserPlus,
   UserRound,
@@ -103,6 +104,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
   const [deleting, setDeleting] = useState(false);
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [telegramSendingId, setTelegramSendingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; tone: "ok" | "error" } | null>(null);
   const [linkModal, setLinkModal] = useState<{
     driverLink: string;
@@ -238,6 +240,23 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
       refresh();
     } else {
       showToast("İşlem başarısız.", "error");
+    }
+  };
+
+  /** Posts the transfer into the driver group so whoever is free can take it. */
+  const sendToTelegram = async (r: Reservation) => {
+    setTelegramSendingId(r.id);
+    const res = await fetch("/api/admin/send-to-telegram", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reservationId: r.id }),
+    });
+    setTelegramSendingId(null);
+    if (res.ok) {
+      showToast("Transfer Telegram grubuna gönderildi.");
+    } else {
+      const d = await res.json().catch(() => null);
+      showToast(d?.error ?? "Telegram'a gönderilemedi.", "error");
     }
   };
 
@@ -734,6 +753,17 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                             <Download size={13} />
                             Voucher PDF
                           </a>
+                          <button
+                            onClick={() => sendToTelegram(r)}
+                            disabled={telegramSendingId === r.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+                            title="Şoför grubuna gönder — boşta olan alsın"
+                          >
+                            <Send size={13} />
+                            {telegramSendingId === r.id
+                              ? "Gönderiliyor…"
+                              : "Telegram'a Gönder"}
+                          </button>
                           <button
                             onClick={() => setEditTarget(r)}
                             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"

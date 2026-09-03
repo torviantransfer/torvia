@@ -17,13 +17,15 @@ export function normalizeDirection(value: unknown): Direction {
   return value === "region_to_airport" ? "region_to_airport" : "airport_to_region";
 }
 
+// The IATA code is carried in the label: drivers and hotel staff recognise AYT
+// faster than the written name, and it is what the group messages have always used.
 const AIRPORT_LABELS: Record<string, string> = {
-  tr: "Antalya Havalimanı",
-  en: "Antalya Airport",
-  de: "Flughafen Antalya",
-  pl: "Lotnisko Antalya",
-  ru: "Аэропорт Анталья",
-  nl: "Luchthaven Antalya",
+  tr: "Antalya Havalimanı (AYT)",
+  en: "Antalya Airport (AYT)",
+  de: "Flughafen Antalya (AYT)",
+  pl: "Lotnisko Antalya (AYT)",
+  ru: "Аэропорт Анталья (AYT)",
+  nl: "Luchthaven Antalya (AYT)",
 };
 
 export const airportLabel = (locale = "en") =>
