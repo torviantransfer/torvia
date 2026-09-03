@@ -89,7 +89,7 @@ export default function HeroSection() {
           64px above the viewport, and the fixed header covers the first 64px
           below that. So the photograph the visitor actually sees between the
           navbar and the card is pt − 128: 90px here, matching /booking. */}
-      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-[218px] lg:pt-0">
+      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-[218px] lg:pt-10 xl:pt-12">
         <BookingFormMini />
       </div>
 
