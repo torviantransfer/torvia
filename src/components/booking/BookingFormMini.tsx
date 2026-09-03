@@ -388,22 +388,41 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     </div>
   );
 
-  /* Sheet furniture. Closing used to mean tapping the dimmed area behind the
-     sheet, which is not obvious; the padding clears the iPhone home
-     indicator. */
-  const sheetHandle = (
-    <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-  );
-
+  /* Modal furniture. Dismissing used to mean tapping the dimmed area, which
+     is not obvious on its own, so every modal ends in an explicit button. */
   const sheetConfirm = (
-    <div className="px-4 pt-2" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+    <div className="px-4 pb-4 pt-3">
       <button
         type="button"
         onClick={() => setOpen(null)}
-        className="w-full h-[52px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+        className="w-full h-[48px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
       >
         {t("dateConfirm")}
       </button>
+    </div>
+  );
+
+  /**
+   * The phone shell for both pickers: a box in the middle of the screen over a
+   * dimmed page, rather than a panel sliding up from the bottom edge.
+   *
+   * `max-h`/`overflow-y` matter more here than they would in a sheet — a
+   * centred box has the viewport above *and* below it, so on a short screen
+   * (or with the keyboard up) it has to be able to scroll inside itself
+   * instead of running off both ends.
+   */
+  const modalShell = (label: string, body: React.ReactNode) => (
+    <div className="lg:hidden">
+      <div className="fixed inset-0 z-[60] bg-black/40" onClick={() => setOpen(null)} />
+      <div
+        data-cal-sheet
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        className="fixed left-1/2 top-1/2 z-[70] w-[min(340px,calc(100vw-32px))] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 bg-white shadow-2xl"
+      >
+        {body}
+      </div>
     </div>
   );
 
@@ -436,14 +455,13 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           while `open === "cal"`, which starts null and can only be set by a
           tap. It is never reached during the server render or hydration. */}
       {createPortal(
-        <div className="lg:hidden">
-          <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
-          <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
-            {sheetHandle}
+        modalShell(
+          calFor === "dep" ? t("departureDate") : t("returnDate"),
+          <>
             {calendarGrid}
             {sheetConfirm}
-          </div>
-        </div>,
+          </>,
+        ),
         document.body,
       )}
     </>
@@ -454,23 +472,22 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
      and nothing else, so the sheet answers the field that was pressed. There
      is no desktop shell because the desktop bar has no separate time field —
      its date popover carries the stepper instead. */
-  const renderTimeSheet = () =>
-    createPortal(
-      <div className="lg:hidden">
-        <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
-        <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
-          {sheetHandle}
+  const renderTimeSheet = () => {
+    const label = calFor === "dep" ? t("departureTime") : t("returnTime");
+    return createPortal(
+      modalShell(
+        label,
+        <>
           <div className="bg-[#0e8a61] text-white px-4 py-2.5 text-center">
-            <span className="font-semibold text-sm">
-              {calFor === "dep" ? t("departureTime") : t("returnTime")}
-            </span>
+            <span className="font-semibold text-sm">{label}</span>
           </div>
-          <div className="px-4 py-4">{timeInput}</div>
+          <div className="px-4 pt-4">{timeInput}</div>
           {sheetConfirm}
-        </div>
-      </div>,
+        </>,
+      ),
       document.body,
     );
+  };
 
   /* --- Passenger popup ---
    * Spans the full width of its row on phones. It used to be a fixed 220px

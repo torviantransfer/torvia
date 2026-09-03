@@ -200,7 +200,7 @@ export default async function BookingPage({
               on the boundary with nothing showing a hard edge. Desktop keeps
               the original full-bleed image and its single wash. */}
           <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
-            <div className="absolute inset-x-0 top-0 h-[280px] lg:h-full overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[240px] lg:h-full overflow-hidden">
               <Image
                 src="/images/havaalani-vip-transfer.jpg"
                 alt={heroAlt[locale] ?? heroAlt.en}
@@ -216,7 +216,7 @@ export default async function BookingPage({
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
               <div
-                className="absolute inset-x-0 bottom-0 h-28 lg:hidden"
+                className="absolute inset-x-0 bottom-0 h-20 lg:hidden"
                 style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 55%, #FFFFFF 100%)" }}
               />
             </div>
