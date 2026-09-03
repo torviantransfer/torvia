@@ -8,6 +8,12 @@ import { sendReservationEmail } from "@/lib/email";
 import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiInitiateCheckout } from "@/lib/capi";
 import { evaluateCoupon, type CouponRow } from "@/lib/coupon";
+import {
+  capacityFor,
+  countBookingsOnDate,
+  getDateOverride,
+  getGlobalMaxDaily,
+} from "@/lib/availability";
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -94,40 +100,48 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── Check date availability ───
-    const { data: blockedDate } = await supabase
-      .from("blocked_dates")
-      .select("id")
-      .eq("blocked_date", pickupDate)
-      .single();
+    // Resolved through lib/availability so this guard and the calendar the
+    // customer just picked from apply exactly the same capacity rules.
+    const [globalMax, pickupOverride] = await Promise.all([
+      getGlobalMaxDaily(supabase),
+      getDateOverride(supabase, pickupDate),
+    ]);
 
-    if (blockedDate) {
+    const pickupCapacity = capacityFor(pickupOverride, globalMax);
+    if (pickupCapacity === 0) {
       return NextResponse.json(
         { error: "This date is not available for booking" },
         { status: 400 }
       );
     }
 
-    // Check max daily bookings
-    const { data: maxSetting } = await supabase
-      .from("settings")
-      .select("value")
-      .eq("key", "max_daily_bookings")
-      .single();
-
-    const maxDaily = maxSetting ? Number(maxSetting.value) : 3;
-
-    const { count: dateBookingCount } = await supabase
-      .from("reservations")
-      .select("id", { count: "exact", head: true })
-      .gte("pickup_datetime", `${pickupDate}T00:00:00`)
-      .lte("pickup_datetime", `${pickupDate}T23:59:59`)
-      .not("status", "in", '("cancelled")');
-
-    if ((dateBookingCount ?? 0) >= maxDaily) {
+    if ((await countBookingsOnDate(supabase, pickupDate)) >= pickupCapacity) {
       return NextResponse.json(
         { error: "This date is fully booked" },
         { status: 400 }
       );
+    }
+
+    // A round trip also occupies a slot on its return day.
+    const returnLegDate =
+      tripType === "round_trip" && returnDate ? returnDate : null;
+    if (returnLegDate && returnLegDate !== pickupDate) {
+      const returnCapacity = capacityFor(
+        await getDateOverride(supabase, returnLegDate),
+        globalMax
+      );
+      if (returnCapacity === 0) {
+        return NextResponse.json(
+          { error: "This date is not available for booking" },
+          { status: 400 }
+        );
+      }
+      if ((await countBookingsOnDate(supabase, returnLegDate)) >= returnCapacity) {
+        return NextResponse.json(
+          { error: "This date is fully booked" },
+          { status: 400 }
+        );
+      }
     }
 
     // Fetch pricing — include cash pricing columns

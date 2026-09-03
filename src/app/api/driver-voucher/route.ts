@@ -1,5 +1,6 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyAdmin } from "@/lib/admin-auth";
 
 function esc(str: string | null | undefined): string {
   if (!str) return "";
@@ -43,7 +44,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Driver voucher follows the same single-use operational rule as the driver panel.
-  if (assignment.status === "completed") {
+  // Admins are exempt so they can reprint the sheet for a finished transfer.
+  if (assignment.status === "completed" && !(await verifyAdmin())) {
     return new NextResponse(
       `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
       <title>Transfer Completed</title></head><body style="font-family:system-ui;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">

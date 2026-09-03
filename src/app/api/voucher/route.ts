@@ -1,7 +1,12 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildVoucherHTML, generateQRUrlForDownload } from "@/lib/email";
-import type { ReservationEmailData } from "@/lib/email";
+import { buildVoucherData, VOUCHER_SELECT } from "@/lib/voucher-data";
+import { verifyAdmin } from "@/lib/admin-auth";
+
+// Statuses a customer may pull their own voucher for. Admins bypass this list so
+// they can reprint a voucher for a completed or cancelled transfer.
+const PUBLIC_STATUSES = ["paid", "driver_assigned", "passenger_picked_up", "completed"];
 
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
@@ -14,62 +19,24 @@ export async function GET(request: NextRequest) {
 
   const { data: res } = await supabase
     .from("reservations")
-    .select(`
-      *,
-      regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, slug),
-      customers(first_name, last_name, email),
-      vehicle_categories(name)
-    `)
+    .select(VOUCHER_SELECT)
     .eq("reservation_code", code)
-    .in("status", ["paid", "driver_assigned", "passenger_picked_up"])
     .single();
 
   if (!res) {
     return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
   }
 
-  const regionName =
-    res.regions?.[`name_${locale}` as keyof typeof res.regions] ??
-    res.regions?.name_en ?? "";
+  if (!PUBLIC_STATUSES.includes(res.status as string) && !(await verifyAdmin())) {
+    return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
+  }
 
-  const eurRate = res.exchange_rate_eur ?? 1;
-  const totalEur = eurRate > 0 ? res.total_price / eurRate : res.total_price;
-  const basePriceEur = eurRate > 0 ? res.base_price / eurRate : res.base_price;
-  const nightEur = eurRate > 0 ? res.night_surcharge / eurRate : res.night_surcharge;
-  const childSeatEur = eurRate > 0 ? res.child_seat_fee / eurRate : res.child_seat_fee;
-  const rtDiscountEur = eurRate > 0 ? res.round_trip_discount / eurRate : res.round_trip_discount;
-  const couponDiscountEur = eurRate > 0 ? res.coupon_discount / eurRate : res.coupon_discount;
-
-  const emailData: ReservationEmailData = {
-    to: res.customers?.email ?? "",
-    reservationCode: res.reservation_code,
-    firstName: res.customers?.first_name ?? "",
-    lastName: res.customers?.last_name ?? "",
-    regionName: String(regionName),
-    pickupDate: res.pickup_datetime?.split("T")[0] ?? "",
-    pickupTime: res.pickup_datetime?.split("T")[1]?.slice(0, 5) ?? "",
-    tripType: res.trip_type,
-    returnDate: res.return_datetime?.split("T")[0],
-    returnTime: res.return_datetime?.split("T")[1]?.slice(0, 5),
-    adults: res.adults ?? 1,
-    children: res.children ?? 0,
-    luggageCount: res.luggage_count ?? 0,
-    childSeat: res.child_seat ?? false,
-    hotelName: res.hotel_name,
-    flightCode: res.flight_code,
-    vehicleName: res.vehicle_categories?.name,
-    basePrice: basePriceEur,
-    nightSurcharge: nightEur,
-    childSeatFee: childSeatEur,
-    roundTripDiscount: rtDiscountEur,
-    couponDiscount: couponDiscountEur,
-    totalEur,
-    qrCodeToken: res.qr_code_token,
-    locale,
-  };
+  const emailData = buildVoucherData(res, locale);
 
   const qrDataUrl = emailData.qrCodeToken
-    ? generateQRUrlForDownload(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${emailData.qrCodeToken}`)
+    ? generateQRUrlForDownload(
+        `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com"}/verify/${emailData.qrCodeToken}`
+      )
     : "";
 
   const html = buildVoucherHTML(emailData, qrDataUrl);

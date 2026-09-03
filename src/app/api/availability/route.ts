@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  capacityFor,
+  countBookingsByDate,
+  getDateOverrides,
+  getGlobalMaxDaily,
+} from "@/lib/availability";
 
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
@@ -13,93 +19,53 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get max daily bookings setting
-    const { data: setting } = await supabase
-      .from("settings")
-      .select("value")
-      .eq("key", "max_daily_bookings")
-      .single();
+    const [maxDaily, overrides, dateCounts] = await Promise.all([
+      getGlobalMaxDaily(supabase),
+      getDateOverrides(supabase, from, to),
+      countBookingsByDate(supabase, from, to),
+    ]);
 
-    const maxDaily = setting ? Number(setting.value) : 2;
-
-    // Get manually blocked dates
-    const { data: blockedDates } = await supabase
-      .from("blocked_dates")
-      .select("blocked_date, reason")
-      .gte("blocked_date", from)
-      .lte("blocked_date", to);
-
-    const blockedSet = new Set(
-      (blockedDates ?? []).map((d) => d.blocked_date)
-    );
-
-    // Count reservations per date (only non-cancelled statuses)
-    const { data: reservations } = await supabase
-      .from("reservations")
-      .select("pickup_datetime, status")
-      .gte("pickup_datetime", `${from}T00:00:00`)
-      .lte("pickup_datetime", `${to}T23:59:59`)
-      .not("status", "in", '("cancelled")');
-
-    // Count bookings per date
-    const dateCounts: Record<string, number> = {};
-    for (const r of reservations ?? []) {
-      const date = r.pickup_datetime.split("T")[0];
-      dateCounts[date] = (dateCounts[date] || 0) + 1;
+    // Effective capacity per date: the override when one exists, else the global.
+    const capacities: Record<string, number> = {};
+    for (const [date, override] of overrides) {
+      capacities[date] = capacityFor(override, maxDaily);
     }
 
-    // Also count return dates for round trips
-    const { data: returnReservations } = await supabase
-      .from("reservations")
-      .select("return_datetime, status")
-      .not("return_datetime", "is", null)
-      .gte("return_datetime", `${from}T00:00:00`)
-      .lte("return_datetime", `${to}T23:59:59`)
-      .not("status", "in", '("cancelled")');
+    const unavailableDates: { date: string; reason: string }[] = [];
 
-    for (const r of returnReservations ?? []) {
-      if (r.return_datetime) {
-        const date = r.return_datetime.split("T")[0];
-        dateCounts[date] = (dateCounts[date] || 0) + 1;
+    // Dates the operator closed outright (override row with no number, or 0).
+    for (const [date, override] of overrides) {
+      if (capacityFor(override, maxDaily) === 0) {
+        unavailableDates.push({ date, reason: override.reason || "blocked" });
       }
     }
 
-    // Build unavailable dates list
-    const unavailableDates: { date: string; reason: string }[] = [];
-
-    // Add manually blocked dates
-    for (const bd of blockedDates ?? []) {
-      unavailableDates.push({
-        date: bd.blocked_date,
-        reason: bd.reason || "blocked",
-      });
-    }
-
-    // Add dates that reached max capacity
+    // Dates that hit their capacity — per-date when overridden, else global.
+    const closed = new Set(unavailableDates.map((d) => d.date));
     for (const [date, count] of Object.entries(dateCounts)) {
-      if (count >= maxDaily && !blockedSet.has(date)) {
-        unavailableDates.push({
-          date,
-          reason: "full",
-        });
+      if (closed.has(date)) continue;
+      if (count >= capacityFor(overrides.get(date), maxDaily)) {
+        unavailableDates.push({ date, reason: "full" });
       }
     }
 
     // If checkDate is specified and it's unavailable, suggest next available dates
     let suggestedDates: string[] = [];
-    let suggestedVehicles: Record<string, { name: string; slug: string; image_url: string | null; max_passengers: number }[]> = {};
+    const suggestedVehicles: Record<
+      string,
+      { name: string; slug: string; image_url: string | null; max_passengers: number }[]
+    > = {};
+
     if (checkDate) {
       const unavailableSet = new Set(unavailableDates.map((d) => d.date));
-      const isDateUnavailable = unavailableSet.has(checkDate);
 
-      if (isDateUnavailable) {
+      if (unavailableSet.has(checkDate)) {
         const baseDate = new Date(checkDate + "T00:00:00");
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         // Search forward and backward for available dates
         for (let offset = 1; offset <= 30 && suggestedDates.length < 4; offset++) {
-          // Check date after
           const after = new Date(baseDate);
           after.setDate(after.getDate() + offset);
           const afterStr = after.toISOString().split("T")[0];
@@ -107,7 +73,6 @@ export async function GET(request: NextRequest) {
             suggestedDates.push(afterStr);
           }
 
-          // Check date before
           if (suggestedDates.length < 4) {
             const before = new Date(baseDate);
             before.setDate(before.getDate() - offset);
@@ -127,32 +92,34 @@ export async function GET(request: NextRequest) {
         suggestedDates = suggestedDates.slice(0, 4);
 
         // Fetch available vehicles for suggested dates
-        if (suggestedDates.length > 0) {
-          const regionSlug = searchParams.get("region");
-          if (regionSlug) {
-            // Get all active vehicle categories
-            const { data: cats } = await supabase
-              .from("vehicle_categories")
-              .select("name, slug, image_url, max_passengers")
-              .eq("is_active", true)
-              .order("sort_order");
+        const regionSlug = searchParams.get("region");
+        if (suggestedDates.length > 0 && regionSlug) {
+          const { data: cats } = await supabase
+            .from("vehicle_categories")
+            .select("name, slug, image_url, max_passengers")
+            .eq("is_active", true)
+            .order("sort_order");
 
-            if (cats && cats.length > 0) {
-              // For each suggested date, check which vehicles have availability
-              for (const sd of suggestedDates) {
-                // Count bookings per vehicle category on this date
-                const { data: dateReservations } = await supabase
-                  .from("reservations")
-                  .select("category_slug")
-                  .gte("pickup_datetime", `${sd}T00:00:00`)
-                  .lte("pickup_datetime", `${sd}T23:59:59`)
-                  .not("status", "in", '("cancelled")');
+          if (cats && cats.length > 0) {
+            for (const sd of suggestedDates) {
+              const { data: dateReservations } = await supabase
+                .from("reservations")
+                .select("category_slug")
+                .gte("pickup_datetime", `${sd}T00:00:00`)
+                .lte("pickup_datetime", `${sd}T23:59:59`)
+                .not("status", "in", '("cancelled")');
 
-                const bookedSlugs = new Set((dateReservations ?? []).map((r) => r.category_slug));
-                suggestedVehicles[sd] = cats
-                  .filter((c) => !bookedSlugs.has(c.slug))
-                  .map((c) => ({ name: c.name, slug: c.slug, image_url: c.image_url, max_passengers: c.max_passengers }));
-              }
+              const bookedSlugs = new Set(
+                (dateReservations ?? []).map((r) => r.category_slug)
+              );
+              suggestedVehicles[sd] = cats
+                .filter((c) => !bookedSlugs.has(c.slug))
+                .map((c) => ({
+                  name: c.name,
+                  slug: c.slug,
+                  image_url: c.image_url,
+                  max_passengers: c.max_passengers,
+                }));
             }
           }
         }
@@ -161,9 +128,17 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       maxDaily,
+      capacities,
       dateCounts,
       unavailableDates,
-      ...(checkDate ? { checkDate, isAvailable: !unavailableDates.some((d) => d.date === checkDate), suggestedDates, suggestedVehicles } : {}),
+      ...(checkDate
+        ? {
+            checkDate,
+            isAvailable: !unavailableDates.some((d) => d.date === checkDate),
+            suggestedDates,
+            suggestedVehicles,
+          }
+        : {}),
     });
   } catch (err) {
     console.error("Availability API error:", err);

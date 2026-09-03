@@ -1,992 +1,1129 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Search,
-  UserPlus,
-  Phone,
-  Send,
-  ChevronDown,
   AlertTriangle,
-  Copy,
-  Check,
-  MessageCircle,
-  ExternalLink,
-  X,
+  Banknote,
   CalendarClock,
+  Check,
+  ChevronDown,
+  Copy,
+  CreditCard,
+  Download,
+  ExternalLink,
+  FileText,
+  Hotel,
   Mail,
   MapPin,
-  Plane,
-  Trash2,
+  MessageCircle,
   Pencil,
+  Phone,
+  Plane,
+  Search,
+  Trash2,
+  UserPlus,
+  UserRound,
   Users,
-  Hotel,
+  X,
 } from "lucide-react";
-
-interface Reservation {
-  id: string;
-  reservation_code: string;
-  status: string;
-  trip_type: string;
-  total_price: number;
-  pickup_datetime: string;
-  return_datetime: string | null;
-  flight_code: string | null;
-  adults: number;
-  children: number;
-  child_seat: boolean;
-  welcome_sign: boolean;
-  hotel_name: string | null;
-  notes: string | null;
-  created_at: string;
-  customers: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-  } | null;
-  regions: { name_en: string; slug: string } | null;
-  vehicle_categories: { name: string } | null;
-  driver_assignments: Array<{
-    id: string;
-    status: string;
-    link_token: string;
-    leg: string;
-    pickup_time: string | null;
-    drivers: { full_name: string; phone: string } | null;
-  }>;
-}
+import AssignDriverModal from "./reservations/AssignDriverModal";
+import AssignmentCard from "./reservations/AssignmentCard";
+import EditReservationModal from "./reservations/EditReservationModal";
+import {
+  type Driver,
+  type Leg,
+  type Reservation,
+  type Vehicle,
+  customerName,
+  dayKey,
+  dayLabel,
+  fmtDate,
+  fmtDateTime,
+  fmtTime,
+  isCash,
+  liveAssignment,
+  money,
+  offsetDayKey,
+  regionName,
+  statusMeta,
+  todayKey,
+} from "./reservations/types";
 
 interface Props {
   reservations: Reservation[];
-  drivers: Array<{ id: string; full_name: string; phone: string }>;
-  vehicles: Array<{
-    id: string;
-    plate_number: string;
-    brand: string;
-    model: string;
-  }>;
+  drivers: Driver[];
+  vehicles: Vehicle[];
 }
 
-const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  paid: "bg-blue-100 text-blue-800",
-  driver_assigned: "bg-purple-100 text-purple-800",
-  passenger_picked_up: "bg-indigo-100 text-indigo-800",
-  completed: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
-  cancel_requested: "bg-amber-100 text-amber-800",
-};
+type DateScope = "all" | "today" | "tomorrow" | "week" | "past";
+type SortKey = "pickup" | "created";
 
-export default function ReservationList({
-  reservations,
-  drivers,
-  vehicles,
-}: Props) {
+const DATE_SCOPES: Array<{ key: DateScope; label: string }> = [
+  { key: "all", label: "Tümü" },
+  { key: "today", label: "Bugün" },
+  { key: "tomorrow", label: "Yarın" },
+  { key: "week", label: "7 Gün" },
+  { key: "past", label: "Geçmiş" },
+];
+
+/** A paid transfer with any leg still missing a driver needs operator attention. */
+function missingDriver(r: Reservation) {
+  if (!["paid", "driver_assigned"].includes(r.status)) return false;
+  if (!liveAssignment(r, "outbound")) return true;
+  return r.trip_type === "round_trip" && !liveAssignment(r, "return");
+}
+
+function inScope(r: Reservation, scope: DateScope) {
+  if (scope === "all") return true;
+  const key = dayKey(r.pickup_datetime);
+  const today = todayKey();
+  if (scope === "today") return key === today;
+  if (scope === "tomorrow") return key === offsetDayKey(1);
+  if (scope === "past") return key < today;
+  return key >= today && key <= offsetDayKey(7);
+}
+
+export default function ReservationList({ reservations, drivers, vehicles }: Props) {
+  const router = useRouter();
+
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [dateScope, setDateScope] = useState<DateScope>("all");
+  const [onlyUnassigned, setOnlyUnassigned] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("pickup");
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [assigningId, setAssigningId] = useState<string | null>(null);
-  const [assigningLeg, setAssigningLeg] = useState<"outbound" | "return">("outbound");
-  const [selectedDriver, setSelectedDriver] = useState("");
-  const [selectedVehicle, setSelectedVehicle] = useState("");
-  const [returnPickupTime, setReturnPickupTime] = useState("");
-  const [conflicts, setConflicts] = useState<Array<{ type: string; reservation_code: string; pickup: string; region: string }>>([]);
-  const [checkingConflicts, setCheckingConflicts] = useState(false);
-  const [forceAssign, setForceAssign] = useState(false);
-  const [driverLinkModal, setDriverLinkModal] = useState<{
+
+  const [assignTarget, setAssignTarget] = useState<{ r: Reservation; leg: Leg } | null>(null);
+  const [editTarget, setEditTarget] = useState<Reservation | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [unassigningId, setUnassigningId] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; tone: "ok" | "error" } | null>(null);
+  const [linkModal, setLinkModal] = useState<{
     driverLink: string;
     whatsappUrl: string;
     driverName: string;
   } | null>(null);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [emailSendingId, setEmailSendingId] = useState<string | null>(null);
-  const [emailMessage, setEmailMessage] = useState<string | null>(null);
-  const [unassigningId, setUnassigningId] = useState<string | null>(null);
-  const [editModal, setEditModal] = useState<{ assignmentId?: string; reservationId?: string; field?: string; value?: string } | null>(null);
-  const [deleteModal, setDeleteModal] = useState<{ reservationId?: string } | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  // ID of the existing assignment being replaced (unassign first, then assign)
-  const [replacingAssignmentId, setReplacingAssignmentId] = useState<string | null>(null);
 
-  const filtered = reservations.filter((r) => {
-    const matchesSearch =
-      search === "" ||
-      r.reservation_code.toLowerCase().includes(search.toLowerCase()) ||
-      r.customers?.first_name.toLowerCase().includes(search.toLowerCase()) ||
-      r.customers?.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      r.customers?.email.toLowerCase().includes(search.toLowerCase());
+  const showToast = (message: string, tone: "ok" | "error" = "ok") => {
+    setToast({ message, tone });
+    setTimeout(() => setToast(null), 3500);
+  };
 
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && !["pending", "cancelled"].includes(r.status)) ||
-      r.status === statusFilter;
+  const refresh = () => router.refresh();
 
-    return matchesSearch && matchesStatus;
-  });
-
-    const statusLabels: Record<string, string> = {
-      pending: "Beklemede",
-      paid: "Ödendi",
-      driver_assigned: "Şoför Atandı",
-      passenger_picked_up: "Alındı",
-      completed: "Tamamlandı",
-      cancelled: "İptal Edildi",
-      cancel_requested: "İptal Talep Edildi",
+  // ─── stats (over everything loaded, not the current filter) ───
+  const stats = useMemo(() => {
+    const today = todayKey();
+    const active = reservations.filter(
+      (r) => !["cancelled", "pending"].includes(r.status)
+    );
+    return {
+      today: reservations.filter(
+        (r) => dayKey(r.pickup_datetime) === today && r.status !== "cancelled"
+      ).length,
+      tomorrow: reservations.filter(
+        (r) => dayKey(r.pickup_datetime) === offsetDayKey(1) && r.status !== "cancelled"
+      ).length,
+      unassigned: reservations.filter(missingDriver).length,
+      pending: reservations.filter((r) => r.status === "pending").length,
+      cancelRequests: reservations.filter((r) => r.status === "cancel_requested").length,
+      revenue: active.reduce((sum, r) => sum + (Number(r.total_price) || 0), 0),
     };
+  }, [reservations]);
 
-    const assignmentStatusLabels: Record<string, string> = {
-      assigned: "Atandı",
-      accepted: "Kabul Etti",
-      picked_up: "Yolda",
-      completed: "Tamamlandı",
-    };
+  // ─── filtering + sorting ───
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = reservations.filter((r) => {
+      const matchesSearch =
+        q === "" ||
+        r.reservation_code.toLowerCase().includes(q) ||
+        customerName(r).toLowerCase().includes(q) ||
+        (r.customers?.email ?? "").toLowerCase().includes(q) ||
+        (r.customers?.phone ?? "").includes(q) ||
+        (r.flight_code ?? "").toLowerCase().includes(q) ||
+        (r.hotel_name ?? "").toLowerCase().includes(q) ||
+        regionName(r).toLowerCase().includes(q) ||
+        r.driver_assignments?.some((da) =>
+          (da.drivers?.full_name ?? "").toLowerCase().includes(q)
+        );
 
-  const formatPickupDate = (date: string) =>
-    new Date(date).toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && !["pending", "cancelled"].includes(r.status)) ||
+        r.status === statusFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        inScope(r, dateScope) &&
+        (!onlyUnassigned || missingDriver(r))
+      );
     });
 
-  const formatPickupTime = (date: string) =>
-    new Date(date).toLocaleTimeString("tr-TR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return list.sort((a, b) =>
+      sortKey === "pickup"
+        ? new Date(a.pickup_datetime).getTime() - new Date(b.pickup_datetime).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [reservations, search, statusFilter, dateScope, onlyUnassigned, sortKey]);
 
-  const deleteReservation = async (reservationId: string) => {
-    setDeletingId(reservationId);
+  /** Day buckets, so the operator reads the list as a schedule rather than a feed. */
+  const groups = useMemo(() => {
+    if (sortKey !== "pickup") return [{ key: "", items: filtered }];
+    const map = new Map<string, Reservation[]>();
+    for (const r of filtered) {
+      const key = dayKey(r.pickup_datetime);
+      (map.get(key) ?? map.set(key, []).get(key)!).push(r);
+    }
+    return [...map.entries()].map(([key, items]) => ({ key, items }));
+  }, [filtered, sortKey]);
+
+  const deleteReservation = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     const res = await fetch("/api/admin/delete-reservation", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reservationId }),
+      body: JSON.stringify({ reservationId: deleteTarget.id }),
     });
-
+    setDeleting(false);
     if (res.ok) {
-      window.location.reload();
+      showToast(
+        ["pending", "cancelled"].includes(deleteTarget.status)
+          ? "Rezervasyon silindi."
+          : "Rezervasyon iptal edildi."
+      );
+      setDeleteTarget(null);
+      refresh();
+    } else {
+      showToast("Rezervasyon silinemedi.", "error");
+    }
+  };
+
+  const unassignDriver = async (assignmentId: string) => {
+    if (!window.confirm("Bu şoför ataması kaldırılsın mı? Şoförün linki geçersiz olacak.")) {
       return;
     }
-
-    setDeletingId(null);
-    alert("Rezervasyon silinemedi.");
-  };
-
-  const assignDriver = async (reservationId: string) => {
-    if (!selectedDriver || !selectedVehicle) return;
-
-    // Step 0: If replacing an existing assignment, remove it first
-    if (replacingAssignmentId) {
-      const unRes = await fetch("/api/admin/unassign-driver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId: replacingAssignmentId }),
-      });
-      if (!unRes.ok) {
-        const d = await unRes.json().catch(() => null);
-        alert(d?.error ?? "Mevcut şoför kaldırılamadı.");
-        return;
-      }
-      setReplacingAssignmentId(null);
-    }
-
-    // Step 1: Check for conflicts (unless forced)
-    if (!forceAssign) {
-      setCheckingConflicts(true);
-      try {
-        const checkRes = await fetch("/api/admin/check-conflicts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reservationId,
-            driverId: selectedDriver,
-            vehicleId: selectedVehicle,
-          }),
-        });
-        const checkData = await checkRes.json();
-        if (checkData.hasConflicts) {
-          setConflicts(checkData.conflicts);
-          setCheckingConflicts(false);
-          return; // Show conflict warning, don't assign
-        }
-      } catch { /* proceed if check fails */ }
-      setCheckingConflicts(false);
-    }
-
-    // Step 2: Assign (robust handling)
-    try {
-      const res = await fetch("/api/admin/assign-driver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reservationId,
-          driverId: selectedDriver,
-          vehicleId: selectedVehicle,
-          leg: assigningLeg,
-          ...(assigningLeg === "return" && returnPickupTime ? { pickupTime: returnPickupTime } : {}),
-        }),
-      });
-
-      console.log('assign-driver response status', res.status);
-
-      const text = await res.text();
-      let data: Record<string, string> | null = null;
-      try {
-        data = text ? (JSON.parse(text) as Record<string, string>) : null;
-      } catch {
-        console.error('assign-driver invalid JSON response', text);
-      }
-
-      if (!res.ok) {
-        console.error('assign-driver failed', res.status, JSON.stringify(data || text, null, 2));
-        alert((data && data.error) || `Atama başarısız (kod ${res.status})\nDetay: ${JSON.stringify(data || text)}`);
-        setAssigningId(null);
-        return;
-      }
-
-      if (!data || !data.driverLink) {
-        console.error('assign-driver missing fields', JSON.stringify(data, null, 2));
-        alert('Atama başarılı ama sunucudan beklenen veri gelmedi. Konsolu kontrol et.');
-        setAssigningId(null);
-        return;
-      }
-
-      setDriverLinkModal({
-        driverLink: data.driverLink,
-        whatsappUrl: data.whatsappUrl,
-        driverName: drivers.find((d) => d.id === selectedDriver)?.full_name || "Driver",
-      });
-      setAssigningId(null);
-      setConflicts([]);
-      setForceAssign(false);
-    } catch (err) {
-      console.error('assign-driver exception', err);
-      alert('Atama sırasında bir hata oluştu. Konsolu kontrol et.');
-      setAssigningId(null);
-    }
-  };
-
-  const copyToClipboard = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const sendDriverAssignmentEmail = async (assignmentId: string) => {
-    setEmailSendingId(assignmentId);
-    setEmailMessage(null);
-
-    const res = await fetch("/api/admin/send-driver-assignment-email", {
+    setUnassigningId(assignmentId);
+    const res = await fetch("/api/admin/unassign-driver", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ assignmentId }),
     });
-
+    setUnassigningId(null);
     if (res.ok) {
-      setEmailMessage("E-posta müşteriye başarıyla gönderildi.");
+      showToast("Şoför ataması kaldırıldı.");
+      refresh();
     } else {
-      const data = await res.json().catch(() => null);
-      setEmailMessage(data?.error ?? "E-posta gönderilemedi.");
+      const d = await res.json().catch(() => null);
+      showToast(d?.error ?? "Atama kaldırılamadı.", "error");
     }
-
-    setEmailSendingId(null);
-    setTimeout(() => setEmailMessage(null), 4000);
   };
 
-  const unassignDriver = async (assignmentId: string) => {
-    if (!window.confirm("Bu şoför atamasını kaldırmak istediğinize emin misiniz?")) {
-      return;
+  const cancelAction = async (r: Reservation, action: "approve" | "reject") => {
+    const res = await fetch("/api/admin/cancel-action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reservation_id: r.id, action }),
+    });
+    if (res.ok) {
+      showToast(action === "approve" ? "İptal onaylandı." : "İptal talebi reddedildi.");
+      refresh();
+    } else {
+      showToast("İşlem başarısız.", "error");
     }
+  };
 
-    setUnassigningId(assignmentId);
-    try {
-      const res = await fetch("/api/admin/unassign-driver", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignmentId }),
-      });
-
-      if (res.ok) {
-        window.location.reload();
-      } else {
-        const data = await res.json().catch(() => null);
-        alert(data?.error || "Şoför ataması kaldırılamadı.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Şoför ataması kaldırılırken bir hata oluştu.");
-    } finally {
-      setUnassigningId(null);
-    }
+  const copyCode = async (r: Reservation) => {
+    await navigator.clipboard.writeText(r.reservation_code);
+    setCopiedCode(r.id);
+    setTimeout(() => setCopiedCode(null), 1600);
   };
 
   return (
-    <div>
-      {/* Driver Link Modal */}
-      {driverLinkModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Şoför Atandı!</h3>
-              <button
-                onClick={() => { setDriverLinkModal(null); window.location.reload(); }}
-                className="p-1 hover:bg-gray-100 rounded-lg"
-              >
-                <X size={18} className="text-gray-400" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Aşağıdaki linki <strong>{driverLinkModal.driverName}</strong> adlı şoföre gönderin.
-            </p>
-            <div className="bg-gray-50 rounded-lg p-3 mb-4 flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={driverLinkModal.driverLink}
-                className="flex-1 bg-transparent text-sm text-gray-700 outline-none truncate"
-              />
-              <button
-                onClick={() => copyToClipboard(driverLinkModal.driverLink)}
-                className="p-2 hover:bg-gray-200 rounded-lg transition"
-                title="Copy link"
-              >
-                {copiedLink ? <Check size={16} className="text-green-600" /> : <Copy size={16} className="text-gray-500" />}
-              </button>
-            </div>
-            <div className="flex gap-3">
-              <a
-                href={driverLinkModal.whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-sm"
-              >
-                <MessageCircle size={16} />
-                WhatsApp ile Gönder
-              </a>
-              <button
-                onClick={() => { setDriverLinkModal(null); window.location.reload(); }}
-                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6 flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Kod, isim veya e-posta ile ara..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-        >
-          <option value="active">Aktif (varsayılan)</option>
-          <option value="all">Tüm Durumlar</option>
-          <option value="pending">Beklemede</option>
-          <option value="paid">Ödendi</option>
-          <option value="driver_assigned">Şoför Atandı</option>
-          <option value="passenger_picked_up">Alındı</option>
-          <option value="completed">Tamamlandı</option>
-          <option value="cancelled">İptal Edildi</option>
-          <option value="cancel_requested">İptal Talep Edildi</option>
-        </select>
+    <div className="pb-16">
+      {/* ─── Stat tiles ─── */}
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatTile label="Bugün" value={stats.today} hint="transfer" tone="slate" />
+        <StatTile label="Yarın" value={stats.tomorrow} hint="transfer" tone="slate" />
+        <StatTile
+          label="Şoför Bekliyor"
+          value={stats.unassigned}
+          hint="atama gerekli"
+          tone={stats.unassigned > 0 ? "amber" : "slate"}
+          onClick={() => {
+            setOnlyUnassigned(true);
+            setStatusFilter("active");
+            setDateScope("all");
+          }}
+        />
+        <StatTile
+          label="Ödeme Bekliyor"
+          value={stats.pending}
+          hint="tahsil edilmedi"
+          tone={stats.pending > 0 ? "rose" : "slate"}
+          onClick={() => {
+            setStatusFilter("pending");
+            setOnlyUnassigned(false);
+          }}
+        />
+        <StatTile
+          label="Aktif Ciro"
+          value={money(stats.revenue)}
+          hint="iptal/bekleyen hariç"
+          tone="emerald"
+        />
       </div>
 
-      {/* Reservation cards */}
-      <div className="space-y-3">
-        {filtered.map((r) => (
-          <div
-            key={r.id}
-            className={`bg-white rounded-xl border shadow-sm overflow-hidden ${
-              r.status === "pending" ? "border-yellow-200" : "border-gray-100"
+      {stats.cancelRequests > 0 && (
+        <button
+          onClick={() => {
+            setStatusFilter("cancel_requested");
+            setDateScope("all");
+            setOnlyUnassigned(false);
+          }}
+          className="mb-4 flex w-full items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-left text-sm font-medium text-rose-700 hover:bg-rose-100"
+        >
+          <AlertTriangle size={15} />
+          {stats.cancelRequests} iptal talebi yanıt bekliyor — görüntülemek için tıklayın
+        </button>
+      )}
+
+      {/* ─── Filters ─── */}
+      <div className="mb-5 space-y-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          <div className="relative min-w-[220px] flex-1">
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Kod, müşteri, telefon, uçuş, otel, bölge veya şoför ara..."
+              className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+          >
+            <option value="active">Aktif rezervasyonlar</option>
+            <option value="all">Tüm durumlar</option>
+            <option value="pending">Ödeme bekliyor</option>
+            <option value="paid">Ödendi</option>
+            <option value="driver_assigned">Şoför atandı</option>
+            <option value="passenger_picked_up">Yolcu alındı</option>
+            <option value="completed">Tamamlandı</option>
+            <option value="cancel_requested">İptal talebi</option>
+            <option value="cancelled">İptal edildi</option>
+          </select>
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+          >
+            <option value="pickup">Transfer saatine göre</option>
+            <option value="created">Kayıt tarihine göre</option>
+          </select>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+            {DATE_SCOPES.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setDateScope(s.key)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  dateScope === s.key
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setOnlyUnassigned((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              onlyUnassigned
+                ? "bg-amber-500 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
-            {/* Summary row */}
-            <div
-              className="p-4 cursor-pointer hover:bg-gray-50"
-              onClick={() =>
-                setExpandedId(expandedId === r.id ? null : r.id)
-              }
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="font-mono font-bold text-slate-900 text-sm tracking-wide">
-                      {r.reservation_code}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[r.status]}`}
-                    >
-                      {statusLabels[r.status] ?? r.status.replace("_", " ")}
-                    </span>
-                    {r.trip_type === "round_trip" && (
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
-                        Gidiş-Dönüş
-                      </span>
-                    )}
-                  </div>
+            <UserPlus size={13} />
+            Sadece şoför bekleyenler
+          </button>
+          <span className="ml-auto text-xs text-slate-400">
+            {filtered.length} kayıt gösteriliyor
+          </span>
+        </div>
+      </div>
 
-                  <p className="text-base font-semibold text-gray-950 truncate">
-                    {r.customers?.first_name} {r.customers?.last_name}
-                    <span className="mx-2 text-gray-300">→</span>
-                    {r.regions?.name_en}
-                  </p>
-
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-                    <span className="inline-flex items-center gap-1">
-                      <CalendarClock size={13} />
-                      {formatPickupDate(r.pickup_datetime)} {formatPickupTime(r.pickup_datetime)}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Users size={13} />
-                      {r.adults} yetişkin, {r.children} çocuk
-                    </span>
-                    {r.flight_code && (
-                      <span className="inline-flex items-center gap-1">
-                        <Plane size={13} />
-                        {r.flight_code}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2">
-                  <div className="text-right min-w-[84px]">
-                    <p className="text-lg font-bold text-gray-950">
-                      ${r.total_price.toFixed(2)}
-                    </p>
-                    <p className="text-xs font-medium text-gray-400">
-                      {r.status === "pending" ? "Tahsilat bekliyor" : statusLabels[r.status] ?? r.status}
-                    </p>
-                  </div>
-                  {r.status === "pending" && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteModal({ reservationId: r.id });
-                      }}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
-                      title="Bekleyen rezervasyonu sil"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+      {/* ─── List ─── */}
+      <div className="space-y-6">
+        {groups.map((group) => (
+          <div key={group.key || "all"}>
+            {group.key && (
+              <div className="sticky top-0 z-10 -mx-1 mb-2 flex items-center gap-3 bg-slate-100/95 px-1 py-2 backdrop-blur">
+                <h2
+                  className={`text-sm font-bold ${
+                    group.key === todayKey() ? "text-amber-600" : "text-slate-700"
+                  }`}
+                >
+                  {dayLabel(group.key)}
+                </h2>
+                <span className="text-xs text-slate-400">
+                  {group.items.length} transfer ·{" "}
+                  {money(
+                    group.items.reduce((s, r) => s + (Number(r.total_price) || 0), 0)
                   )}
-                  <ChevronDown
-                    size={18}
-                    className={`mt-2 text-gray-400 transition-transform ${expandedId === r.id ? "rotate-180" : ""}`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Expanded detail */}
-            {expandedId === r.id && (
-              <div className="px-4 pb-4 border-t border-gray-100 pt-4">
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 text-sm">
-                  <section>
-                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
-                      <Users size={14} />
-                      Müşteri
-                    </div>
-                    <p className="font-semibold text-gray-950">
-                      {r.customers?.first_name} {r.customers?.last_name}
-                    </p>
-                    <p className="mt-2 flex items-center gap-2 text-gray-600 break-all">
-                      <Mail size={14} className="text-gray-400 shrink-0" />
-                      {r.customers?.email || "—"}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-gray-600">
-                      <Phone size={14} className="text-gray-400 shrink-0" />
-                      {r.customers?.phone || "—"}
-                    </p>
-                  </section>
-
-                  <section>
-                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
-                      <MapPin size={14} />
-                      Transfer
-                    </div>
-                    <p className="font-semibold text-gray-950">Havalimanı → {r.regions?.name_en}</p>
-                    <p className="mt-2 flex items-center gap-2 text-gray-600">
-                      <Plane size={14} className="text-gray-400 shrink-0" />
-                      Uçuş: {r.flight_code || "—"}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-gray-600">
-                      <Users size={14} className="text-gray-400 shrink-0" />
-                      {r.adults} yetişkin, {r.children} çocuk
-                    </p>
-                    {r.child_seat && (
-                      <p className="mt-2 text-green-600 text-xs font-medium">
-                        Çocuk koltuğu istendi
-                      </p>
-                    )}
-                    {r.welcome_sign && (
-                      <p className="mt-1 text-blue-600 text-xs font-medium">
-                        Karşılama tabelası istendi
-                      </p>
-                    )}
-                  </section>
-
-                  <section>
-                    <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase text-gray-400">
-                      <Hotel size={14} />
-                      Detaylar
-                    </div>
-                    <p className="font-semibold text-gray-950">Otel: {r.hotel_name || "—"}</p>
-                    <p className="mt-2 text-gray-600">
-                      Notlar: {r.notes || "—"}
-                    </p>
-                    <p className="mt-1 text-gray-500">
-                      Rezervasyon:{" "}
-                      {formatPickupDate(r.created_at)}
-                    </p>
-                  </section>
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
-                  <button
-                    onClick={() => setEditModal({ reservationId: r.id })}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold"
-                  >
-                    <Pencil size={13} />
-                    Rezervasyonu Düzenle
-                  </button>
-                  {r.status !== "completed" && (
-                    <button
-                      onClick={() => setDeleteModal({ reservationId: r.id })}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 text-xs font-semibold"
-                    >
-                      <Trash2 size={13} />
-                      {["pending", "cancelled"].includes(r.status) ? "Sil" : "İptal Et"}
-                    </button>
-                  )}
-                </div>
-
-                {/* Driver assignment */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  {/* Cancel request actions */}
-                  {r.status === "cancel_requested" && (
-                    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                      <p className="text-sm font-medium text-amber-800 mb-2">⚠️ İptal Talebi</p>
-                      {r.notes && <p className="text-xs text-amber-700 mb-3">{r.notes}</p>}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={async () => {
-                            await fetch("/api/admin/cancel-action", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ reservation_id: r.id, action: "approve" }),
-                            });
-                            window.location.reload();
-                          }}
-                          className="px-4 py-2 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium"
-                        >
-                          İptali Onayla
-                        </button>
-                        <button
-                          onClick={async () => {
-                            await fetch("/api/admin/cancel-action", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ reservation_id: r.id, action: "reject" }),
-                            });
-                            window.location.reload();
-                          }}
-                          className="px-4 py-2 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium"
-                        >
-                          Reddet (Aktif Tut)
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {r.driver_assignments?.length > 0 && (
-                    <div className="space-y-3">
-                      {r.driver_assignments.map((da) => {
-                        const legLabel = da.leg === "return" ? "Dönüş" : "Gidiş";
-                        const waUrl = da.link_token && da.drivers?.phone
-                          ? (() => {
-                                  const driverLink = `${window.location.origin}/driver/${da.link_token}`;
-                              const pickupDate = new Date(r.pickup_datetime);
-                              const msg = encodeURIComponent(
-                                `TORVIAN - Transfer Assignment (${legLabel})\n\n` +
-                                `Code: ${r.reservation_code}\n` +
-                                `Customer: ${r.customers?.first_name} ${r.customers?.last_name}\n` +
-                                `Destination: ${r.regions?.name_en}\n` +
-                                `Date: ${pickupDate.toLocaleDateString()} ${pickupDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}\n` +
-                                (da.leg === "return" && da.pickup_time ? `Pickup: ${da.pickup_time}\n` : "") +
-                                `\nDriver Panel:\n${driverLink}`
-                              );
-                              const phone = da.drivers!.phone.replace(/[^0-9]/g, "");
-                              return `https://wa.me/${phone}?text=${msg}`;
-                            })()
-                          : null;
-                        return (
-                          <div key={da.id} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-                            {/* Driver header */}
-                            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-bold ${da.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                                  {legLabel}
-                                </span>
-                                <span className="font-semibold text-sm text-gray-900 truncate">{da.drivers?.full_name}</span>
-                                <a href={`tel:${da.drivers?.phone}`} className="text-blue-600 text-xs flex items-center gap-1 shrink-0 hover:underline">
-                                  <Phone size={11} />
-                                  {da.drivers?.phone}
-                                </a>
-                                {da.pickup_time && (
-                                  <span className="text-xs text-orange-600 font-medium shrink-0">· Alış: {da.pickup_time}</span>
-                                )}
-                              </div>
-                              <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[da.status] || "bg-gray-100 text-gray-600"}`}>
-                                {assignmentStatusLabels[da.status] ?? da.status}
-                              </span>
-                            </div>
-
-                            {/* Actions */}
-                            {da.link_token && (
-                              <div className="px-4 py-3 flex flex-wrap items-center gap-2">
-                                {/* Communication */}
-                                {waUrl && (
-                                  <a href={waUrl} target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs font-semibold">
-                                    <MessageCircle size={13} />
-                                    WhatsApp
-                                  </a>
-                                )}
-                                <button
-                                  onClick={() => sendDriverAssignmentEmail(da.id)}
-                                  disabled={emailSendingId === da.id}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60 text-xs font-semibold"
-                                >
-                                  {emailSendingId === da.id ? "Gönderiliyor…" : <><Send size={13} />E-posta</>}
-                                </button>
-
-                                {/* Utilities */}
-                                <button
-                                  onClick={() => copyToClipboard(`${window.location.origin}/driver/${da.link_token}`)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-xs font-semibold"
-                                >
-                                  {copiedLink ? <Check size={13} className="text-green-600" /> : <Copy size={13} />}
-                                  {copiedLink ? "Kopyalandı!" : "Link Kopyala"}
-                                </button>
-
-                                {/* Divider */}
-                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
-
-                                {/* Danger zone */}
-                                <button
-                                  onClick={() => unassignDriver(da.id)}
-                                  disabled={unassigningId === da.id}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-100 disabled:opacity-60 text-xs font-semibold"
-                                >
-                                  {unassigningId === da.id ? "Kaldırılıyor…" : "Atamayı Kaldır"}
-                                </button>
-                                <button
-                                  onClick={() => setDeleteModal({ reservationId: r.id })}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 text-xs font-semibold"
-                                >
-                                  <Trash2 size={13} />
-                                  Sil
-                                </button>
-                              </div>
-                            )}
-                            {emailMessage && emailSendingId === null && (
-                              <p className="px-4 pb-3 text-xs text-slate-500">{emailMessage}</p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {/* Assign buttons per leg */}
-                  {(r.status === "paid" || r.status === "driver_assigned") && (() => {
-                    const outboundAssignment = r.driver_assignments?.find(da => da.leg === "outbound" && ["assigned", "accepted", "picked_up"].includes(da.status));
-                    const returnAssignment   = r.driver_assignments?.find(da => da.leg === "return"   && ["assigned", "accepted", "picked_up"].includes(da.status));
-                    const outboundAssigned = !!outboundAssignment;
-                    const returnAssigned   = !!returnAssignment;
-                    // Always allow outbound; allow return only for round trips
-                    const canAssignReturn = r.trip_type === "round_trip" && !returnAssigned;
-                    // Show this block whenever there's something to assign or replace
-                    const showBlock = !outboundAssigned || canAssignReturn;
-                    if (!showBlock && !outboundAssigned) return null;
-
-                    if (assigningId === r.id) {
-                      // Which legs can appear in the leg selector
-                      const legOptions = [
-                        { value: "outbound", label: outboundAssigned ? "Gidiş (Değiştir)" : "Gidiş" },
-                        ...(r.trip_type === "round_trip" ? [{ value: "return", label: returnAssigned ? "Dönüş (Değiştir)" : "Dönüş" }] : []),
-                      ];
-                      return (
-                        <div className="mt-3">
-                          {replacingAssignmentId && (
-                            <div className="mb-2 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                              <AlertTriangle size={13} />
-                              Mevcut şoför kaldırılacak ve yenisi atanacak.
-                            </div>
-                          )}
-                          <div className="flex flex-wrap items-center gap-3">
-                            <select
-                              value={assigningLeg}
-                              onChange={(e) => {
-                                const leg = e.target.value as "outbound" | "return";
-                                setAssigningLeg(leg);
-                                const existing = leg === "outbound" ? outboundAssignment : returnAssignment;
-                                setReplacingAssignmentId(existing?.id ?? null);
-                              }}
-                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg font-medium"
-                            >
-                              {legOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                            </select>
-                            <select
-                              value={selectedDriver}
-                              onChange={(e) => setSelectedDriver(e.target.value)}
-                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
-                            >
-                              <option value="">Şoför Seçin</option>
-                              {drivers.map((d) => (
-                                <option key={d.id} value={d.id}>{d.full_name}</option>
-                              ))}
-                            </select>
-                            <select
-                              value={selectedVehicle}
-                              onChange={(e) => setSelectedVehicle(e.target.value)}
-                              className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
-                            >
-                              <option value="">Araç Seçin</option>
-                              {vehicles.map((v) => (
-                                <option key={v.id} value={v.id}>{v.plate_number} — {v.brand} {v.model}</option>
-                              ))}
-                            </select>
-                          </div>
-                          {assigningLeg === "return" && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <label className="text-xs font-medium text-gray-500">Dönüş Alış Saati:</label>
-                              <input
-                                type="time"
-                                value={returnPickupTime}
-                                onChange={(e) => setReturnPickupTime(e.target.value)}
-                                className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
-                              />
-                            </div>
-                          )}
-                          <div className="mt-2 flex items-center gap-2">
-                            <button
-                              onClick={() => assignDriver(r.id)}
-                              disabled={!selectedDriver || !selectedVehicle || checkingConflicts}
-                              className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-40 flex items-center gap-1"
-                            >
-                              <Send size={14} />
-                              {checkingConflicts ? "Kontrol ediliyor..." : `${assigningLeg === "return" ? "Dönüş" : "Gidiş"} Şoför Ata`}
-                            </button>
-                            <button
-                              onClick={() => { setAssigningId(null); setConflicts([]); setForceAssign(false); setReturnPickupTime(""); }}
-                              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
-                            >
-                              İptal
-                            </button>
-                          </div>
-                          {/* Conflict warning */}
-                          {conflicts.length > 0 && (
-                            <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                              <div className="flex items-center gap-2 mb-2">
-                                <AlertTriangle size={14} className="text-amber-600" />
-                                <p className="text-xs font-semibold text-amber-800">Zamanlama Çakışması Tespit Edildi</p>
-                              </div>
-                              <div className="space-y-1 mb-3">
-                                {conflicts.map((c) => (
-                                  <p key={c.reservation_code} className="text-xs text-amber-700">
-                                    <span className="font-mono font-semibold">{c.reservation_code}</span>
-                                    {" — "}{c.region} — {new Date(c.pickup).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                                    {" "}({c.type})
-                                  </p>
-                                ))}
-                              </div>
-                              <button
-                                onClick={() => { setForceAssign(true); setTimeout(() => assignDriver(r.id), 50); }}
-                                className="px-3 py-1.5 text-xs bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-medium"
-                              >
-                                Yine de Ata
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    const openAssign = (leg: "outbound" | "return") => {
-                      const existing = leg === "outbound" ? outboundAssignment : returnAssignment;
-                      setAssigningId(r.id);
-                      setAssigningLeg(leg);
-                      setReplacingAssignmentId(existing?.id ?? null);
-                      setSelectedDriver("");
-                      setSelectedVehicle("");
-                      setConflicts([]);
-                      setForceAssign(false);
-                      setReturnPickupTime("");
-                    };
-
-                    return (
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => openAssign("outbound")}
-                          className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 ${
-                            outboundAssigned
-                              ? "bg-amber-500 hover:bg-amber-600 text-white"
-                              : "bg-slate-900 hover:bg-slate-800 text-white"
-                          }`}
-                        >
-                          <UserPlus size={14} />
-                          {outboundAssigned ? "Gidiş Şoförünü Değiştir" : "Gidiş Şoför Ata"}
-                        </button>
-                        {r.trip_type === "round_trip" && (
-                          <button
-                            onClick={() => openAssign("return")}
-                            className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 ${
-                              returnAssigned
-                                ? "bg-amber-500 hover:bg-amber-600 text-white"
-                                : "bg-blue-600 hover:bg-blue-700 text-white"
-                            }`}
-                          >
-                            <UserPlus size={14} />
-                            {returnAssigned ? "Dönüş Şoförünü Değiştir" : "Dönüş Şoför Ata"}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
+                </span>
+                <span className="h-px flex-1 bg-slate-200" />
               </div>
             )}
+
+            <div className="space-y-2.5">
+              {group.items.map((r) => {
+                const meta = statusMeta(r.status);
+                const outbound = liveAssignment(r, "outbound");
+                const ret = liveAssignment(r, "return");
+                const expanded = expandedId === r.id;
+                const cash = isCash(r);
+
+                return (
+                  <div
+                    key={r.id}
+                    className={`relative overflow-hidden rounded-xl border bg-white shadow-sm transition ${
+                      missingDriver(r)
+                        ? "border-amber-200"
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <span className={`absolute inset-y-0 left-0 w-1 ${meta.rail}`} />
+
+                    {/* Summary */}
+                    <button
+                      onClick={() => setExpandedId(expanded ? null : r.id)}
+                      className="w-full pl-5 pr-4 py-3.5 text-left hover:bg-slate-50/70"
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Time block */}
+                        <div className="hidden w-16 shrink-0 text-center sm:block">
+                          <p className="text-lg font-bold leading-tight text-slate-900">
+                            {fmtTime(r.pickup_datetime)}
+                          </p>
+                          <p className="text-[11px] font-medium text-slate-400">
+                            {fmtDate(r.pickup_datetime).slice(0, 5)}
+                          </p>
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+                            <span className="font-mono text-sm font-bold tracking-wide text-slate-900">
+                              {r.reservation_code}
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${meta.chip}`}
+                            >
+                              {meta.label}
+                            </span>
+                            {r.trip_type === "round_trip" && (
+                              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                                Gidiş-Dönüş
+                              </span>
+                            )}
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                cash
+                                  ? "bg-orange-50 text-orange-700 ring-1 ring-orange-200"
+                                  : "bg-slate-100 text-slate-600"
+                              }`}
+                            >
+                              {cash ? <Banknote size={11} /> : <CreditCard size={11} />}
+                              {cash ? "Nakit" : "Online"}
+                            </span>
+                          </div>
+
+                          <p className="truncate text-[15px] font-semibold text-slate-900">
+                            {customerName(r)}
+                            <span className="mx-2 font-normal text-slate-300">→</span>
+                            {regionName(r)}
+                          </p>
+
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-slate-500">
+                            <span className="inline-flex items-center gap-1 sm:hidden">
+                              <CalendarClock size={12} />
+                              {fmtDateTime(r.pickup_datetime)}
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Users size={12} />
+                              {r.adults}+{r.children}
+                            </span>
+                            {r.flight_code && (
+                              <span className="inline-flex items-center gap-1">
+                                <Plane size={12} />
+                                {r.flight_code}
+                              </span>
+                            )}
+                            {r.hotel_name && (
+                              <span className="inline-flex min-w-0 items-center gap-1">
+                                <Hotel size={12} />
+                                <span className="truncate max-w-[160px]">{r.hotel_name}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Per-leg driver state at a glance */}
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            <LegBadge
+                              leg="Gidiş"
+                              driver={outbound?.drivers?.full_name}
+                              plate={outbound?.vehicles?.plate_number}
+                              needed={["paid", "driver_assigned"].includes(r.status)}
+                            />
+                            {r.trip_type === "round_trip" && (
+                              <LegBadge
+                                leg="Dönüş"
+                                driver={ret?.drivers?.full_name}
+                                plate={ret?.vehicles?.plate_number}
+                                needed={["paid", "driver_assigned"].includes(r.status)}
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="shrink-0 text-right">
+                          <p className="text-lg font-bold text-slate-900">
+                            {money(r.total_price)}
+                          </p>
+                          {cash && Number(r.driver_amount) > 0 ? (
+                            <p className="text-[11px] font-semibold text-orange-600">
+                              Şoförde {money(r.driver_amount)}
+                            </p>
+                          ) : (
+                            <p className="text-[11px] font-medium text-slate-400">
+                              {r.status === "pending" ? "Tahsilat bekliyor" : "Tahsil edildi"}
+                            </p>
+                          )}
+                          <ChevronDown
+                            size={16}
+                            className={`ml-auto mt-1.5 text-slate-400 transition-transform ${
+                              expanded ? "rotate-180" : ""
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Expanded */}
+                    {expanded && (
+                      <div className="border-t border-slate-100 pl-5 pr-4 pb-4 pt-4">
+                        {r.status === "cancel_requested" && (
+                          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+                            <p className="mb-1 text-sm font-bold text-rose-800">
+                              Müşteri iptal talep etti
+                            </p>
+                            {r.notes && (
+                              <p className="mb-3 text-xs text-rose-700">{r.notes}</p>
+                            )}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => cancelAction(r, "approve")}
+                                className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700"
+                              >
+                                İptali Onayla
+                              </button>
+                              <button
+                                onClick={() => cancelAction(r, "reject")}
+                                className="rounded-lg bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                              >
+                                Reddet (aktif tut)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="grid gap-x-6 gap-y-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                          {/* Customer */}
+                          <section>
+                            <SectionTitle icon={<UserRound size={13} />}>Müşteri</SectionTitle>
+                            <p className="font-semibold text-slate-900">{customerName(r)}</p>
+                            <a
+                              href={`mailto:${r.customers?.email}`}
+                              className="mt-2 flex items-center gap-2 break-all text-slate-600 hover:text-slate-900"
+                            >
+                              <Mail size={13} className="shrink-0 text-slate-400" />
+                              {r.customers?.email || "—"}
+                            </a>
+                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                              <a
+                                href={`tel:${r.customers?.phone}`}
+                                className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
+                              >
+                                <Phone size={13} className="shrink-0 text-slate-400" />
+                                {r.customers?.phone || "—"}
+                              </a>
+                              {r.customers?.phone && (
+                                <a
+                                  href={`https://wa.me/${r.customers.phone.replace(/[^0-9]/g, "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                                >
+                                  <MessageCircle size={11} />
+                                  WhatsApp
+                                </a>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => copyCode(r)}
+                              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800"
+                            >
+                              {copiedCode === r.id ? (
+                                <Check size={12} className="text-emerald-600" />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              {copiedCode === r.id ? "Kod kopyalandı" : "Rezervasyon kodunu kopyala"}
+                            </button>
+                          </section>
+
+                          {/* Transfer */}
+                          <section>
+                            <SectionTitle icon={<MapPin size={13} />}>Transfer</SectionTitle>
+                            <p className="font-semibold text-slate-900">
+                              Havalimanı → {regionName(r)}
+                            </p>
+                            <dl className="mt-2 space-y-1.5 text-slate-600">
+                              <Row label="Gidiş" value={fmtDateTime(r.pickup_datetime)} />
+                              {r.trip_type === "round_trip" && (
+                                <Row
+                                  label="Dönüş"
+                                  value={
+                                    r.return_datetime ? fmtDateTime(r.return_datetime) : "—"
+                                  }
+                                />
+                              )}
+                              <Row label="Uçuş" value={r.flight_code || "—"} />
+                              <Row label="Araç sınıfı" value={r.vehicle_categories?.name || "—"} />
+                              <Row
+                                label="Yolcu"
+                                value={`${r.adults} yetişkin, ${r.children} çocuk${
+                                  r.luggage_count ? ` · ${r.luggage_count} bagaj` : ""
+                                }`}
+                              />
+                            </dl>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {r.child_seat && (
+                                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                  Çocuk koltuğu
+                                </span>
+                              )}
+                              {r.welcome_sign && (
+                                <span className="rounded-md bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
+                                  Karşılama tabelası
+                                  {r.welcome_name ? `: ${r.welcome_name}` : ""}
+                                </span>
+                              )}
+                            </div>
+                          </section>
+
+                          {/* Payment */}
+                          <section>
+                            <SectionTitle icon={cash ? <Banknote size={13} /> : <CreditCard size={13} />}>
+                              Ödeme & Fiyat
+                            </SectionTitle>
+                            <p className="font-semibold text-slate-900">
+                              {cash ? "Araçta nakit ödeme" : "Online ödeme"}
+                            </p>
+                            <dl className="mt-2 space-y-1.5 text-slate-600">
+                              {Number(r.base_price) > 0 && (
+                                <Row label="Temel ücret" value={money(r.base_price)} />
+                              )}
+                              {Number(r.night_surcharge) > 0 && (
+                                <Row label="Gece farkı" value={money(r.night_surcharge)} />
+                              )}
+                              {Number(r.child_seat_fee) > 0 && (
+                                <Row label="Çocuk koltuğu" value={money(r.child_seat_fee)} />
+                              )}
+                              {Number(r.round_trip_discount) > 0 && (
+                                <Row
+                                  label="Gidiş-dönüş indirimi"
+                                  value={`−${money(r.round_trip_discount)}`}
+                                />
+                              )}
+                              {Number(r.coupon_discount) > 0 && (
+                                <Row label="Kupon indirimi" value={`−${money(r.coupon_discount)}`} />
+                              )}
+                              <Row label="Toplam" value={money(r.total_price)} strong />
+                              {cash && (
+                                <>
+                                  <Row label="Alınan kapora" value={money(r.deposit_amount)} />
+                                  <Row
+                                    label="Şoför tahsil edecek"
+                                    value={money(r.driver_amount)}
+                                    strong
+                                    tone="orange"
+                                  />
+                                </>
+                              )}
+                            </dl>
+                            <p className="mt-2 text-[11px] text-slate-400">
+                              Kayıt: {fmtDateTime(r.created_at)}
+                            </p>
+                          </section>
+                        </div>
+
+                        {(r.hotel_name || r.hotel_address || r.notes) && (
+                          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            {(r.hotel_name || r.hotel_address) && (
+                              <div className="rounded-lg bg-slate-50 px-3 py-2.5">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                  Otel
+                                </p>
+                                <p className="mt-0.5 text-sm font-medium text-slate-800">
+                                  {r.hotel_name || "—"}
+                                </p>
+                                {r.hotel_address && (
+                                  <p className="text-xs text-slate-500">{r.hotel_address}</p>
+                                )}
+                              </div>
+                            )}
+                            {r.notes && (
+                              <div className="rounded-lg bg-amber-50 px-3 py-2.5">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
+                                  Not
+                                </p>
+                                <p className="mt-0.5 text-sm text-amber-900">{r.notes}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Voucher + record actions */}
+                        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+                          <a
+                            href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                          >
+                            <FileText size={13} />
+                            Müşteri Voucher
+                            <ExternalLink size={11} className="opacity-60" />
+                          </a>
+                          <a
+                            href={`/api/admin/voucher-pdf?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            <Download size={13} />
+                            Voucher PDF
+                          </a>
+                          <button
+                            onClick={() => setEditTarget(r)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            <Pencil size={13} />
+                            Düzenle
+                          </button>
+                          {r.status !== "completed" && (
+                            <button
+                              onClick={() => setDeleteTarget(r)}
+                              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                            >
+                              <Trash2 size={13} />
+                              {["pending", "cancelled"].includes(r.status)
+                                ? "Kaydı Sil"
+                                : "Rezervasyonu İptal Et"}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Driver assignments */}
+                        <div className="mt-4 border-t border-slate-100 pt-4">
+                          <div className="mb-2.5 flex items-center justify-between">
+                            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                              Şoför Ataması
+                            </h4>
+                            {["paid", "driver_assigned"].includes(r.status) && (
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => setAssignTarget({ r, leg: "outbound" })}
+                                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                                    outbound
+                                      ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                      : "bg-slate-900 text-white hover:bg-slate-800"
+                                  }`}
+                                >
+                                  <UserPlus size={13} />
+                                  {outbound ? "Gidiş: değiştir" : "Gidiş şoförü ata"}
+                                </button>
+                                {r.trip_type === "round_trip" && (
+                                  <button
+                                    onClick={() => setAssignTarget({ r, leg: "return" })}
+                                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                                      ret
+                                        ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                        : "bg-sky-600 text-white hover:bg-sky-700"
+                                    }`}
+                                  >
+                                    <UserPlus size={13} />
+                                    {ret ? "Dönüş: değiştir" : "Dönüş şoförü ata"}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {r.driver_assignments?.length > 0 ? (
+                            <div className="space-y-2.5">
+                              {[...r.driver_assignments]
+                                .sort((a, b) => (a.leg === "return" ? 1 : 0) - (b.leg === "return" ? 1 : 0))
+                                .map((da) => (
+                                  <AssignmentCard
+                                    key={da.id}
+                                    reservation={r}
+                                    assignment={da}
+                                    unassigning={unassigningId === da.id}
+                                    onReplace={() =>
+                                      setAssignTarget({
+                                        r,
+                                        leg: da.leg === "return" ? "return" : "outbound",
+                                      })
+                                    }
+                                    onUnassign={() => unassignDriver(da.id)}
+                                    onToast={showToast}
+                                  />
+                                ))}
+                            </div>
+                          ) : (
+                            <p className="rounded-lg border border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-400">
+                              {["paid", "driver_assigned"].includes(r.status)
+                                ? "Henüz şoför atanmadı."
+                                : "Şoför ataması için rezervasyonun ödenmiş olması gerekir."}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-gray-400">
-            Rezervasyon bulunamadı
+          <div className="rounded-xl border border-dashed border-slate-200 bg-white py-16 text-center">
+            <p className="text-sm font-medium text-slate-500">
+              Bu filtrelerle eşleşen rezervasyon yok
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setStatusFilter("all");
+                setDateScope("all");
+                setOnlyUnassigned(false);
+              }}
+              className="mt-3 text-xs font-semibold text-slate-900 underline underline-offset-4"
+            >
+              Filtreleri temizle
+            </button>
           </div>
         )}
       </div>
 
-      {/* Edit Reservation Modal */}
-      {editModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Rezervasyonu Düzenle</h3>
-              <button onClick={() => setEditModal(null)} className="p-1 hover:bg-gray-100 rounded-lg">
-                <X size={18} className="text-gray-400" />
-              </button>
-            </div>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              <div>
-                <label className="text-xs font-bold text-gray-700 uppercase">Uçuş Kodu</label>
-                <input
-                  type="text"
-                  placeholder="TK123"
-                  onChange={(e) => setEditModal({ ...editModal, field: "flight_code", value: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-700 uppercase">Otel Adı</label>
-                <input
-                  type="text"
-                  placeholder="REGNUN CARYA"
-                  onChange={(e) => setEditModal({ ...editModal, field: "hotel_name", value: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-700 uppercase">Notlar</label>
-                <textarea
-                  placeholder="Lütfen zamanında gelin"
-                  onChange={(e) => setEditModal({ ...editModal, field: "notes", value: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mt-1 resize-none"
-                  rows={3}
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
+      {/* ─── Modals ─── */}
+      {assignTarget && (
+        <AssignDriverModal
+          reservation={assignTarget.r}
+          allReservations={reservations}
+          drivers={drivers}
+          vehicles={vehicles}
+          initialLeg={assignTarget.leg}
+          onClose={() => setAssignTarget(null)}
+          onAssigned={(result) => {
+            setAssignTarget(null);
+            setLinkModal(result);
+          }}
+        />
+      )}
+
+      {editTarget && (
+        <EditReservationModal
+          reservation={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={() => {
+            setEditTarget(null);
+            refresh();
+          }}
+          onToast={showToast}
+        />
+      )}
+
+      {linkModal && (
+        <DriverLinkModal
+          {...linkModal}
+          onClose={() => {
+            setLinkModal(null);
+            refresh();
+          }}
+          onToast={showToast}
+        />
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h3 className="text-base font-bold text-slate-900">
+              {["pending", "cancelled"].includes(deleteTarget.status)
+                ? "Rezervasyon kaydını sil"
+                : "Rezervasyonu iptal et"}
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              <span className="font-mono font-semibold">{deleteTarget.reservation_code}</span>{" "}
+              — {customerName(deleteTarget)}.{" "}
+              {["pending", "cancelled"].includes(deleteTarget.status)
+                ? "Kayıt kalıcı olarak silinecek, geri alınamaz."
+                : "Ödenmiş rezervasyon silinmez; iptal olarak işaretlenir ve kayıt izi korunur."}
+            </p>
+            <div className="mt-5 flex gap-2">
               <button
-                onClick={async () => {
-                  if (!editModal.reservationId) return;
-                  const body: Record<string, string> = { reservationId: editModal.reservationId };
-                  if (editModal.field && editModal.value) {
-                    body[editModal.field] = editModal.value;
-                  }
-                  const res = await fetch("/api/admin/edit-reservation", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                  });
-                  if (res.ok) {
-                    window.location.reload();
-                  } else {
-                    alert("Güncelleme başarısız.");
-                  }
-                }}
-                className="flex-1 px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
+                onClick={deleteReservation}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
               >
-                Kaydet
+                {deleting ? "İşleniyor…" : "Evet, devam et"}
               </button>
               <button
-                onClick={() => setEditModal(null)}
-                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200"
               >
-                İptal
+                Vazgeç
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Reservation Modal */}
-      {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Rezervasyonu Sil</h3>
-              <button onClick={() => setDeleteModal(null)} className="p-1 hover:bg-gray-100 rounded-lg">
-                <X size={18} className="text-gray-400" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Bu rezervasyon panelde iptal edilmiş olarak işaretlenecek. Emin misiniz?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  if (!deleteModal.reservationId) return;
-                  deleteReservation(deleteModal.reservationId);
-                }}
-                disabled={deletingId === deleteModal.reservationId}
-                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium text-sm"
-              >
-                {deletingId === deleteModal.reservationId ? "Siliniyor..." : "Sil"}
-              </button>
-              <button
-                onClick={() => setDeleteModal(null)}
-                className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm"
-              >
-                İptal
-              </button>
-            </div>
-          </div>
+      {/* ─── Toast ─── */}
+      {toast && (
+        <div
+          className={`fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-lg ${
+            toast.tone === "error" ? "bg-rose-600 text-white" : "bg-slate-900 text-white"
+          }`}
+        >
+          {toast.message}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── small presentational pieces ───
+
+function StatTile({
+  label,
+  value,
+  hint,
+  tone,
+  onClick,
+}: {
+  label: string;
+  value: number | string;
+  hint: string;
+  tone: "slate" | "amber" | "rose" | "emerald";
+  onClick?: () => void;
+}) {
+  const tones = {
+    slate: "text-slate-900",
+    amber: "text-amber-600",
+    rose: "text-rose-600",
+    emerald: "text-emerald-600",
+  };
+  const Tag = onClick ? "button" : "div";
+  return (
+    <Tag
+      onClick={onClick}
+      className={`rounded-xl border border-slate-200 bg-white p-3.5 text-left shadow-sm ${
+        onClick ? "transition hover:border-slate-300 hover:shadow" : ""
+      }`}
+    >
+      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <p className={`mt-1 text-2xl font-bold leading-none ${tones[tone]}`}>{value}</p>
+      <p className="mt-1 text-[11px] text-slate-400">{hint}</p>
+    </Tag>
+  );
+}
+
+function LegBadge({
+  leg,
+  driver,
+  plate,
+  needed,
+}: {
+  leg: string;
+  driver?: string;
+  plate?: string;
+  needed: boolean;
+}) {
+  if (!driver) {
+    if (!needed) return null;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200">
+        {leg}: şoför bekliyor
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+      <span className="font-semibold text-slate-500">{leg}:</span>
+      {driver}
+      {plate && <span className="font-mono text-slate-400">· {plate}</span>}
+    </span>
+  );
+}
+
+function SectionTitle({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+      {icon}
+      {children}
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  strong,
+  tone,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  tone?: "orange";
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-xs text-slate-400">{label}</dt>
+      <dd
+        className={`text-right text-xs ${
+          tone === "orange"
+            ? "text-orange-600"
+            : strong
+              ? "text-slate-900"
+              : "text-slate-600"
+        } ${strong ? "font-bold" : "font-medium"}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function DriverLinkModal({
+  driverLink,
+  whatsappUrl,
+  driverName,
+  onClose,
+  onToast,
+}: {
+  driverLink: string;
+  whatsappUrl: string;
+  driverName: string;
+  onClose: () => void;
+  onToast: (message: string, tone?: "ok" | "error") => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const token = driverLink.split("/driver/")[1] ?? "";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Şoför atandı</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              <strong>{driverName}</strong> için görev linki hazır.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+            aria-label="Kapat"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mb-3 flex items-center gap-2 rounded-lg bg-slate-50 p-2.5">
+          <input
+            readOnly
+            value={driverLink}
+            className="flex-1 truncate bg-transparent text-xs text-slate-600 outline-none"
+          />
+          <button
+            onClick={async () => {
+              await navigator.clipboard.writeText(driverLink);
+              setCopied(true);
+              onToast("Link kopyalandı.");
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="rounded-lg p-2 hover:bg-slate-200"
+            title="Linki kopyala"
+          >
+            {copied ? (
+              <Check size={15} className="text-emerald-600" />
+            ) : (
+              <Copy size={15} className="text-slate-500" />
+            )}
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600"
+          >
+            <MessageCircle size={15} />
+            WhatsApp ile gönder
+          </a>
+          {token && (
+            <a
+              href={`/api/driver-voucher?token=${token}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <FileText size={15} />
+              Şoför voucher&apos;ını önizle
+            </a>
+          )}
+          <button
+            onClick={onClose}
+            className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-200"
+          >
+            Kapat
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

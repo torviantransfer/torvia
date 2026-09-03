@@ -2,16 +2,20 @@
 
 import { useEffect, useState, useCallback } from "react";
 import {
+  AlertTriangle,
+  Check,
+  CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Lock,
-  Unlock,
   Clock,
-  X,
-  Car,
+  Lock,
+  Minus,
   Phone,
-  AlertTriangle,
-  CheckCircle,
+  Plus,
+  RotateCcw,
+  Settings2,
+  Unlock,
+  X,
 } from "lucide-react";
 
 interface CalendarEvent {
@@ -34,9 +38,10 @@ interface CalendarEvent {
   returnDate: string | null;
 }
 
-interface BlockedDate {
-  id: string;
-  blocked_date: string;
+interface DateOverride {
+  date: string;
+  /** null = the date is closed outright; a number = that date's own capacity. */
+  maxBookings: number | null;
   reason: string | null;
 }
 
@@ -58,111 +63,161 @@ const STATUS_TR: Record<string, string> = {
 
 const WEEKDAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTH_NAMES = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+const MAX_CAPACITY = 100;
 
 export default function AdminCalendarAvailability() {
   const now = new Date();
-  const [year, setYear]         = useState(now.getFullYear());
-  const [month, setMonth]       = useState(now.getMonth() + 1);
-  const [events, setEvents]     = useState<CalendarEvent[]>([]);
-  const [blocked, setBlocked]   = useState<BlockedDate[]>([]);
-  const [maxDaily, setMaxDaily] = useState(3);
-  const [loading, setLoading]   = useState(true);
+  const [year, setYear]     = useState(now.getFullYear());
+  const [month, setMonth]   = useState(now.getMonth() + 1);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [overrides, setOverrides] = useState<DateOverride[]>([]);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [globalMax, setGlobalMax] = useState(3);
+  const [loading, setLoading] = useState(true);
 
   const [selectedDay, setSelectedDay]     = useState<number | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // Block form state
-  const [blockReason, setBlockReason]   = useState("");
-  const [blockLoading, setBlockLoading] = useState(false);
-  const [blockMsg, setBlockMsg]         = useState<{ ok: boolean; text: string } | null>(null);
+  // Day panel form state
+  const [draftCapacity, setDraftCapacity] = useState(3);
+  const [draftReason, setDraftReason]     = useState("");
+  const [saving, setSaving]   = useState(false);
+  const [msg, setMsg]         = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Global default form state
+  const [draftGlobal, setDraftGlobal] = useState(3);
+  const [savingGlobal, setSavingGlobal] = useState(false);
 
   const pad = (n: number) => String(n).padStart(2, "0");
-
   const monthStart = `${year}-${pad(month)}-01`;
-  const monthEnd   = (() => {
-    const last = new Date(year, month, 0).getDate();
-    return `${year}-${pad(month)}-${last}`;
-  })();
+  const monthEnd = `${year}-${pad(month)}-${new Date(year, month, 0).getDate()}`;
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
-    const [calRes, blockedRes, availRes] = await Promise.all([
+    const [calRes, capRes] = await Promise.all([
       fetch(`/api/admin/calendar?year=${year}&month=${month}`),
-      fetch(`/api/admin/blocked-dates?from=${monthStart}&to=${monthEnd}`),
-      fetch(`/api/availability?from=${monthStart}&to=${monthEnd}`),
+      fetch(`/api/admin/date-capacity?from=${monthStart}&to=${monthEnd}`),
     ]);
-    const [calData, blockedData, availData] = await Promise.all([
-      calRes.json(), blockedRes.json(), availRes.json(),
-    ]);
+    const [calData, capData] = await Promise.all([calRes.json(), capRes.json()]);
+
     setEvents(calData.events ?? []);
-    setBlocked(Array.isArray(blockedData) ? blockedData : []);
-    if (availData.maxDaily) setMaxDaily(availData.maxDaily);
+    setOverrides(capData.overrides ?? []);
+    setCounts(capData.counts ?? {});
+    if (typeof capData.globalMax === "number") setGlobalMax(capData.globalMax);
     setLoading(false);
   }, [year, month, monthStart, monthEnd]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  // Keep the default-capacity stepper in sync with whatever the server reports.
+  useEffect(() => { setDraftGlobal(globalMax); }, [globalMax]);
+
+  const dateStr = (day: number) => `${year}-${pad(month)}-${pad(day)}`;
+  const overrideFor = (ds: string) => overrides.find((o) => o.date === ds) ?? null;
+
+  /** Effective capacity for a date: its override when set, otherwise the default. */
+  const capacityOf = (ds: string) => {
+    const o = overrideFor(ds);
+    if (!o) return globalMax;
+    return o.maxBookings ?? 0;
+  };
+  const bookedOn = (ds: string) => counts[ds] ?? 0;
+
   const prevMonth = () => {
-    if (month === 1) { setMonth(12); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
+    if (month === 1) { setMonth(12); setYear((y) => y - 1); } else setMonth((m) => m - 1);
     setSelectedDay(null);
   };
   const nextMonth = () => {
-    if (month === 12) { setMonth(1); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+    if (month === 12) { setMonth(1); setYear((y) => y + 1); } else setMonth((m) => m + 1);
     setSelectedDay(null);
   };
   const goToday = () => {
-    setYear(now.getFullYear()); setMonth(now.getMonth() + 1);
-    setSelectedDay(now.getDate());
+    setYear(now.getFullYear());
+    setMonth(now.getMonth() + 1);
+    selectDay(now.getDate());
   };
 
-  const blockedSet = new Set(blocked.map(b => b.blocked_date));
+  const selectDay = (day: number | null) => {
+    setSelectedDay(day);
+    setMsg(null);
+    if (day === null) return;
+    const ds = `${year}-${pad(month)}-${pad(day)}`;
+    const o = overrides.find((x) => x.date === ds) ?? null;
+    // Seed the stepper with what the date effectively allows today.
+    setDraftCapacity(o ? (o.maxBookings ?? 0) : globalMax);
+    setDraftReason(o?.reason ?? "");
+  };
 
   const eventsForDay = (day: number) =>
-    events.filter(e => new Date(e.pickup).getDate() === day);
-
-  const dateStr = (day: number) => `${year}-${pad(month)}-${pad(day)}`;
+    events.filter((e) => new Date(e.pickup).getDate() === day);
 
   const isToday = (day: number) =>
     day === now.getDate() && month === now.getMonth() + 1 && year === now.getFullYear();
 
-  // Block / Unblock selected day
-  const blockDay = async (day: number) => {
-    setBlockLoading(true); setBlockMsg(null);
-    const ds = dateStr(day);
-    const res = await fetch("/api/admin/blocked-dates", {
+  // ─── mutations ───
+
+  const saveOverride = async (day: number, maxBookings: number | null) => {
+    setSaving(true);
+    setMsg(null);
+    const res = await fetch("/api/admin/date-capacity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: ds, reason: blockReason || null }),
+      body: JSON.stringify({ date: dateStr(day), maxBookings, reason: draftReason || null }),
     });
     if (res.ok) {
-      setBlockMsg({ ok: true, text: "Tarih kapatıldı." });
-      setBlockReason("");
-      fetchAll();
+      setMsg({
+        ok: true,
+        text:
+          maxBookings === null || maxBookings === 0
+            ? "Tarih kapatıldı, yeni rezervasyon alınmayacak."
+            : `Bu güne özel kapasite ${maxBookings} olarak kaydedildi.`,
+      });
+      await fetchAll();
     } else {
       const d = await res.json().catch(() => null);
-      setBlockMsg({ ok: false, text: d?.error === "Date already blocked" ? "Bu tarih zaten kapalı." : (d?.error ?? "Bir hata oluştu.") });
+      setMsg({ ok: false, text: d?.error ?? "Kaydedilemedi." });
     }
-    setBlockLoading(false);
+    setSaving(false);
   };
 
-  const unblockDay = async (day: number) => {
-    setBlockLoading(true); setBlockMsg(null);
-    const ds = dateStr(day);
-    const res = await fetch(`/api/admin/blocked-dates?date=${ds}`, { method: "DELETE" });
+  const clearOverride = async (day: number) => {
+    setSaving(true);
+    setMsg(null);
+    const res = await fetch(`/api/admin/date-capacity?date=${dateStr(day)}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
-      setBlockMsg({ ok: true, text: "Tarih açıldı." });
-      fetchAll();
+      setMsg({ ok: true, text: `Tarih varsayılana döndü (${globalMax} rezervasyon).` });
+      setDraftReason("");
+      setDraftCapacity(globalMax);
+      await fetchAll();
     } else {
-      setBlockMsg({ ok: false, text: "Açma işlemi başarısız." });
+      setMsg({ ok: false, text: "Varsayılana döndürülemedi." });
     }
-    setBlockLoading(false);
+    setSaving(false);
   };
 
-  // Build grid cells
+  const saveGlobal = async () => {
+    setSavingGlobal(true);
+    const res = await fetch("/api/admin/date-capacity", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ globalMax: draftGlobal }),
+    });
+    if (res.ok) {
+      setMsg({ ok: true, text: `Varsayılan günlük kapasite ${draftGlobal} oldu.` });
+      await fetchAll();
+    } else {
+      const d = await res.json().catch(() => null);
+      setMsg({ ok: false, text: d?.error ?? "Varsayılan kapasite kaydedilemedi." });
+    }
+    setSavingGlobal(false);
+  };
+
+  // ─── grid ───
+
   const firstDow = (() => {
-    let d = new Date(year, month - 1, 1).getDay() - 1;
+    const d = new Date(year, month - 1, 1).getDay() - 1;
     return d < 0 ? 6 : d;
   })();
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -171,117 +226,133 @@ export default function AdminCalendarAvailability() {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const selectedDayStr  = selectedDay ? dateStr(selectedDay) : null;
-  const selectedBlocked = selectedDayStr ? blockedSet.has(selectedDayStr) : false;
-  const selectedEvents  = selectedDay ? eventsForDay(selectedDay) : [];
-  const blockedReason   = selectedDayStr ? blocked.find(b => b.blocked_date === selectedDayStr)?.reason : null;
+  const selectedDs       = selectedDay ? dateStr(selectedDay) : null;
+  const selectedOverride = selectedDs ? overrideFor(selectedDs) : null;
+  const selectedCapacity = selectedDs ? capacityOf(selectedDs) : globalMax;
+  const selectedBooked   = selectedDs ? bookedOn(selectedDs) : 0;
+  const selectedClosed   = selectedCapacity === 0;
+  const selectedEvents   = selectedDay ? eventsForDay(selectedDay) : [];
+  const closedCount      = overrides.filter((o) => (o.maxBookings ?? 0) === 0).length;
+  const customCount      = overrides.filter((o) => (o.maxBookings ?? 0) > 0).length;
 
   return (
     <div className="flex gap-6">
       {/* ── Main calendar ── */}
       <div className="flex-1 min-w-0">
-
-        {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-bold text-slate-900">
               {MONTH_NAMES[month - 1]} {year}
             </h2>
-            <span className="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-medium">
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
               {events.length} transfer
             </span>
-            {blocked.length > 0 && (
-              <span className="text-xs bg-red-50 text-red-600 border border-red-100 px-2.5 py-1 rounded-full font-medium">
-                {blocked.length} kapalı gün
+            {customCount > 0 && (
+              <span className="rounded-full border border-sky-100 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">
+                {customCount} özel kapasite
+              </span>
+            )}
+            {closedCount > 0 && (
+              <span className="rounded-full border border-red-100 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
+                {closedCount} kapalı gün
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+            <button onClick={goToday} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-200">
               Bugün
             </button>
-            <button onClick={prevMonth} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+            <button onClick={prevMonth} className="rounded-lg p-1.5 transition-colors hover:bg-slate-100">
               <ChevronLeft size={18} className="text-slate-500" />
             </button>
-            <button onClick={nextMonth} className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors">
+            <button onClick={nextMonth} className="rounded-lg p-1.5 transition-colors hover:bg-slate-100">
               <ChevronRight size={18} className="text-slate-500" />
             </button>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-3 mb-4 text-[11px] text-slate-500">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-blue-100 border border-blue-200" />Rezervasyon var</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-orange-100 border border-orange-200" />Dolu (max kapasite)</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-100 border border-red-200" />Manuel kapalı</span>
+        <div className="mb-4 flex flex-wrap gap-3 text-[11px] text-slate-500">
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border border-blue-200 bg-blue-100" />Rezervasyon var</span>
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border border-orange-200 bg-orange-100" />Dolu (kapasite doldu)</span>
+          <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border border-red-200 bg-red-100" />Kapalı</span>
+          <span className="flex items-center gap-1.5"><Settings2 size={11} className="text-sky-500" />Bu güne özel kapasite</span>
         </div>
 
-        {/* Grid */}
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
           <div className="grid grid-cols-7 border-b border-slate-100">
-            {WEEKDAYS.map(d => (
+            {WEEKDAYS.map((d) => (
               <div key={d} className="py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-400">{d}</div>
             ))}
           </div>
           {loading ? (
-            <div className="py-16 text-center text-slate-400 text-sm">Yükleniyor…</div>
+            <div className="py-16 text-center text-sm text-slate-400">Yükleniyor…</div>
           ) : (
             <div className="grid grid-cols-7">
               {cells.map((day, i) => {
-                if (day === null) return <div key={`e-${i}`} className="min-h-[90px] border-b border-r border-slate-50 bg-slate-50/30" />;
-                const ds     = dateStr(day);
-                const dayEv  = eventsForDay(day);
-                const isBlk  = blockedSet.has(ds);
-                const isFull = !isBlk && dayEv.length >= maxDaily && dayEv.length > 0;
-                const hasBkg = !isBlk && dayEv.length > 0;
-                const today  = isToday(day);
-                const sel    = selectedDay === day;
-                const isPast = ds < now.toISOString().split("T")[0];
+                if (day === null) {
+                  return <div key={`e-${i}`} className="min-h-[90px] border-b border-r border-slate-50 bg-slate-50/30" />;
+                }
+                const ds       = dateStr(day);
+                const dayEv    = eventsForDay(day);
+                const capacity = capacityOf(ds);
+                const booked   = bookedOn(ds);
+                const override = overrideFor(ds);
+                const isClosed = capacity === 0;
+                const isFull   = !isClosed && booked >= capacity;
+                const isCustom = !!override && capacity > 0;
+                const today    = isToday(day);
+                const sel      = selectedDay === day;
+                const isPast   = ds < now.toISOString().split("T")[0];
 
                 let cellBg = sel ? "bg-orange-50" : "hover:bg-slate-50";
-                if (isBlk)  cellBg = sel ? "bg-red-100"    : "bg-red-50 hover:bg-red-100";
-                if (isFull) cellBg = sel ? "bg-orange-100" : "bg-orange-50 hover:bg-orange-100";
-                if (hasBkg && !isBlk && !isFull) cellBg = sel ? "bg-blue-50" : "bg-blue-50/40 hover:bg-blue-50";
+                if (booked > 0 && !isClosed && !isFull) cellBg = sel ? "bg-blue-50" : "bg-blue-50/40 hover:bg-blue-50";
+                if (isFull)   cellBg = sel ? "bg-orange-100" : "bg-orange-50 hover:bg-orange-100";
+                if (isClosed) cellBg = sel ? "bg-red-100" : "bg-red-50 hover:bg-red-100";
 
                 return (
                   <div
                     key={day}
-                    onClick={() => { setSelectedDay(sel ? null : day); setBlockMsg(null); setBlockReason(""); }}
-                    className={`min-h-[90px] border-b border-r border-slate-100 p-1.5 cursor-pointer transition-colors ${cellBg} ${isPast ? "opacity-50" : ""}`}
+                    onClick={() => selectDay(sel ? null : day)}
+                    className={`min-h-[90px] cursor-pointer border-b border-r border-slate-100 p-1.5 transition-colors ${cellBg} ${isPast ? "opacity-50" : ""}`}
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-medium ${today ? "bg-orange-500 text-white" : sel ? "bg-orange-200 text-orange-800" : "text-slate-600"}`}>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${today ? "bg-orange-500 text-white" : sel ? "bg-orange-200 text-orange-800" : "text-slate-600"}`}>
                         {day}
                       </span>
-                      {isBlk && <Lock size={11} className="text-red-400" />}
-                      {!isBlk && dayEv.length > 0 && (
-                        <span className={`text-[9px] font-bold ${isFull ? "text-orange-500" : "text-slate-400"}`}>
-                          {dayEv.length}/{maxDaily}
-                        </span>
-                      )}
+                      <span className="flex items-center gap-1">
+                        {isCustom && <Settings2 size={10} className="text-sky-500" />}
+                        {isClosed ? (
+                          <Lock size={11} className="text-red-400" />
+                        ) : (
+                          <span className={`text-[9px] font-bold ${isFull ? "text-orange-500" : booked > 0 ? "text-slate-500" : "text-slate-300"}`}>
+                            {booked}/{capacity}
+                          </span>
+                        )}
+                      </span>
                     </div>
-                    {isBlk ? (
-                      <span className="text-[9px] font-bold text-red-400 uppercase">Kapalı</span>
+                    {isClosed ? (
+                      <span className="text-[9px] font-bold uppercase text-red-400">Kapalı</span>
                     ) : (
                       <div className="space-y-0.5">
-                        {dayEv.slice(0, 2).map(ev => {
+                        {dayEv.slice(0, 2).map((ev) => {
                           const cfg = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
                           return (
                             <button
                               key={ev.id}
-                              onClick={e => { e.stopPropagation(); setSelectedEvent(ev); setSelectedDay(day); }}
-                              className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium truncate flex items-center gap-1 ${cfg.bg} ${cfg.text}`}
+                              onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); selectDay(day); }}
+                              className={`flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left text-[9px] font-medium ${cfg.bg} ${cfg.text}`}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
+                              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cfg.dot}`} />
                               <span className="truncate">
                                 {ev.leg === "return" ? "↩ " : "↗ "}
-                                {new Date(ev.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})} {ev.region}
+                                {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} {ev.region}
                               </span>
                             </button>
                           );
                         })}
                         {dayEv.length > 2 && (
-                          <p className="text-[9px] text-slate-400 pl-1">+{dayEv.length - 2} daha</p>
+                          <p className="pl-1 text-[9px] text-slate-400">+{dayEv.length - 2} daha</p>
                         )}
                       </div>
                     )}
@@ -294,115 +365,265 @@ export default function AdminCalendarAvailability() {
       </div>
 
       {/* ── Right sidebar ── */}
-      <div className="w-72 shrink-0 hidden lg:block">
+      <div className="hidden w-80 shrink-0 lg:block">
         <div className="sticky top-4 space-y-3">
-
           {/* Day panel */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <div className="rounded-2xl border border-slate-100 bg-white p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
             {!selectedDay ? (
-              <p className="text-xs text-slate-400 text-center py-4">Takvimden bir gün seçin</p>
+              <p className="py-4 text-center text-xs text-slate-400">
+                Kapasiteyi değiştirmek için takvimden bir gün seçin
+              </p>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-800 text-sm">
-                    {selectedDay} {MONTH_NAMES[month - 1]}
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-800">
+                    {selectedDay} {MONTH_NAMES[month - 1]} {year}
                   </h3>
-                  <button onClick={() => setSelectedDay(null)} className="p-1 hover:bg-slate-100 rounded-lg">
+                  <button onClick={() => selectDay(null)} className="rounded-lg p-1 hover:bg-slate-100">
                     <X size={14} className="text-slate-400" />
                   </button>
                 </div>
 
-                {/* Block / Unblock toggle */}
-                {selectedBlocked ? (
-                  <div className="mb-3 rounded-xl bg-red-50 border border-red-100 p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Lock size={13} className="text-red-500" />
-                      <span className="text-xs font-semibold text-red-700">Bu gün kapalı</span>
-                    </div>
-                    {blockedReason && <p className="text-[11px] text-red-500 mb-2">{blockedReason}</p>}
-                    <button
-                      onClick={() => unblockDay(selectedDay)}
-                      disabled={blockLoading}
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold hover:bg-emerald-50 disabled:opacity-60 transition-colors"
-                    >
-                      <Unlock size={12} />
-                      {blockLoading ? "İşleniyor…" : "Günü Aç"}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mb-3 rounded-xl bg-slate-50 border border-slate-200 p-3">
-                    <p className="text-[11px] text-slate-500 mb-2 flex items-center gap-1">
-                      <Lock size={11} />
-                      Günü kapat (yeni rezervasyon alınmaz)
+                {/* Current state */}
+                <div className={`mb-3 rounded-xl px-3 py-2.5 ${selectedClosed ? "bg-red-50" : "bg-slate-50"}`}>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Bu günün durumu
+                  </p>
+                  {selectedClosed ? (
+                    <p className="mt-1 flex items-center gap-1.5 text-sm font-bold text-red-600">
+                      <Lock size={13} /> Kapalı
                     </p>
+                  ) : (
+                    <>
+                      <p className="mt-1 text-sm font-bold text-slate-900">
+                        {selectedBooked} / {selectedCapacity} rezervasyon
+                        <span className="ml-1.5 text-xs font-medium text-slate-500">
+                          ({Math.max(0, selectedCapacity - selectedBooked)} boş)
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-500">
+                        {selectedOverride
+                          ? "Bu güne özel kapasite uygulanıyor"
+                          : `Varsayılan kapasite (${globalMax}) uygulanıyor`}
+                      </p>
+                    </>
+                  )}
+                  {selectedOverride?.reason && (
+                    <p className="mt-1 text-[11px] italic text-slate-500">
+                      “{selectedOverride.reason}”
+                    </p>
+                  )}
+                </div>
+
+                {/* Capacity stepper */}
+                <div className="mb-3 rounded-xl border border-slate-200 p-3">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Bu güne özel kapasite
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setDraftCapacity((c) => Math.max(0, c - 1))}
+                      disabled={draftCapacity <= 0}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                      aria-label="Azalt"
+                    >
+                      <Minus size={15} />
+                    </button>
                     <input
-                      type="text"
-                      value={blockReason}
-                      onChange={e => setBlockReason(e.target.value)}
-                      placeholder="Sebep (opsiyonel)"
-                      className="w-full px-3 py-1.5 rounded-lg text-xs text-slate-800 bg-white border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-300 mb-2"
+                      type="number"
+                      min={0}
+                      max={MAX_CAPACITY}
+                      value={draftCapacity}
+                      onChange={(e) => {
+                        const n = Number(e.target.value);
+                        setDraftCapacity(Number.isFinite(n) ? Math.min(MAX_CAPACITY, Math.max(0, Math.trunc(n))) : 0);
+                      }}
+                      className="h-9 w-full rounded-lg border border-slate-200 text-center text-lg font-bold text-slate-900 outline-none focus:ring-2 focus:ring-orange-300"
                     />
                     <button
-                      onClick={() => blockDay(selectedDay)}
-                      disabled={blockLoading}
-                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 disabled:opacity-60 transition-colors"
+                      onClick={() => setDraftCapacity((c) => Math.min(MAX_CAPACITY, c + 1))}
+                      disabled={draftCapacity >= MAX_CAPACITY}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                      aria-label="Artır"
                     >
-                      <Lock size={12} />
-                      {blockLoading ? "İşleniyor…" : "Günü Kapat"}
+                      <Plus size={15} />
                     </button>
                   </div>
+
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {[2, 3, 4, 5, 6, 8, 10].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setDraftCapacity(n)}
+                        className={`rounded-md px-2 py-1 text-[11px] font-semibold transition ${
+                          draftCapacity === n
+                            ? "bg-slate-900 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+
+                  <input
+                    type="text"
+                    value={draftReason}
+                    onChange={(e) => setDraftReason(e.target.value)}
+                    placeholder="Not (opsiyonel) — örn. bayram, ek araç"
+                    className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-orange-300"
+                  />
+
+                  {draftCapacity > 0 && draftCapacity < selectedBooked && (
+                    <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] text-amber-700">
+                      <AlertTriangle size={12} className="mt-0.5 shrink-0" />
+                      Bu günde zaten {selectedBooked} rezervasyon var. Daha düşük bir
+                      kapasite mevcut rezervasyonları iptal etmez, sadece yeni
+                      rezervasyon alınmasını durdurur.
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => selectedDay && saveOverride(selectedDay, draftCapacity)}
+                    disabled={saving || draftCapacity === 0}
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
+                  >
+                    <Check size={13} />
+                    {saving ? "Kaydediliyor…" : `Kapasiteyi ${draftCapacity} yap`}
+                  </button>
+
+                  {selectedOverride && (
+                    <button
+                      onClick={() => selectedDay && clearOverride(selectedDay)}
+                      disabled={saving}
+                      className="mt-1.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      <RotateCcw size={12} />
+                      Varsayılana dön ({globalMax})
+                    </button>
+                  )}
+                </div>
+
+                {/* Open / close */}
+                {selectedClosed ? (
+                  <button
+                    onClick={() => selectedDay && clearOverride(selectedDay)}
+                    disabled={saving}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-50 disabled:opacity-60"
+                  >
+                    <Unlock size={12} />
+                    {saving ? "İşleniyor…" : "Günü Aç"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => selectedDay && saveOverride(selectedDay, null)}
+                    disabled={saving}
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                  >
+                    <Lock size={12} />
+                    {saving ? "İşleniyor…" : "Günü Tamamen Kapat"}
+                  </button>
                 )}
 
-                {/* Feedback */}
-                {blockMsg && (
-                  <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${blockMsg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
-                    {blockMsg.ok ? <CheckCircle size={13} /> : <AlertTriangle size={13} />}
-                    {blockMsg.text}
+                {msg && (
+                  <div className={`mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-xs font-medium ${msg.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                    {msg.ok ? <CheckCircle size={13} className="mt-0.5 shrink-0" /> : <AlertTriangle size={13} className="mt-0.5 shrink-0" />}
+                    {msg.text}
                   </div>
                 )}
 
                 {/* Reservations for day */}
-                {selectedEvents.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-2">Bu gün transfer yok</p>
-                ) : (
-                  <div className="space-y-2 max-h-[50vh] overflow-y-auto">
-                    {selectedEvents.map(ev => {
-                      const cfg = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
-                      return (
-                        <button
-                          key={ev.id}
-                          onClick={() => setSelectedEvent(ev)}
-                          className="w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${cfg.bg} ${cfg.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                              {STATUS_TR[ev.status] ?? ev.status}
-                            </span>
-                            <span className="text-[10px] font-mono text-slate-400">{ev.code}</span>
-                          </div>
-                          <p className="text-[11px] font-medium text-slate-700 flex items-center gap-1">
-                            <Clock size={10} className="text-slate-400 shrink-0" />
-                            {new Date(ev.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})}
-                            <span className={`ml-1 px-1 py-0.5 rounded text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                              {ev.leg === "return" ? "Dönüş" : "Gidiş"}
-                            </span>
-                          </p>
-                          <p className="text-[10px] text-slate-400 truncate">{ev.route}</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5 truncate">{ev.customer}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                <div className="mt-4 border-t border-slate-100 pt-3">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Bu günün transferleri
+                  </p>
+                  {selectedEvents.length === 0 ? (
+                    <p className="py-2 text-center text-xs text-slate-400">Bu gün transfer yok</p>
+                  ) : (
+                    <div className="max-h-[38vh] space-y-2 overflow-y-auto">
+                      {selectedEvents.map((ev) => {
+                        const cfg = STATUS_COLOR[ev.status] ?? STATUS_COLOR.pending;
+                        return (
+                          <button
+                            key={ev.id}
+                            onClick={() => setSelectedEvent(ev)}
+                            className="w-full rounded-xl border border-slate-100 p-2.5 text-left transition-colors hover:border-slate-200"
+                          >
+                            <div className="mb-1 flex items-center gap-2">
+                              <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${cfg.bg} ${cfg.text}`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                                {STATUS_TR[ev.status] ?? ev.status}
+                              </span>
+                              <span className="font-mono text-[10px] text-slate-400">{ev.code}</span>
+                            </div>
+                            <p className="flex items-center gap-1 text-[11px] font-medium text-slate-700">
+                              <Clock size={10} className="shrink-0 text-slate-400" />
+                              {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                              <span className={`ml-1 rounded px-1 py-0.5 text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                                {ev.leg === "return" ? "Dönüş" : "Gidiş"}
+                              </span>
+                            </p>
+                            <p className="truncate text-[10px] text-slate-400">{ev.route}</p>
+                            <p className="mt-0.5 truncate text-[10px] text-slate-500">{ev.customer}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
 
-          {/* Kapasitei bilgisi */}
-          <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3 text-xs text-slate-500 flex items-center gap-2" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-            <Car size={14} className="text-slate-400 shrink-0" />
-            Günlük max kapasite: <span className="font-bold text-slate-800 ml-1">{maxDaily}</span> rezervasyon
+          {/* Global default */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <p className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <Settings2 size={12} />
+              Varsayılan günlük kapasite
+            </p>
+            <p className="mb-2 text-[11px] text-slate-500">
+              Özel kapasitesi olmayan tüm günler için geçerli.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setDraftGlobal((c) => Math.max(1, c - 1))}
+                disabled={draftGlobal <= 1}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                aria-label="Azalt"
+              >
+                <Minus size={15} />
+              </button>
+              <input
+                type="number"
+                min={1}
+                max={MAX_CAPACITY}
+                value={draftGlobal}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setDraftGlobal(Number.isFinite(n) ? Math.min(MAX_CAPACITY, Math.max(1, Math.trunc(n))) : 1);
+                }}
+                className="h-9 w-full rounded-lg border border-slate-200 text-center text-lg font-bold text-slate-900 outline-none focus:ring-2 focus:ring-orange-300"
+              />
+              <button
+                onClick={() => setDraftGlobal((c) => Math.min(MAX_CAPACITY, c + 1))}
+                disabled={draftGlobal >= MAX_CAPACITY}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                aria-label="Artır"
+              >
+                <Plus size={15} />
+              </button>
+            </div>
+            <button
+              onClick={saveGlobal}
+              disabled={savingGlobal || draftGlobal === globalMax}
+              className="mt-2 w-full rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-50"
+            >
+              {savingGlobal
+                ? "Kaydediliyor…"
+                : draftGlobal === globalMax
+                  ? `Varsayılan: ${globalMax}`
+                  : `Varsayılanı ${draftGlobal} yap`}
+            </button>
           </div>
         </div>
       </div>
@@ -410,23 +631,23 @@ export default function AdminCalendarAvailability() {
       {/* ── Event detail modal ── */}
       {selectedEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelectedEvent(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
               <div>
                 <span className="font-mono text-sm font-bold text-indigo-600">{selectedEvent.code}</span>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="mt-0.5 text-xs text-slate-400">
                   {new Date(selectedEvent.pickup).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })}
                 </p>
               </div>
-              <button onClick={() => setSelectedEvent(null)} className="p-1.5 hover:bg-slate-100 rounded-lg">
+              <button onClick={() => setSelectedEvent(null)} className="rounded-lg p-1.5 hover:bg-slate-100">
                 <X size={16} className="text-slate-400" />
               </button>
             </div>
-            <div className="p-5 space-y-3 text-sm">
+            <div className="space-y-3 p-5 text-sm">
               {[
                 ["Güzergah", selectedEvent.route || `Antalya Havalimanı → ${selectedEvent.region}`],
                 ["Leg", selectedEvent.leg === "return" ? "↩ Dönüş" : "↗ Gidiş"],
-                ["Saat", new Date(selectedEvent.pickup).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"})],
+                ["Saat", new Date(selectedEvent.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })],
                 ...(selectedEvent.returnDate ? [["Dönüş", new Date(selectedEvent.returnDate).toLocaleDateString("tr-TR")]] : []),
                 ["Müşteri", selectedEvent.customer],
                 ["Yolcu", `${selectedEvent.adults} yetişkin${selectedEvent.children > 0 ? ` + ${selectedEvent.children} çocuk` : ""}`],
@@ -436,22 +657,25 @@ export default function AdminCalendarAvailability() {
                 ["Fiyat", `$${selectedEvent.price.toFixed(2)}`],
               ].map(([label, val]) => (
                 <div key={label} className="flex gap-3">
-                  <span className="text-slate-400 w-20 shrink-0 text-xs font-medium">{label}</span>
-                  <span className="text-slate-800 font-medium text-xs">{val}</span>
+                  <span className="w-20 shrink-0 text-xs font-medium text-slate-400">{label}</span>
+                  <span className="text-xs font-medium text-slate-800">{val}</span>
                 </div>
               ))}
               {selectedEvent.phone && (
-                <a href={`tel:${selectedEvent.phone}`} className="flex items-center gap-2 text-blue-600 text-xs font-medium hover:underline">
+                <a href={`tel:${selectedEvent.phone}`} className="flex items-center gap-2 text-xs font-medium text-blue-600 hover:underline">
                   <Phone size={13} /> {selectedEvent.phone}
                 </a>
               )}
               <div className="pt-1">
-                {(() => { const cfg = STATUS_COLOR[selectedEvent.status] ?? STATUS_COLOR.pending; return (
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
-                    <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                    {STATUS_TR[selectedEvent.status] ?? selectedEvent.status}
-                  </span>
-                ); })()}
+                {(() => {
+                  const cfg = STATUS_COLOR[selectedEvent.status] ?? STATUS_COLOR.pending;
+                  return (
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
+                      <span className={`h-2 w-2 rounded-full ${cfg.dot}`} />
+                      {STATUS_TR[selectedEvent.status] ?? selectedEvent.status}
+                    </span>
+                  );
+                })()}
               </div>
             </div>
           </div>

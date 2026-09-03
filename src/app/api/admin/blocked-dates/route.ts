@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
+
+// Legacy endpoint: closes/opens a whole date. Per-date capacity is managed by
+// /api/admin/date-capacity, which writes the same table.
 
 // GET - List blocked dates
 export async function GET(request: NextRequest) {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
+
   const supabase = createAdminClient();
   const { searchParams } = new URL(request.url);
   const from = searchParams.get("from");
@@ -27,6 +34,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Block a date
 export async function POST(request: NextRequest) {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
+
   const supabase = createAdminClient();
 
   try {
@@ -62,6 +72,9 @@ export async function POST(request: NextRequest) {
 
 // DELETE - Unblock a date
 export async function DELETE(request: NextRequest) {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
+
   const supabase = createAdminClient();
 
   const { searchParams } = new URL(request.url);
