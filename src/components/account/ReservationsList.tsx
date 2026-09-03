@@ -23,6 +23,7 @@ import {
 import QRCodeCanvas from "@/components/QRCodeCanvas";
 import { legRoute } from "@/lib/transfer-route";
 import { convertFromUSD, formatMoney } from "@/lib/currency";
+import { formatBookingTime } from "@/lib/datetime";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "My Reservations", tr: "Rezervasyonlarım", de: "Meine Buchungen", pl: "Moje rezerwacje", ru: "Мои бронирования" },
@@ -156,10 +157,10 @@ export default function ReservationsList({
   });
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString(locale, { day: "2-digit", month: "short", year: "numeric" });
+    new Date(d).toLocaleDateString(locale, { timeZone: "UTC", day: "2-digit", month: "short", year: "numeric" });
 
   const formatTime = (d: string) =>
-    new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    formatBookingTime(d);
 
   /**
    * The stored rate is EUR per ONE dollar, so converting multiplies. The

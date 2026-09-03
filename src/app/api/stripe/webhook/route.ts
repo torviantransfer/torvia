@@ -5,6 +5,7 @@ import { sendReservationEmail } from "@/lib/email";
 import { convertFromUSD } from "@/lib/currency";
 import { notifyNewPayment, notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiPurchase } from "@/lib/capi";
+import { bookingParts } from "@/lib/datetime";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -129,12 +130,12 @@ export async function POST(request: NextRequest) {
           firstName: resData.customers.first_name,
           lastName: resData.customers.last_name ?? "",
           regionName: String(regionName),
-          pickupDate: resData.pickup_datetime ? new Date(resData.pickup_datetime).toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" }) : "",
-          pickupTime: resData.pickup_datetime ? new Date(resData.pickup_datetime).toLocaleTimeString("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" }) : "",
+          pickupDate: bookingParts(resData.pickup_datetime).date,
+          pickupTime: bookingParts(resData.pickup_datetime).time,
           tripType: resData.trip_type,
           direction: resData.direction,
-          returnDate: resData.return_datetime ? new Date(resData.return_datetime).toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" }) : undefined,
-          returnTime: resData.return_datetime ? new Date(resData.return_datetime).toLocaleTimeString("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" }) : undefined,
+          returnDate: bookingParts(resData.return_datetime).date || undefined,
+          returnTime: bookingParts(resData.return_datetime).time || undefined,
           adults: resData.adults ?? 1,
           children: resData.children ?? 0,
           luggageCount: resData.luggage_count ?? 0,
@@ -202,12 +203,13 @@ export async function POST(request: NextRequest) {
           customerLastName: resData.customers?.last_name ?? "",
           customerPhone: (resData.customers as Record<string, string> | null)?.phone,
           tripType: resData.trip_type,
+          direction: resData.direction,
           pickupDatetime: resData.pickup_datetime,
           returnDatetime: resData.return_datetime,
           flightCode: resData.flight_code,
           hotelName: resData.hotel_name,
           hotelAddress: resData.hotel_address,
-          regionName: String(regionObj?.name_en ?? ""),
+          regionName: String(regionObj?.name_tr ?? regionObj?.name_en ?? ""),
           distanceKm: regionObj?.distance_km as number | undefined,
           durationMinutes: regionObj?.duration_minutes as number | undefined,
           adults: resData.adults ?? 1,

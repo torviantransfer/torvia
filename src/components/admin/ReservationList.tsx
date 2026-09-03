@@ -40,6 +40,7 @@ import {
   dayLabel,
   fmtDate,
   fmtDateTime,
+  fmtStamp,
   fmtTime,
   isCash,
   liveAssignment,
@@ -683,7 +684,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                               )}
                             </dl>
                             <p className="mt-2 text-[11px] text-slate-400">
-                              Kayıt: {fmtDateTime(r.created_at)}
+                              Kayıt: {fmtStamp(r.created_at)}
                             </p>
                           </section>
                         </div>

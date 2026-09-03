@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyAdmin } from "@/lib/admin-auth";
 import { legEndpoints } from "@/lib/transfer-route";
+import {
+  formatBookingDateLong,
+  formatBookingTime,
+  formatBookingDate,
+} from "@/lib/datetime";
 
 function esc(str: string | null | undefined): string {
   if (!str) return "";
@@ -13,6 +18,34 @@ function esc(str: string | null | undefined): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Line-art icons, sized and coloured by CSS. Emoji rendered differently on every
+ * driver's phone and printed as grey blobs; these stay legible on paper.
+ */
+const ICONS: Record<string, string> = {
+  calendar: `<path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>`,
+  clock: `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>`,
+  plane: `<path d="M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2a.5.5 0 0 0-.5.8L8 11l-2 2H3.5a.5.5 0 0 0-.4.8L6 17l3.2 2.9a.5.5 0 0 0 .8-.4V17l2-2 3.9 3.7a.5.5 0 0 0 .8-.5z"/>`,
+  users: `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>`,
+  luggage: `<rect x="6" y="7" width="12" height="14" rx="2"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3M10 12v5M14 12v5"/>`,
+  hotel: `<path d="M3 21h18M5 21V5a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v16M9 8h.01M15 8h.01M9 12h.01M15 12h.01M10 21v-4h4v4"/>`,
+  phone: `<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>`,
+  car: `<path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM23 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/><path d="M3 17v-4l2-5h14l2 5v4"/><path d="M5 12h14"/>`,
+  user: `<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>`,
+  seat: `<path d="M6 4v8a4 4 0 0 0 4 4h5M6 20h12M18 10v10"/>`,
+  note: `<path d="M4 4h16v12l-4 4H4z"/><path d="M20 16h-4v4"/><path d="M8 9h8M8 13h5"/>`,
+  refresh: `<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>`,
+};
+
+const icon = (name: string) =>
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] ?? ""}</svg>`;
+
+/** One label/value line with its icon. */
+const row = (name: string, label: string, value: string, strong = false) =>
+  value
+    ? `<div class="row">${icon(name)}<div class="rt"><span class="lbl">${esc(label)}</span><span class="val${strong ? " big" : ""}">${value}</span></div></div>`
+    : "";
+
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const token = request.nextUrl.searchParams.get("token");
@@ -21,7 +54,6 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Missing token", { status: 400 });
   }
 
-  // Find assignment by link_token
   const { data: assignment } = await supabase
     .from("driver_assignments")
     .select(
@@ -44,17 +76,16 @@ export async function GET(request: NextRequest) {
     return new NextResponse("Assignment not found", { status: 404 });
   }
 
-  // Driver voucher follows the same single-use operational rule as the driver panel.
-  // Admins are exempt so they can reprint the sheet for a finished transfer.
+  // Single-use operational rule, same as the driver panel. Admins are exempt so
+  // they can reprint the sheet for a finished transfer.
   if (assignment.status === "completed" && !(await verifyAdmin())) {
     return new NextResponse(
-      `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>Transfer Completed</title></head><body style="font-family:system-ui;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
-      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;text-align:center;max-width:420px;box-shadow:0 4px 24px rgba(15,23,42,0.08)">
-      <div style="width:56px;height:56px;border-radius:999px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px">✓</div>
-      <h1 style="font-size:24px;margin:0 0 8px;color:#020617">Transfer Tamamlandı</h1>
-      <p style="color:#64748b;font-size:14px">Bu voucher linki tamamlanan transfer için artık kullanılamaz.</p>
-      <p style="color:#94a3b8;font-size:11px;margin-top:24px;letter-spacing:2px;font-weight:700">TORVIAN</p>
+      `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Transfer Tamamlandı</title></head><body style="font-family:system-ui;background:#f5f5f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
+      <div style="background:#fff;border:1px solid #e5e5ea;border-radius:16px;padding:40px;text-align:center;max-width:400px">
+      <h1 style="font-size:20px;margin:0 0 8px;color:#1d1d1f">Transfer tamamlandı</h1>
+      <p style="color:#6e6e73;font-size:14px;margin:0">Bu belge artık kullanılamaz.</p>
+      <p style="color:#aeaeb2;font-size:11px;margin-top:24px;letter-spacing:2px;font-weight:700">TORVIAN</p>
       </div></body></html>`,
       { headers: { "Content-Type": "text/html; charset=utf-8" } }
     );
@@ -66,483 +97,217 @@ export async function GET(request: NextRequest) {
   const driver = assignment.drivers as Record<string, string> | null;
   const vehicle = assignment.vehicles as Record<string, string> | null;
 
-  // The sheet must describe THIS assignment's leg. A return-leg driver used to
-  // be handed the outbound date, time and route — i.e. the wrong day and the
-  // wrong direction of travel.
+  // The sheet describes THIS assignment's leg. It used to always print the
+  // outbound date, time and route, so a return-leg driver was sent on the wrong
+  // day in the wrong direction.
   const leg = assignment.leg === "return" ? "return" : "outbound";
   const legDatetime =
     leg === "return" && res.return_datetime
       ? (res.return_datetime as string)
       : (res.pickup_datetime as string);
 
-  const pickupDate = new Date(legDatetime);
-  const pickupDateStr = pickupDate.toLocaleDateString("tr-TR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const pickupTimeStr = pickupDate.toLocaleTimeString("tr-TR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  let returnInfo = "";
-  if (leg === "outbound" && res.trip_type === "round_trip" && res.return_datetime) {
-    const retDate = new Date(res.return_datetime as string);
-    returnInfo = `
-      <div class="detail-row">
-        <div class="detail-icon">🔄</div>
-        <div>
-          <div class="detail-label">Dönüş</div>
-          <div class="detail-value">${esc(retDate.toLocaleDateString("tr-TR", { weekday: "long", day: "numeric", month: "long" }))} — ${esc(retDate.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }))}</div>
-        </div>
-      </div>`;
-  }
-
   const regionLabel =
     (region?.name_tr as string) || (region?.name_en as string) || "—";
-  const { from: legFrom, to: legTo } = legEndpoints(
-    res.direction,
-    leg,
-    regionLabel,
-    "tr"
-  );
+  const { from: legFrom, to: legTo } = legEndpoints(res.direction, leg, regionLabel, "tr");
 
-  const extras: string[] = [];
-  if (res.child_seat) extras.push("🪑 Çocuk Koltuğu");
-  const extrasHtml = extras.length > 0
-    ? `<div class="detail-row">
-        <div class="detail-icon">✨</div>
-        <div>
-          <div class="detail-label">Extras</div>
-          <div class="detail-value">${extras.join(" &nbsp;•&nbsp; ")}</div>
-        </div>
-      </div>`
-    : "";
+  const isRoundTrip = res.trip_type === "round_trip";
+  const legLabel = !isRoundTrip ? "Tek yön" : leg === "return" ? "Dönüş" : "Gidiş";
 
-  const notesHtml = res.notes
-    ? `<div class="notes-box">📝 ${esc(String(res.notes))}</div>`
-    : "";
+  const passengers =
+    `${res.adults} yetişkin` +
+    ((res.children as number) > 0 ? `, ${res.children} çocuk` : "");
+
+  // The other leg is context for the outbound driver, not an instruction.
+  const otherLeg =
+    leg === "outbound" && isRoundTrip && res.return_datetime
+      ? row(
+          "refresh",
+          "Dönüş (bilgi)",
+          `${esc(formatBookingDate(res.return_datetime as string))} — ${esc(formatBookingTime(res.return_datetime as string))}`
+        )
+      : "";
 
   const html = `<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TORVIAN — Driver Voucher ${res.reservation_code}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f7;
-      color: #1d1d1f;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .voucher {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    }
-    .header {
-      background: linear-gradient(135deg, #1d1d1f 0%, #2a2a2e 100%);
-      padding: 28px 24px;
-      text-align: center;
-      color: #fff;
-    }
-    .header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: 4px;
-      margin-bottom: 4px;
-    }
-    .header .subtitle {
-      font-size: 11px;
-      letter-spacing: 3px;
-      color: #f97316;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-    .status-badge {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 6px 18px;
-      background: rgba(249, 115, 22, 0.15);
-      border: 1px solid rgba(249, 115, 22, 0.3);
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #f97316;
-      letter-spacing: 1px;
-    }
-    .code-bar {
-      background: #f97316;
-      padding: 14px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .code-bar .code {
-      font-family: 'SF Mono', Menlo, monospace;
-      font-size: 20px;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: 2px;
-    }
-    .code-bar .trip-type {
-      font-size: 11px;
-      color: rgba(255,255,255,0.85);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .route-banner {
-      padding: 20px 24px;
-      background: #fafafa;
-      border-bottom: 1px solid #eee;
-      text-align: center;
-    }
-    .route-banner .from-to {
-      font-size: 16px;
-      font-weight: 700;
-      color: #1d1d1f;
-    }
-    .route-banner .arrow {
-      display: inline-block;
-      margin: 0 10px;
-      color: #f97316;
-      font-size: 18px;
-    }
-    .route-banner .distance {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
-    }
-    .body { padding: 24px; }
-    .section {
-      margin-bottom: 20px;
-    }
-    .section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .detail-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .detail-icon {
-      font-size: 18px;
-      width: 24px;
-      text-align: center;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .detail-label {
-      font-size: 11px;
-      color: #888;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .detail-value {
-      font-size: 15px;
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-top: 1px;
-    }
-    .detail-value.highlight {
-      color: #f97316;
-      font-size: 18px;
-      font-weight: 800;
-    }
-    .customer-card {
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
-      border-radius: 12px;
-      padding: 16px;
-    }
-    .customer-card .name {
-      font-size: 16px;
-      font-weight: 700;
-      color: #0c4a6e;
-      margin-bottom: 6px;
-    }
-    .customer-card .contact {
-      font-size: 13px;
-      color: #0369a1;
-    }
-    .customer-card .contact a {
-      color: #0369a1;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .vehicle-card {
-      background: #f8f8f8;
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .vehicle-card .icon { font-size: 28px; }
-    .vehicle-card .info .name { font-size: 15px; font-weight: 700; }
-    .vehicle-card .info .plate {
-      font-family: 'SF Mono', Menlo, monospace;
-      font-size: 14px;
-      font-weight: 700;
-      color: #f97316;
-      margin-top: 2px;
-    }
-    .notes-box {
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #92400e;
-      margin-top: 12px;
-    }
-    .divider {
-      border: none;
-      border-top: 2px dashed #e5e5e5;
-      margin: 20px 0;
-    }
-    .footer {
-      background: #fafafa;
-      padding: 20px 24px;
-      text-align: center;
-      border-top: 1px solid #eee;
-    }
-    .footer .support {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 4px;
-    }
-    .footer .brand {
-      font-size: 11px;
-      color: #ccc;
-      letter-spacing: 2px;
-    }
-    .print-btn {
-      display: block;
-      max-width: 600px;
-      margin: 8px auto;
-      padding: 14px;
-      background: #1d1d1f;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      letter-spacing: 1px;
-    }
-    .print-btn:hover { background: #333; }
-    .save-btn {
-      display: block;
-      max-width: 600px;
-      margin: 8px auto;
-      padding: 14px;
-      background: #25D366;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      letter-spacing: 1px;
-    }
-    .save-btn:hover { background: #1da851; }
-    .btn-row {
-      display: flex;
-      gap: 8px;
-      max-width: 600px;
-      margin: 16px auto;
-    }
-    .btn-row button { flex: 1; }
-    @media print {
-      body { background: #fff; padding: 0; }
-      .voucher { box-shadow: none; border-radius: 0; }
-      .btn-row { display: none !important; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TORVIAN — Transfer Belgesi ${esc(String(res.reservation_code))}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:#f5f5f7;color:#1d1d1f;padding:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{max-width:520px;margin:0 auto;background:#fff;border:1px solid #e5e5ea;border-radius:14px;overflow:hidden}
+
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid #e5e5ea}
+  .brand{font-size:15px;font-weight:800;letter-spacing:3px}
+  .brand span{display:block;font-size:9px;letter-spacing:2px;color:#8e8e93;font-weight:600;margin-top:2px}
+  .code{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:17px;font-weight:700;letter-spacing:1px;text-align:right}
+  .code span{display:block;font-size:10px;font-family:inherit;letter-spacing:1px;color:#8e8e93;font-weight:600;text-transform:uppercase;margin-top:2px}
+
+  .route{padding:18px 20px;border-bottom:1px solid #e5e5ea}
+  .route .pts{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;line-height:1.3}
+  .route .arw{color:#8e8e93;flex:0 0 auto}
+  .route .meta{font-size:12px;color:#8e8e93;margin-top:6px}
+
+  .when{display:flex;border-bottom:1px solid #e5e5ea}
+  .when > div{flex:1;padding:16px 20px}
+  .when > div + div{border-left:1px solid #e5e5ea}
+  .when .lbl{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#8e8e93;font-weight:700;margin-bottom:4px}
+  .when .v{font-size:15px;font-weight:600}
+  .when .v.time{font-size:28px;font-weight:800;letter-spacing:-0.5px;line-height:1}
+
+  .sec{padding:14px 20px;border-bottom:1px solid #e5e5ea}
+  .sec:last-of-type{border-bottom:0}
+  .sec-t{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#8e8e93;font-weight:700;margin-bottom:10px}
+
+  .row{display:flex;gap:11px;align-items:flex-start;padding:5px 0}
+  .ic{width:17px;height:17px;flex:0 0 auto;color:#8e8e93;margin-top:2px}
+  .rt{min-width:0}
+  .lbl{display:block;font-size:11px;color:#8e8e93;line-height:1.4}
+  .val{display:block;font-size:14px;font-weight:600;line-height:1.4;word-break:break-word}
+  .val.big{font-size:16px;font-weight:700}
+  .val a{color:inherit;text-decoration:none}
+  .sub{display:block;font-size:12px;color:#8e8e93;font-weight:400;margin-top:1px}
+
+  .note{margin:0 20px 14px;padding:11px 13px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;font-size:13px;line-height:1.5}
+  .note b{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#a16207;margin-bottom:3px}
+
+  .plate{display:inline-block;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:15px;font-weight:700;letter-spacing:1px;border:1.5px solid #1d1d1f;border-radius:5px;padding:2px 8px;margin-top:2px}
+
+  .foot{padding:13px 20px;background:#fafafa;text-align:center;font-size:11px;color:#8e8e93;line-height:1.6}
+
+  .actions{max-width:520px;margin:14px auto 0;display:flex;gap:8px}
+  .actions button{flex:1;padding:11px;border:1px solid #d1d1d6;border-radius:9px;background:#fff;font-size:13px;font-weight:600;color:#1d1d1f;cursor:pointer;font-family:inherit}
+  .actions button:hover{background:#f5f5f7}
+
+  @media print{
+    body{background:#fff;padding:0}
+    .sheet{border:0;border-radius:0;max-width:100%}
+    .actions{display:none}
+  }
+</style>
 </head>
 <body>
-  <div class="voucher">
-    <div class="header">
-      <h1>TORVIAN</h1>
-      <div class="subtitle">Şoför Transfer Belgesi</div>
-      <div class="status-badge">TRANSFER BİLGİSİ</div>
+<div class="sheet">
+
+  <div class="head">
+    <div class="brand">TORVIAN<span>VIP TRANSFER</span></div>
+    <div class="code">${esc(String(res.reservation_code))}<span>${esc(legLabel)}</span></div>
+  </div>
+
+  <div class="route">
+    <div class="pts">
+      <span>${esc(legFrom)}</span>
+      <svg class="arw" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <span>${esc(legTo)}</span>
     </div>
+    ${region?.distance_km ? `<div class="meta">Yaklaşık ${region.distance_km} km · ${region.duration_minutes} dk</div>` : ""}
+  </div>
 
-    <div class="code-bar">
-      <span class="code">${esc(String(res.reservation_code))}</span>
-      <span class="trip-type">${res.trip_type === "round_trip" ? (leg === "return" ? "Gidiş-Dönüş • DÖNÜŞ" : "Gidiş-Dönüş • GİDİŞ") : "Tek Yön"}</span>
+  <div class="when">
+    <div>
+      <span class="lbl">Tarih</span>
+      <span class="v">${esc(formatBookingDateLong(legDatetime))}</span>
     </div>
-
-    <div class="route-banner">
-      <div class="from-to">
-        ${esc(legFrom)} <span class="arrow">→</span> ${esc(legTo)}
-      </div>
-      ${region?.distance_km ? `<div class="distance">~${region.distance_km} km • ${region.duration_minutes} dk</div>` : ""}
-    </div>
-    <div class="body">
-      <!-- Pickup Details -->
-      <div class="section">
-        <div class="section-title">Alış Detayları</div>
-        <div class="detail-row">
-          <div class="detail-icon">📅</div>
-          <div>
-            <div class="detail-label">Tarih</div>
-            <div class="detail-value">${pickupDateStr}</div>
-          </div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-icon">⏰</div>
-          <div>
-            <div class="detail-label">Saat</div>
-            <div class="detail-value highlight">${pickupTimeStr}</div>
-          </div>
-        </div>
-        ${res.flight_code ? `
-        <div class="detail-row">
-          <div class="detail-icon">✈️</div>
-          <div>
-            <div class="detail-label">Uçuş</div>
-            <div class="detail-value">${esc(String(res.flight_code))}</div>
-          </div>
-        </div>` : ""}
-        ${returnInfo}
-      </div>
-
-      <!-- Passengers -->
-      <div class="section">
-        <div class="section-title">Yolcular</div>
-        <div class="detail-row">
-          <div class="detail-icon">👥</div>
-          <div>
-            <div class="detail-label">Kişi</div>
-            <div class="detail-value">${res.adults} Yetişkin${(res.children as number) > 0 ? `, ${res.children} Çocuk` : ""}</div>
-          </div>
-        </div>
-        <div class="detail-row">
-          <div class="detail-icon">🧳</div>
-          <div>
-            <div class="detail-label">Bagaj</div>
-            <div class="detail-value">${res.luggage_count ?? 0} adet</div>
-          </div>
-        </div>
-        ${extrasHtml}
-      </div>
-
-      <!-- Customer -->
-      <div class="section">
-        <div class="section-title">Müşteri</div>
-        <div class="customer-card">
-          <div class="name">${esc(customer?.first_name)} ${esc(customer?.last_name)}</div>
-          <div class="contact">
-            📞 <a href="tel:${esc(customer?.phone)}">${esc(customer?.phone) || "—"}</a>
-          </div>
-        </div>
-      </div>
-
-      ${res.hotel_name ? `
-      <!-- Hotel -->
-      <div class="section">
-        <div class="section-title">Varış</div>
-        <div class="detail-row">
-          <div class="detail-icon">🏨</div>
-          <div>
-            <div class="detail-label">Otel</div>
-            <div class="detail-value">${esc(String(res.hotel_name))}</div>
-            ${res.hotel_address ? `<div style="font-size:12px;color:#888;margin-top:2px">${esc(String(res.hotel_address))}</div>` : ""}
-          </div>
-        </div>
-      </div>` : ""}
-
-      ${notesHtml}
-
-      <hr class="divider">
-
-      <!-- Vehicle & Driver -->
-      <div class="section">
-        <div class="section-title">Araç & Şoför</div>
-        <div class="vehicle-card">
-          <div class="icon">🚗</div>
-          <div class="info">
-            <div class="name">${esc(vehicle?.brand)} ${esc(vehicle?.model)}</div>
-            <div class="plate">${esc(vehicle?.plate_number) || "—"}</div>
-          </div>
-        </div>
-        ${driver ? `
-        <div class="detail-row" style="margin-top:12px">
-          <div class="detail-icon">👤</div>
-          <div>
-            <div class="detail-label">Şoför</div>
-            <div class="detail-value">${esc(driver.full_name)}</div>
-            <div style="font-size:12px;color:#888;margin-top:2px">${esc(driver.phone)}</div>
-          </div>
-        </div>` : ""}
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="support">7/24 Destek: 0546 940 79 55 | torviantransfer@gmail.com</div>
-      <div class="brand">TORVIAN VIP TRANSFER</div>
+    <div>
+      <span class="lbl">Alış saati</span>
+      <span class="v time">${esc(assignment.pickup_time || formatBookingTime(legDatetime))}</span>
     </div>
   </div>
 
-  <div class="btn-row">
-    <button class="save-btn" onclick="saveAsImage()">📷 Görüntü Kaydet</button>
-    <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
+  <div class="sec">
+    <div class="sec-t">Yolcu</div>
+    ${row("user", "İsim", `${esc(customer?.first_name)} ${esc(customer?.last_name)}`, true)}
+    ${customer?.phone ? row("phone", "Telefon", `<a href="tel:${esc(customer.phone)}">${esc(customer.phone)}</a>`, true) : ""}
+    ${row("users", "Kişi", esc(passengers))}
+    ${row("luggage", "Bagaj", `${res.luggage_count ?? 0} adet`)}
+    ${res.child_seat ? row("seat", "Ekstra", "Çocuk koltuğu istendi") : ""}
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script>
-    async function saveAsImage() {
-      const btn = document.querySelector('.save-btn');
-      btn.textContent = '⏳ Oluşturuluyor...';
-      btn.disabled = true;
-      try {
-        const el = document.querySelector('.voucher');
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#f5f5f7',
-        });
-        const link = document.createElement('a');
-        link.download = 'TORVIAN-voucher-${res.reservation_code}.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        btn.textContent = '✅ Kaydedildi!';
-        setTimeout(() => { btn.textContent = '📷 Görüntü Kaydet'; btn.disabled = false; }, 2000);
-      } catch(e) {
-        btn.textContent = '📷 Görüntü Kaydet';
-        btn.disabled = false;
-        alert('Error saving image. Try screenshot instead.');
-      }
+  <div class="sec">
+    <div class="sec-t">Transfer</div>
+    ${res.flight_code ? row("plane", "Uçuş kodu", esc(String(res.flight_code)), true) : ""}
+    ${
+      res.hotel_name
+        ? `<div class="row">${icon("hotel")}<div class="rt"><span class="lbl">Otel</span><span class="val">${esc(String(res.hotel_name))}</span>${res.hotel_address ? `<span class="sub">${esc(String(res.hotel_address))}</span>` : ""}</div></div>`
+        : ""
     }
-  </script>
+    ${otherLeg}
+  </div>
+
+  ${
+    res.notes
+      ? `<div class="note"><b>Müşteri notu</b>${esc(String(res.notes))}</div>`
+      : ""
+  }
+
+  <div class="sec">
+    <div class="sec-t">Araç &amp; Şoför</div>
+    ${
+      vehicle
+        ? `<div class="row">${icon("car")}<div class="rt"><span class="lbl">${esc(vehicle.brand)} ${esc(vehicle.model)}</span><span class="plate">${esc(vehicle.plate_number)}</span></div></div>`
+        : ""
+    }
+    ${
+      driver
+        ? `<div class="row">${icon("user")}<div class="rt"><span class="lbl">Şoför</span><span class="val">${esc(driver.full_name)}</span><span class="sub">${esc(driver.phone)}</span></div></div>`
+        : ""
+    }
+  </div>
+
+  <div class="foot">
+    7/24 Destek: 0546 940 79 55<br>torviantransfer@gmail.com
+  </div>
+</div>
+
+<div class="actions">
+  <button onclick="window.print()">Yazdır / PDF</button>
+  <button onclick="copyText()" id="cp">Metni kopyala</button>
+</div>
+
+<script>
+  // Lets an operator paste the same details straight into WhatsApp.
+  var SUMMARY = ${JSON.stringify(
+    [
+      `TORVIAN — Transfer Görevi (${legLabel})`,
+      ``,
+      `Kod: ${res.reservation_code}`,
+      `${legFrom} -> ${legTo}`,
+      `Tarih: ${formatBookingDateLong(legDatetime)}`,
+      `Alış saati: ${assignment.pickup_time || formatBookingTime(legDatetime)}`,
+      res.flight_code ? `Uçuş: ${res.flight_code}` : "",
+      ``,
+      `Müşteri: ${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.trim(),
+      customer?.phone ? `Telefon: ${customer.phone}` : "",
+      `Yolcu: ${passengers} · ${res.luggage_count ?? 0} bagaj`,
+      res.child_seat ? `Çocuk koltuğu istendi` : "",
+      res.hotel_name ? `Otel: ${res.hotel_name}` : "",
+      res.hotel_address ? `Adres: ${res.hotel_address}` : "",
+      res.notes ? `Not: ${res.notes}` : "",
+      vehicle ? `Araç: ${vehicle.brand} ${vehicle.model} — ${vehicle.plate_number}` : "",
+    ]
+      .filter((line) => line !== "" || true)
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  )};
+
+  function copyText() {
+    var b = document.getElementById('cp');
+    navigator.clipboard.writeText(SUMMARY).then(function () {
+      b.textContent = 'Kopyalandı';
+      setTimeout(function () { b.textContent = 'Metni kopyala'; }, 2000);
+    });
+  }
+</script>
 </body>
 </html>`;
 
   return new NextResponse(html, {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-    },
+    headers: { "Content-Type": "text/html; charset=utf-8" },
   });
 }

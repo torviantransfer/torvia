@@ -21,6 +21,11 @@ import {
   Clock,
 } from "lucide-react";
 import QRScanner from "@/components/driver/QRScanner";
+import {
+  formatBookingDate,
+  formatBookingDateLong,
+  formatBookingTime,
+} from "@/lib/datetime";
 
 interface Props {
   assignment: {
@@ -69,36 +74,20 @@ interface Props {
   token: string;
 }
 
-const TZ = "Europe/Istanbul";
+// Pickup/return values are stored Antalya wall clocks, so they are read back as
+// such rather than converted again — converting is what showed a 15:00 transfer
+// as 18:00 on the driver's screen. See lib/datetime.
 
 function fmtDate(dt: string | null | undefined) {
-  if (!dt) return "—";
-  return new Date(dt).toLocaleDateString("tr-TR", {
-    timeZone: TZ,
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return dt ? formatBookingDateLong(dt) : "—";
 }
 
 function fmtTime(dt: string | null | undefined) {
-  if (!dt) return "—";
-  return new Date(dt).toLocaleTimeString("tr-TR", {
-    timeZone: TZ,
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return dt ? formatBookingTime(dt) : "—";
 }
 
 function fmtDateShort(dt: string | null | undefined) {
-  if (!dt) return "—";
-  return new Date(dt).toLocaleDateString("tr-TR", {
-    timeZone: TZ,
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  return dt ? formatBookingDate(dt) : "—";
 }
 
 const STATUS_CONFIG: Record<string, { label: string; tone: string; step: number }> = {

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CalendarCheck, Clock, CheckCircle, XCircle, ArrowRight, MapPin } from "lucide-react";
 import { legRoute } from "@/lib/transfer-route";
+import { formatBookingDate, formatBookingTime } from "@/lib/datetime";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "Overview", tr: "Genel Bakış", de: "Übersicht", pl: "Przegląd", ru: "Обзор" },
@@ -113,7 +114,7 @@ export default async function AccountDashboard({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">{legRoute(r.direction, "outbound", regionName(r.regions))}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{new Date(r.pickup_datetime).toLocaleDateString("tr-TR")} — {new Date(r.pickup_datetime).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{formatBookingDate(r.pickup_datetime)} — {formatBookingTime(r.pickup_datetime)}</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">{r.reservation_code}</span>

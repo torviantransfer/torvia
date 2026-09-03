@@ -3,6 +3,7 @@ import { getConfig } from "@/lib/config";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
 import { legEndpoints } from "@/lib/transfer-route";
 import { formatEUR } from "@/lib/currency";
+import { formatBookingTime } from "@/lib/datetime";
 
 let _resend: Resend | null = null;
 let _resendKey: string = "";
@@ -628,7 +629,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
     : new Date(data.pickupDatetime);
   const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : locale === "nl" ? "nl-NL" : "en-US";
   const dateStr = datetime.toLocaleDateString(regionalDateLocale, { day: "2-digit", month: "long", year: "numeric" });
-  const timeStr = datetime.toLocaleTimeString(regionalDateLocale, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+  const timeStr = formatBookingTime(datetime, regionalDateLocale);
 
   const legPoints = legEndpoints(
     data.direction,

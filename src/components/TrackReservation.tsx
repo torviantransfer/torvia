@@ -213,6 +213,7 @@ export default function TrackReservation() {
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(locale, {
+      timeZone: "UTC", // stored Antalya wall clock — see lib/datetime
       day: "2-digit",
       month: "long",
       year: "numeric",

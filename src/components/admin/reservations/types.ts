@@ -1,4 +1,14 @@
 import { legEndpoints, legRoute } from "@/lib/transfer-route";
+import {
+  bookingDayKey,
+  bookingDayOffset,
+  formatBookingDate,
+  formatBookingDateTime,
+  formatBookingTime,
+  formatInstant,
+  formatInstantDate,
+  todayInBookingTz,
+} from "@/lib/datetime";
 
 export interface DriverAssignment {
   id: string;
@@ -173,54 +183,31 @@ export const assignmentMeta = (status: string) =>
   };
 
 // ─── date helpers ───
+// pickup/return values are stored Antalya wall clocks; created_at and the
+// assignment timestamps are real instants. See lib/datetime for why the two
+// need different formatting.
 
-export const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+export const fmtDate = (iso: string) => formatBookingDate(iso);
+export const fmtTime = (iso: string) => formatBookingTime(iso);
+export const fmtDateTime = (iso: string) => formatBookingDateTime(iso);
 
-export const fmtTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString("tr-TR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+/** For created_at / assigned_at / accepted_at / picked_up_at / completed_at. */
+export const fmtStamp = (iso?: string | null) => (iso ? formatInstant(iso) : null);
+export const fmtInstantDate = (iso: string) => formatInstantDate(iso);
 
-export const fmtDateTime = (iso: string) => `${fmtDate(iso)} ${fmtTime(iso)}`;
+export const dayKey = (iso: string) => bookingDayKey(iso);
 
-export const fmtStamp = (iso?: string | null) =>
-  iso
-    ? new Date(iso).toLocaleString("tr-TR", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
+export const todayKey = () => todayInBookingTz();
 
-/** Local YYYY-MM-DD, so day grouping matches what the operator sees on screen. */
-export const dayKey = (iso: string) => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-};
-
-export const todayKey = () => dayKey(new Date().toISOString());
-
-export const offsetDayKey = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return dayKey(d.toISOString());
-};
+export const offsetDayKey = (days: number) => bookingDayOffset(days);
 
 export const dayLabel = (key: string) => {
   if (key === todayKey()) return "Bugün";
   if (key === offsetDayKey(1)) return "Yarın";
   if (key === offsetDayKey(-1)) return "Dün";
   const [y, m, d] = key.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("tr-TR", {
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("tr-TR", {
+    timeZone: "UTC",
     weekday: "long",
     day: "numeric",
     month: "long",

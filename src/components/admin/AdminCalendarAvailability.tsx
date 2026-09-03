@@ -17,6 +17,12 @@ import {
   Unlock,
   X,
 } from "lucide-react";
+import {
+  bookingDayKey,
+  formatBookingDate,
+  formatBookingDateLong,
+  formatBookingTime,
+} from "@/lib/datetime";
 
 interface CalendarEvent {
   id: string;
@@ -149,7 +155,7 @@ export default function AdminCalendarAvailability() {
   };
 
   const eventsForDay = (day: number) =>
-    events.filter((e) => new Date(e.pickup).getDate() === day);
+    events.filter((e) => bookingDayKey(e.pickup) === dateStr(day));
 
   const isToday = (day: number) =>
     day === now.getDate() && month === now.getMonth() + 1 && year === now.getFullYear();
@@ -346,7 +352,7 @@ export default function AdminCalendarAvailability() {
                               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cfg.dot}`} />
                               <span className="truncate">
                                 {ev.leg === "return" ? "↩ " : "↗ "}
-                                {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })} {ev.region}
+                                {formatBookingTime(ev.pickup)} {ev.region}
                               </span>
                             </button>
                           );
@@ -558,7 +564,7 @@ export default function AdminCalendarAvailability() {
                             </div>
                             <p className="flex items-center gap-1 text-[11px] font-medium text-slate-700">
                               <Clock size={10} className="shrink-0 text-slate-400" />
-                              {new Date(ev.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}
+                              {formatBookingTime(ev.pickup)}
                               <span className={`ml-1 rounded px-1 py-0.5 text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
                                 {ev.leg === "return" ? "Dönüş" : "Gidiş"}
                               </span>
@@ -636,7 +642,7 @@ export default function AdminCalendarAvailability() {
               <div>
                 <span className="font-mono text-sm font-bold text-indigo-600">{selectedEvent.code}</span>
                 <p className="mt-0.5 text-xs text-slate-400">
-                  {new Date(selectedEvent.pickup).toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" })}
+                  {formatBookingDateLong(selectedEvent.pickup)}
                 </p>
               </div>
               <button onClick={() => setSelectedEvent(null)} className="rounded-lg p-1.5 hover:bg-slate-100">
@@ -647,8 +653,8 @@ export default function AdminCalendarAvailability() {
               {[
                 ["Güzergah", selectedEvent.route || `Antalya Havalimanı → ${selectedEvent.region}`],
                 ["Leg", selectedEvent.leg === "return" ? "↩ Dönüş" : "↗ Gidiş"],
-                ["Saat", new Date(selectedEvent.pickup).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })],
-                ...(selectedEvent.returnDate ? [["Dönüş", new Date(selectedEvent.returnDate).toLocaleDateString("tr-TR")]] : []),
+                ["Saat", formatBookingTime(selectedEvent.pickup)],
+                ...(selectedEvent.returnDate ? [["Dönüş", formatBookingDate(selectedEvent.returnDate)]] : []),
                 ["Müşteri", selectedEvent.customer],
                 ["Yolcu", `${selectedEvent.adults} yetişkin${selectedEvent.children > 0 ? ` + ${selectedEvent.children} çocuk` : ""}`],
                 ...(selectedEvent.hotel ? [["Otel", selectedEvent.hotel]] : []),

@@ -13,6 +13,7 @@ import {
   RefreshCw,
   UserMinus,
 } from "lucide-react";
+import { formatBookingDateTime } from "@/lib/datetime";
 import {
   type DriverAssignment,
   type Reservation,
@@ -45,7 +46,7 @@ function whatsappUrl(r: Reservation, da: DriverAssignment) {
       `📋 Kod: ${r.reservation_code}\n` +
       `👤 Müşteri: ${customerName(r)}\n` +
       `📍 Güzergah: Havalimanı → ${regionName(r)}\n` +
-      `📅 Tarih: ${at.toLocaleDateString("tr-TR")} ${at.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}\n` +
+      `📅 Tarih: ${formatBookingDateTime(at)}\n` +
       (da.leg === "return" && da.pickup_time ? `⏰ Alış: ${da.pickup_time}\n` : "") +
       `\n🔗 Şoför Paneli:\n${origin}/driver/${da.link_token}\n\n` +
       `📄 Şoför Voucher:\n${origin}/api/driver-voucher?token=${da.link_token}`

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCancelRequest } from "@/lib/telegram";
 import { legRoute } from "@/lib/transfer-route";
+import { formatBookingDateTime } from "@/lib/datetime";
 
 const CANCELLABLE = ["pending", "paid", "driver_assigned"];
 
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     code: reservation.reservation_code,
     customer: `${customer.first_name} ${customer.last_name}`,
     route: legRoute(reservation.direction, "outbound", regionName),
-    pickup: new Date(reservation.pickup_datetime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
+    pickup: formatBookingDateTime(reservation.pickup_datetime),
     previousStatus: reservation.status,
     reason: reason || undefined,
   }).catch(() => {});

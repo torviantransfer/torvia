@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
 import { assignDriverSchema } from "@/lib/validations";
+import { formatBookingDateTime } from "@/lib/datetime";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
       code: reservation.reservation_code,
       driver: driver?.full_name ?? "?",
       destination: region?.name_en ?? "?",
-      date: pickupDate.toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
+      date: formatBookingDateTime(pickupDate),
     }).catch(() => {});
 
     return NextResponse.json({

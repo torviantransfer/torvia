@@ -13,6 +13,10 @@ import {
   X,
 } from "lucide-react";
 import {
+  formatBookingDateShort,
+  formatBookingTime,
+} from "@/lib/datetime";
+import {
   type Driver,
   type Leg,
   type Reservation,
@@ -345,10 +349,7 @@ export default function AssignDriverModal({
                       <ul className="mt-2 space-y-0.5 border-t border-slate-200 pt-2 text-[11px] text-slate-500">
                         {sameDay.map((t) => (
                           <li key={`${t.code}-${t.at.toISOString()}`}>
-                            {t.at.toLocaleTimeString("tr-TR", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}{" "}
+                            {formatBookingTime(t.at)}{" "}
                             · {t.region} · <span className="font-mono">{t.code}</span>
                           </li>
                         ))}
@@ -454,12 +455,8 @@ export default function AssignDriverModal({
                       {c.reservation_code}
                     </span>{" "}
                     — {c.region} —{" "}
-                    {new Date(c.pickup).toLocaleString("tr-TR", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
+                    {formatBookingDateShort(c.pickup)}{" "}
+                    {formatBookingTime(c.pickup)}{" "}
                     ({c.type === "driver" ? "şoför" : "araç"})
                   </li>
                 ))}
