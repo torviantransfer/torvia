@@ -31,17 +31,39 @@ export async function getGlobalMaxDaily(supabase: Client): Promise<number> {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : DEFAULT_MAX_DAILY;
 }
 
+/**
+ * Before migration 059 the `max_bookings` column does not exist. Selecting it
+ * then fails, and an empty result would read as "no date is closed" — every
+ * blocked date would silently reopen for booking. Fall back to the pre-059
+ * shape instead, where a row simply means the date is closed.
+ */
+const MISSING_COLUMN = "42703";
+
 /** Per-date overrides in [from, to], keyed by YYYY-MM-DD. */
 export async function getDateOverrides(
   supabase: Client,
   from: string,
   to: string
 ): Promise<Map<string, DateOverride>> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("blocked_dates")
     .select("blocked_date, max_bookings, reason")
     .gte("blocked_date", from)
     .lte("blocked_date", to);
+
+  if (error?.code === MISSING_COLUMN) {
+    const { data: legacy } = await supabase
+      .from("blocked_dates")
+      .select("blocked_date, reason")
+      .gte("blocked_date", from)
+      .lte("blocked_date", to);
+    return new Map(
+      (legacy ?? []).map((row: { blocked_date: string; reason: string | null }) => [
+        row.blocked_date,
+        { ...row, max_bookings: null },
+      ])
+    );
+  }
 
   return new Map(
     (data ?? []).map((row: DateOverride) => [row.blocked_date, row])
@@ -53,11 +75,20 @@ export async function getDateOverride(
   supabase: Client,
   date: string
 ): Promise<DateOverride | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("blocked_dates")
     .select("blocked_date, max_bookings, reason")
     .eq("blocked_date", date)
     .maybeSingle();
+
+  if (error?.code === MISSING_COLUMN) {
+    const { data: legacy } = await supabase
+      .from("blocked_dates")
+      .select("blocked_date, reason")
+      .eq("blocked_date", date)
+      .maybeSingle();
+    return legacy ? { ...legacy, max_bookings: null } : null;
+  }
 
   return (data as DateOverride) ?? null;
 }

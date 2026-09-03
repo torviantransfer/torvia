@@ -10,6 +10,21 @@ import {
 
 const MAX_CAPACITY = 100;
 
+/**
+ * Postgres reports a missing column as 42703. Every write here touches columns
+ * added by migration 059, so that code almost always means the migration has
+ * not been applied to this environment yet — say so instead of "kaydedilemedi".
+ */
+function describeDbError(error: { code?: string; message?: string } | null) {
+  if (error?.code === "42703") {
+    return "Veritabanı güncel değil: supabase/migrations/059_per_date_capacity.sql henüz çalıştırılmamış. Supabase SQL Editor'de bu dosyayı çalıştırın.";
+  }
+  if (error?.code === "42P01") {
+    return "blocked_dates tablosu bulunamadı. Supabase migration'larını çalıştırın.";
+  }
+  return error?.message ?? null;
+}
+
 /** GET ?from=YYYY-MM-DD&to=YYYY-MM-DD — capacity picture for a date range. */
 export async function GET(request: NextRequest) {
   const { error: authError } = await requireAdmin();
@@ -64,8 +79,11 @@ export async function PUT(request: NextRequest) {
     .upsert({ key: "max_daily_bookings", value: globalMax }, { onConflict: "key" });
 
   if (error) {
-    console.error("Global capacity update failed:", error.message);
-    return NextResponse.json({ error: "Kapasite kaydedilemedi." }, { status: 500 });
+    console.error("Global capacity update failed:", error.code, error.message);
+    return NextResponse.json(
+      { error: describeDbError(error) ?? "Kapasite kaydedilemedi." },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ globalMax });
@@ -116,8 +134,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    console.error("Date override upsert failed:", error.message);
-    return NextResponse.json({ error: "Tarih ayarı kaydedilemedi." }, { status: 500 });
+    console.error("Date override upsert failed:", error.code, error.message);
+    return NextResponse.json(
+      { error: describeDbError(error) ?? "Tarih ayarı kaydedilemedi." },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({
@@ -141,8 +162,11 @@ export async function DELETE(request: NextRequest) {
   const { error } = await supabase.from("blocked_dates").delete().eq("blocked_date", date);
 
   if (error) {
-    console.error("Date override delete failed:", error.message);
-    return NextResponse.json({ error: "Tarih ayarı kaldırılamadı." }, { status: 500 });
+    console.error("Date override delete failed:", error.code, error.message);
+    return NextResponse.json(
+      { error: describeDbError(error) ?? "Tarih ayarı kaldırılamadı." },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true });
