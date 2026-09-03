@@ -213,6 +213,10 @@ export async function POST(request: NextRequest) {
           luggageCount: resData.luggage_count ?? 0,
           childSeat: resData.child_seat ?? false,
           notes: resData.notes,
+          paymentMethod: resData.payment_method,
+          depositAmountUsd: resData.deposit_amount,
+          driverAmountUsd: resData.driver_amount,
+          exchangeRateEur: resData.exchange_rate_eur,
         }).catch(() => {});
       }
     }

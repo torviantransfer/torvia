@@ -4,6 +4,7 @@
  */
 import { formatBookingDate, formatBookingTime } from "@/lib/datetime";
 import { legEndpoints } from "@/lib/transfer-route";
+import { convertFromUSD, formatEUR } from "@/lib/currency";
 
 const TELEGRAM_API = "https://api.telegram.org/bot";
 
@@ -284,6 +285,13 @@ export interface DriverVoucherData {
   luggageCount: number;
   childSeat: boolean;
   notes?: string;
+  /** "cash" means the driver collects the balance in the vehicle. */
+  paymentMethod?: string | null;
+  /** USD, as stored. Only meaningful for a cash booking. */
+  depositAmountUsd?: number | null;
+  driverAmountUsd?: number | null;
+  /** EUR per one USD, captured at booking time. */
+  exchangeRateEur?: number | null;
 }
 
 /** Clock face matching the time, e.g. 10:10 -> 🕙 and 06:30 -> 🕡. */
@@ -303,6 +311,18 @@ function longDay(value: string): string {
     weekday: "long",
   });
   return `${formatBookingDate(value)} ${weekday}`;
+}
+
+/**
+ * Cash is quoted the way the customer was quoted it — the voucher they hold is
+ * in euro — with the stored dollar amount alongside, since that is the figure
+ * the panel and the books carry.
+ */
+function amountPair(usd: number | null | undefined, ratePerUsd: number | null | undefined): string {
+  const dollars = Number(usd) || 0;
+  const dollarText = `$${dollars.toFixed(2)}`;
+  if (!ratePerUsd) return dollarText;
+  return `${formatEUR(convertFromUSD(dollars, ratePerUsd))} (${dollarText})`;
 }
 
 /**
@@ -358,6 +378,23 @@ export function buildTransferMessage(data: DriverVoucherData): string {
   // ── customer ──
   L.push("", `👤 ${esc(data.customerFirstName)} ${esc(data.customerLastName)}`);
   if (data.customerPhone) L.push(`📞 Telefon: ${esc(data.customerPhone)}`);
+
+  // ── payment ──
+  // The group is read by the operator first and only forwarded to drivers on
+  // approval, so the cash figure belongs here: whoever takes the job has to know
+  // what to collect in the vehicle. Online bookings say so explicitly, so nobody
+  // asks a prepaid passenger for money.
+  if (data.paymentMethod === "cash") {
+    L.push("", `\u{1F4B5} <b>ARA\u00c7TA NAK\u0130T TAHS\u0130LAT</b>`);
+    L.push(
+      `\u015e\u00f6f\u00f6r tahsil edecek: <b>${amountPair(data.driverAmountUsd, data.exchangeRateEur)}</b>`
+    );
+    if ((data.depositAmountUsd ?? 0) > 0) {
+      L.push(`Al\u0131nan kapora: ${amountPair(data.depositAmountUsd, data.exchangeRateEur)}`);
+    }
+  } else {
+    L.push("", `\u{1F4B3} \u00d6deme: Online al\u0131nd\u0131 \u2014 ara\u00e7ta tahsilat yok.`);
+  }
 
   if (data.notes) L.push("", `📝 Not: ${esc(data.notes)}`);
 

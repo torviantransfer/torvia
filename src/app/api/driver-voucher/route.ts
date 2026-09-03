@@ -7,6 +7,7 @@ import {
   formatBookingTime,
   formatBookingDate,
 } from "@/lib/datetime";
+import { convertFromUSD, formatEUR } from "@/lib/currency";
 
 function esc(str: string | null | undefined): string {
   if (!str) return "";
@@ -34,6 +35,8 @@ const ICONS: Record<string, string> = {
   user: `<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>`,
   seat: `<path d="M6 4v8a4 4 0 0 0 4 4h5M6 20h12M18 10v10"/>`,
   note: `<path d="M4 4h16v12l-4 4H4z"/><path d="M20 16h-4v4"/><path d="M8 9h8M8 13h5"/>`,
+  cash: `<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>`,
+  check: `<path d="M20 6 9 17l-5-5"/>`,
   refresh: `<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/>`,
 };
 
@@ -64,7 +67,7 @@ export async function GET(request: NextRequest) {
          reservation_code, trip_type, direction, pickup_datetime, return_datetime,
          flight_code, adults, children, luggage_count, child_seat,
          hotel_name, hotel_address, notes,
-         status,
+         status, payment_method, deposit_amount, driver_amount, exchange_rate_eur,
          customers(first_name, last_name, phone, email),
          regions(name_en, name_tr, distance_km, duration_minutes)
        )`
@@ -127,6 +130,29 @@ export async function GET(request: NextRequest) {
         )
       : "";
 
+  // What the driver has to collect. Absent from the sheet until now, so a cash
+  // job arrived with no amount attached to it.
+  const isCash = res.payment_method === "cash";
+  const rate = Number(res.exchange_rate_eur) || 0;
+  const asMoney = (usd: unknown) => {
+    const dollars = Number(usd) || 0;
+    const dollarText = `$${dollars.toFixed(2)}`;
+    return rate
+      ? `${formatEUR(convertFromUSD(dollars, rate))} <span class="sub" style="display:inline">(${dollarText})</span>`
+      : dollarText;
+  };
+
+  const paymentBlock = isCash
+    ? `<div class="sec cash">
+        <div class="sec-t">Araçta nakit tahsilat</div>
+        <div class="row">${icon("cash")}<div class="rt"><span class="lbl">Şoför tahsil edecek</span><span class="val big">${asMoney(res.driver_amount)}</span></div></div>
+        ${Number(res.deposit_amount) > 0 ? `<div class="row" style="padding-top:0">${icon("check")}<div class="rt"><span class="lbl">Alınan kapora</span><span class="val">${asMoney(res.deposit_amount)}</span></div></div>` : ""}
+      </div>`
+    : `<div class="sec">
+        <div class="sec-t">Ödeme</div>
+        <div class="row">${icon("check")}<div class="rt"><span class="lbl">Online alındı</span><span class="val">Araçta tahsilat yok</span></div></div>
+      </div>`;
+
   const html = `<!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -178,6 +204,7 @@ export async function GET(request: NextRequest) {
 
   .plate{display:inline-block;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:15px;font-weight:700;letter-spacing:1px;border:1.5px solid #1d1d1f;border-radius:5px;padding:2px 8px;margin-top:2px}
 
+  .sec.cash{background:#fffbeb}
   .foot{padding:13px 20px;background:#fafafa;text-align:center;font-size:11px;color:#8e8e93;line-height:1.6}
 
   .actions{max-width:520px;margin:14px auto 0;display:flex;gap:8px}
@@ -245,6 +272,8 @@ export async function GET(request: NextRequest) {
       : ""
   }
 
+  ${paymentBlock}
+
   <div class="sec">
     <div class="sec-t">Araç &amp; Şoför</div>
     ${
@@ -289,6 +318,9 @@ export async function GET(request: NextRequest) {
       res.hotel_address ? `Adres: ${res.hotel_address}` : "",
       res.notes ? `Not: ${res.notes}` : "",
       vehicle ? `Araç: ${vehicle.brand} ${vehicle.model} — ${vehicle.plate_number}` : "",
+      isCash
+        ? `ARAÇTA NAKİT TAHSİLAT: ${rate ? formatEUR(convertFromUSD(Number(res.driver_amount) || 0, rate)) : ""} ($${(Number(res.driver_amount) || 0).toFixed(2)})`
+        : `Ödeme: Online alındı — araçta tahsilat yok.`,
     ]
       .filter((line) => line !== "" || true)
       .join("\n")
