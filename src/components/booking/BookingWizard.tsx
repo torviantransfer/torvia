@@ -699,7 +699,7 @@ function BookingWizardInner(props: Props) {
                         on the card and the vehicle reads as floating rather
                         than boxed. It is the largest thing on the card because
                         it is what the customer is choosing between. */}
-                    <div className="relative aspect-[16/9] w-[150px] shrink-0 sm:w-[172px]">
+                    <div className="relative aspect-[16/9] w-[128px] shrink-0 sm:w-[164px]">
                       <Image
                         src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
                         alt={vehicle.name}
@@ -710,7 +710,10 @@ function BookingWizardInner(props: Props) {
                     </div>
 
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <h3 className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-gray-900">
+                      {/* `text-balance` so a two-line name splits evenly —
+                          "Mercedes-Benz / Vito VIP" rather than leaving "VIP"
+                          alone on the second line. */}
+                      <h3 className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-balance text-gray-900">
                         {vehicle.name}
                       </h3>
 
@@ -777,27 +780,34 @@ function BookingWizardInner(props: Props) {
                   {/* Footer strip: what the vehicle has, and the other way to
                       pay for it. Kept out of the column above so the top of the
                       card stays down to the four things being compared — the
-                      picture, the name, the capacity and the price. */}
+                      picture, the name, the capacity and the price.
+
+                      One flat wrapping row, not a chip group beside a chip.
+                      Nesting the features in their own box and spacing the two
+                      apart with `justify-between` looked right only while
+                      everything fitted on one line: as soon as the features
+                      wrapped, the last one was stranded on a line of its own
+                      with the cash figure still pinned up beside the first row.
+                      Flat, every chip flows, and `ml-auto` keeps the cash
+                      figure to the right of whichever line it lands on. */}
                   {(vehicle.features.length > 0 || (vehicle.cashPrice != null && settingsData.cashPaymentEnabled)) && (
-                    <div className="flex items-center justify-between gap-2 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2">
                       {/* Capped at three: the cards are compared side by side,
-                          and a vehicle with eight features would push the strip
-                          onto a second row and break the rhythm of the list. */}
-                      <div className="flex min-w-0 flex-wrap gap-1.5">
-                        {vehicle.features.slice(0, 3).map((f) => (
-                          <span
-                            key={f}
-                            className="inline-flex items-center gap-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] text-gray-600"
-                          >
-                            <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
-                            {featureLabel[f] || f}
-                          </span>
-                        ))}
-                      </div>
+                          and a vehicle with eight features would turn its strip
+                          into a paragraph. */}
+                      {vehicle.features.slice(0, 3).map((f) => (
+                        <span
+                          key={f}
+                          className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-black/[0.08] bg-white px-1.5 py-1 text-[10.5px] text-gray-600"
+                        >
+                          <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
+                          {featureLabel[f] || f}
+                        </span>
+                      ))}
 
                       {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
-                          <Banknote size={12} className="shrink-0" />
+                        <span className="ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
+                          <Banknote size={11} className="shrink-0" />
                           {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
                         </span>
                       )}
