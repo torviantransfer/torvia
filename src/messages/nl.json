@@ -877,7 +877,10 @@
     "status_cancelled": "Geannuleerd",
     "secureSearch": "Veilig zoeken",
     "realTimeStatus": "Realtime status",
-    "trackDriver": "Chauffeur volgen"
+    "trackDriver": "Chauffeur volgen",
+    "paidOnline": "Online betaald",
+    "payAtVehicleNotice": "Te betalen aan de chauffeur",
+    "depositTaken": "Aanbetaling voldaan"
   },
   "kvkk": {
     "title": "AVG / KVKK",

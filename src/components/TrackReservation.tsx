@@ -46,6 +46,9 @@ interface Reservation {
   round_trip_discount: number;
   coupon_discount: number;
   exchange_rate_eur: number | null;
+  payment_method?: string | null;
+  deposit_amount?: number | null;
+  driver_amount?: number | null;
   qr_code_token: string | null;
   created_at: string;
   regions: {
@@ -210,6 +213,9 @@ export default function TrackReservation() {
   // EUR per ONE dollar: convert by multiplying, then apply the display rule.
   const eurRate = reservation?.exchange_rate_eur ?? 1;
   const totalEur = convertFromUSD(reservation?.total_price ?? 0, eurRate);
+  const isCashBooking = reservation?.payment_method === "cash";
+  const depositEur = convertFromUSD(reservation?.deposit_amount ?? 0, eurRate);
+  const driverDueEur = convertFromUSD(reservation?.driver_amount ?? 0, eurRate);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(locale, {
@@ -354,12 +360,31 @@ export default function TrackReservation() {
               )}
             </div>
 
-            {/* Price Bar */}
-            <div className="px-6 py-4 flex items-center justify-between" style={{ borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
-              <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t("total")}</span>
-              <span className="text-xl font-bold text-gray-900">
-                {formatMoney(totalEur, "EUR")}
-              </span>
+            {/* Price Bar — a cash booking still owes money at the vehicle, so the
+                total alone would read as "nothing left to pay". */}
+            <div className="px-6 py-4" style={{ borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t("total")}</span>
+                <span className="text-xl font-bold text-gray-900">
+                  {formatMoney(totalEur, "EUR")}
+                </span>
+              </div>
+              {isCashBooking ? (
+                <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: "1px dashed #cbd5e1" }}>
+                  {depositEur > 0 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">{t("depositTaken")}</span>
+                      <span className="font-medium text-gray-700">{formatMoney(depositEur, "EUR")}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-amber-700">{t("payAtVehicleNotice")}</span>
+                    <span className="font-bold text-amber-700">{formatMoney(driverDueEur, "EUR")}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs font-medium text-emerald-600">{t("paidOnline")}</p>
+              )}
             </div>
           </div>
 

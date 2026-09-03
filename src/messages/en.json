@@ -877,7 +877,10 @@
     "status_cancelled": "Cancelled",
     "secureSearch": "Secure Search",
     "realTimeStatus": "Real-Time Status",
-    "trackDriver": "Track Driver"
+    "trackDriver": "Track Driver",
+    "paidOnline": "Paid online",
+    "payAtVehicleNotice": "To be paid to the driver",
+    "depositTaken": "Deposit paid"
   },
   "kvkk": {
     "title": "GDPR / KVKK",

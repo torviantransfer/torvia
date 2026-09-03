@@ -47,6 +47,8 @@ const t: Record<string, Record<string, string>> = {
   vehicle: { en: "Vehicle", tr: "Araç", de: "Fahrzeug", pl: "Pojazd", ru: "Транспорт" },
   hotel: { en: "Hotel", tr: "Otel", de: "Hotel", pl: "Hotel", ru: "Отель" },
   total: { en: "Total", tr: "Toplam", de: "Gesamt", pl: "Suma", ru: "Итого" },
+  payAtVehicle: { en: "Pay to driver", tr: "Şoföre ödenecek", de: "An Fahrer zahlen", pl: "Do zapłaty kierowcy", ru: "Оплата водителю", nl: "Aan chauffeur betalen" },
+  paidOnline: { en: "Paid online", tr: "Online ödendi", de: "Online bezahlt", pl: "Zapłacono online", ru: "Оплачено онлайн", nl: "Online betaald" },
   downloadVoucher: { en: "Download Voucher", tr: "Fişi İndir", de: "Gutschein herunterladen", pl: "Pobierz voucher", ru: "Скачать ваучер" },
   cancel_requested: { en: "Cancel Requested", tr: "İptal Talep Edildi", de: "Stornierung beantragt", pl: "Prośba o anulowanie", ru: "Запрос на отмену" },
   cancelBtn: { en: "Request Cancellation", tr: "İptal Talebi", de: "Stornierung beantragen", pl: "Poproś o anulowanie", ru: "Запросить отмену" },
@@ -83,6 +85,8 @@ interface Reservation {
   status: string;
   total_price: number;
   exchange_rate_eur: number | null;
+  payment_method?: string | null;
+  driver_amount?: number | null;
   hotel_name: string | null;
   adults: number;
   children: number;
@@ -172,6 +176,18 @@ export default function ReservationsList({
       ? formatMoney(convertFromUSD(r.total_price, r.exchange_rate_eur), "EUR")
       : formatMoney(r.total_price, "USD");
 
+  /**
+   * A cash booking still owes money at the vehicle. Showing only the total made
+   * it look settled, so the outstanding amount is called out instead.
+   */
+  const paymentNote = (r: Reservation) => {
+    if (r.payment_method !== "cash") return null;
+    const due = r.exchange_rate_eur
+      ? formatMoney(convertFromUSD(r.driver_amount ?? 0, r.exchange_rate_eur), "EUR")
+      : formatMoney(r.driver_amount ?? 0, "USD");
+    return `${t.payAtVehicle[locale] ?? t.payAtVehicle.en}: ${due}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -259,6 +275,11 @@ export default function ReservationsList({
                     <span className="text-xs text-gray-500">
                       {priceLabel(r)}
                     </span>
+                    {paymentNote(r) && (
+                      <span className="mt-0.5 text-[11px] font-medium text-amber-600">
+                        {paymentNote(r)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Chevron */}

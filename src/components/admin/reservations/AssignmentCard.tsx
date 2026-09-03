@@ -54,6 +54,20 @@ function whatsappUrl(r: Reservation, da: DriverAssignment) {
   return `https://wa.me/${da.drivers.phone.replace(/[^0-9]/g, "")}?text=${text}`;
 }
 
+const BTN =
+  "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50";
+
+function Group({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
+
 export default function AssignmentCard({
   reservation: r,
   assignment: da,
@@ -193,60 +207,62 @@ export default function AssignmentCard({
 
       {/* Actions */}
       {da.link_token && (
-        <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-          {wa && (
+        <div className="flex flex-wrap items-start gap-x-5 gap-y-3 px-4 py-3">
+          {/* WhatsApp keeps its brand colour because it is the one action that
+              actually hands the job over; everything else stays neutral so the
+              row does not read as six equally urgent buttons. */}
+          <Group label="Şoföre ilet">
+            {wa && (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
+              >
+                <MessageCircle size={13} />
+                WhatsApp
+              </a>
+            )}
             <a
-              href={wa}
+              href={`/api/driver-voucher?token=${da.link_token}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
+              className={BTN}
             >
-              <MessageCircle size={13} />
-              WhatsApp
+              <FileText size={13} className="text-slate-400" />
+              Transfer belgesi
             </a>
-          )}
-          <a
-            href={`/api/driver-voucher?token=${da.link_token}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
-          >
-            <FileText size={13} />
-            Şoför Voucher
-          </a>
-          <button
-            onClick={sendEmail}
-            disabled={emailing}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
-          >
-            <Mail size={13} />
-            {emailing ? "Gönderiliyor…" : "Müşteriye Bildir"}
-          </button>
-          <button
-            onClick={copyLink}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-          >
-            {copied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-            {copied ? "Kopyalandı" : "Panel Linki"}
-          </button>
+            <button onClick={copyLink} className={BTN}>
+              {copied ? (
+                <Check size={13} className="text-emerald-600" />
+              ) : (
+                <Copy size={13} className="text-slate-400" />
+              )}
+              {copied ? "Kopyalandı" : "Panel linki"}
+            </button>
+          </Group>
 
-          <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:block" />
+          <Group label="Müşteri">
+            <button onClick={sendEmail} disabled={emailing} className={`${BTN} disabled:opacity-60`}>
+              <Mail size={13} className="text-slate-400" />
+              {emailing ? "Gönderiliyor…" : "Şoförü bildir"}
+            </button>
+          </Group>
 
-          <button
-            onClick={onReplace}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-          >
-            <RefreshCw size={13} />
-            Şoförü Değiştir
-          </button>
-          <button
-            onClick={onUnassign}
-            disabled={unassigning}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
-          >
-            <UserMinus size={13} />
-            {unassigning ? "Kaldırılıyor…" : "Atamayı Kaldır"}
-          </button>
+          <Group label="Atama">
+            <button onClick={onReplace} className={BTN}>
+              <RefreshCw size={13} className="text-slate-400" />
+              Değiştir
+            </button>
+            <button
+              onClick={onUnassign}
+              disabled={unassigning}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-60"
+            >
+              <UserMinus size={13} />
+              {unassigning ? "Kaldırılıyor…" : "Kaldır"}
+            </button>
+          </Group>
         </div>
       )}
     </div>

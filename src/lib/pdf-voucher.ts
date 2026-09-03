@@ -4,6 +4,7 @@ import path from "path";
 import type { ReservationEmailData } from "./email";
 import { legEndpoints } from "./transfer-route";
 import { formatEUR } from "./currency";
+import { formatDateOnly } from "./datetime";
 
 // ─── i18n labels for PDF ───
 const labels: Record<string, Record<string, string>> = {
@@ -357,8 +358,8 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   const leftCol: DetailItem[] = [];
   const rightCol: DetailItem[] = [];
 
-  leftCol.push({ label: t(loc, "pickup"), value: `${data.pickupDate}  ${data.pickupTime}` });
-  if (data.returnDate) leftCol.push({ label: t(loc, "returnLabel"), value: `${data.returnDate}  ${data.returnTime ?? ""}` });
+  leftCol.push({ label: t(loc, "pickup"), value: `${formatDateOnly(data.pickupDate, loc)}  ${data.pickupTime}` });
+  if (data.returnDate) leftCol.push({ label: t(loc, "returnLabel"), value: `${formatDateOnly(data.returnDate, loc)}  ${data.returnTime ?? ""}` });
   if (data.flightCode) leftCol.push({ label: t(loc, "flight"), value: data.flightCode });
   if (data.hotelName) leftCol.push({ label: t(loc, "hotel"), value: data.hotelName });
 

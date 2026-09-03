@@ -877,7 +877,10 @@
     "status_cancelled": "Anulowane",
     "secureSearch": "Bezpieczne wyszukiwanie",
     "realTimeStatus": "Status w czasie rzeczywistym",
-    "trackDriver": "Sledz kierowce"
+    "trackDriver": "Sledz kierowce",
+    "paidOnline": "Zapłacono online",
+    "payAtVehicleNotice": "Do zapłaty kierowcy",
+    "depositTaken": "Wpłacona zaliczka"
   },
   "kvkk": {
     "title": "RODO / KVKK",

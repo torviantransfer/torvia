@@ -124,3 +124,32 @@ export function bookingDayOffset(days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toLocaleDateString("en-CA", { timeZone: BOOKING_TZ });
 }
+
+/** BCP-47 tag for one of the site's locales. */
+export function intlLocale(locale = "en"): string {
+  const map: Record<string, string> = {
+    tr: "tr-TR",
+    en: "en-GB",
+    de: "de-DE",
+    pl: "pl-PL",
+    ru: "ru-RU",
+    nl: "nl-NL",
+  };
+  return map[locale] ?? "en-GB";
+}
+
+/**
+ * A `YYYY-MM-DD` wall-clock date rendered for a reader, e.g. "4 Eylül 2026".
+ * Vouchers used to print the raw ISO string while every other screen showed a
+ * local format, so the same booking looked like two different dates.
+ */
+export function formatDateOnly(date: string, locale = "en"): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(intlLocale(locale), {
+    timeZone: "UTC",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}

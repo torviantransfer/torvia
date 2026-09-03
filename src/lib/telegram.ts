@@ -331,72 +331,103 @@ function amountPair(usd: number | null | undefined, ratePerUsd: number | null | 
  * It deliberately carries no prices: the operator sees those in the panel, and
  * this message is what drivers pick a job from, so money does not belong in it.
  */
+/** A thin rule between blocks — Telegram has no real separators. */
+const RULE = "──────────────────";
+
+/**
+ * The message the operator forwards into the driver group.
+ *
+ * It is read on a phone, so it is built as short labelled blocks rather than a
+ * paragraph: one block per leg, then the passenger, then what to collect. Every
+ * line answers a question a driver asks before accepting a job.
+ */
 export function buildTransferMessage(data: DriverVoucherData): string {
   const out = legEndpoints(data.direction, "outbound", data.regionName);
   const ret = legEndpoints(data.direction, "return", data.regionName);
   const isRoundTrip = data.tripType === "round_trip" && !!data.returnDatetime;
 
-  const passengers =
-    `${data.adults} Yetişkin` + (data.children > 0 ? `, ${data.children} Çocuk` : "");
-
   const L: string[] = [];
-  L.push(`<b>${esc(data.reservationCode)}</b>`, "");
 
-  // ── outbound ──
-  L.push(`<b>${isRoundTrip ? "GİDİŞ TRANSFERİ" : "TRANSFER"}</b>`, "");
-  L.push(`📅 ${esc(longDay(data.pickupDatetime))}`);
-  if (data.flightCode) L.push(`✈️ Uçuş Kodu: ${esc(data.flightCode)}`);
+  // ── header ──
+  L.push(`🚘 <b>TORVIAN TRANSFER</b>`);
+  L.push(`<code>${esc(data.reservationCode)}</code>`);
 
-  // Leaving the airport, the time is the flight's; leaving a hotel it is when
-  // the driver collects the passenger — so the label cannot be fixed.
-  const outTime = formatBookingTime(data.pickupDatetime);
-  const outFromAirport = out.from !== data.regionName;
-  L.push(
-    `${clockEmoji(outTime)} ${outFromAirport ? "Uçuş Saati" : "Otelden Alınış Saati"}: ${esc(outTime)}`
-  );
-  L.push(`📍 ${esc(out.from)} → ${esc(out.to)}`);
-  if (data.hotelName) L.push(`🏨 Otel: ${esc(data.hotelName)}`);
-  L.push(`👥 ${esc(passengers)}`);
-  L.push(`🧳 ${data.luggageCount} Bagaj`);
-  if (data.childSeat) L.push(`🪑 Çocuk koltuğu istendi`);
-
-  // ── return ──
-  if (isRoundTrip) {
-    L.push("", `<b>DÖNÜŞ TRANSFERİ</b>`, "");
-    L.push(`📅 ${esc(longDay(data.returnDatetime!))}`);
-
-    const retTime = data.returnPickupTime || formatBookingTime(data.returnDatetime!);
-    const retFromAirport = ret.from !== data.regionName;
+  /** One leg block: when, where, who is waiting where. */
+  const legBlock = (
+    heading: string,
+    when: string,
+    endpoints: { from: string; to: string },
+    time: string,
+    flightCode?: string,
+    trailer?: string
+  ) => {
+    L.push("", RULE, `<b>${heading}</b>`, "");
+    L.push(`📅 ${esc(when)}`);
+    // From the airport the clock is the flight's; from a hotel it is the
+    // moment the driver has to be at the door.
+    const fromAirport = endpoints.from !== data.regionName;
     L.push(
-      `${clockEmoji(retTime)} ${retFromAirport ? "Uçuş Saati" : "Otelden Alınış Saati"}: ${esc(retTime)}`
+      `${clockEmoji(time)} <b>${fromAirport ? "Uçuş saati" : "Otelden alınış"}: ${esc(time)}</b>`
     );
-    L.push(`📍 ${esc(ret.from)} → ${esc(ret.to)}`);
-    if (data.hotelName) L.push(`🏨 Otel: ${esc(data.hotelName)}`);
-    if (!retFromAirport) L.push(`✈️ Dönüş uçuş saati kontrol edilecektir.`);
+    if (flightCode) L.push(`✈️ Uçuş kodu: <b>${esc(flightCode)}</b>`);
+    L.push(`📍 ${esc(endpoints.from)}`);
+    L.push(`     ↓`);
+    L.push(`📍 ${esc(endpoints.to)}`);
+    if (data.hotelName) L.push(`🏨 ${esc(data.hotelName)}`);
+    if (trailer) L.push(trailer);
+  };
+
+  legBlock(
+    isRoundTrip ? "GİDİŞ TRANSFERİ" : "TRANSFER",
+    longDay(data.pickupDatetime),
+    out,
+    formatBookingTime(data.pickupDatetime),
+    data.flightCode
+  );
+
+  if (isRoundTrip) {
+    const retTime = data.returnPickupTime || formatBookingTime(data.returnDatetime!);
+    legBlock(
+      "DÖNÜŞ TRANSFERİ",
+      longDay(data.returnDatetime!),
+      ret,
+      retTime,
+      undefined,
+      ret.from === data.regionName ? `✈️ Dönüş uçuş saati kontrol edilecektir.` : undefined
+    );
   }
 
-  // ── customer ──
-  L.push("", `👤 ${esc(data.customerFirstName)} ${esc(data.customerLastName)}`);
-  if (data.customerPhone) L.push(`📞 Telefon: ${esc(data.customerPhone)}`);
+  // ── passenger ──
+  const load = [
+    `${data.adults} yetişkin`,
+    data.children > 0 ? `${data.children} çocuk` : "",
+    `${data.luggageCount} bagaj`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  L.push("", RULE, `<b>YOLCU</b>`, "");
+  L.push(`👤 <b>${esc(data.customerFirstName)} ${esc(data.customerLastName)}</b>`);
+  if (data.customerPhone) L.push(`📞 ${esc(data.customerPhone)}`);
+  L.push(`👥 ${esc(load)}`);
+  if (data.childSeat) L.push(`🪑 Çocuk koltuğu istendi`);
+  if (data.notes) L.push(`📝 ${esc(data.notes)}`);
 
   // ── payment ──
-  // The group is read by the operator first and only forwarded to drivers on
-  // approval, so the cash figure belongs here: whoever takes the job has to know
-  // what to collect in the vehicle. Online bookings say so explicitly, so nobody
-  // asks a prepaid passenger for money.
+  // This message is copied into the driver group, so the cash figure is an
+  // instruction, not accounting. Online jobs say so outright, so nobody asks a
+  // prepaid passenger for money.
+  L.push("", RULE, `<b>ÖDEME</b>`, "");
   if (data.paymentMethod === "cash") {
-    L.push("", `\u{1F4B5} <b>ARA\u00c7TA NAK\u0130T TAHS\u0130LAT</b>`);
     L.push(
-      `\u015e\u00f6f\u00f6r tahsil edecek: <b>${amountPair(data.driverAmountUsd, data.exchangeRateEur)}</b>`
+      `💵 Araçta tahsil edilecek: <b>${amountPair(data.driverAmountUsd, data.exchangeRateEur)}</b>`
     );
     if ((data.depositAmountUsd ?? 0) > 0) {
-      L.push(`Al\u0131nan kapora: ${amountPair(data.depositAmountUsd, data.exchangeRateEur)}`);
+      L.push(`✔️ Kapora alındı: ${amountPair(data.depositAmountUsd, data.exchangeRateEur)}`);
     }
   } else {
-    L.push("", `\u{1F4B3} \u00d6deme: Online al\u0131nd\u0131 \u2014 ara\u00e7ta tahsilat yok.`);
+    L.push(`💳 Online ödendi — <b>araçta tahsilat yok</b>.`);
   }
-
-  if (data.notes) L.push("", `📝 Not: ${esc(data.notes)}`);
 
   return L.join("\n");
 }

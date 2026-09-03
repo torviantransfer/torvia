@@ -417,6 +417,9 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                 const outbound = liveAssignment(r, "outbound");
                 const ret = liveAssignment(r, "return");
                 const expanded = expandedId === r.id;
+                const needsDriver =
+                  ["paid", "driver_assigned"].includes(r.status) &&
+                  (!outbound || (r.trip_type === "round_trip" && !ret));
                 const cash = isCash(r);
 
                 return (
@@ -734,91 +737,98 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                           </div>
                         )}
 
-                        {/* Voucher + record actions */}
-                        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
-                          <a
-                            href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
-                          >
-                            <FileText size={13} />
-                            Müşteri Voucher
-                            <ExternalLink size={11} className="opacity-60" />
-                          </a>
-                          <a
-                            href={`/api/admin/voucher-pdf?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                          >
-                            <Download size={13} />
-                            Voucher PDF
-                          </a>
-                          <button
-                            onClick={() => sendToTelegram(r)}
-                            disabled={telegramSendingId === r.id}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
-                            title="Şoför grubuna gönder — boşta olan alsın"
-                          >
-                            <Send size={13} />
-                            {telegramSendingId === r.id
-                              ? "Gönderiliyor…"
-                              : "Telegram'a Gönder"}
-                          </button>
-                          <button
-                            onClick={() => setEditTarget(r)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                          >
-                            <Pencil size={13} />
-                            Düzenle
-                          </button>
-                          {r.status !== "completed" && (
-                            <button
-                              onClick={() => setDeleteTarget(r)}
-                              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-                            >
-                              <Trash2 size={13} />
-                              {["pending", "cancelled"].includes(r.status)
-                                ? "Kaydı Sil"
-                                : "Rezervasyonu İptal Et"}
-                            </button>
+                        {/* ── Actions ──
+                            One toolbar, grouped and labelled. It used to be a
+                            flat row of five differently-coloured buttons next to
+                            a second row of assign buttons, so nothing read as
+                            "the thing to do next". Exactly one button is filled
+                            at a time: whatever this reservation still needs. */}
+                        <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
+                          {needsDriver && (
+                            <div className="flex flex-wrap items-center gap-2">
+                              {!outbound && (
+                                <button
+                                  onClick={() => setAssignTarget({ r, leg: "outbound" })}
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                                >
+                                  <UserPlus size={13} />
+                                  Gidiş şoförü ata
+                                </button>
+                              )}
+                              {r.trip_type === "round_trip" && !ret && (
+                                <button
+                                  onClick={() => setAssignTarget({ r, leg: "return" })}
+                                  className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold ${
+                                    outbound
+                                      ? "bg-slate-900 text-white hover:bg-slate-800"
+                                      : "border border-slate-300 text-slate-700 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <UserPlus size={13} />
+                                  Dönüş şoförü ata
+                                </button>
+                              )}
+                            </div>
                           )}
+
+                          <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
+                            <ActionGroup label="Belgeler">
+                              <a
+                                href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={ACTION_BTN}
+                              >
+                                <FileText size={13} className="text-slate-400" />
+                                Müşteri voucher
+                                <ExternalLink size={10} className="text-slate-300" />
+                              </a>
+                              <a
+                                href={`/api/admin/voucher-pdf?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
+                                className={ACTION_BTN}
+                              >
+                                <Download size={13} className="text-slate-400" />
+                                PDF indir
+                              </a>
+                            </ActionGroup>
+
+                            <ActionGroup label="Şoförlere duyur">
+                              <button
+                                onClick={() => sendToTelegram(r)}
+                                disabled={telegramSendingId === r.id}
+                                className={`${ACTION_BTN} disabled:opacity-60`}
+                                title="Telegram'a gönder — boşta olan şoför alsın"
+                              >
+                                <Send size={13} className="text-sky-500" />
+                                {telegramSendingId === r.id ? "Gönderiliyor…" : "Telegram'a gönder"}
+                              </button>
+                            </ActionGroup>
+
+                            <ActionGroup label="Kayıt">
+                              <button onClick={() => setEditTarget(r)} className={ACTION_BTN}>
+                                <Pencil size={13} className="text-slate-400" />
+                                Düzenle
+                              </button>
+                              {r.status !== "completed" && (
+                                <button
+                                  onClick={() => setDeleteTarget(r)}
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
+                                >
+                                  <Trash2 size={13} />
+                                  {["pending", "cancelled"].includes(r.status)
+                                    ? "Kaydı sil"
+                                    : "İptal et"}
+                                </button>
+                              )}
+                            </ActionGroup>
+                          </div>
                         </div>
 
                         {/* Driver assignments */}
                         <div className="mt-4 border-t border-slate-100 pt-4">
-                          <div className="mb-2.5 flex items-center justify-between">
-                            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                              Şoför Ataması
-                            </h4>
-                            {["paid", "driver_assigned"].includes(r.status) && (
-                              <div className="flex flex-wrap gap-2">
-                                <button
-                                  onClick={() => setAssignTarget({ r, leg: "outbound" })}
-                                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                                    outbound
-                                      ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                                      : "bg-slate-900 text-white hover:bg-slate-800"
-                                  }`}
-                                >
-                                  <UserPlus size={13} />
-                                  {outbound ? "Gidiş: değiştir" : "Gidiş şoförü ata"}
-                                </button>
-                                {r.trip_type === "round_trip" && (
-                                  <button
-                                    onClick={() => setAssignTarget({ r, leg: "return" })}
-                                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                                      ret
-                                        ? "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                                        : "bg-sky-600 text-white hover:bg-sky-700"
-                                    }`}
-                                  >
-                                    <UserPlus size={13} />
-                                    {ret ? "Dönüş: değiştir" : "Dönüş şoförü ata"}
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                          <h4 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            Şoför ataması
+                          </h4>
 
                           {r.driver_assignments?.length > 0 ? (
                             <div className="space-y-2.5">
@@ -966,6 +976,31 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
 }
 
 // ─── small presentational pieces ───
+
+/**
+ * One neutral button style for every secondary action. Colour is reserved for
+ * the single primary action and for the destructive one, so the eye lands on
+ * what matters instead of on five competing buttons.
+ */
+const ACTION_BTN =
+  "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50";
+
+function ActionGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
+  );
+}
 
 function StatTile({
   label,

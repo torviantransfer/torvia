@@ -877,7 +877,10 @@
     "status_cancelled": "İptal Edildi",
     "secureSearch": "Güvenli Arama",
     "realTimeStatus": "Anlık Durum",
-    "trackDriver": "Sürücü Takibi"
+    "trackDriver": "Sürücü Takibi",
+    "paidOnline": "Online ödendi",
+    "payAtVehicleNotice": "Araçta şoföre ödenecek",
+    "depositTaken": "Alınan kapora"
   },
   "kvkk": {
     "title": "KVKK / GDPR",

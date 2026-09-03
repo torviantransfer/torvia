@@ -877,7 +877,10 @@
     "status_cancelled": "Storniert",
     "secureSearch": "Sichere Suche",
     "realTimeStatus": "Echtzeit-Status",
-    "trackDriver": "Fahrer verfolgen"
+    "trackDriver": "Fahrer verfolgen",
+    "paidOnline": "Online bezahlt",
+    "payAtVehicleNotice": "An den Fahrer zu zahlen",
+    "depositTaken": "Anzahlung erhalten"
   },
   "kvkk": {
     "title": "DSGVO / KVKK",

@@ -877,7 +877,10 @@
     "status_passenger_picked_up": "Забран",
     "status_completed": "Завершено",
     "status_cancel_requested": "Запрос на Отмену",
-    "status_cancelled": "Отменено"
+    "status_cancelled": "Отменено",
+    "paidOnline": "Оплачено онлайн",
+    "payAtVehicleNotice": "Оплата водителю",
+    "depositTaken": "Внесён депозит"
   },
   "kvkk": {
     "title": "GDPR / KVKK",

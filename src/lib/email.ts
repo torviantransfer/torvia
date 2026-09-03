@@ -3,7 +3,7 @@ import { getConfig } from "@/lib/config";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
 import { legEndpoints } from "@/lib/transfer-route";
 import { formatEUR } from "@/lib/currency";
-import { formatBookingTime } from "@/lib/datetime";
+import { formatBookingTime, formatDateOnly } from "@/lib/datetime";
 
 let _resend: Resend | null = null;
 let _resendKey: string = "";
@@ -409,8 +409,8 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   const detailRows: string[] = [
     detailRow("&#9992;&#65039;", t(loc, "route"), voucherRoute, true),
     detailRow("&#8596;", t(loc, "type"), tripLabel),
-    detailRow("&#128197;", t(loc, "pickup"), `${data.pickupDate} &nbsp;|&nbsp; ${data.pickupTime}`, true),
-    ...(data.returnDate ? [detailRow("&#8634;", t(loc, "returnLabel"), `${data.returnDate} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
+    detailRow("&#128197;", t(loc, "pickup"), `${formatDateOnly(data.pickupDate, loc)} &nbsp;|&nbsp; ${data.pickupTime}`, true),
+    ...(data.returnDate ? [detailRow("&#8634;", t(loc, "returnLabel"), `${formatDateOnly(data.returnDate!, loc)} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
     ...(data.flightCode ? [detailRow("&#9992;", t(loc, "flight"), data.flightCode)] : []),
     ...(data.hotelName ? [detailRow("&#127968;", t(loc, "hotel"), data.hotelName)] : []),
     ...(data.vehicleName ? [detailRow("&#128663;", t(loc, "vehicle"), data.vehicleName)] : []),
