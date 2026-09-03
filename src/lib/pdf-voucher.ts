@@ -2,6 +2,7 @@
 import fs from "fs";
 import path from "path";
 import type { ReservationEmailData } from "./email";
+import { legEndpoints } from "./transfer-route";
 
 // ─── i18n labels for PDF ───
 const labels: Record<string, Record<string, string>> = {
@@ -304,10 +305,22 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setFillColor(...bgLight);
   doc.roundedRect(margin, y, contentW, 18, 2, 2, "F");
 
+  // Endpoints follow the reservation's direction, so a hotel → airport transfer
+  // is not printed backwards on the voucher the driver is shown.
+  const routeEnds = legEndpoints(data.direction, "outbound", data.regionName, loc);
+  const originLabel =
+    routeEnds.from === data.regionName
+      ? routeEnds.from.toUpperCase()
+      : "ANTALYA AIRPORT (AYT)";
+  const destLabel =
+    routeEnds.to === data.regionName
+      ? routeEnds.to.toUpperCase()
+      : "ANTALYA AIRPORT (AYT)";
+
   doc.setTextColor(...midGray);
   doc.setFontSize(8);
   doc.setFont("Inter", "normal");
-  doc.text("ANTALYA AIRPORT (AYT)", margin + 6, y + 7);
+  doc.text(originLabel, margin + 6, y + 7);
 
   // Arrow
   doc.setFillColor(...blue);
@@ -322,7 +335,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setFontSize(10);
   doc.setFont("Inter", "bold");
   const destMaxW = contentW / 2 - 16;
-  const destLines = doc.splitTextToSize(data.regionName.toUpperCase(), destMaxW);
+  const destLines = doc.splitTextToSize(destLabel, destMaxW);
   doc.text(destLines, rightEdge - 6, y + (destLines.length > 1 ? 6 : 8), { align: "right" });
 
   // Trip type below route

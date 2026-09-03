@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { DIRECTIONS } from "@/lib/transfer-route";
 
 export async function POST(request: NextRequest) {
   const { error: authError } = await requireAdmin();
@@ -14,9 +15,14 @@ export async function POST(request: NextRequest) {
     }
 
     const allowed: Record<string, any> = {};
-    const fields = ["hotel_name", "hotel_address", "flight_code", "pickup_datetime", "return_datetime", "notes", "status"];
+    const fields = ["hotel_name", "hotel_address", "flight_code", "pickup_datetime", "return_datetime", "notes", "status", "direction"];
     for (const f of fields) {
       if (body[f] !== undefined) allowed[f] = body[f];
+    }
+
+    // A value outside the CHECK constraint would surface as an opaque 500.
+    if (allowed.direction !== undefined && !DIRECTIONS.includes(allowed.direction)) {
+      return NextResponse.json({ error: "Invalid direction" }, { status: 400 });
     }
 
     if (Object.keys(allowed).length === 0) {

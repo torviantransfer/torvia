@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CalendarCheck, Clock, CheckCircle, XCircle, ArrowRight, MapPin } from "lucide-react";
+import { legRoute } from "@/lib/transfer-route";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "Overview", tr: "Genel Bakış", de: "Übersicht", pl: "Przegląd", ru: "Обзор" },
@@ -38,12 +39,12 @@ export default async function AccountDashboard({
   let activeCount = 0;
   let completedCount = 0;
   let cancelledCount = 0;
-  let upcoming: Array<{ reservation_code: string; pickup_datetime: string; status: string; regions: { name_en: string; name_tr: string } | null }> = [];
+  let upcoming: Array<{ reservation_code: string; pickup_datetime: string; status: string; direction: string | null; regions: { name_en: string; name_tr: string } | null }> = [];
 
   if (customer) {
     const { data: reservations } = await admin
       .from("reservations")
-      .select("reservation_code, pickup_datetime, status, regions(name_en, name_tr)")
+      .select("reservation_code, pickup_datetime, status, direction, regions(name_en, name_tr)")
       .eq("customer_id", customer.id)
       .order("pickup_datetime", { ascending: false });
 
@@ -111,7 +112,7 @@ export default async function AccountDashboard({
                     <MapPin size={16} className="text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Antalya Airport → {regionName(r.regions)}</p>
+                    <p className="text-sm font-medium text-gray-900">{legRoute(r.direction, "outbound", regionName(r.regions))}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{new Date(r.pickup_datetime).toLocaleDateString("tr-TR")} — {new Date(r.pickup_datetime).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
                 </div>

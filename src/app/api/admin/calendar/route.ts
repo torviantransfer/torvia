@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { legRoute } from "@/lib/transfer-route";
 
 const ACTIVE_STATUSES = ["pending", "paid", "driver_assigned", "passenger_picked_up", "completed", "cancel_requested"];
 
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  const SELECT = "id, reservation_code, status, pickup_datetime, return_datetime, trip_type, total_price, hotel_name, adults, children, customers(first_name, last_name, phone), regions(name_en), vehicle_categories(name), driver_assignments(drivers(full_name))";
+  const SELECT = "id, reservation_code, status, direction, pickup_datetime, return_datetime, trip_type, total_price, hotel_name, adults, children, customers(first_name, last_name, phone), regions(name_en), vehicle_categories(name), driver_assignments(drivers(full_name))";
 
   // Fetch outbound reservations in this month
   const { data: outboundData } = await admin
@@ -48,9 +49,7 @@ export async function GET(req: NextRequest) {
 
     const pickupDatetime = leg === "return" ? String(r.return_datetime) : String(r.pickup_datetime);
     const regionName = region?.name_en ?? "";
-    const route = leg === "return"
-      ? `${regionName} → Antalya Havalimanı`
-      : `Antalya Havalimanı → ${regionName}`;
+    const route = legRoute(r.direction, leg, regionName);
 
     return {
       id: `${r.id as string}-${leg}`,

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { statusMeta, type Reservation } from "./types";
+import { regionName, statusMeta, type Reservation } from "./types";
+import {
+  DIRECTIONS,
+  legRoute,
+  normalizeDirection,
+  type Direction,
+} from "@/lib/transfer-route";
 
 // Statuses an operator may set by hand. `cancel_requested` is deliberately absent:
 // it is customer-initiated and is resolved through the approve/reject buttons.
@@ -15,17 +21,22 @@ const EDITABLE_STATUSES = [
   "cancelled",
 ];
 
-/** ISO timestamp → the `YYYY-MM-DDTHH:mm` a datetime-local input expects, in local time. */
-function toLocalInput(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+/**
+ * Read and write the stored wall-clock time verbatim rather than routing it
+ * through the browser's timezone. The booking API writes a naive
+ * `YYYY-MM-DDTHH:mm:ss`, which Postgres resolves in the database's timezone; a
+ * Date round-trip here would re-anchor that to the operator's offset and shift
+ * every edited reservation by hours — including edits that changed nothing else.
+ */
+function toDatetimeInput(stored: string | null | undefined): string {
+  if (!stored) return "";
+  const match = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(stored);
+  return match ? `${match[1]}T${match[2]}` : "";
 }
 
-const fromLocalInput = (value: string) =>
-  value ? new Date(value).toISOString() : null;
+/** Back to the exact shape the booking flow writes. */
+const fromDatetimeInput = (value: string) =>
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value) ? `${value}:00` : null;
 
 interface Props {
   reservation: Reservation;
@@ -42,13 +53,14 @@ export default function EditReservationModal({
 }: Props) {
   // Prefilled from the current record, so the operator edits what is actually stored.
   const [form, setForm] = useState({
-    pickup_datetime: toLocalInput(r.pickup_datetime),
-    return_datetime: toLocalInput(r.return_datetime),
+    pickup_datetime: toDatetimeInput(r.pickup_datetime),
+    return_datetime: toDatetimeInput(r.return_datetime),
     flight_code: r.flight_code ?? "",
     hotel_name: r.hotel_name ?? "",
     hotel_address: r.hotel_address ?? "",
     notes: r.notes ?? "",
     status: r.status,
+    direction: normalizeDirection(r.direction) as string,
   });
   const [saving, setSaving] = useState(false);
 
@@ -65,11 +77,12 @@ export default function EditReservationModal({
       hotel_address: form.hotel_address.trim() || null,
       notes: form.notes.trim() || null,
       status: form.status,
+      direction: form.direction,
     };
-    const pickup = fromLocalInput(form.pickup_datetime);
+    const pickup = fromDatetimeInput(form.pickup_datetime);
     if (pickup) body.pickup_datetime = pickup;
     if (r.trip_type === "round_trip") {
-      body.return_datetime = fromLocalInput(form.return_datetime);
+      body.return_datetime = fromDatetimeInput(form.return_datetime);
     }
 
     setSaving(true);
@@ -159,6 +172,42 @@ export default function EditReservationModal({
                 ))}
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className={label}>Transfer yönü</label>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {DIRECTIONS.map((d) => {
+                const active = form.direction === d;
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => set("direction", d)}
+                    className={`rounded-lg border px-3 py-2.5 text-left transition ${
+                      active
+                        ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
+                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="block text-sm font-semibold text-slate-900">
+                      {legRoute(d, "outbound", regionName(r))}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-slate-500">
+                      {d === "airport_to_region"
+                        ? "Uçuşla gelen misafir — havalimanında karşılama"
+                        : "Otelden alıp havalimanına bırakma"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {r.trip_type === "round_trip" && (
+              <p className="mt-1.5 text-[11px] text-slate-500">
+                Dönüş bacağı ters yönde çalışır:{" "}
+                {legRoute(form.direction as Direction, "return", regionName(r))}
+              </p>
+            )}
           </div>
 
           <div>

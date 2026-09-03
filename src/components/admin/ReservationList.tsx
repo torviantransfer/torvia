@@ -46,6 +46,8 @@ import {
   money,
   offsetDayKey,
   regionName,
+  routeFor,
+  shortRouteFor,
   statusMeta,
   todayKey,
 } from "./reservations/types";
@@ -453,8 +455,11 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
 
                           <p className="truncate text-[15px] font-semibold text-slate-900">
                             {customerName(r)}
-                            <span className="mx-2 font-normal text-slate-300">→</span>
-                            {regionName(r)}
+                          </p>
+                          <p className="mt-0.5 truncate text-[13px] font-medium text-slate-500">
+                            {shortRouteFor(r).from}
+                            <span className="mx-1.5 text-slate-300">→</span>
+                            {shortRouteFor(r).to}
                           </p>
 
                           <div className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-slate-500">
@@ -599,18 +604,19 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                           {/* Transfer */}
                           <section>
                             <SectionTitle icon={<MapPin size={13} />}>Transfer</SectionTitle>
-                            <p className="font-semibold text-slate-900">
-                              Havalimanı → {regionName(r)}
-                            </p>
+                            <p className="font-semibold text-slate-900">{routeFor(r)}</p>
                             <dl className="mt-2 space-y-1.5 text-slate-600">
                               <Row label="Gidiş" value={fmtDateTime(r.pickup_datetime)} />
                               {r.trip_type === "round_trip" && (
-                                <Row
-                                  label="Dönüş"
-                                  value={
-                                    r.return_datetime ? fmtDateTime(r.return_datetime) : "—"
-                                  }
-                                />
+                                <>
+                                  <Row label="Dönüş rotası" value={routeFor(r, "return")} />
+                                  <Row
+                                    label="Dönüş"
+                                    value={
+                                      r.return_datetime ? fmtDateTime(r.return_datetime) : "—"
+                                    }
+                                  />
+                                </>
                               )}
                               <Row label="Uçuş" value={r.flight_code || "—"} />
                               <Row label="Araç sınıfı" value={r.vehicle_categories?.name || "—"} />

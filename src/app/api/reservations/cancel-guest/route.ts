@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCancelRequest } from "@/lib/telegram";
+import { legRoute } from "@/lib/transfer-route";
 
 const CANCELLABLE = ["pending", "paid", "driver_assigned"];
 
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
   // Fetch reservation and verify ownership
   const { data: reservation } = await admin
     .from("reservations")
-    .select("id, reservation_code, status, customer_id, pickup_datetime, regions(name_en)")
+    .select("id, reservation_code, status, customer_id, direction, pickup_datetime, regions(name_en)")
     .eq("reservation_code", reservation_code)
     .eq("customer_id", customer.id)
     .single();
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
   notifyCancelRequest({
     code: reservation.reservation_code,
     customer: `${customer.first_name} ${customer.last_name}`,
-    route: `Antalya Airport → ${regionName}`,
+    route: legRoute(reservation.direction, "outbound", regionName),
     pickup: new Date(reservation.pickup_datetime).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
     previousStatus: reservation.status,
     reason: reason || undefined,

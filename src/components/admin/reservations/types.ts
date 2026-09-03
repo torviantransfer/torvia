@@ -1,3 +1,5 @@
+import { legEndpoints, legRoute } from "@/lib/transfer-route";
+
 export interface DriverAssignment {
   id: string;
   status: string;
@@ -34,6 +36,8 @@ export interface Reservation {
   notes: string | null;
   created_at: string;
   locale?: string | null;
+  /** Outbound leg direction; the return leg runs the opposite way (migration 060). */
+  direction?: string | null;
   // Present once the cash-payment migration has been applied.
   payment_method?: string | null;
   deposit_amount?: number | null;
@@ -243,3 +247,14 @@ export const customerName = (r: Reservation) =>
 
 export const regionName = (r: Reservation) =>
   r.regions?.name_tr || r.regions?.name_en || "—";
+
+/** "Antalya Havalimanı → Kargıcak" for one leg of this reservation. */
+export const routeFor = (r: Reservation, leg: Leg = "outbound") =>
+  legRoute(r.direction, leg, regionName(r));
+
+/** Short form for the collapsed card: "Havalimanı → Kargıcak". */
+export const shortRouteFor = (r: Reservation, leg: Leg = "outbound") => {
+  const { from, to } = legEndpoints(r.direction, leg, regionName(r));
+  const short = (s: string) => (s.startsWith("Antalya Havalimanı") ? "Havalimanı" : s);
+  return { from: short(from), to: short(to) };
+};

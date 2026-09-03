@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
         `id, leg, pickup_time, status,
          drivers(full_name, phone),
          vehicles(plate_number, brand, model),
-         reservations(reservation_code, pickup_datetime, return_datetime, locale, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_nl), customers(first_name, last_name, email))`
+         reservations(reservation_code, direction, pickup_datetime, return_datetime, locale, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_nl), customers(first_name, last_name, email))`
       )
       .eq("id", assignmentId)
       .single();
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       vehicleInfo: vehicle ? `${vehicle.brand} ${vehicle.model} — ${vehicle.plate_number}` : "—",
       pickupTime: assignment.pickup_time || undefined,
       regionName: (region as any)?.[`name_${locale}`] ?? region?.name_en ?? "",
+      direction: reservation.direction,
       pickupDatetime: reservation.pickup_datetime,
       returnDatetime: reservation.return_datetime,
       locale,

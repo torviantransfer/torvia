@@ -21,6 +21,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import QRCodeCanvas from "@/components/QRCodeCanvas";
+import { legRoute } from "@/lib/transfer-route";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "My Reservations", tr: "Rezervasyonlarım", de: "Meine Buchungen", pl: "Moje rezerwacje", ru: "Мои бронирования" },
@@ -74,6 +75,7 @@ interface Reservation {
   id: string;
   reservation_code: string;
   trip_type: string;
+  direction?: string | null;
   pickup_datetime: string;
   return_datetime: string | null;
   status: string;
@@ -235,7 +237,7 @@ export default function ReservationsList({
                   {/* Route */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      Antalya Airport → {regionName(r.regions)}
+                      {legRoute(r.direction, "outbound", regionName(r.regions), locale)}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       {formatDate(r.pickup_datetime)} · {formatTime(r.pickup_datetime)}

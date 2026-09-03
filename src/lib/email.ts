@@ -1,6 +1,7 @@
 ﻿import { Resend } from "resend";
 import { getConfig } from "@/lib/config";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
+import { legEndpoints } from "@/lib/transfer-route";
 
 let _resend: Resend | null = null;
 let _resendKey: string = "";
@@ -40,6 +41,8 @@ export interface ReservationEmailData {
   totalEur: number;
   qrCodeToken?: string;
   locale: string;
+  /** Outbound leg direction (migration 060); the return leg runs the reverse. */
+  direction?: string | null;
   paymentMethod?: "online" | "cash";
   depositAmountEur?: number;
   driverAmountEur?: number;
@@ -377,6 +380,8 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   const isCash = data.paymentMethod === "cash";
   const hasDeposit = isCash && data.depositAmountEur != null && data.driverAmountEur != null;
   const tripLabel = data.tripType === "round_trip" ? t(loc, "roundTrip") : t(loc, "oneWay");
+  const outbound = legEndpoints(data.direction, "outbound", data.regionName, loc);
+  const voucherRoute = `${outbound.from} &rarr; ${outbound.to}`;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
   const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
@@ -400,7 +405,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   }
 
   const detailRows: string[] = [
-    detailRow("&#9992;&#65039;", t(loc, "route"), `Antalya Airport &rarr; ${data.regionName}`, true),
+    detailRow("&#9992;&#65039;", t(loc, "route"), voucherRoute, true),
     detailRow("&#8596;", t(loc, "type"), tripLabel),
     detailRow("&#128197;", t(loc, "pickup"), `${data.pickupDate} &nbsp;|&nbsp; ${data.pickupTime}`, true),
     ...(data.returnDate ? [detailRow("&#8634;", t(loc, "returnLabel"), `${data.returnDate} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
@@ -600,6 +605,7 @@ interface DriverAssignmentEmailData {
   vehicleInfo: string;
   pickupTime?: string;
   regionName: string;
+  direction?: string | null;
   pickupDatetime: string;
   returnDatetime?: string | null;
   locale: string;
@@ -623,9 +629,13 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   const dateStr = datetime.toLocaleDateString(regionalDateLocale, { day: "2-digit", month: "long", year: "numeric" });
   const timeStr = datetime.toLocaleTimeString(regionalDateLocale, { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 
-  const direction = isReturn
-    ? `${data.regionName} &rarr; ${t(locale, "airport")}`
-    : `${t(locale, "airport")} &rarr; ${data.regionName}`;
+  const legPoints = legEndpoints(
+    data.direction,
+    isReturn ? "return" : "outbound",
+    data.regionName,
+    locale
+  );
+  const direction = `${legPoints.from} &rarr; ${legPoints.to}`;
 
   const pickupTimeRow = data.pickupTime
     ? `<tr>

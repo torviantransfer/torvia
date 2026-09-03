@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
           pickupDate: resData.pickup_datetime ? new Date(resData.pickup_datetime).toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" }) : "",
           pickupTime: resData.pickup_datetime ? new Date(resData.pickup_datetime).toLocaleTimeString("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" }) : "",
           tripType: resData.trip_type,
+          direction: resData.direction,
           returnDate: resData.return_datetime ? new Date(resData.return_datetime).toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" }) : undefined,
           returnTime: resData.return_datetime ? new Date(resData.return_datetime).toLocaleTimeString("en-GB", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" }) : undefined,
           adults: resData.adults ?? 1,

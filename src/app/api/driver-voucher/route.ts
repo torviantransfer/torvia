@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyAdmin } from "@/lib/admin-auth";
+import { legEndpoints } from "@/lib/transfer-route";
 
 function esc(str: string | null | undefined): string {
   if (!str) return "";
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
        drivers(full_name, phone),
        vehicles(plate_number, brand, model),
        reservations(
-         reservation_code, trip_type, pickup_datetime, return_datetime,
+         reservation_code, trip_type, direction, pickup_datetime, return_datetime,
          flight_code, adults, children, luggage_count, child_seat,
          hotel_name, hotel_address, notes,
          status,
@@ -65,7 +66,16 @@ export async function GET(request: NextRequest) {
   const driver = assignment.drivers as Record<string, string> | null;
   const vehicle = assignment.vehicles as Record<string, string> | null;
 
-  const pickupDate = new Date(res.pickup_datetime as string);
+  // The sheet must describe THIS assignment's leg. A return-leg driver used to
+  // be handed the outbound date, time and route — i.e. the wrong day and the
+  // wrong direction of travel.
+  const leg = assignment.leg === "return" ? "return" : "outbound";
+  const legDatetime =
+    leg === "return" && res.return_datetime
+      ? (res.return_datetime as string)
+      : (res.pickup_datetime as string);
+
+  const pickupDate = new Date(legDatetime);
   const pickupDateStr = pickupDate.toLocaleDateString("tr-TR", {
     weekday: "long",
     day: "numeric",
@@ -78,7 +88,7 @@ export async function GET(request: NextRequest) {
   });
 
   let returnInfo = "";
-  if (res.trip_type === "round_trip" && res.return_datetime) {
+  if (leg === "outbound" && res.trip_type === "round_trip" && res.return_datetime) {
     const retDate = new Date(res.return_datetime as string);
     returnInfo = `
       <div class="detail-row">
@@ -89,6 +99,15 @@ export async function GET(request: NextRequest) {
         </div>
       </div>`;
   }
+
+  const regionLabel =
+    (region?.name_tr as string) || (region?.name_en as string) || "—";
+  const { from: legFrom, to: legTo } = legEndpoints(
+    res.direction,
+    leg,
+    regionLabel,
+    "tr"
+  );
 
   const extras: string[] = [];
   if (res.child_seat) extras.push("🪑 Çocuk Koltuğu");
@@ -372,12 +391,12 @@ export async function GET(request: NextRequest) {
 
     <div class="code-bar">
       <span class="code">${esc(String(res.reservation_code))}</span>
-      <span class="trip-type">${res.trip_type === "round_trip" ? "Gidiş-Dönüş" : "Tek Yön"}</span>
+      <span class="trip-type">${res.trip_type === "round_trip" ? (leg === "return" ? "Gidiş-Dönüş • DÖNÜŞ" : "Gidiş-Dönüş • GİDİŞ") : "Tek Yön"}</span>
     </div>
 
     <div class="route-banner">
       <div class="from-to">
-        ANTALYA HAVALİMANI (AYT) <span class="arrow">→</span> ${esc(region?.name_tr as string || region?.name_en as string || "—")}
+        ${esc(legFrom)} <span class="arrow">→</span> ${esc(legTo)}
       </div>
       ${region?.distance_km ? `<div class="distance">~${region.distance_km} km • ${region.duration_minutes} dk</div>` : ""}
     </div>

@@ -65,6 +65,7 @@ export function buildVoucherData(res: Row, locale: string): ReservationEmailData
     totalEur: toEur(res.total_price),
     qrCodeToken: (res.qr_code_token as string) ?? undefined,
     locale,
+    direction: (res.direction as string) ?? null,
     paymentMethod,
     // Only meaningful for cash bookings — the HTML/PDF builders gate on both.
     ...(paymentMethod === "cash" && depositAmount > 0
