@@ -200,7 +200,7 @@ export default async function BookingPage({
               on the boundary with nothing showing a hard edge. Desktop keeps
               the original full-bleed image and its single wash. */}
           <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
-            <div className="absolute inset-x-0 top-0 h-[430px] lg:h-full overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[280px] lg:h-full overflow-hidden">
               <Image
                 src="/images/havaalani-vip-transfer.jpg"
                 alt={heroAlt[locale] ?? heroAlt.en}
@@ -214,9 +214,9 @@ export default async function BookingPage({
                 // that lands directly on Core Web Vitals.
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
               <div
-                className="absolute inset-x-0 bottom-0 h-48 lg:hidden"
+                className="absolute inset-x-0 bottom-0 h-28 lg:hidden"
                 style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 55%, #FFFFFF 100%)" }}
               />
             </div>
@@ -224,7 +224,7 @@ export default async function BookingPage({
                 headline and keyword chips without reordering the DOM — the h1
                 stays first in the markup for search engines and screen
                 readers, only the visual order changes. */}
-            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-3 sm:px-4 pt-40 lg:pt-20 pb-10">
+            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-3 sm:px-4 pt-[88px] lg:pt-20 pb-10">
               {/* Below the card on phones, so it reads on the white side of
                   the dissolve rather than on the photograph — hence the dark
                   variants, which `lg:` puts straight back to white. */}

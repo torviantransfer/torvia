@@ -26,23 +26,39 @@ export default function HeroSection() {
           so the booking card lands on the boundary with white underneath it
           and nothing has a hard edge. Desktop keeps the original full-height
           image and its single wash. */}
-      <div className="absolute inset-x-0 top-0 h-[430px] lg:h-full overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[280px] lg:h-full overflow-hidden">
+        {/* Two pictures, because the two shapes want different photographs.
+            5312.jpg is a 2.37:1 panorama: lovely across a wide desktop hero,
+            but `cover` throws away 62% of its width in a phone-shaped band and
+            what survives is empty sky. The phone gets the airport picture
+            instead — 1.63:1, and the subject is the vehicle the form books.
+            The desktop copy is not `priority` and is lazy, so a phone does not
+            pay to download a photo it never shows. */}
         <Image
-          src="/images/5312.jpg"
-          alt="Antalya airport VIP transfer service - luxury vehicle on highway"
+          src="/images/havaalani-vip-transfer.jpg"
+          alt="Antalya Havalimanı VIP transfer - siyah Mercedes Vito"
           fill
-          className="object-cover object-center"
+          className="object-cover object-center lg:hidden"
           sizes="100vw"
           priority
+          quality={78}
+        />
+        <Image
+          src="/images/5312.jpg"
+          alt=""
+          fill
+          className="hidden lg:block object-cover object-center"
+          sizes="100vw"
+          loading="lazy"
           quality={80}
         />
-        {/* Legibility wash for the white headline. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 lg:from-black/50 lg:via-black/30 lg:to-black/70" />
+        {/* Legibility wash. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/30 lg:to-black/70" />
         {/* The dissolve. Tall enough that the gradient reads as light falling
             off rather than as a band of its own. */}
         <div
-          className="absolute inset-x-0 bottom-0 h-48 lg:hidden"
-          style={{ backgroundImage: `linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.65) 55%, ${PAGE} 100%)` }}
+          className="absolute inset-x-0 bottom-0 h-28 lg:hidden"
+          style={{ backgroundImage: `linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.6) 55%, ${PAGE} 100%)` }}
         />
       </div>
 
@@ -72,7 +88,7 @@ export default function HeroSection() {
           DOM order and paints over this one — which put the location list and
           the calendar underneath the promo text, where they could not be
           clicked. */}
-      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-[240px] lg:pt-0">
+      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-[150px] lg:pt-0">
         <BookingFormMini />
       </div>
 

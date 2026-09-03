@@ -190,6 +190,14 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     setOpen("cal");
   };
 
+  /** The phone's "Saat" fields, which open the time sheet on its own. The
+   *  desktop bar never calls this: it has one date button that sets both. */
+  const openTime = (target: "dep" | "ret") => {
+    if (target === "ret" && !depDate) return;
+    setCalFor(target);
+    setOpen("time");
+  };
+
   const pickDay = (d: Date) => {
     const now = new Date(); now.setHours(0, 0, 0, 0);
     if (d < now) return;
@@ -283,7 +291,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
    * from `lg` up the calendar is an inline popover, not a sheet.
    */
   useEffect(() => {
-    if (open !== "cal") return;
+    if (open !== "cal" && open !== "time") return;
     if (typeof window === "undefined" || window.matchMedia("(min-width: 1024px)").matches) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -292,15 +300,23 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     };
   }, [open]);
 
-  /* --- Calendar contents, rendered into two different shells --- */
-  const calendarBody = (
+  /* --- Calendar contents ---
+   *
+   * Split into a grid and a time section, because the phone and the pointer
+   * layouts want different combinations of them.
+   *
+   * On a phone the form has its own date field and its own time field, so
+   * tapping "Gidiş Tarihi" opens the month grid alone and tapping "Saat"
+   * opens the time picker alone — a sheet that answers exactly the field that
+   * was pressed. The desktop bar has no separate time field: its single date
+   * button has to set both, so its popover keeps the grid and the stepper
+   * together the way it always has. */
+  const calendarGrid = (
     <>
-      {/* Mobile drag handle */}
-      <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
       <div className="bg-[#0e8a61] lg:bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
-        <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
+        <button type="button" aria-label="−1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
         <span className="font-semibold text-sm capitalize">{mName} {calMonth.getFullYear()}</span>
-        <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
+        <button type="button" aria-label="+1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
       </div>
       <div className="grid grid-cols-7 text-center text-[10px] font-bold text-[#0e8a61] lg:text-blue-600 border-b border-gray-100 py-1.5 px-2">
         {wk.map((d) => <span key={d}>{d}</span>)}
@@ -326,68 +342,74 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           );
         })}
       </div>
-      {/* Time.
-          Phones get the platform's own time picker — the wheel on iOS, the
-          dial on Android — because the stepper below needs about fifteen taps
-          on 11px arrows to get from the default 12:00 to something like 03:30.
-          Pointer devices keep the stepper, where those arrows are fine. */}
-      <div className="border-t border-gray-100 px-4 py-3">
-        <label className="lg:hidden block">
-          <span className="block text-[10px] font-bold text-[#0e8a61] uppercase tracking-wider mb-1.5">{t("hour")}</span>
-          <input
-            type="time"
-            step={300}
-            value={timeValue}
-            onChange={(e) => setTimeFromInput(e.target.value)}
-            className="w-full border border-[#E5E7EB] rounded-xl px-3 py-3 text-base font-bold text-[#111827] focus:ring-2 focus:ring-[#0e8a61] outline-none"
-          />
-        </label>
-
-        <div className="hidden lg:flex items-center justify-center gap-5">
-          <div className="text-center">
-            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
-            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
-              <div className="flex flex-col">
-                <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
-              </div>
-            </div>
-          </div>
-          <span className="text-base font-bold text-gray-300 mt-4">:</span>
-          <div className="text-center">
-            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
-            <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-              <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
-              <div className="flex flex-col">
-                <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
-                <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Closing the sheet used to mean tapping the dimmed area behind it,
-          which is not obvious. The padding clears the iPhone home indicator. */}
-      <div
-        className="lg:hidden px-4 pt-1"
-        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen(null)}
-          className="w-full h-[52px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
-        >
-          {t("dateConfirm")}
-        </button>
-      </div>
     </>
   );
 
-  /* --- Calendar popup ---
-     Two shells around the same contents, because they need to live in
-     different places in the tree.
+  /* Phones get the platform's own time picker — the wheel on iOS, the dial on
+     Android — because the stepper beside it needs about fifteen taps on 11px
+     arrows to get from the default 12:00 to something like 03:30. Pointer
+     devices keep the stepper, where those arrows are fine. */
+  const timeInput = (
+    <label className="block">
+      <span className="block text-[10px] font-bold text-[#0e8a61] uppercase tracking-wider mb-1.5">{t("hour")}</span>
+      <input
+        type="time"
+        step={300}
+        value={timeValue}
+        onChange={(e) => setTimeFromInput(e.target.value)}
+        className="w-full border border-[#E5E7EB] rounded-xl px-3 py-3 text-base font-bold text-[#111827] focus:ring-2 focus:ring-[#0e8a61] outline-none"
+      />
+    </label>
+  );
+
+  const timeStepper = (
+    <div className="hidden lg:flex items-center justify-center gap-5">
+      <div className="text-center">
+        <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("hour")}</span>
+        <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+          <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeH).padStart(2, "0")}</span>
+          <div className="flex flex-col">
+            <button type="button" aria-label={`${t("hour")} +`} onClick={() => calFor === "dep" ? setDepH((h) => (h + 1) % 24) : setRetH((h) => (h + 1) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+            <button type="button" aria-label={`${t("hour")} −`} onClick={() => calFor === "dep" ? setDepH((h) => (h - 1 + 24) % 24) : setRetH((h) => (h - 1 + 24) % 24)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+          </div>
+        </div>
+      </div>
+      <span className="text-base font-bold text-gray-300 mt-4">:</span>
+      <div className="text-center">
+        <span className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">{t("minute")}</span>
+        <div className="mt-1 border border-gray-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5">
+          <span className="text-base font-bold text-gray-900 w-6 text-center">{String(activeM).padStart(2, "0")}</span>
+          <div className="flex flex-col">
+            <button type="button" aria-label={`${t("minute")} +`} onClick={() => calFor === "dep" ? setDepM((m) => (m + 5) % 60) : setRetM((m) => (m + 5) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronUp size={12} /></button>
+            <button type="button" aria-label={`${t("minute")} −`} onClick={() => calFor === "dep" ? setDepM((m) => (m - 5 + 60) % 60) : setRetM((m) => (m - 5 + 60) % 60)} className="text-gray-500 hover:text-gray-600 p-0.5"><ChevronDown size={12} /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* Sheet furniture. Closing used to mean tapping the dimmed area behind the
+     sheet, which is not obvious; the padding clears the iPhone home
+     indicator. */
+  const sheetHandle = (
+    <div className="flex justify-center pt-2 pb-1"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
+  );
+
+  const sheetConfirm = (
+    <div className="px-4 pt-2" style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(null)}
+        className="w-full h-[52px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+      >
+        {t("dateConfirm")}
+      </button>
+    </div>
+  );
+
+  /* --- Date popup ---
+     Two shells around the same grid, because they need to live in different
+     places in the tree.
 
      Desktop is a popover anchored under the field, so it has to stay where it
      is, inside the field's relatively-positioned parent.
@@ -406,7 +428,8 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
   const renderCalendar = () => (
     <>
       <div className="hidden lg:block absolute top-full mt-1 left-1/2 -translate-x-1/2 w-[310px] rounded-xl bg-white shadow-2xl border border-gray-200 overflow-hidden z-50">
-        {calendarBody}
+        {calendarGrid}
+        <div className="border-t border-gray-100 px-4 py-3">{timeStepper}</div>
       </div>
 
       {/* Safe to touch document at render time: this whole function only runs
@@ -416,13 +439,38 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <div className="lg:hidden">
           <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
           <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
-            {calendarBody}
+            {sheetHandle}
+            {calendarGrid}
+            {sheetConfirm}
           </div>
         </div>,
         document.body,
       )}
     </>
   );
+
+  /* --- Time popup (phones only) ---
+     The counterpart to the date sheet: the form's own "Saat" field opens this
+     and nothing else, so the sheet answers the field that was pressed. There
+     is no desktop shell because the desktop bar has no separate time field —
+     its date popover carries the stepper instead. */
+  const renderTimeSheet = () =>
+    createPortal(
+      <div className="lg:hidden">
+        <div className="fixed inset-0 z-[60] bg-black/30" onClick={() => setOpen(null)} />
+        <div data-cal-sheet className="fixed inset-x-0 bottom-0 z-[70] rounded-t-2xl bg-white shadow-2xl border border-gray-200 overflow-hidden">
+          {sheetHandle}
+          <div className="bg-[#0e8a61] text-white px-4 py-2.5 text-center">
+            <span className="font-semibold text-sm">
+              {calFor === "dep" ? t("departureTime") : t("returnTime")}
+            </span>
+          </div>
+          <div className="px-4 py-4">{timeInput}</div>
+          {sheetConfirm}
+        </div>
+      </div>,
+      document.body,
+    );
 
   /* --- Passenger popup ---
    * Spans the full width of its row on phones. It used to be a fixed 220px
@@ -640,22 +688,26 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
           </div>
-          <button
-            type="button"
-            onClick={() => { setDateError(false); openCal("dep"); }}
-            aria-haspopup="dialog"
-            aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
-            className={`flex min-h-[52px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
-          >
-            <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
-              <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
-                {depFmt ? depFmt.time : t("selectTimeShort")}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => openTime("dep")}
+              aria-haspopup="dialog"
+              aria-expanded={open === "time" && calFor === "dep"}
+              aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
+              className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+            >
+              <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {depFmt ? depFmt.time : t("selectTimeShort")}
+                </span>
               </span>
-            </span>
-            <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
-          </button>
+              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+            </button>
+            {open === "time" && calFor === "dep" && renderTimeSheet()}
+          </div>
         </div>
 
         {/* Return — a switch row rather than a dashed "add" button, which read
@@ -713,22 +765,26 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               </button>
               {open === "cal" && calFor === "ret" && renderCalendar()}
             </div>
-            <button
-              type="button"
-              onClick={() => openCal("ret")}
-              aria-haspopup="dialog"
-              aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
-              className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
-            >
-              <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
-                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
-                  {retFmt ? retFmt.time : t("selectTimeShort")}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => openTime("ret")}
+                aria-haspopup="dialog"
+                aria-expanded={open === "time" && calFor === "ret"}
+                aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+              >
+                <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                    {retFmt ? retFmt.time : t("selectTimeShort")}
+                  </span>
                 </span>
-              </span>
-              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
-            </button>
+                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+              </button>
+              {open === "time" && calFor === "ret" && renderTimeSheet()}
+            </div>
           </div>
         )}
 
