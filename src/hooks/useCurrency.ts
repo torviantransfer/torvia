@@ -8,6 +8,9 @@ import {
   currencySymbols,
   localeCurrencies,
 } from "@/i18n/config";
+// The conversion direction and the rounding rule live in lib/currency so the
+// voucher, the PDF and the emails apply exactly what the site shows.
+import { convertFromUSD, displayAmount } from "@/lib/currency";
 
 /**
  * Every Stripe PaymentIntent is created in USD (see /api/reservations), so
@@ -16,36 +19,6 @@ import {
  * card statement won't match what the customer agreed to.
  */
 export const BILLING_CURRENCY: Currency = "USD";
-
-/** Dot-groups a whole number, e.g. 3485 -> "3.485". */
-function groupThousands(value: number): string {
-  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-/**
- * Rounds to the nearest `step`, with an exact half going down: at step 1,
- * 25.50 -> 25 and 25.51 -> 26. Math.round would send 25.50 up instead.
- */
-function roundHalfDown(value: number, step = 1): number {
-  return Math.ceil(value / step - 0.5) * step;
-}
-
-/**
- * Prices are keyed in as whole dollars, so any figure with cents on screen is
- * an artefact of converting to another currency. Those get rounded away —
- * euro to the nearest whole unit, lira to the nearest five, since a lira
- * amount runs to four digits and the last one carries no meaning.
- *
- * Dollars are left exactly as they are: that is the currency Stripe charges,
- * so rounding it here would put a different number on screen than on the
- * customer's statement. A percentage coupon is the one thing that can put
- * cents on a dollar price, and then they are shown rather than hidden.
- */
-function displayAmount(value: number, currency: Currency): string {
-  if (currency === "TRY") return groupThousands(roundHalfDown(value, 5));
-  if (currency === "EUR") return String(roundHalfDown(value));
-  return Number.isInteger(value) ? String(value) : value.toFixed(2);
-}
 
 export function useCurrency() {
   const locale = useLocale() as Locale;
@@ -79,7 +52,7 @@ export function useCurrency() {
       const rate = exchangeRates[currency];
       // No rate yet — fall back to the dollar figure rather than a wrong one.
       if (!rate) return `${currencySymbols.USD}${displayAmount(usdAmount, "USD")}`;
-      return `${symbol}${displayAmount(usdAmount * rate, currency)}`;
+      return `${symbol}${displayAmount(convertFromUSD(usdAmount, rate), currency)}`;
     },
     [currency]
   );
@@ -98,7 +71,7 @@ export function useCurrency() {
           if (c === "USD") return `${symbol}${displayAmount(usdAmount, "USD")}`;
           const rate = exchangeRates[c];
           if (!rate) return "";
-          return `${symbol}${displayAmount(usdAmount * rate, c)}`;
+          return `${symbol}${displayAmount(convertFromUSD(usdAmount, rate), c)}`;
         })
         .filter(Boolean);
     },

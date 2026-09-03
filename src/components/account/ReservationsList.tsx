@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import QRCodeCanvas from "@/components/QRCodeCanvas";
 import { legRoute } from "@/lib/transfer-route";
+import { convertFromUSD, formatMoney } from "@/lib/currency";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "My Reservations", tr: "Rezervasyonlarım", de: "Meine Buchungen", pl: "Moje rezerwacje", ru: "Мои бронирования" },
@@ -160,8 +161,15 @@ export default function ReservationsList({
   const formatTime = (d: string) =>
     new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const eurPrice = (r: Reservation) =>
-    r.exchange_rate_eur ? (r.total_price / r.exchange_rate_eur).toFixed(2) : null;
+  /**
+   * The stored rate is EUR per ONE dollar, so converting multiplies. The
+   * fallback shows dollars — the amount actually charged — rather than
+   * printing the dollar figure behind a lira sign.
+   */
+  const priceLabel = (r: Reservation) =>
+    r.exchange_rate_eur
+      ? formatMoney(convertFromUSD(r.total_price, r.exchange_rate_eur), "EUR")
+      : formatMoney(r.total_price, "USD");
 
   return (
     <div className="space-y-6">
@@ -248,7 +256,7 @@ export default function ReservationsList({
                   <div className="hidden sm:flex flex-col items-end shrink-0">
                     <span className="text-xs font-mono text-blue-600">{r.reservation_code}</span>
                     <span className="text-xs text-gray-500">
-                      {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
+                      {priceLabel(r)}
                     </span>
                   </div>
 
@@ -267,7 +275,7 @@ export default function ReservationsList({
                     <div className="sm:hidden flex items-center justify-between">
                       <span className="text-xs font-mono text-blue-600">{r.reservation_code}</span>
                       <span className="text-sm font-bold text-gray-900">
-                        {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
+                        {priceLabel(r)}
                       </span>
                     </div>
 
@@ -329,7 +337,7 @@ export default function ReservationsList({
                         <FileText size={14} className="text-blue-600 shrink-0" />
                         <span className="text-gray-500">{t.total[locale] ?? t.total.en}:</span>
                         <span className="text-gray-900 font-semibold">
-                          {eurPrice(r) ? `€${eurPrice(r)}` : `₺${r.total_price.toLocaleString()}`}
+                          {priceLabel(r)}
                         </span>
                       </div>
                     </div>

@@ -2,6 +2,7 @@
 import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
+import { convertFromUSD } from "@/lib/currency";
 import { notifyNewPayment, notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiPurchase } from "@/lib/capi";
 
@@ -104,20 +105,23 @@ export async function POST(request: NextRequest) {
           resData.regions?.[`name_${locale}` as keyof typeof resData.regions] ??
           resData.regions?.name_en ??
           "";
+        // EUR per ONE dollar — convert by multiplying. Dividing inverted every
+        // figure in the confirmation email ($85 became €98.41).
         const eurRate = resData.exchange_rate_eur ?? 1;
-        const totalEur = eurRate > 0 ? resData.total_price / eurRate : resData.total_price;
-        const basePriceEur = eurRate > 0 ? resData.base_price / eurRate : resData.base_price;
-        const nightEur = eurRate > 0 ? resData.night_surcharge / eurRate : resData.night_surcharge;
-        const childSeatEur = eurRate > 0 ? resData.child_seat_fee / eurRate : resData.child_seat_fee;
-        const rtDiscountEur = eurRate > 0 ? resData.round_trip_discount / eurRate : resData.round_trip_discount;
-        const couponDiscountEur = eurRate > 0 ? resData.coupon_discount / eurRate : resData.coupon_discount;
+        const toEur = (usd: number | null | undefined) =>
+          convertFromUSD(Number(usd) || 0, eurRate);
 
-        const depositAmountEur = isDeposit && resData.deposit_amount
-          ? (eurRate > 0 ? resData.deposit_amount / eurRate : resData.deposit_amount)
-          : undefined;
-        const driverAmountEur = isDeposit && resData.driver_amount
-          ? (eurRate > 0 ? resData.driver_amount / eurRate : resData.driver_amount)
-          : undefined;
+        const totalEur = toEur(resData.total_price);
+        const basePriceEur = toEur(resData.base_price);
+        const nightEur = toEur(resData.night_surcharge);
+        const childSeatEur = toEur(resData.child_seat_fee);
+        const rtDiscountEur = toEur(resData.round_trip_discount);
+        const couponDiscountEur = toEur(resData.coupon_discount);
+
+        const depositAmountEur =
+          isDeposit && resData.deposit_amount ? toEur(resData.deposit_amount) : undefined;
+        const driverAmountEur =
+          isDeposit && resData.driver_amount ? toEur(resData.driver_amount) : undefined;
 
         sendReservationEmail({
           to: resData.customers.email,

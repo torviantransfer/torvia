@@ -2,6 +2,7 @@
 import { getConfig } from "@/lib/config";
 import { generatePDFVoucher } from "@/lib/pdf-voucher";
 import { legEndpoints } from "@/lib/transfer-route";
+import { formatEUR } from "@/lib/currency";
 
 let _resend: Resend | null = null;
 let _resendKey: string = "";
@@ -394,14 +395,14 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   if (data.childSeat) extras.push(t(loc, "childSeatLabel"));
 
   const priceRows: string[] = [];
-  priceRows.push(row(t(loc, "base"), `€${data.basePrice.toFixed(2)}`));
-  if (data.nightSurcharge > 0) priceRows.push(row(t(loc, "nightCharge"), `€${data.nightSurcharge.toFixed(2)}`));
-  if (data.childSeatFee > 0) priceRows.push(row(t(loc, "childSeatFee"), `€${data.childSeatFee.toFixed(2)}`));
-  if (data.roundTripDiscount > 0) priceRows.push(row(t(loc, "rtDiscount"), `−€${data.roundTripDiscount.toFixed(2)}`, "#22c55e"));
-  if (data.couponDiscount > 0) priceRows.push(row(t(loc, "couponDiscount"), `−€${data.couponDiscount.toFixed(2)}`, "#22c55e"));
+  priceRows.push(row(t(loc, "base"), formatEUR(data.basePrice)));
+  if (data.nightSurcharge > 0) priceRows.push(row(t(loc, "nightCharge"), formatEUR(data.nightSurcharge)));
+  if (data.childSeatFee > 0) priceRows.push(row(t(loc, "childSeatFee"), formatEUR(data.childSeatFee)));
+  if (data.roundTripDiscount > 0) priceRows.push(row(t(loc, "rtDiscount"), `−${formatEUR(data.roundTripDiscount)}`, "#22c55e"));
+  if (data.couponDiscount > 0) priceRows.push(row(t(loc, "couponDiscount"), `−${formatEUR(data.couponDiscount)}`, "#22c55e"));
   if (hasDeposit) {
-    priceRows.push(row(t(loc, "depositPaid") || "Deposit Paid", `€${data.depositAmountEur!.toFixed(2)}`, "#007AFF"));
-    priceRows.push(row(t(loc, "depositLine") || "Pay to driver", `€${data.driverAmountEur!.toFixed(2)}`, "#b45309"));
+    priceRows.push(row(t(loc, "depositPaid") || "Deposit Paid", formatEUR(data.depositAmountEur!), "#007AFF"));
+    priceRows.push(row(t(loc, "depositLine") || "Pay to driver", formatEUR(data.driverAmountEur!), "#b45309"));
   }
 
   const detailRows: string[] = [
@@ -486,7 +487,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
         </tr>
         <tr>
           <td style="padding:8px 20px 16px;font-size:15px;font-weight:700;color:#111827;">${isCash ? t(loc, "totalCash") : t(loc, "total")}</td>
-          <td style="padding:8px 20px 16px;text-align:right;font-size:24px;font-weight:900;color:${isCash ? "#b45309" : "#007AFF"};font-variant-numeric:tabular-nums;">&euro;${data.totalEur.toFixed(2)}</td>
+          <td style="padding:8px 20px 16px;text-align:right;font-size:24px;font-weight:900;color:${isCash ? "#b45309" : "#007AFF"};font-variant-numeric:tabular-nums;">${formatEUR(data.totalEur)}</td>
         </tr>
       </table>
 

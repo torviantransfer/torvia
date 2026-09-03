@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import type { ReservationEmailData } from "./email";
 import { legEndpoints } from "./transfer-route";
+import { formatEUR } from "./currency";
 
 // ─── i18n labels for PDF ───
 const labels: Record<string, Record<string, string>> = {
@@ -441,11 +442,11 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   y += 10;
 
   const priceLines: { label: string; value: string; isGreen?: boolean }[] = [];
-  priceLines.push({ label: t(loc, "base"), value: `€${data.basePrice.toFixed(2)}` });
-  if (data.nightSurcharge > 0) priceLines.push({ label: t(loc, "nightCharge"), value: `€${data.nightSurcharge.toFixed(2)}` });
-  if (data.childSeatFee > 0) priceLines.push({ label: t(loc, "childSeatFee"), value: `€${data.childSeatFee.toFixed(2)}` });
-  if (data.roundTripDiscount > 0) priceLines.push({ label: t(loc, "rtDiscount"), value: `-€${data.roundTripDiscount.toFixed(2)}`, isGreen: true });
-  if (data.couponDiscount > 0) priceLines.push({ label: t(loc, "couponDiscount"), value: `-€${data.couponDiscount.toFixed(2)}`, isGreen: true });
+  priceLines.push({ label: t(loc, "base"), value: formatEUR(data.basePrice) });
+  if (data.nightSurcharge > 0) priceLines.push({ label: t(loc, "nightCharge"), value: formatEUR(data.nightSurcharge) });
+  if (data.childSeatFee > 0) priceLines.push({ label: t(loc, "childSeatFee"), value: formatEUR(data.childSeatFee) });
+  if (data.roundTripDiscount > 0) priceLines.push({ label: t(loc, "rtDiscount"), value: `-${formatEUR(data.roundTripDiscount)}`, isGreen: true });
+  if (data.couponDiscount > 0) priceLines.push({ label: t(loc, "couponDiscount"), value: `-${formatEUR(data.couponDiscount)}`, isGreen: true });
 
   for (const line of priceLines) {
     doc.setTextColor(...midGray);
@@ -474,7 +475,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setTextColor(...blue);
   doc.setFontSize(18);
   doc.setFont("Inter", "bold");
-  doc.text(`€${data.totalEur.toFixed(2)}`, margin + priceColW - 10, y + 1, { align: "right" });
+  doc.text(formatEUR(data.totalEur), margin + priceColW - 10, y + 1, { align: "right" });
 
   const priceEndY = y + 4;
 

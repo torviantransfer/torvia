@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
+import { convertFromUSD, formatMoney } from "@/lib/currency";
 
 interface Reservation {
   id: string;
@@ -206,11 +207,9 @@ export default function TrackReservation() {
       `name_${locale}` as keyof typeof reservation.regions
     ] ?? reservation?.regions?.name_en;
 
+  // EUR per ONE dollar: convert by multiplying, then apply the display rule.
   const eurRate = reservation?.exchange_rate_eur ?? 1;
-  const totalEur =
-    eurRate > 0
-      ? (reservation?.total_price ?? 0) / eurRate
-      : reservation?.total_price ?? 0;
+  const totalEur = convertFromUSD(reservation?.total_price ?? 0, eurRate);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(locale, {
@@ -358,7 +357,7 @@ export default function TrackReservation() {
             <div className="px-6 py-4 flex items-center justify-between" style={{ borderTop: "1px solid #e2e8f0", backgroundColor: "#f8fafc" }}>
               <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{t("total")}</span>
               <span className="text-xl font-bold text-gray-900">
-                €{totalEur.toFixed(2)}
+                {formatMoney(totalEur, "EUR")}
               </span>
             </div>
           </div>

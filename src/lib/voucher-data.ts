@@ -1,4 +1,5 @@
 import type { ReservationEmailData } from "@/lib/email";
+import { convertFromUSD } from "@/lib/currency";
 
 /**
  * Columns the voucher builders need. Keep in sync with the select strings in
@@ -30,8 +31,10 @@ export function buildVoucherData(res: Row, locale: string): ReservationEmailData
     (res.regions?.name_en as string | undefined) ??
     "";
 
+  // exchange_rate_eur is EUR per ONE dollar, so converting multiplies. This
+  // used to divide, which inverted the rate: $85 was vouchered as €98.41.
   const eurRate = num(res.exchange_rate_eur) || 1;
-  const toEur = (usd: unknown) => num(usd) / eurRate;
+  const toEur = (usd: unknown) => convertFromUSD(num(usd), eurRate);
 
   const paymentMethod = res.payment_method === "cash" ? "cash" : "online";
   const depositAmount = num(res.deposit_amount);
