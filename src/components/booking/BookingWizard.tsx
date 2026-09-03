@@ -692,107 +692,117 @@ function BookingWizardInner(props: Props) {
                         : "border border-black/[0.08] bg-white hover:shadow-md"
                   }`}
                 >
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    {/* Photo. A soft gradient panel rather than a flat grey
-                        swatch: the vehicle shots are cut-outs, and flat grey
-                        behind a cut-out reads as a failed image load. */}
-                    <div className="relative h-[68px] w-[104px] sm:h-[84px] sm:w-[132px] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 via-white to-slate-100">
+                  <div className="flex items-start gap-3 p-3">
+                    {/* Photo. The whole vehicle, never cropped: a 16:9 box with
+                        `object-contain` inside it. No panel behind it — the
+                        shots are cut-outs on transparency, so they sit straight
+                        on the card and the vehicle reads as floating rather
+                        than boxed. It is the largest thing on the card because
+                        it is what the customer is choosing between. */}
+                    <div className="relative aspect-[16/9] w-[150px] shrink-0 sm:w-[172px]">
                       <Image
                         src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
                         alt={vehicle.name}
                         fill
-                        sizes="132px"
-                        className={`object-contain p-1.5 ${fits ? "" : "grayscale"}`}
+                        sizes="172px"
+                        className={`object-contain ${fits ? "" : "grayscale"}`}
                       />
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      {/* Name on the left, money on the right: the two things
-                          being compared across the list, on the same line so
-                          the eye can run straight down either column. */}
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="min-w-0 text-[16px] sm:text-[17px] font-bold leading-tight text-gray-900">
-                          {vehicle.name}
-                        </h3>
-                        <div className="shrink-0 text-right">
-                          <span className="block text-[19px] sm:text-[21px] font-extrabold leading-none tracking-tight text-gray-900">
-                            {fmt(vehicle.calculation.basePrice, exchangeRates)}
-                          </span>
-                          <span className="mt-1 block text-[11px] leading-none text-gray-500">
-                            {t("trustFixedPrice")}
-                          </span>
-                          {/* The cash alternative rides under the headline
-                              figure rather than in a panel of its own, so it
-                              reads as a second way to pay for this vehicle
-                              and not as a second vehicle. */}
-                          {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                            <span className="mt-1.5 block text-[11px] leading-none font-medium text-amber-700 whitespace-nowrap">
-                              {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <h3 className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-gray-900">
+                        {vehicle.name}
+                      </h3>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[12px] text-gray-500">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-gray-500">
                         <span className="inline-flex items-center gap-1.5">
-                          <Users size={14} className="text-gray-400" />
+                          <Users size={13} className="shrink-0 text-gray-400" />
                           1&ndash;{vehicle.max_passengers} {t("passengers")}
                         </span>
                         <span className="inline-flex items-center gap-1.5">
-                          <Luggage size={14} className="text-gray-400" />
+                          <Luggage size={13} className="shrink-0 text-gray-400" />
                           {vehicle.max_luggage} {t("luggageCapacity")}
                         </span>
                       </div>
 
                       {reason && (
-                        <span className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
+                        <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
                           <Ban size={11} className="flex-shrink-0" />{reason}
                         </span>
                       )}
 
                       {vehicle.calculation.roundTripDiscount > 0 && (
-                        <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
+                        <span className="inline-block w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
                           {t("roundTripDiscount")} &minus;{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
                         </span>
                       )}
-                    </div>
-                  </div>
 
-                  {/* Features and the choice share the last line. Capped at
-                      three: the cards are compared side by side and a vehicle
-                      with eight features would push its own button onto a row
-                      of its own, breaking the rhythm of the list. */}
-                  <div className="mt-3 flex items-end justify-between gap-3">
-                    <div className="flex min-w-0 flex-wrap gap-1.5">
-                      {vehicle.features.slice(0, 3).map((f) => (
-                        <span
-                          key={f}
-                          className="inline-flex items-center gap-1 rounded-lg border border-black/[0.08] px-2 py-1 text-[11px] text-gray-600"
+                      {/* Price and choice share the last line of the column, so
+                          the figure and the thing you press are next to each
+                          other rather than at opposite corners of the card. */}
+                      {/* flex-wrap is the safety valve: a long currency string
+                          (₺ figures run wide) drops the button to its own line
+                          rather than squeezing the price into an ellipsis. */}
+                      <div className="mt-auto flex flex-wrap items-end justify-between gap-x-2 gap-y-2 pt-1">
+                        <div className="min-w-0">
+                          <span className="block text-[20px] font-extrabold leading-none tracking-tight text-gray-900">
+                            {fmt(vehicle.calculation.basePrice, exchangeRates)}
+                          </span>
+                          <span className="mt-1 block text-[10.5px] leading-none text-gray-500">
+                            {t("trustFixedPrice")}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => selectVehicle(vehicle)}
+                          disabled={checkingAvailability || !fits}
+                          title={reason ?? undefined}
+                          aria-pressed={chosen}
+                          className={`flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[12.5px] font-semibold transition-all ${
+                            !fits
+                              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                              : chosen
+                                ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
+                                : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
+                          }`}
                         >
-                          <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
-                          {featureLabel[f] || f}
-                        </span>
-                      ))}
+                          {!fits ? <Ban size={13} /> : checkingAvailability ? <Loader2 size={13} className="animate-spin" /> : chosen ? <Check size={13} /> : null}
+                          {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
+                        </button>
+                      </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => selectVehicle(vehicle)}
-                      disabled={checkingAvailability || !fits}
-                      title={reason ?? undefined}
-                      aria-pressed={chosen}
-                      className={`flex h-10 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3.5 text-[13px] font-semibold transition-all ${
-                        !fits
-                          ? "cursor-not-allowed bg-gray-100 text-gray-400"
-                          : chosen
-                            ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
-                            : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
-                      }`}
-                    >
-                      {!fits ? <Ban size={14} /> : checkingAvailability ? <Loader2 size={14} className="animate-spin" /> : chosen ? <Check size={14} /> : null}
-                      {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
-                    </button>
                   </div>
+
+                  {/* Footer strip: what the vehicle has, and the other way to
+                      pay for it. Kept out of the column above so the top of the
+                      card stays down to the four things being compared — the
+                      picture, the name, the capacity and the price. */}
+                  {(vehicle.features.length > 0 || (vehicle.cashPrice != null && settingsData.cashPaymentEnabled)) && (
+                    <div className="flex items-center justify-between gap-2 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2">
+                      {/* Capped at three: the cards are compared side by side,
+                          and a vehicle with eight features would push the strip
+                          onto a second row and break the rhythm of the list. */}
+                      <div className="flex min-w-0 flex-wrap gap-1.5">
+                        {vehicle.features.slice(0, 3).map((f) => (
+                          <span
+                            key={f}
+                            className="inline-flex items-center gap-1 rounded-lg border border-black/[0.08] bg-white px-2 py-1 text-[11px] text-gray-600"
+                          >
+                            <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
+                            {featureLabel[f] || f}
+                          </span>
+                        ))}
+                      </div>
+
+                      {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
+                        <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
+                          <Banknote size={12} className="shrink-0" />
+                          {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 );
               })}
@@ -820,41 +830,48 @@ function BookingWizardInner(props: Props) {
           className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.07] bg-white/95 backdrop-blur"
           style={{ paddingBottom: "max(0px, env(safe-area-inset-bottom))" }}
         >
-          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-2.5 sm:gap-6 sm:py-3">
-            <div className="min-w-0 flex-1">
-              <span className="block text-[10px] uppercase tracking-wider text-gray-400">
+          {/* Three zones, each its own, separated by hairlines: what was
+              chosen, what it costs, and the way on. The total keeps a zone of
+              its own at every width rather than folding into the button —
+              the figure is the thing being confirmed, so it should not have to
+              share a control with the action. */}
+          <div className="mx-auto flex max-w-5xl items-stretch px-2 py-1.5 sm:px-4">
+            <div className="flex min-w-0 flex-1 flex-col justify-center py-1 pl-1 pr-3">
+              <span className="block text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
                 {t("selectedVehicleLabel")}
               </span>
-              <span className="mt-0.5 flex items-baseline gap-2">
-                <span className="truncate text-[13px] font-semibold text-gray-900">{selectedVehicle.name}</span>
-                <button
-                  type="button"
-                  onClick={() => { setSelectedVehicle(null); }}
-                  className="shrink-0 text-[11px] font-medium text-[#0e8a61] underline underline-offset-2"
-                >
-                  {t("changeVehicle")}
-                </button>
+              <span className="mt-1 truncate text-[12.5px] font-semibold leading-tight text-gray-900">
+                {selectedVehicle.name}
               </span>
+              <button
+                type="button"
+                onClick={() => { setSelectedVehicle(null); }}
+                className="mt-0.5 w-fit text-[10.5px] font-medium text-[#0e8a61] underline underline-offset-2"
+              >
+                {t("changeVehicle")}
+              </button>
             </div>
 
-            <div className="hidden shrink-0 text-right sm:block">
-              <span className="block text-[10px] uppercase tracking-wider text-gray-400">{t("totalPrice")}</span>
-              <span className="block text-[17px] font-extrabold leading-tight text-gray-900">
+            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
+
+            <div className="flex shrink-0 flex-col justify-center px-3 text-right">
+              <span className="block whitespace-nowrap text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
+                {t("totalPrice")}
+              </span>
+              <span className="mt-1.5 block text-[17px] font-extrabold leading-none tracking-tight text-gray-900 tabular-nums">
                 {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
               </span>
             </div>
+
+            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
 
             <button
               type="button"
               onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="flex h-[46px] shrink-0 items-center gap-2 rounded-xl bg-[#0e8a61] px-4 text-[14px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
+              className="my-1 ml-2 flex h-[42px] shrink-0 items-center gap-1.5 self-center whitespace-nowrap rounded-xl bg-[#0e8a61] px-3.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
             >
-              <span className="sm:hidden text-[15px] font-extrabold">
-                {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-              </span>
-              <span className="sm:hidden h-4 w-px bg-white/30" />
               {t("continueStep")}
-              <ArrowRight size={16} className="shrink-0" />
+              <ArrowRight size={15} className="shrink-0" />
             </button>
           </div>
         </div>
