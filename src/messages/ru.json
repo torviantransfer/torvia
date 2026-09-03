@@ -44,7 +44,10 @@
     "trustCancel": "Бесплатная отмена за 24ч",
     "trustNoHidden": "Без скрытых платежей",
     "callNow": "Позвонить",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "mobileTitleLead": "Аэропорт Анталья",
+    "mobileTitleAccent": "Трансфер",
+    "mobileSubtitle": "Комфортно, безопасно и вовремя."
   },
   "booking": {
     "title": "Забронировать Трансфер из Аэропорта Анталья | Фиксированная цена",
@@ -208,7 +211,16 @@
     "featureUsb": "USB Зарядка",
     "featureTv": "TV",
     "featureMinibar": "Минибар",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP с премиальными характеристиками"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP с премиальными характеристиками",
+    "pickupPlaceholder": "Укажите место подачи",
+    "dropoffPlaceholder": "Укажите место назначения",
+    "selectDateShort": "Выберите дату",
+    "selectTimeShort": "Выберите время",
+    "addReturnTransfer": "Добавить обратный трансфер",
+    "seePriceAndBook": "Узнать цену и забронировать",
+    "trustFixedPrice": "Фикс. цена",
+    "trustSupport247": "Поддержка 24/7",
+    "trustNoHiddenShort": "Без доплат"
   },
   "trust": {
     "heading": "Почему путешественники выбирают TORVIAN.",

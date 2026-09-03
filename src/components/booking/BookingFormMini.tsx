@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
@@ -18,6 +18,12 @@ import {
   ChevronUp,
   ChevronDown,
   Clock,
+  RefreshCw,
+  ArrowUpDown,
+  User,
+  ShieldCheck,
+  Tag,
+  Headphones,
 } from "lucide-react";
 
 interface Region {
@@ -253,12 +259,12 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           key={l.value}
           type="button"
           onClick={() => { field === "from" ? setFrom(l.value) : setTo(l.value); setOpen(null); }}
-          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-blue-50 transition-colors ${
-            (field === "from" ? from : to) === l.value ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
+          className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 text-left text-[15px] lg:text-sm hover:bg-[#EDF8F4] lg:hover:bg-blue-50 transition-colors ${
+            (field === "from" ? from : to) === l.value ? "text-[#0e8a61] lg:text-blue-600 font-semibold bg-[#EDF8F4]/60 lg:bg-blue-50/50" : "text-gray-700"
           }`}
         >
           {l.type === "airport" ? (
-            <Plane size={15} className="text-blue-600 shrink-0" />
+            <Plane size={15} className="text-[#0e8a61] lg:text-blue-600 shrink-0" />
           ) : (
             <MapPin size={15} className="text-gray-500 shrink-0" />
           )}
@@ -291,12 +297,12 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     <>
       {/* Mobile drag handle */}
       <div className="flex justify-center pt-2 pb-1 lg:hidden"><div className="w-10 h-1 rounded-full bg-gray-300" /></div>
-      <div className="bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
+      <div className="bg-[#0e8a61] lg:bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
         <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
         <span className="font-semibold text-sm capitalize">{mName} {calMonth.getFullYear()}</span>
         <button type="button" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
       </div>
-      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-blue-600 border-b border-gray-100 py-1.5 px-2">
+      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-[#0e8a61] lg:text-blue-600 border-b border-gray-100 py-1.5 px-2">
         {wk.map((d) => <span key={d}>{d}</span>)}
       </div>
       <div className="grid grid-cols-7 text-center px-2 py-1.5 gap-y-0.5">
@@ -308,10 +314,12 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           return (
             <button key={i} type="button" disabled={past || !d.inMonth} onClick={() => pickDay(d.date)}
               className={[
-                "w-8 h-8 rounded-lg text-xs mx-auto flex items-center justify-center transition-colors",
-                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-blue-50 cursor-pointer",
-                sel ? "bg-blue-600 text-white font-bold" : "",
-                isToday && !sel ? "ring-1 ring-blue-300" : "",
+                // 40px on phones so every day clears the 44px-ish touch
+                // guidance; the pointer-device popover keeps its 32px grid.
+                "w-10 h-10 lg:w-8 lg:h-8 rounded-lg text-[13px] lg:text-xs mx-auto flex items-center justify-center transition-colors",
+                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-[#EDF8F4] lg:hover:bg-blue-50 cursor-pointer",
+                sel ? "bg-[#0e8a61] lg:bg-blue-600 text-white font-bold" : "",
+                isToday && !sel ? "ring-1 ring-[#0e8a61]/40 lg:ring-blue-300" : "",
                 d.inMonth && !past && !sel ? "text-gray-700 font-medium" : "",
               ].join(" ")}
             >{d.day}</button>
@@ -325,13 +333,13 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           Pointer devices keep the stepper, where those arrows are fine. */}
       <div className="border-t border-gray-100 px-4 py-3">
         <label className="lg:hidden block">
-          <span className="block text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1.5">{t("hour")}</span>
+          <span className="block text-[10px] font-bold text-[#0e8a61] uppercase tracking-wider mb-1.5">{t("hour")}</span>
           <input
             type="time"
             step={300}
             value={timeValue}
             onChange={(e) => setTimeFromInput(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full border border-[#E5E7EB] rounded-xl px-3 py-3 text-base font-bold text-[#111827] focus:ring-2 focus:ring-[#0e8a61] outline-none"
           />
         </label>
 
@@ -369,7 +377,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <button
           type="button"
           onClick={() => setOpen(null)}
-          className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+          className="w-full h-[52px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
         >
           {t("dateConfirm")}
         </button>
@@ -422,7 +430,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
    * full-width row left it hanging off the edge of the card, with the two
    * counters squeezed into a narrow column. */
   const stepperBtn =
-    "w-9 h-9 sm:w-7 sm:h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
+    "w-11 h-11 sm:w-7 sm:h-7 rounded-lg border border-[#E5E7EB] sm:border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
 
   const renderPassengers = () => (
     <div className="absolute top-full mt-1 left-0 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 lg:left-auto lg:w-[240px]">
@@ -529,159 +537,252 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         </button>
       </div>
 
-      {/* MOBILE CARD (<lg) — full-width stacked rows (label above, value
-          below) instead of cramped icon+text pills, so each field reads
-          clearly and has a generous tap target. */}
-      <div className="lg:hidden bg-white rounded-2xl shadow-2xl shadow-black/20 p-3 space-y-2">
-        {/* From */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen(open === "from" ? null : "from")}
-            aria-haspopup="listbox"
-            aria-expanded={open === "from"}
-            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
-          >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <MapPin size={12} className="text-blue-600" />
-              {t("pickup")}
-            </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${from ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
-              {from ? getName(from) : t("pickup")}
-            </span>
-          </button>
-          {open === "from" && renderLocDrop("from")}
-        </div>
+      {/* MOBILE CARD (<lg) — a direct port of the reference preview: 92px
+          route rows with a 48px mint icon tile, a 96px date/time pair, 72px
+          option rows, a 58px CTA and a 66px trust strip with hairline
+          dividers. The `sm:` values are the preview's wider tier, for the
+          tablet range between a phone and the desktop bar.
 
-        {/* Swap — floats between the From/To rows */}
-        <div className="relative h-0">
+          Three things had to change on the way in, because the preview only
+          ever shows empty placeholder text:
+            - the route fields reserve pr-20 so a real region name cannot slide
+              under the swap button, which floats over their right edge;
+            - the trust labels are allowed to wrap, since `nowrap` sends the
+              German and Polish strings straight through the card edge;
+            - the toggle is a real switch button rather than a decorative span.
+
+          Desktop keeps the compact horizontal bar above. The only markup the
+          two layouts share is the calendar and passenger popups, which carry
+          `lg:` overrides so each viewport gets its own accent out of the same
+          elements. */}
+      <div className="lg:hidden rounded-[22px] sm:rounded-3xl border border-[#E5E7EB] bg-white p-[13px] sm:p-4 shadow-[0_20px_50px_rgba(15,23,42,0.10),0_4px_14px_rgba(15,23,42,0.05)]">
+        {/* Route — pickup and dropoff share one relative box so the swap
+            button can float on the seam between them. */}
+        <div className="relative grid gap-3">
+          {/* From */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setOpen(open === "from" ? null : "from")}
+              aria-haspopup="listbox"
+              aria-expanded={open === "from"}
+              aria-label={`${t("pickup")}: ${from ? getName(from) : t("pickupPlaceholder")}`}
+              className={`flex min-h-[92px] sm:min-h-[104px] w-full items-center gap-[13px] sm:gap-4 rounded-2xl border bg-white py-3.5 pl-4 pr-20 sm:py-4 sm:pl-[22px] text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+            >
+              <span className="flex h-12 w-12 sm:h-[54px] sm:w-[54px] shrink-0 items-center justify-center rounded-[13px] bg-[#EDF8F4]">
+                <MapPin size={26} className="text-[#0e8a61]" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("pickup")}</span>
+                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${from ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {from ? getName(from) : t("pickupPlaceholder")}
+                </span>
+              </span>
+            </button>
+            {open === "from" && renderLocDrop("from")}
+          </div>
+
+          {/* To */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setOpen(open === "to" ? null : "to")}
+              aria-haspopup="listbox"
+              aria-expanded={open === "to"}
+              aria-label={`${t("dropoff")}: ${to ? getName(to) : t("dropoffPlaceholder")}`}
+              className={`flex min-h-[92px] sm:min-h-[104px] w-full items-center gap-[13px] sm:gap-4 rounded-2xl border bg-white py-3.5 pl-4 pr-20 sm:py-4 sm:pl-[22px] text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+            >
+              <span className="flex h-12 w-12 sm:h-[54px] sm:w-[54px] shrink-0 items-center justify-center rounded-[13px] bg-[#EDF8F4]">
+                <MapPin size={26} className="text-[#0e8a61]" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("dropoff")}</span>
+                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${to ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {to ? getName(to) : t("dropoffPlaceholder")}
+                </span>
+              </span>
+            </button>
+            {open === "to" && renderLocDrop("to")}
+          </div>
+
+          {/* Swap — a rounded square floating on the seam, white with a
+              shadow so it reads as sitting on top of the two fields rather
+              than as a third action competing with the CTA. */}
           <button
             type="button"
             onClick={swap}
             aria-label={swapLabel}
-            className="absolute -top-[27px] right-4 w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center shadow-md active:scale-95 z-10"
+            className="absolute right-6 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-[13px] border border-[#E5E7EB] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.12)] transition-transform active:scale-95"
           >
-            <ArrowLeftRight size={14} className="text-white rotate-90" />
+            <ArrowUpDown size={24} className="text-[#0e8a61]" aria-hidden="true" />
           </button>
         </div>
 
-        {/* To */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen(open === "to" ? null : "to")}
-            aria-haspopup="listbox"
-            aria-expanded={open === "to"}
-            className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 active:bg-gray-50"
-          >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <MapPin size={12} className="text-blue-600" />
-              {t("dropoff")}
-            </span>
-            <span className={`block text-[15px] mt-0.5 truncate ${to ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}>
-              {to ? getName(to) : t("dropoff")}
-            </span>
-          </button>
-          {open === "to" && renderLocDrop("to")}
-        </div>
-
-        {/* Date + Time — same picker, split into two columns like the
-            pickup/dropoff rows above so each half reads as its own field. */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Date + time — 50/50, both on the same minimum height so the row
+            never reflows when a value replaces a placeholder. */}
+        <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="relative">
             <button
               type="button"
               onClick={() => { setDateError(false); openCal("dep"); }}
-              className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+              aria-haspopup="dialog"
+              aria-expanded={open === "cal" && calFor === "dep"}
+              aria-label={`${t("departureDate")}: ${depFmt ? depFmt.text : t("selectDateShort")}`}
+              className={`flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border py-[13px] px-3.5 sm:px-[18px] text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
             >
-              <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                <Calendar size={12} className={dateError ? "text-red-500" : "text-green-600"} />
-                {t("departureDate")}
+              <Calendar size={26} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("departureDate")}</span>
+                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {depFmt ? depFmt.text : t("selectDateShort")}
+                </span>
               </span>
-              <span className={`block text-[15px] font-bold mt-0.5 truncate ${dateError ? "text-red-500" : depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
-                {dateError ? t("selectDate") : depFmt ? depFmt.text : "—"}
-              </span>
+              <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
           </div>
           <button
             type="button"
             onClick={() => { setDateError(false); openCal("dep"); }}
-            className={`w-full text-left border rounded-xl px-4 py-2.5 ${dateError ? "border-red-400 bg-red-50" : "border-gray-200"}`}
+            aria-haspopup="dialog"
+            aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
+            className={`flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border py-[13px] px-3.5 sm:px-[18px] text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
-            <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-              <Clock size={12} className="text-blue-600" />
-              {t("hour")}
+            <Clock size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("hour")}</span>
+              <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                {depFmt ? depFmt.time : t("selectTimeShort")}
+              </span>
             </span>
-            <span className={`block text-[15px] font-bold mt-0.5 truncate ${depFmt ? "text-gray-900" : "text-gray-500 font-medium"}`}>
-              {depFmt ? depFmt.time : "—"}
+            <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Return — a switch row rather than a dashed "add" button, which
+            read as a broken field. Flipping it on reveals the same return
+            date/time pair the form always had. The switch stays dimmed until
+            there is an outbound date, because a return can only be picked
+            relative to one. */}
+        <div className={`mt-3 flex min-h-[72px] sm:min-h-20 items-center justify-between gap-4 rounded-2xl border py-[13px] px-4 sm:px-5 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
+          <span className="flex min-w-0 items-center gap-[15px]">
+            <RefreshCw size={24} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
+            <span className={`truncate text-[16px] ${depDate ? "text-[#6B7280]" : "text-[#9CA3AF]"}`}>
+              {t("addReturnTransfer")}
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={hasRet}
+            aria-label={t("addReturnTransfer")}
+            disabled={!depDate}
+            onClick={() => {
+              if (!depDate) return;
+              if (hasRet) { setHasRet(false); setRetDate(null); }
+              else { setHasRet(true); openCal("ret"); }
+            }}
+            className="-my-2 -mr-1 flex h-11 shrink-0 items-center justify-end pl-2 pr-1 disabled:cursor-not-allowed"
+          >
+            <span className={`relative block h-8 w-[58px] rounded-full transition-colors ${!depDate ? "bg-[#E5E7EB]" : hasRet ? "bg-[#0e8a61]" : "bg-[#D1D5DB]"}`}>
+              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-[0_2px_5px_rgba(0,0,0,0.16)] transition-all ${hasRet ? "left-[30px]" : "left-1"}`} />
             </span>
           </button>
         </div>
 
-        {/* Return — sits directly under the departure date, because that
-            is where it belongs: enabling it produces a second date field,
-            and every travel form keeps the two dates together. It was
-            below passengers, which split the pair with an unrelated
-            control. The dashed border still marks it as an add-on, so it
-            does not compete with the required fields for attention. */}
-        <div className="relative">
-          {!hasRet ? (
+        {/* Return date + time — the same pair as the outbound, shown only
+            once the switch is on. */}
+        {hasRet && (
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => openCal("ret")}
+                aria-haspopup="dialog"
+                aria-expanded={open === "cal" && calFor === "ret"}
+                aria-label={`${t("returnDate")}: ${retFmt ? retFmt.text : t("selectDateShort")}`}
+                className="flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border border-[#E5E7EB] bg-white py-[13px] px-3.5 sm:px-[18px] text-left transition-colors active:bg-gray-50"
+              >
+                <Calendar size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("returnDate")}</span>
+                  <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                    {retFmt ? retFmt.text : t("selectDateShort")}
+                  </span>
+                </span>
+                <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+              </button>
+              {open === "cal" && calFor === "ret" && renderCalendar()}
+            </div>
             <button
               type="button"
-              onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }}
-              className={`w-full flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-[13px] font-semibold border border-dashed ${depDate ? "text-gray-500 border-gray-300 active:bg-gray-50" : "text-gray-300 border-gray-200 cursor-not-allowed"}`}
+              onClick={() => openCal("ret")}
+              aria-haspopup="dialog"
+              aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
+              className="flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border border-[#E5E7EB] bg-white py-[13px] px-3.5 sm:px-[18px] text-left transition-colors active:bg-gray-50"
             >
-              {/* No "(optional)" suffix. The label is already an offer to add
-                  something — nothing happens unless it is pressed — so the
-                  word restated what the button's own existence says, and cost
-                  a line of width in a narrow form. */}
-              <CornerDownLeft size={14} />{t("addReturn")}
+              <Clock size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("hour")}</span>
+                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  {retFmt ? retFmt.time : t("selectTimeShort")}
+                </span>
+              </span>
+              <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
             </button>
-          ) : (
-            <div className="flex items-center border border-blue-200 bg-blue-50/50 rounded-xl pl-4 pr-2 py-2.5">
-              <button type="button" onClick={() => openCal("ret")} className="flex-1 min-w-0 text-left">
-                <span className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
-                  <CornerDownLeft size={12} className="text-green-600" />
-                  {t("returnDate")}
-                </span>
-                <span className="block text-[15px] font-bold text-gray-900 mt-0.5 truncate">
-                  {retFmt ? `${retFmt.text} · ${retFmt.time}` : "—"}
-                </span>
-              </button>
-              <button type="button" onClick={() => { setHasRet(false); setRetDate(null); }} aria-label={removeReturnLabel} className="text-red-400 p-1.5 shrink-0"><X size={14} /></button>
-            </div>
-          )}
-          {open === "cal" && calFor === "ret" && renderCalendar()}
-        </div>
+          </div>
+        )}
 
-        {/* Passengers — its own clear, tappable row. Required on every
-            booking, so it gets an explicit "X Kişi" label and a chevron
-            rather than sharing a row and reading as a bare number. */}
+        {/* Passengers — a single line. The adult/child split lives in the
+            popup it opens, so the closed row carries only the one number that
+            matters. */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setOpen(open === "pax" ? null : "pax")}
             aria-haspopup="dialog"
             aria-expanded={open === "pax"}
-            className={`w-full flex items-center justify-between gap-3 border rounded-xl px-4 py-2.5 ${open === "pax" ? "border-blue-400 bg-blue-50/50" : "border-gray-200"}`}
+            aria-label={`${adults + kids} ${t("passengers")}`}
+            className={`mt-3 flex min-h-[72px] sm:min-h-20 w-full items-center justify-between gap-4 rounded-2xl border py-[13px] px-4 sm:px-5 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
-            <span className="flex items-center gap-2.5">
-              <Users size={16} className="text-blue-600 shrink-0" />
-              <span className="text-left">
-                <span className="block text-[15px] font-bold text-gray-900">{adults + kids} {t("person")}</span>
-                <span className="block text-[10.5px] text-gray-500 leading-tight">{t("adult")} &amp; {t("child")}</span>
-              </span>
+            <span className="flex min-w-0 items-center gap-[15px]">
+              <User size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="truncate text-[18px] font-semibold text-[#111827]">{adults + kids} {t("passengers")}</span>
             </span>
-            <ChevronRight size={15} className={`text-gray-300 shrink-0 transition-transform ${open === "pax" ? "rotate-90" : ""}`} />
+            <ChevronDown size={20} className={`shrink-0 text-[#6B7280] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {open === "pax" && renderPassengers()}
         </div>
 
-        {/* Submit */}
-        <button type="button" onClick={submit} className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[15px] transition-colors active:scale-[0.98] shadow-md shadow-blue-600/20">
-          {bookingHint}
+        {/* Submit — the label is centred in the free column so the chevron
+            sits hard against the right edge without pulling the text
+            off-centre. */}
+        <button
+          type="button"
+          onClick={submit}
+          className="mt-4 grid min-h-[58px] sm:min-h-[62px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-[14px] bg-[#0e8a61] px-[18px] sm:px-[22px] text-[16px] sm:text-lg font-bold text-white shadow-[0_12px_24px_rgba(14,138,97,0.18)] transition-transform active:scale-[0.985]"
+        >
+          <span className="truncate text-center">{t("seePriceAndBook")}</span>
+          <ChevronRight size={26} className="shrink-0" aria-hidden="true" />
         </button>
+
+        {/* Trust strip — the three objections people have at exactly this
+            moment, answered right where the thumb already is. */}
+        <ul className="grid min-h-[66px] grid-cols-[1fr_auto_1fr_auto_1fr] items-center px-0.5 pt-2">
+          {[
+            { Icon: ShieldCheck, label: t("trustFixedPrice") },
+            { Icon: Tag, label: t("trustNoHiddenShort") },
+            { Icon: Headphones, label: t("trustSupport247") },
+          ].map(({ Icon, label }, i) => (
+            <Fragment key={label}>
+              {i > 0 && <li aria-hidden="true" className="h-7 w-px bg-[#E5E7EB]" />}
+              <li className="flex items-center justify-center gap-[5px] sm:gap-2 px-0.5 text-center text-[11px] sm:text-[13px] font-medium leading-tight text-[#111827]">
+                <Icon size={22} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <span>{label}</span>
+              </li>
+            </Fragment>
+          ))}
+        </ul>
       </div>
     </div>
   );

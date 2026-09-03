@@ -44,7 +44,10 @@
     "trustCancel": "Bezpłatne anulowanie 24h przed",
     "trustNoHidden": "Brak ukrytych opłat",
     "callNow": "Zadzwoń",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "mobileTitleLead": "Lotnisko Antalya",
+    "mobileTitleAccent": "Transfer",
+    "mobileSubtitle": "Komfortowo, bezpiecznie i na czas."
   },
   "booking": {
     "title": "Zarezerwuj Transfer z Lotniska Antalya | Stała Cena, Natychmiastowe Potwierdzenie",
@@ -208,7 +211,16 @@
     "featureUsb": "Ładowanie USB",
     "featureTv": "TV",
     "featureMinibar": "Minibar",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer z luksusowym wyposażeniem"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer z luksusowym wyposażeniem",
+    "pickupPlaceholder": "Podaj miejsce odbioru",
+    "dropoffPlaceholder": "Podaj miejsce docelowe",
+    "selectDateShort": "Wybierz datę",
+    "selectTimeShort": "Wybierz godzinę",
+    "addReturnTransfer": "Dodaj transfer powrotny",
+    "seePriceAndBook": "Zobacz cenę i rezerwuj",
+    "trustFixedPrice": "Stała cena",
+    "trustSupport247": "Wsparcie 24/7",
+    "trustNoHiddenShort": "Bez dopłat"
   },
   "trust": {
     "heading": "Dlaczego podróżni wybierają TORVIAN.",

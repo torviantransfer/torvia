@@ -44,7 +44,10 @@
     "trustCancel": "Kostenlose Stornierung 24h vor Abfahrt",
     "trustNoHidden": "Keine versteckten Gebühren",
     "callNow": "Jetzt Anrufen",
-    "whatsappNow": "WhatsApp"
+    "whatsappNow": "WhatsApp",
+    "mobileTitleLead": "Flughafen Antalya",
+    "mobileTitleAccent": "Transfer",
+    "mobileSubtitle": "Komfortabel, sicher und pünktlich."
   },
   "booking": {
     "title": "Flughafen Antalya Transfer Buchen | Festpreis, Sofortbestätigung",
@@ -208,7 +211,16 @@
     "featureUsb": "USB-Ladung",
     "featureTv": "TV",
     "featureMinibar": "Minibar",
-    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer mit Premium-Ausstattung"
+    "vehicleDescVip": "Mercedes-Benz Vito VIP Tourer mit Premium-Ausstattung",
+    "pickupPlaceholder": "Abholort eingeben",
+    "dropoffPlaceholder": "Zielort eingeben",
+    "selectDateShort": "Datum wählen",
+    "selectTimeShort": "Uhrzeit wählen",
+    "addReturnTransfer": "Rücktransfer hinzufügen",
+    "seePriceAndBook": "Preis ansehen & buchen",
+    "trustFixedPrice": "Festpreis",
+    "trustSupport247": "24/7 Support",
+    "trustNoHiddenShort": "Ohne Aufpreis"
   },
   "trust": {
     "heading": "Warum Reisende TORVIAN wählen.",

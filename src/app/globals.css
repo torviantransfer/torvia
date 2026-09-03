@@ -57,6 +57,16 @@
   --color-sidebar: #0F172A;
   --color-sidebar-hover: #1E293B;
 
+  /* Brand green — the booking form's accent on phones. Kept here as tokens
+     so the palette has one home, even though the components spell the hex
+     out inline for Tailwind's arbitrary-value syntax. */
+  --color-brand: #0e8a61;
+  --color-brand-hover: #0C7350;
+  --color-brand-soft: #EDF8F4;
+  --color-field-border: #E5E7EB;
+  --color-ink: #111827;
+  --color-ink-muted: #6B7280;
+
   /* Card system */
   --card-bg: #FFFFFF;
   --card-bg-alt: #F5F5F7;
