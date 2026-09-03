@@ -537,28 +537,24 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         </button>
       </div>
 
-      {/* MOBILE CARD (<lg) — a direct port of the reference preview: 92px
-          route rows with a 48px mint icon tile, a 96px date/time pair, 72px
-          option rows, a 58px CTA and a 66px trust strip with hairline
-          dividers. The `sm:` values are the preview's wider tier, for the
-          tablet range between a phone and the desktop bar.
+      {/* MOBILE CARD (<lg) — the reference layout at a restrained scale:
+          56px route rows with a 36px mint icon tile, a 52px date/time pair,
+          46px option rows, a 52px CTA and a 28px trust strip with hairline
+          dividers. Roughly 410px in total, so the whole form still reads as
+          one glance on a phone rather than a page of its own.
 
-          Three things had to change on the way in, because the preview only
-          ever shows empty placeholder text:
-            - the route fields reserve pr-20 so a real region name cannot slide
-              under the swap button, which floats over their right edge;
-            - the trust labels are allowed to wrap, since `nowrap` sends the
-              German and Polish strings straight through the card edge;
-            - the toggle is a real switch button rather than a decorative span.
+          The date/time cells carry small icons and 15px values on purpose:
+          at the reference's 26px icon and 16px text, "Tarih seçin" ran out of
+          room and truncated to "Tarih s...".
 
           Desktop keeps the compact horizontal bar above. The only markup the
-          two layouts share is the calendar and passenger popups, which carry
+          two layouts share is the calendar and passenger popups, which take
           `lg:` overrides so each viewport gets its own accent out of the same
           elements. */}
-      <div className="lg:hidden rounded-[22px] sm:rounded-3xl border border-[#E5E7EB] bg-white p-[13px] sm:p-4 shadow-[0_20px_50px_rgba(15,23,42,0.10),0_4px_14px_rgba(15,23,42,0.05)]">
+      <div className="lg:hidden rounded-[20px] border border-[#E5E7EB] bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12),0_3px_10px_rgba(15,23,42,0.05)]">
         {/* Route — pickup and dropoff share one relative box so the swap
             button can float on the seam between them. */}
-        <div className="relative grid gap-3">
+        <div className="relative grid gap-2">
           {/* From */}
           <div className="relative">
             <button
@@ -567,14 +563,14 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="listbox"
               aria-expanded={open === "from"}
               aria-label={`${t("pickup")}: ${from ? getName(from) : t("pickupPlaceholder")}`}
-              className={`flex min-h-[92px] sm:min-h-[104px] w-full items-center gap-[13px] sm:gap-4 rounded-2xl border bg-white py-3.5 pl-4 pr-20 sm:py-4 sm:pl-[22px] text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
             >
-              <span className="flex h-12 w-12 sm:h-[54px] sm:w-[54px] shrink-0 items-center justify-center rounded-[13px] bg-[#EDF8F4]">
-                <MapPin size={26} className="text-[#0e8a61]" aria-hidden="true" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
+                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("pickup")}</span>
-                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${from ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block text-[12px] leading-none text-[#6B7280]">{t("pickup")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${from ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                   {from ? getName(from) : t("pickupPlaceholder")}
                 </span>
               </span>
@@ -590,14 +586,14 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="listbox"
               aria-expanded={open === "to"}
               aria-label={`${t("dropoff")}: ${to ? getName(to) : t("dropoffPlaceholder")}`}
-              className={`flex min-h-[92px] sm:min-h-[104px] w-full items-center gap-[13px] sm:gap-4 rounded-2xl border bg-white py-3.5 pl-4 pr-20 sm:py-4 sm:pl-[22px] text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
             >
-              <span className="flex h-12 w-12 sm:h-[54px] sm:w-[54px] shrink-0 items-center justify-center rounded-[13px] bg-[#EDF8F4]">
-                <MapPin size={26} className="text-[#0e8a61]" aria-hidden="true" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
+                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("dropoff")}</span>
-                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${to ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block text-[12px] leading-none text-[#6B7280]">{t("dropoff")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${to ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                   {to ? getName(to) : t("dropoffPlaceholder")}
                 </span>
               </span>
@@ -607,20 +603,23 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
 
           {/* Swap — a rounded square floating on the seam, white with a
               shadow so it reads as sitting on top of the two fields rather
-              than as a third action competing with the CTA. */}
+              than as a third action competing with the CTA. Draws at 40px but
+              keeps a 44px hit area. */}
           <button
             type="button"
             onClick={swap}
             aria-label={swapLabel}
-            className="absolute right-6 top-1/2 z-30 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-[13px] border border-[#E5E7EB] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.12)] transition-transform active:scale-95"
+            className="absolute right-1.5 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center transition-transform active:scale-95"
           >
-            <ArrowUpDown size={24} className="text-[#0e8a61]" aria-hidden="true" />
+            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
+              <ArrowUpDown size={18} className="text-[#0e8a61]" aria-hidden="true" />
+            </span>
           </button>
         </div>
 
         {/* Date + time — 50/50, both on the same minimum height so the row
             never reflows when a value replaces a placeholder. */}
-        <div className="mt-3 grid grid-cols-2 gap-3">
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <div className="relative">
             <button
               type="button"
@@ -628,16 +627,16 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="dialog"
               aria-expanded={open === "cal" && calFor === "dep"}
               aria-label={`${t("departureDate")}: ${depFmt ? depFmt.text : t("selectDateShort")}`}
-              className={`flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border py-[13px] px-3.5 sm:px-[18px] text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+              className={`flex min-h-[52px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
             >
-              <Calendar size={26} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
+              <Calendar size={18} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("departureDate")}</span>
-                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("departureDate")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                   {depFmt ? depFmt.text : t("selectDateShort")}
                 </span>
               </span>
-              <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
           </div>
@@ -646,28 +645,28 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             onClick={() => { setDateError(false); openCal("dep"); }}
             aria-haspopup="dialog"
             aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
-            className={`flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border py-[13px] px-3.5 sm:px-[18px] text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+            className={`flex min-h-[52px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
-            <Clock size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+            <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("hour")}</span>
-              <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+              <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+              <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                 {depFmt ? depFmt.time : t("selectTimeShort")}
               </span>
             </span>
-            <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+            <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Return — a switch row rather than a dashed "add" button, which
-            read as a broken field. Flipping it on reveals the same return
-            date/time pair the form always had. The switch stays dimmed until
-            there is an outbound date, because a return can only be picked
-            relative to one. */}
-        <div className={`mt-3 flex min-h-[72px] sm:min-h-20 items-center justify-between gap-4 rounded-2xl border py-[13px] px-4 sm:px-5 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
-          <span className="flex min-w-0 items-center gap-[15px]">
-            <RefreshCw size={24} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
-            <span className={`truncate text-[16px] ${depDate ? "text-[#6B7280]" : "text-[#9CA3AF]"}`}>
+        {/* Return — a switch row rather than a dashed "add" button, which read
+            as a broken field. Flipping it on reveals the same return date/time
+            pair the form always had. The switch stays dimmed until there is an
+            outbound date, because a return can only be picked relative to
+            one. */}
+        <div className={`mt-2 flex min-h-[46px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
+          <span className="flex min-w-0 items-center gap-2.5">
+            <RefreshCw size={18} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
+            <span className={`truncate text-[14px] ${depDate ? "text-[#4B5563]" : "text-[#9CA3AF]"}`}>
               {t("addReturnTransfer")}
             </span>
           </span>
@@ -682,10 +681,10 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               if (hasRet) { setHasRet(false); setRetDate(null); }
               else { setHasRet(true); openCal("ret"); }
             }}
-            className="-my-2 -mr-1 flex h-11 shrink-0 items-center justify-end pl-2 pr-1 disabled:cursor-not-allowed"
+            className="-mr-1.5 flex h-11 shrink-0 items-center justify-end pl-3 pr-1.5 disabled:cursor-not-allowed"
           >
-            <span className={`relative block h-8 w-[58px] rounded-full transition-colors ${!depDate ? "bg-[#E5E7EB]" : hasRet ? "bg-[#0e8a61]" : "bg-[#D1D5DB]"}`}>
-              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-[0_2px_5px_rgba(0,0,0,0.16)] transition-all ${hasRet ? "left-[30px]" : "left-1"}`} />
+            <span className={`relative block h-[22px] w-10 rounded-full transition-colors ${!depDate ? "bg-[#E5E7EB]" : hasRet ? "bg-[#0e8a61]" : "bg-[#D1D5DB]"}`}>
+              <span className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${hasRet ? "left-[21px]" : "left-[3px]"}`} />
             </span>
           </button>
         </div>
@@ -693,7 +692,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         {/* Return date + time — the same pair as the outbound, shown only
             once the switch is on. */}
         {hasRet && (
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             <div className="relative">
               <button
                 type="button"
@@ -701,16 +700,16 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
                 aria-haspopup="dialog"
                 aria-expanded={open === "cal" && calFor === "ret"}
                 aria-label={`${t("returnDate")}: ${retFmt ? retFmt.text : t("selectDateShort")}`}
-                className="flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border border-[#E5E7EB] bg-white py-[13px] px-3.5 sm:px-[18px] text-left transition-colors active:bg-gray-50"
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
               >
-                <Calendar size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <Calendar size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("returnDate")}</span>
-                  <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("returnDate")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                     {retFmt ? retFmt.text : t("selectDateShort")}
                   </span>
                 </span>
-                <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
               </button>
               {open === "cal" && calFor === "ret" && renderCalendar()}
             </div>
@@ -719,16 +718,16 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               onClick={() => openCal("ret")}
               aria-haspopup="dialog"
               aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
-              className="flex min-h-[96px] sm:min-h-[106px] w-full items-center gap-2.5 sm:gap-3.5 rounded-2xl border border-[#E5E7EB] bg-white py-[13px] px-3.5 sm:px-[18px] text-left transition-colors active:bg-gray-50"
+              className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
             >
-              <Clock size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] sm:text-sm leading-[1.2] text-[#6B7280]">{t("hour")}</span>
-                <span className={`mt-[7px] block truncate text-[16px] sm:text-lg ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
                   {retFmt ? retFmt.time : t("selectTimeShort")}
                 </span>
               </span>
-              <ChevronDown size={18} className="ml-auto shrink-0 text-[#6B7280]" aria-hidden="true" />
+              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -743,13 +742,13 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             aria-haspopup="dialog"
             aria-expanded={open === "pax"}
             aria-label={`${adults + kids} ${t("passengers")}`}
-            className={`mt-3 flex min-h-[72px] sm:min-h-20 w-full items-center justify-between gap-4 rounded-2xl border py-[13px] px-4 sm:px-5 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+            className={`mt-2 flex min-h-[46px] w-full items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
-            <span className="flex min-w-0 items-center gap-[15px]">
-              <User size={26} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
-              <span className="truncate text-[18px] font-semibold text-[#111827]">{adults + kids} {t("passengers")}</span>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <User size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <span className="truncate text-[15px] font-semibold text-[#111827]">{adults + kids} {t("passengers")}</span>
             </span>
-            <ChevronDown size={20} className={`shrink-0 text-[#6B7280] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
+            <ChevronDown size={16} className={`shrink-0 text-[#9CA3AF] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {open === "pax" && renderPassengers()}
         </div>
@@ -760,24 +759,24 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <button
           type="button"
           onClick={submit}
-          className="mt-4 grid min-h-[58px] sm:min-h-[62px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-[14px] bg-[#0e8a61] px-[18px] sm:px-[22px] text-[16px] sm:text-lg font-bold text-white shadow-[0_12px_24px_rgba(14,138,97,0.18)] transition-transform active:scale-[0.985]"
+          className="mt-2.5 grid h-[52px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-xl bg-[#0e8a61] px-4 text-[15px] font-bold text-white shadow-[0_10px_20px_-6px_rgba(14,138,97,0.45)] transition-transform active:scale-[0.985]"
         >
           <span className="truncate text-center">{t("seePriceAndBook")}</span>
-          <ChevronRight size={26} className="shrink-0" aria-hidden="true" />
+          <ChevronRight size={20} className="shrink-0" aria-hidden="true" />
         </button>
 
         {/* Trust strip — the three objections people have at exactly this
             moment, answered right where the thumb already is. */}
-        <ul className="grid min-h-[66px] grid-cols-[1fr_auto_1fr_auto_1fr] items-center px-0.5 pt-2">
+        <ul className="mt-2.5 grid min-h-[28px] grid-cols-[1fr_auto_1fr_auto_1fr] items-center">
           {[
             { Icon: ShieldCheck, label: t("trustFixedPrice") },
             { Icon: Tag, label: t("trustNoHiddenShort") },
             { Icon: Headphones, label: t("trustSupport247") },
           ].map(({ Icon, label }, i) => (
             <Fragment key={label}>
-              {i > 0 && <li aria-hidden="true" className="h-7 w-px bg-[#E5E7EB]" />}
-              <li className="flex items-center justify-center gap-[5px] sm:gap-2 px-0.5 text-center text-[11px] sm:text-[13px] font-medium leading-tight text-[#111827]">
-                <Icon size={22} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              {i > 0 && <li aria-hidden="true" className="h-4 w-px bg-[#E5E7EB]" />}
+              <li className="flex items-center justify-center gap-1.5 px-1 text-center text-[10.5px] font-medium leading-tight text-[#4B5563]">
+                <Icon size={13} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
                 <span>{label}</span>
               </li>
             </Fragment>

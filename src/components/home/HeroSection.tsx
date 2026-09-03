@@ -26,7 +26,7 @@ export default function HeroSection() {
           so the booking card lands on the boundary with white underneath it
           and nothing has a hard edge. Desktop keeps the original full-height
           image and its single wash. */}
-      <div className="absolute inset-x-0 top-0 h-[440px] lg:h-full overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[430px] lg:h-full overflow-hidden">
         <Image
           src="/images/5312.jpg"
           alt="Antalya airport VIP transfer service - luxury vehicle on highway"
@@ -41,31 +41,24 @@ export default function HeroSection() {
         {/* The dissolve. Tall enough that the gradient reads as light falling
             off rather than as a band of its own. */}
         <div
-          className="absolute inset-x-0 bottom-0 h-56 lg:hidden"
+          className="absolute inset-x-0 bottom-0 h-48 lg:hidden"
           style={{ backgroundImage: `linear-gradient(to bottom, rgba(250,250,250,0) 0%, rgba(250,250,250,0.65) 55%, ${PAGE} 100%)` }}
         />
       </div>
 
       {/* HEADLINE.
-          Phones get the short two-line brand statement over the photo;
-          pointer devices keep the long keyword-bearing title, which still
-          fits there. The full title stays inside the mobile h1 as
-          screen-reader text so neither assistive tech nor a crawler loses
-          it. */}
-      <div className="order-1 relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 lg:pt-32 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
-        <h1 className="text-white text-center">
-          <span className="lg:hidden block text-[38px] leading-[1.06] font-extrabold tracking-[-0.02em]">
-            <span className="block">{t("mobileTitleLead")}</span>
-            <span className="block text-[#34D399]">{t("mobileTitleAccent")}</span>
-            <span className="sr-only">{t("title")}</span>
-          </span>
-          <span className="hidden lg:block text-5xl xl:text-6xl font-extrabold leading-[1.1] tracking-tight">
-            {t("title")}
-          </span>
+          Nothing is printed over the photo on a phone — the picture and the
+          card carry the whole hero there. The h1 and its subtitle are still
+          in the markup, just `sr-only`, so screen readers and crawlers keep
+          the page's heading and its keywords; `sr-only` also takes them out
+          of flow, so they cost the layout no height. Desktop, where there is
+          room for it, prints the same heading normally. */}
+      <div className="order-1 relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:pt-32 lg:flex-1 lg:flex lg:flex-col lg:justify-center">
+        <h1 className="sr-only lg:not-sr-only lg:block text-white text-center lg:text-5xl xl:text-6xl lg:font-extrabold lg:leading-[1.1] lg:tracking-tight">
+          {t("title")}
         </h1>
-        <p className="mt-3 lg:mt-4 text-[15px] lg:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto text-center">
-          <span className="lg:hidden">{t("mobileSubtitle")}</span>
-          <span className="hidden lg:inline">{t("subtitle")}</span>
+        <p className="sr-only lg:not-sr-only lg:block lg:mt-4 lg:text-lg text-white/80 lg:leading-relaxed lg:max-w-2xl lg:mx-auto lg:text-center">
+          {t("subtitle")}
         </p>
       </div>
 
@@ -79,7 +72,7 @@ export default function HeroSection() {
           DOM order and paints over this one — which put the location list and
           the calendar underneath the promo text, where they could not be
           clicked. */}
-      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 mt-7 lg:mt-0">
+      <div className="order-2 lg:order-3 relative z-30 w-full max-w-6xl mx-auto px-3 sm:px-6 pt-[240px] lg:pt-0">
         <BookingFormMini />
       </div>
 
