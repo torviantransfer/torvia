@@ -8,7 +8,11 @@ export const reservationSchema = z.object({
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
   returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   returnTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
-  flightCode: z.string().max(20).optional().nullable(),
+  // Required, both of them: the driver needs somewhere to take the customer,
+  // and the flight is what tells the office a 3am arrival is running late
+  // rather than a no-show. Optional here meant a paid booking could arrive
+  // with neither, and the office chased it down by hand afterwards.
+  flightCode: z.string().trim().min(2, "Flight code is required").max(20),
   adults: z.number().int().min(1).max(20).default(1),
   children: z.number().int().min(0).max(10).default(0),
   luggage: z.number().int().min(0).max(20).default(0),
@@ -19,7 +23,7 @@ export const reservationSchema = z.object({
   lastName: z.string().trim().min(1).max(100),
   email: z.string().trim().toLowerCase().email("Invalid email address").max(255),
   phone: z.string().trim().min(7).max(20).regex(/^[+]?[0-9\s()-]+$/, "Invalid phone number"),
-  hotelName: z.string().max(200).optional().nullable(),
+  hotelName: z.string().trim().min(2, "Hotel or address is required").max(200),
   hotelAddress: z.string().max(500).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
   couponCode: z.string().max(50).optional().nullable(),
