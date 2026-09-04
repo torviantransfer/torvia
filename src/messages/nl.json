@@ -69,6 +69,8 @@
     "trackReservation": "Boeking volgen",
     "flightCode": "Vluchtnummer",
     "flightCodePlaceholder": "bijv. TK1234",
+    "returnFlightCode": "Retourvluchtnummer",
+    "returnFlightCodePlaceholder": "bijv. TK1235",
     "adults": "Volwassenen",
     "children": "Kinderen",
     "luggage": "Bagage",

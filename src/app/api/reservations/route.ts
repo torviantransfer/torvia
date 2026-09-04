@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
       returnDate,
       returnTime,
       flightCode,
+      returnFlightCode,
       adults,
       children,
       luggage,
@@ -374,6 +375,8 @@ export async function POST(request: NextRequest) {
         pickup_datetime: pickupDatetime,
         return_datetime: returnDatetime,
         flight_code: flightCode || null,
+        // NULL on a one-way booking: there is no return leg to fly.
+        return_flight_code: tripType === "round_trip" ? (returnFlightCode || null) : null,
         adults: adults ?? 1,
         children: children ?? 0,
         luggage_count: luggage ?? 0,

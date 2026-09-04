@@ -117,6 +117,7 @@ function BookingWizardInner(props: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [flightCode, setFlightCode] = useState(props.initialFlight ?? "");
+  const [returnFlightCode, setReturnFlightCode] = useState("");
   const [hotelName, setHotelName] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -448,6 +449,8 @@ function BookingWizardInner(props: Props) {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) errors.email = t("errorInvalidEmail");
     if (!phone.trim()) errors.phone = t("fieldRequired");
     if (!flightCode.trim()) errors.flightCode = t("fieldRequired");
+    // Only where there is a return leg — a one-way booking has no second flight.
+    if (tripType === "round_trip" && !returnFlightCode.trim()) errors.returnFlightCode = t("fieldRequired");
     if (!hotelName.trim()) errors.hotelName = t("fieldRequired");
     // Reachable even with the counters clamped: a restored session or a URL
     // carrying ?adults= can seat more people than the vehicle holds.
@@ -470,7 +473,9 @@ function BookingWizardInner(props: Props) {
           regionSlug, categorySlug: selectedVehicle.slug, tripType, pickupDate, pickupTime,
           returnDate: tripType === "round_trip" ? returnDate : undefined,
           returnTime: tripType === "round_trip" ? returnTime : undefined,
-          flightCode: flightCode.trim(), adults, children, luggage,
+          flightCode: flightCode.trim(),
+          returnFlightCode: tripType === "round_trip" ? returnFlightCode.trim() : undefined,
+          adults, children, luggage,
           childSeat,
           firstName, lastName, email, phone, hotelName: hotelName.trim(),
           notes: notes || undefined, couponCode: couponStatus?.applied ? couponApplied : undefined, locale,
@@ -542,7 +547,7 @@ function BookingWizardInner(props: Props) {
    * the customer would reach rather than whichever key the object happened to
    * hold first.
    */
-  const FIELD_ORDER = ["firstName", "lastName", "email", "phone", "party", "flightCode", "hotelName"];
+  const FIELD_ORDER = ["firstName", "lastName", "email", "phone", "party", "flightCode", "returnFlightCode", "hotelName"];
 
   const focusFirstError = (errors: Record<string, string>) => {
     const first = FIELD_ORDER.find((f) => errors[f]);
@@ -589,6 +594,7 @@ function BookingWizardInner(props: Props) {
     email: t("email"),
     phone: t("phone"),
     flightCode: t("flightCode"),
+    returnFlightCode: t("returnFlightCode"),
     hotelName: t("selectHotel"),
   };
 
@@ -1203,6 +1209,39 @@ function BookingWizardInner(props: Props) {
                     </div>
                     {fieldMessage("flightCode")}
                   </div>
+
+                  {/* Only for a round trip. A one-way customer has no second
+                      flight, and asking for one would be a required field with
+                      no answer. Where it does appear the customer already has
+                      the number — a return leg is bought on the same ticket.
+
+                      Its worth is not the same as the arrival flight's. That
+                      one is the schedule the driver watches. This one checks a
+                      time the customer chose themselves: a 10:00 flight with a
+                      09:00 pickup two hours out is a missed flight anyone can
+                      see coming, once the number is on record. */}
+                  {tripType === "round_trip" && (
+                    <div>
+                      <label htmlFor="booking-returnFlightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("returnFlightCode")} *</label>
+                      <div className="relative">
+                        <ArrowLeftRight size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          id="booking-returnFlightCode"
+                          type="text"
+                          autoCapitalize="characters"
+                          spellCheck={false}
+                          value={returnFlightCode}
+                          onChange={(e) => { setReturnFlightCode(e.target.value.toUpperCase()); clearFieldError("returnFlightCode"); }}
+                          placeholder={t("returnFlightCodePlaceholder")}
+                          aria-invalid={!!fieldErrors.returnFlightCode}
+                          className={`w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.returnFlightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
+                          style={fieldStyle("returnFlightCode")}
+                        />
+                      </div>
+                      {fieldMessage("returnFlightCode")}
+                    </div>
+                  )}
+
                   <div>
                     <label htmlFor="booking-hotelName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} *</label>
                     <input

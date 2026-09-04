@@ -59,6 +59,7 @@ export function buildVoucherData(res: Row, locale: string): ReservationEmailData
     childSeat: Boolean(res.child_seat),
     hotelName: (res.hotel_name as string) ?? undefined,
     flightCode: (res.flight_code as string) ?? undefined,
+    returnFlightCode: (res.return_flight_code as string) ?? undefined,
     vehicleName: res.vehicle_categories?.name,
     basePrice: toEur(res.base_price),
     nightSurcharge: toEur(res.night_surcharge),

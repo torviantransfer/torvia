@@ -304,6 +304,7 @@ export interface DriverVoucherData {
   /** Hotel pickup time agreed for the return leg, when one has been set. */
   returnPickupTime?: string | null;
   flightCode?: string;
+  returnFlightCode?: string;
   hotelName?: string;
   hotelAddress?: string;
   regionName: string;
@@ -421,7 +422,7 @@ export function buildTransferMessage(data: DriverVoucherData): string {
       longDay(data.returnDatetime!),
       ret,
       retTime,
-      undefined,
+      data.returnFlightCode,
       ret.from === data.regionName ? `✈️ Dönüş uçuş saati kontrol edilecektir.` : undefined
     );
   }

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const allowed: Record<string, any> = {};
-    const fields = ["hotel_name", "hotel_address", "flight_code", "pickup_datetime", "return_datetime", "notes", "status", "direction"];
+    const fields = ["hotel_name", "hotel_address", "flight_code", "return_flight_code", "pickup_datetime", "return_datetime", "notes", "status", "direction"];
     for (const f of fields) {
       if (body[f] !== undefined) allowed[f] = body[f];
     }

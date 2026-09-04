@@ -69,6 +69,8 @@
     "trackReservation": "Reservierung Verfolgen",
     "flightCode": "Flugnummer",
     "flightCodePlaceholder": "z.B. TK1234",
+    "returnFlightCode": "Rückflugnummer",
+    "returnFlightCodePlaceholder": "z.B. TK1235",
     "adults": "Erwachsene",
     "children": "Kinder",
     "luggage": "Gepäck",

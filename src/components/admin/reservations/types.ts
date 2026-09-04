@@ -35,6 +35,7 @@ export interface Reservation {
   pickup_datetime: string;
   return_datetime: string | null;
   flight_code: string | null;
+  return_flight_code: string | null;
   adults: number;
   children: number;
   luggage_count?: number | null;

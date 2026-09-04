@@ -69,6 +69,8 @@
     "trackReservation": "Отследить Бронь",
     "flightCode": "Номер Рейса",
     "flightCodePlaceholder": "напр. TK1234",
+    "returnFlightCode": "Номер обратного рейса",
+    "returnFlightCodePlaceholder": "напр. TK1235",
     "adults": "Взрослые",
     "children": "Дети",
     "luggage": "Багаж",

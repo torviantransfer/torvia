@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
        vehicles(plate_number, brand, model),
        reservations(
          reservation_code, trip_type, direction, pickup_datetime, return_datetime,
-         flight_code, adults, children, luggage_count, child_seat,
+         flight_code, return_flight_code, adults, children, luggage_count, child_seat,
          hotel_name, hotel_address, notes,
          status, payment_method, deposit_amount, driver_amount, exchange_rate_eur,
          customers(first_name, last_name, phone, email),
@@ -258,6 +258,7 @@ export async function GET(request: NextRequest) {
   <div class="sec">
     <div class="sec-t">Transfer</div>
     ${res.flight_code ? row("plane", "Uçuş kodu", esc(String(res.flight_code)), true) : ""}
+    ${res.return_flight_code ? row("plane", "Dönüş uçuş kodu", esc(String(res.return_flight_code)), true) : ""}
     ${
       res.hotel_name
         ? `<div class="row">${icon("hotel")}<div class="rt"><span class="lbl">Otel</span><span class="val">${esc(String(res.hotel_name))}</span>${res.hotel_address ? `<span class="sub">${esc(String(res.hotel_address))}</span>` : ""}</div></div>`
@@ -309,6 +310,7 @@ export async function GET(request: NextRequest) {
       `Tarih: ${formatBookingDateLong(legDatetime)}`,
       `Alış saati: ${assignment.pickup_time || formatBookingTime(legDatetime)}`,
       res.flight_code ? `Uçuş: ${res.flight_code}` : "",
+      res.return_flight_code ? `Dönüş uçuşu: ${res.return_flight_code}` : "",
       ``,
       `Müşteri: ${customer?.first_name ?? ""} ${customer?.last_name ?? ""}`.trim(),
       customer?.phone ? `Telefon: ${customer.phone}` : "",

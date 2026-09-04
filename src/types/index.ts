@@ -117,6 +117,7 @@ export interface Reservation {
   pickup_datetime: string;
   return_datetime: string | null;
   flight_code: string | null;
+  return_flight_code: string | null;
   adults: number;
   children: number;
   luggage_count: number;
@@ -218,6 +219,7 @@ export interface BookingFormData {
   returnDate?: string;
   returnTime?: string;
   flightCode?: string;
+  returnFlightCode?: string;
   adults: number;
   children: number;
   luggage: number;
