@@ -88,7 +88,7 @@ export default function BookingWizard(props: Props) {
 function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
-  const { format: fmt } = useCurrency();
+  const { format: fmt, formatBilling, isConverted } = useCurrency();
 
   const regionSlug = props.initialRegion!;
   const tripType = props.initialTrip ?? "one_way";
@@ -1476,6 +1476,21 @@ function BookingWizardInner(props: Props) {
                         <span className="text-xl font-black text-blue-600 whitespace-nowrap">{fmt(totalPrice, exchangeRates)}</span>
                       </div>
                     </div>
+                  )}
+
+                  {/* Said here as well as on the payment screen: this is the
+                      figure the customer decides on, and finding out only at
+                      the card form that the amount is a conversion is late. */}
+                  {isConverted && (
+                    <p className="text-center text-[10.5px] text-gray-400">
+                      {t("chargedInUsd", {
+                        amount: formatBilling(
+                          paymentMethod === "cash" && selectedVehicle.cashDeposit != null
+                            ? selectedVehicle.cashDeposit
+                            : totalPrice,
+                        ),
+                      })}
+                    </p>
                   )}
 
                   {/* Trust badges.

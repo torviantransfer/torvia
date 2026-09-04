@@ -38,11 +38,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update reservation status to paid
+    /* A pay-at-vehicle booking takes only the deposit by card, and the
+       PaymentIntent already carries that fact — it is written into the
+       metadata when the intent is created. Writing "paid" for one of those
+       marks a cash booking as settled in full, and the driver never collects
+       the balance. The webhook writes the right status too, so in normal
+       operation this corrects itself within seconds; but this endpoint exists
+       for when the webhook is late or lost, which is exactly the case where
+       the wrong status would stick. */
+    const isDeposit = paymentIntent.metadata?.is_deposit === "true";
+
     const { error: updateErr } = await supabase
       .from("reservations")
       .update({
-        status: "paid",
+        status: isDeposit ? "deposit_paid" : "paid",
         stripe_payment_intent_id: paymentIntent.id,
       })
       .eq("reservation_code", reservationCode)
