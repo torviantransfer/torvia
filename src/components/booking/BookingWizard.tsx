@@ -294,7 +294,10 @@ function BookingWizardInner(props: Props) {
   useEffect(() => {
     const params = new URLSearchParams({ region: regionSlug, trip: tripType, time: pickupTime });
     if (couponApplied) params.set("coupon", couponApplied);
-    fetch(`/api/pricing?${params}`)
+    // `no-store`: this response carries whatever the panel last saved — the
+    // vehicles, their features, the prices — so a cached copy shows an admin
+    // an edit that has not taken effect and a customer a price that is gone.
+    fetch(`/api/pricing?${params}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         setCouponStatus(data.coupon ?? null);

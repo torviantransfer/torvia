@@ -153,7 +153,10 @@ export async function GET(request: NextRequest) {
       image_url: cat.image_url as string | null,
       max_passengers: cat.max_passengers as number,
       max_luggage: cat.max_luggage as number,
-      features: cat.features as string[],
+      // `?? []`: the column is TEXT[] DEFAULT '{}', so a row written through
+      // the panel always has an array — but a row inserted by hand can carry
+      // NULL, and the card reads `features.length` without a guard.
+      features: (cat.features as string[] | null) ?? [],
       sort_order: cat.sort_order as number,
       oneWayPrice: pricing.one_way_price,
       roundTripPrice: pricing.round_trip_price,
