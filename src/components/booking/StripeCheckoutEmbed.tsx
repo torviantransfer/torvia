@@ -13,6 +13,16 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2, Lock, CreditCard, MapPin } from "lucide-react";
 
+/**
+ * Stripe carries its own translations for the card form and for the decline
+ * messages it returns — but only when it is told which language to use.
+ * Left unset it reads the browser, so a German customer on the German site
+ * whose phone is set to English met an English card form in the middle of
+ * paying. Every locale this site runs in is one Stripe supports; anything
+ * else falls back to its own detection.
+ */
+const STRIPE_LOCALES = ["tr", "en", "de", "pl", "ru", "nl"];
+
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
@@ -116,13 +126,18 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
     });
 
     if (submitError) {
-      setError(submitError.message ?? "Payment failed");
+      // Stripe's own message is localised now that Elements knows the locale;
+      // the fallback covers a failure that arrives without one.
+      setError(submitError.message ?? t("errorGeneric"));
       setLoading(false);
       return;
     }
 
-    // Payment succeeded — confirm on server to update status to "paid"
-    if (paymentIntent?.id) {
+    /* `redirect: "if_required"` also returns without an error for an intent
+       that is merely `processing`, and confirming one of those would record a
+       payment that has not been taken. The success page checks the stored
+       status either way, and the webhook lands the real one. */
+    if (paymentIntent?.id && paymentIntent.status === "succeeded") {
       try {
         await fetch("/api/reservations/confirm", {
           method: "POST",
@@ -272,6 +287,9 @@ export default function StripeCheckoutEmbed({ clientSecret, reservationCode, loc
   const options: StripeElementsOptions = {
     clientSecret,
     appearance,
+    locale: STRIPE_LOCALES.includes(locale)
+      ? (locale as StripeElementsOptions["locale"])
+      : undefined,
   };
 
   return (
