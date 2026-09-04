@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     // Fetch pricing — include cash pricing columns
     let pricingQuery = supabase
       .from("pricing")
-      .select("*, one_way_cash_price, round_trip_cash_price, cash_deposit_amount, vehicle_categories!inner(slug)")
+      .select("*, one_way_cash_price, round_trip_cash_price, cash_deposit_amount, vehicle_categories!inner(slug, name, max_passengers, max_luggage)")
       .eq("region_id", region.id);
 
     if (categorySlug) {
@@ -158,6 +158,29 @@ export async function POST(request: NextRequest) {
 
     if (!pricing) {
       return NextResponse.json({ error: "Pricing not found" }, { status: 404 });
+    }
+
+    // ─── The party has to fit in the vehicle ───
+    // Checked here and not only in the wizard: the wizard clamps its adult and
+    // child counters against separate ceilings, so their sum can pass the
+    // vehicle's seat count, and nothing downstream looks at it again. Without
+    // this a booking for more people than the car holds is confirmed and paid,
+    // and the failure surfaces at the airport with the driver.
+    const category = pricing.vehicle_categories as unknown as {
+      name: string;
+      max_passengers: number;
+      max_luggage: number;
+    };
+    const partySize = (adults ?? 1) + (children ?? 0);
+    if (category && partySize > category.max_passengers) {
+      return NextResponse.json(
+        {
+          error: `${category.name} seats up to ${category.max_passengers} passengers, but the booking is for ${partySize}`,
+          code: "capacity_exceeded",
+          maxPassengers: category.max_passengers,
+        },
+        { status: 400 }
+      );
     }
 
     // Check round-trip availability

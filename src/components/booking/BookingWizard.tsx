@@ -121,6 +121,22 @@ function BookingWizardInner(props: Props) {
   const [notes, setNotes] = useState("");
 
   const [luggage, setLuggage] = useState(props.initialLuggage ?? 0);
+  /**
+   * Which fields are wrong, keyed by field name.
+   *
+   * Validation used to be a single boolean over four fields that set one
+   * message at the top of the page. On a phone the customer is at the bottom
+   * of a long form when they press pay, so that message rendered far above
+   * the fold: the button appeared to do nothing at all, which reads either as
+   * a broken site or — worse, at that moment — as a charge that may have gone
+   * through. The error now lives on the field it belongs to, and the first
+   * one is scrolled to and focused.
+   */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // An empty discount box in front of someone ready to pay invites them to go
+  // looking for a code they do not have, and they do not always come back.
+  // Behind a link, whoever has one still finds it.
+  const [showCoupon, setShowCoupon] = useState(false);
   const [childSeat, setChildSeat] = useState(false);
   const [couponCode, setCouponCode] = useState("");
 
@@ -420,8 +436,28 @@ function BookingWizardInner(props: Props) {
     if (isSubmittingRef.current) return;
     setError(null);
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim()) { setError(t("errorFillRequired")); return; }
     if (!selectedVehicle) return;
+
+    const errors: Record<string, string> = {};
+    if (!firstName.trim()) errors.firstName = t("fieldRequired");
+    if (!lastName.trim()) errors.lastName = t("fieldRequired");
+    if (!email.trim()) errors.email = t("fieldRequired");
+    // Deliberately loose. A stricter pattern rejects real addresses, and the
+    // point here is to catch the typo that silently loses the voucher — a
+    // missing @ or a bare domain — not to adjudicate RFC 5322.
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) errors.email = t("errorInvalidEmail");
+    if (!phone.trim()) errors.phone = t("fieldRequired");
+    // Reachable even with the counters clamped: a restored session or a URL
+    // carrying ?adults= can seat more people than the vehicle holds.
+    if (adults + children > selectedVehicle.max_passengers) {
+      errors.party = t("errorCapacityExceeded", { max: selectedVehicle.max_passengers });
+    }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      focusFirstError(errors);
+      return;
+    }
+    setFieldErrors({});
     isSubmittingRef.current = true;
     setSubmitting(true);
     try {
@@ -441,17 +477,35 @@ function BookingWizardInner(props: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        // Show first field-level error if available, otherwise show generic error
-        if (data.details) {
-          const firstField = Object.keys(data.details)[0];
-          const firstMsg = firstField && data.details[firstField]?.[0];
-          if (firstMsg?.includes("future") || firstField === "pickupDate") {
-            setError("Seçilen tarih/saat geçmişte kalmış. Lütfen ilerleyen bir saat seçin.");
-          } else {
-            setError(firstMsg ? `${firstField}: ${firstMsg}` : (data.error ?? t("errorGeneric")));
-          }
+        /* Nothing the server says reaches the customer verbatim. Its
+           messages are English zod strings keyed by the field name, so a
+           Russian customer was shown "email: Invalid email" — and `data.error`
+           is English prose. Each case is mapped to a translated message, on
+           the field itself wherever the server names one. */
+        if (data.code === "capacity_exceeded") {
+          const capacityError = {
+            party: t("errorCapacityExceeded", { max: data.maxPassengers ?? selectedVehicle.max_passengers }),
+          };
+          setFieldErrors(capacityError);
+          focusFirstError(capacityError);
+          return;
+        }
+        const firstField = data.details ? Object.keys(data.details)[0] : null;
+        const firstMsg = firstField ? data.details[firstField]?.[0] : null;
+        if (firstField === "pickupDate" || String(firstMsg ?? "").includes("future")) {
+          setError(t("errorPastDate"));
+        } else if (firstField === "email") {
+          const emailError = { email: t("errorInvalidEmail") };
+          setFieldErrors(emailError);
+          focusFirstError(emailError);
+        } else if (firstField && serverFieldLabels[firstField]) {
+          const known = {
+            [firstField]: t("errorCheckField", { field: serverFieldLabels[firstField] }),
+          };
+          setFieldErrors(known);
+          focusFirstError(known);
         } else {
-          setError(data.error ?? t("errorGeneric"));
+          setError(t("errorGeneric"));
         }
         return;
       }
@@ -480,6 +534,72 @@ function BookingWizardInner(props: Props) {
   };
 
   const goBack = () => { setError(null); if (step === 2) { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); } };
+
+  /**
+   * Fields in the order they appear, so "the first error" means the first one
+   * the customer would reach rather than whichever key the object happened to
+   * hold first.
+   */
+  const FIELD_ORDER = ["firstName", "lastName", "email", "phone", "party"];
+
+  const focusFirstError = (errors: Record<string, string>) => {
+    const first = FIELD_ORDER.find((f) => errors[f]);
+    if (!first) return;
+    const el = document.getElementById(`booking-${first}`);
+    if (!el) return;
+    // Focus first with the scroll suppressed, then scroll deliberately —
+    // focusing during a smooth scroll makes the browser jump to its own idea
+    // of the position and fights the animation.
+    (el as HTMLElement).focus?.({ preventScroll: true });
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  const clearFieldError = (name: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+
+  const fieldClass = (name: string) =>
+    `w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${
+      fieldErrors[name] ? "focus:ring-red-500" : "focus:ring-blue-500"
+    }`;
+
+  const fieldStyle = (name: string) => ({
+    backgroundColor: fieldErrors[name] ? "rgba(220,38,38,0.04)" : "rgba(0,0,0,0.03)",
+    border: fieldErrors[name] ? "1px solid #dc2626" : "1px solid rgba(0,0,0,0.08)",
+  });
+
+  const fieldMessage = (name: string) =>
+    fieldErrors[name] ? (
+      <p role="alert" className="mt-1.5 flex items-start gap-1 text-[11.5px] font-medium text-red-600">
+        <AlertCircle size={12} className="mt-px shrink-0" />
+        {fieldErrors[name]}
+      </p>
+    ) : null;
+
+  /** Field names the reservations API can name, in the customer's language. */
+  const serverFieldLabels: Record<string, string> = {
+    firstName: t("firstName"),
+    lastName: t("lastName"),
+    email: t("email"),
+    phone: t("phone"),
+  };
+
+  /**
+   * Seats still free in the chosen vehicle.
+   *
+   * The two counters used to clamp against separate ceilings — adults against
+   * the vehicle's capacity, children against a flat 6 — so eight adults and
+   * six children fitted an eight-seat van as far as the form was concerned.
+   * Nothing downstream looked at the sum either, so the booking was confirmed
+   * and paid and the failure surfaced at the airport, with the driver.
+   */
+  const seatsLeft = selectedVehicle
+    ? selectedVehicle.max_passengers - adults - children
+    : Number.POSITIVE_INFINITY;
 
   const featureIcon: Record<string, React.ReactNode> = {
     ac: <Wind size={13} />, wifi: <Wifi size={13} />, water: <Droplets size={13} />,
@@ -922,7 +1042,11 @@ function BookingWizardInner(props: Props) {
                   There is no card title above these: the step indicator already
                   reads "Passenger Info", and repeating it here put two
                   Users-icon headings directly on top of each other. */}
-              <div className="space-y-5">
+              <form
+                className="space-y-5"
+                noValidate
+                onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+              >
                 <div className="flex items-center gap-2.5 pb-1">
                   <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
                     <Users size={14} className="text-blue-600" />
@@ -934,29 +1058,67 @@ function BookingWizardInner(props: Props) {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
-                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <label htmlFor="booking-firstName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
+                    <input
+                      id="booking-firstName"
+                      type="text"
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => { setFirstName(e.target.value); clearFieldError("firstName"); }}
+                      aria-invalid={!!fieldErrors.firstName}
+                      className={fieldClass("firstName")}
+                      style={fieldStyle("firstName")}
+                    />
+                    {fieldMessage("firstName")}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("lastName")} *</label>
-                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <label htmlFor="booking-lastName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("lastName")} *</label>
+                    <input
+                      id="booking-lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => { setLastName(e.target.value); clearFieldError("lastName"); }}
+                      aria-invalid={!!fieldErrors.lastName}
+                      className={fieldClass("lastName")}
+                      style={fieldStyle("lastName")}
+                    />
+                    {fieldMessage("lastName")}
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("email")} *</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <label htmlFor="booking-email" className="block text-sm font-medium text-gray-600 mb-1.5">{t("email")} *</label>
+                    <input
+                      id="booking-email"
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
+                      aria-invalid={!!fieldErrors.email}
+                      className={fieldClass("email")}
+                      style={fieldStyle("email")}
+                    />
+                    {fieldMessage("email")}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
-                    <PhoneInput international defaultCountry="TR" value={phone} onChange={(val) => setPhone(val ?? "")} placeholder={t("placeholderPhone")}
-                      className="phone-input-dark w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
-                      style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
+                    <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
+                    <PhoneInput international defaultCountry="TR" value={phone}
+                      id="booking-phone"
+                      autoComplete="tel"
+                      onChange={(val) => { setPhone(val ?? ""); clearFieldError("phone"); }}
+                      placeholder={t("placeholderPhone")}
+                      className={`phone-input-dark ${fieldClass("phone")}`}
+                      style={fieldStyle("phone")}
                       flagComponent={({ country, countryName }) => {
                         const Flag = flags[country as keyof typeof flags];
                         return Flag ? <Flag title={countryName} style={{ width: 24, height: 16, borderRadius: 2, display: "block", flexShrink: 0 }} /> : <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>;
                       }}
                     />
+                    {fieldMessage("phone")}
                   </div>
                 </div>
                 {/* ── Trip details ── */}
@@ -975,7 +1137,7 @@ function BookingWizardInner(props: Props) {
                      target) and taper to the previous 28px on desktop where
                      hover replaces tap. Row switches from a cramped 3-col grid
                      to a card-per-row layout below sm so labels never truncate. */}
-                <div>
+                <div id="booking-party">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {/* Adults */}
                     <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
@@ -983,7 +1145,7 @@ function BookingWizardInner(props: Props) {
                       <div className="flex items-center gap-2">
                         <button type="button" aria-label={`${t("adult")} -`} onClick={() => setAdults((v) => Math.max(1, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
                         <span className="text-base font-bold text-gray-900 w-5 text-center">{adults}</span>
-                        <button type="button" aria-label={`${t("adult")} +`} onClick={() => setAdults((v) => Math.min(selectedVehicle?.max_passengers ?? 8, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                        <button type="button" aria-label={`${t("adult")} +`} disabled={seatsLeft <= 0} onClick={() => { if (seatsLeft > 0) { setAdults((v) => v + 1); clearFieldError("party"); } }} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
                       </div>
                     </div>
                     {/* Children */}
@@ -992,7 +1154,7 @@ function BookingWizardInner(props: Props) {
                       <div className="flex items-center gap-2">
                         <button type="button" aria-label={`${t("child")} -`} onClick={() => setChildren((v) => Math.max(0, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
                         <span className="text-base font-bold text-gray-900 w-5 text-center">{children}</span>
-                        <button type="button" aria-label={`${t("child")} +`} onClick={() => setChildren((v) => Math.min(6, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
+                        <button type="button" aria-label={`${t("child")} +`} disabled={seatsLeft <= 0 || children >= 6} onClick={() => { if (seatsLeft > 0) { setChildren((v) => Math.min(6, v + 1)); clearFieldError("party"); } }} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
                       </div>
                     </div>
                     {/* Luggage */}
@@ -1005,6 +1167,13 @@ function BookingWizardInner(props: Props) {
                       </div>
                     </div>
                   </div>
+                  {fieldMessage("party")}
+                  {/* Said before the customer runs into a dead "+", not after. */}
+                  {!fieldErrors.party && selectedVehicle && seatsLeft <= 0 && (
+                    <p className="mt-2 text-[11.5px] text-gray-400">
+                      {t("errorCapacityExceeded", { max: selectedVehicle.max_passengers })}
+                    </p>
+                  )}
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
@@ -1047,6 +1216,15 @@ function BookingWizardInner(props: Props) {
                 </div>
 
                 {/* Coupon */}
+                {!showCoupon && !couponCode ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowCoupon(true)}
+                    className="text-[13px] font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
+                  >
+                    {t("haveCoupon")}
+                  </button>
+                ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("couponCode")}</label>
                   <div className="flex flex-col sm:flex-row gap-2">
@@ -1090,6 +1268,7 @@ function BookingWizardInner(props: Props) {
                     </p>
                   )}
                 </div>
+                )}
 
                 {/* Payment Method Selector */}
                 {settingsData.cashPaymentEnabled && (
@@ -1146,15 +1325,23 @@ function BookingWizardInner(props: Props) {
                   <button type="button" onClick={goBack} className="px-4 py-3 font-medium rounded-xl text-gray-600 transition-colors flex items-center justify-center gap-1.5 text-sm whitespace-nowrap shrink-0" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
                     <ArrowLeft size={15} />{t("back")}
                   </button>
-                  <button type="button" onClick={handleSubmit} disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
+                  {/* Pay-at-vehicle still takes a card for the deposit, so the
+                      button said "Confirm Booking" with a tick and then opened
+                      a card form. The deposit is spelled out in the summary
+                      beside it, so nothing was hidden — but an unannounced
+                      card form is where trust goes, and the label is what
+                      announces it. */}
+                  <button type="submit" disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
                     {submitting
                       ? (<><Loader2 size={17} className="animate-spin" />{t("processing")}</>)
                       : paymentMethod === "cash"
-                        ? (<><Check size={17} />{t("confirmBooking")}</>)
+                        ? selectedVehicle.cashDeposit != null
+                          ? (<><CreditCard size={17} />{t("payDepositAndConfirm")}</>)
+                          : (<><Check size={17} />{t("confirmBooking")}</>)
                         : (<><CreditCard size={17} />{t("pay")}</>)}
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
           {/* Sidebar */}
