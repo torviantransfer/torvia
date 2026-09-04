@@ -86,7 +86,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   const stripe = useStripe();
   const elements = useElements();
   const t = useTranslations("booking");
-  const { format: fmt } = useCurrency();
+  const { format: fmt, formatBilling, isConverted } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -235,6 +235,20 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </>
           )}
         </button>
+
+        {/* Every PaymentIntent is created in USD, so a total shown in lira or
+            euro is a conversion this page made — the card is charged the
+            dollar figure and the customer's own bank picks the rate and adds
+            its fee. Without this line the statement shows an amount they
+            never agreed to, which is a chargeback waiting to happen. Only
+            rendered when the two actually differ. */}
+        {isConverted && (
+          <p className="text-center text-[11.5px] text-gray-500">
+            {t("chargedInUsd", {
+              amount: formatBilling(isDeposit && depositAmount != null ? depositAmount : totalPrice),
+            })}
+          </p>
+        )}
       </form>
 
       {/* One badge instead of four separately-boxed card logos: it carries the
