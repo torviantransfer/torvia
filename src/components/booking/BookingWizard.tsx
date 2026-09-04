@@ -447,6 +447,8 @@ function BookingWizardInner(props: Props) {
     // missing @ or a bare domain — not to adjudicate RFC 5322.
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) errors.email = t("errorInvalidEmail");
     if (!phone.trim()) errors.phone = t("fieldRequired");
+    if (!flightCode.trim()) errors.flightCode = t("fieldRequired");
+    if (!hotelName.trim()) errors.hotelName = t("fieldRequired");
     // Reachable even with the counters clamped: a restored session or a URL
     // carrying ?adults= can seat more people than the vehicle holds.
     if (adults + children > selectedVehicle.max_passengers) {
@@ -468,9 +470,9 @@ function BookingWizardInner(props: Props) {
           regionSlug, categorySlug: selectedVehicle.slug, tripType, pickupDate, pickupTime,
           returnDate: tripType === "round_trip" ? returnDate : undefined,
           returnTime: tripType === "round_trip" ? returnTime : undefined,
-          flightCode: flightCode || undefined, adults, children, luggage,
+          flightCode: flightCode.trim(), adults, children, luggage,
           childSeat,
-          firstName, lastName, email, phone, hotelName: hotelName || undefined,
+          firstName, lastName, email, phone, hotelName: hotelName.trim(),
           notes: notes || undefined, couponCode: couponStatus?.applied ? couponApplied : undefined, locale,
           paymentMethod,
         }),
@@ -540,7 +542,7 @@ function BookingWizardInner(props: Props) {
    * the customer would reach rather than whichever key the object happened to
    * hold first.
    */
-  const FIELD_ORDER = ["firstName", "lastName", "email", "phone", "party"];
+  const FIELD_ORDER = ["firstName", "lastName", "email", "phone", "party", "flightCode", "hotelName"];
 
   const focusFirstError = (errors: Record<string, string>) => {
     const first = FIELD_ORDER.find((f) => errors[f]);
@@ -586,6 +588,8 @@ function BookingWizardInner(props: Props) {
     lastName: t("lastName"),
     email: t("email"),
     phone: t("phone"),
+    flightCode: t("flightCode"),
+    hotelName: t("selectHotel"),
   };
 
   /**
@@ -1177,15 +1181,41 @@ function BookingWizardInner(props: Props) {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
+                    <label htmlFor="booking-flightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} *</label>
                     <div className="relative">
                       <Plane size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="text" value={flightCode} onChange={(e) => setFlightCode(e.target.value.toUpperCase())} placeholder={t("flightCodePlaceholder")} className="w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                      <input
+                        id="booking-flightCode"
+                        type="text"
+                        autoCapitalize="characters"
+                        spellCheck={false}
+                        value={flightCode}
+                        onChange={(e) => { setFlightCode(e.target.value.toUpperCase()); clearFieldError("flightCode"); }}
+                        placeholder={t("flightCodePlaceholder")}
+                        aria-invalid={!!fieldErrors.flightCode}
+                        /* Written out rather than composed from `fieldClass`:
+                           the icon needs `pl-10`, and adding it alongside that
+                           helper's `px-4` leaves which padding wins up to the
+                           order of the generated stylesheet. */
+                        className={`w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.flightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
+                        style={fieldStyle("flightCode")}
+                      />
                     </div>
+                    {fieldMessage("flightCode")}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                    <input type="text" value={hotelName} onChange={(e) => setHotelName(e.target.value)} placeholder={t("placeholderHotel")} className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
+                    <label htmlFor="booking-hotelName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} *</label>
+                    <input
+                      id="booking-hotelName"
+                      type="text"
+                      value={hotelName}
+                      onChange={(e) => { setHotelName(e.target.value); clearFieldError("hotelName"); }}
+                      placeholder={t("placeholderHotel")}
+                      aria-invalid={!!fieldErrors.hotelName}
+                      className={fieldClass("hotelName")}
+                      style={fieldStyle("hotelName")}
+                    />
+                    {fieldMessage("hotelName")}
                   </div>
                 </div>
                 <div>
