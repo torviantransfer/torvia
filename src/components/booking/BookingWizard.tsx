@@ -676,6 +676,35 @@ function BookingWizardInner(props: Props) {
               {vehicles.map((vehicle) => {
                 const { fits, reason } = vehicleFit(vehicle);
                 const chosen = selectedVehicle?.categoryId === vehicle.categoryId;
+
+                /* One button, rendered at two places and shown at one width
+                   each. It cannot sit beside the price on a phone: the text
+                   column there is ~178px and the label runs to ~175px in
+                   German and Russian, so a nowrap button either overflowed
+                   the card or wrapped under a stranded price. Below the row
+                   it has the full card to itself and reads the same in every
+                   language. From `sm` up the column is wide enough, and the
+                   price/button pairing is worth keeping. */
+                const selectButton = (widthClass: string) => (
+                  <button
+                    type="button"
+                    onClick={() => selectVehicle(vehicle)}
+                    disabled={checkingAvailability || !fits}
+                    title={reason ?? undefined}
+                    aria-pressed={chosen}
+                    className={`h-10 items-center justify-center gap-1.5 rounded-xl px-3 text-[13px] font-semibold transition-all sm:h-9 sm:text-[12.5px] ${widthClass} ${
+                      !fits
+                        ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                        : chosen
+                          ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
+                          : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
+                    }`}
+                  >
+                    {!fits ? <Ban size={13} /> : checkingAvailability ? <Loader2 size={13} className="animate-spin" /> : chosen ? <Check size={13} /> : null}
+                    {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
+                  </button>
+                );
+
                 return (
                 /* A vehicle that cannot take the party stays on the page,
                    faded and unselectable, carrying the reason. Hiding it
@@ -684,7 +713,7 @@ function BookingWizardInner(props: Props) {
                    because the obvious read is that the site is broken. */
                 <div
                   key={vehicle.categoryId}
-                  className={`rounded-2xl p-3 sm:p-4 transition-all ${
+                  className={`overflow-hidden rounded-2xl transition-all ${
                     !fits
                       ? "opacity-60 saturate-50 border border-dashed border-black/[0.16] bg-white"
                       : chosen
@@ -692,19 +721,19 @@ function BookingWizardInner(props: Props) {
                         : "border border-black/[0.08] bg-white hover:shadow-md"
                   }`}
                 >
-                  <div className="flex items-start gap-3 p-3">
+                  <div className="flex items-start gap-3 p-3 sm:p-4">
                     {/* Photo. The whole vehicle, never cropped: a 16:9 box with
                         `object-contain` inside it. No panel behind it — the
                         shots are cut-outs on transparency, so they sit straight
                         on the card and the vehicle reads as floating rather
                         than boxed. It is the largest thing on the card because
                         it is what the customer is choosing between. */}
-                    <div className="relative aspect-[16/9] w-[128px] shrink-0 sm:w-[164px]">
+                    <div className="relative aspect-[16/9] w-[104px] shrink-0 sm:w-[164px]">
                       <Image
                         src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
                         alt={vehicle.name}
                         fill
-                        sizes="172px"
+                        sizes="(min-width: 640px) 164px, 104px"
                         className={`object-contain ${fits ? "" : "grayscale"}`}
                       />
                     </div>
@@ -756,25 +785,15 @@ function BookingWizardInner(props: Props) {
                           </span>
                         </div>
 
-                        <button
-                          type="button"
-                          onClick={() => selectVehicle(vehicle)}
-                          disabled={checkingAvailability || !fits}
-                          title={reason ?? undefined}
-                          aria-pressed={chosen}
-                          className={`flex h-9 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-[12.5px] font-semibold transition-all ${
-                            !fits
-                              ? "cursor-not-allowed bg-gray-100 text-gray-400"
-                              : chosen
-                                ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
-                                : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
-                          }`}
-                        >
-                          {!fits ? <Ban size={13} /> : checkingAvailability ? <Loader2 size={13} className="animate-spin" /> : chosen ? <Check size={13} /> : null}
-                          {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
-                        </button>
+                        {selectButton("hidden shrink-0 whitespace-nowrap sm:flex")}
                       </div>
                     </div>
+                  </div>
+
+                  {/* The phone's copy of the button: its own full-width row
+                      under the picture and the details. */}
+                  <div className="flex px-3 pb-3 sm:hidden">
+                    {selectButton("flex w-full")}
                   </div>
 
                   {/* Footer strip: what the vehicle has, and the other way to
@@ -788,10 +807,13 @@ function BookingWizardInner(props: Props) {
                       everything fitted on one line: as soon as the features
                       wrapped, the last one was stranded on a line of its own
                       with the cash figure still pinned up beside the first row.
-                      Flat, every chip flows, and `ml-auto` keeps the cash
-                      figure to the right of whichever line it lands on. */}
+                      Flat, every chip flows. From `sm` up `ml-auto` keeps the
+                      cash figure to the right of whichever line it lands on;
+                      on a phone it flows with the chips instead, because at
+                      that width it always lands on a line of its own and
+                      being pushed to the far edge just left a hole. */}
                   {(vehicle.features.length > 0 || (vehicle.cashPrice != null && settingsData.cashPaymentEnabled)) && (
-                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5 border-t border-black/[0.06] bg-black/[0.02] px-3 py-2 sm:px-4">
                       {/* Capped at three: the cards are compared side by side,
                           and a vehicle with eight features would turn its strip
                           into a paragraph. */}
@@ -806,7 +828,7 @@ function BookingWizardInner(props: Props) {
                       ))}
 
                       {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                        <span className="ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700 sm:ml-auto" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
                           <Banknote size={11} className="shrink-0" />
                           {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
                         </span>
