@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReservationEmail } from "@/lib/email";
 import { convertFromUSD } from "@/lib/currency";
-import { notifyNewPayment, notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
+import { notifyNewPayment, notifyNewCashBooking, notifyPaymentFailed, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiPurchase } from "@/lib/capi";
 import { bookingParts } from "@/lib/datetime";
 
@@ -41,6 +41,33 @@ export async function POST(request: NextRequest) {
     const newStatus = isDeposit ? "deposit_paid" : "paid";
 
     if (reservationId) {
+      /* Stripe re-sends a webhook whenever the endpoint does not answer 2xx —
+         a timeout, a deploy landing mid-request, a transient database error.
+         None of the work below was guarded, so a retry sent the customer a
+         second confirmation email, the office a second Telegram, and Meta a
+         second Purchase.
+
+         The reservation's status cannot be the guard. /api/reservations/confirm
+         writes that too, from the browser, and it sends no email — so keying
+         off the status would let a fast confirm call suppress the confirmation
+         email altogether.
+
+         The marker is the notification_log row this handler already writes,
+         which carries the payment intent's id. A payment intent succeeds at
+         most once, so its id identifies this work exactly. The row is written
+         below, before any message goes out. */
+      const { data: alreadyHandled } = await supabase
+        .from("notification_log")
+        .select("id")
+        .eq("type", "payment_received")
+        .contains("metadata", { payment_intent_id: paymentIntent.id })
+        .limit(1)
+        .maybeSingle();
+
+      if (alreadyHandled) {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+
       // Update reservation status: deposit_paid for cash bookings, paid for online
       await supabase
         .from("reservations")
@@ -219,6 +246,88 @@ export async function POST(request: NextRequest) {
           exchangeRateEur: resData.exchange_rate_eur,
         }).catch(() => {});
       }
+    }
+  }
+
+  if (event.type === "payment_intent.payment_failed") {
+    const pi = event.data.object as Stripe.PaymentIntent;
+    const reservationId = pi.metadata?.reservation_id;
+    const reservationCode = pi.metadata?.reservation_code;
+    const reason =
+      pi.last_payment_error?.message ??
+      pi.last_payment_error?.decline_code ??
+      pi.last_payment_error?.code ??
+      "unknown";
+
+    if (reservationId) {
+      /* Guarded on the event id rather than the intent's, because unlike a
+         success a failure can genuinely happen more than once against the
+         same intent — the customer tries a second card. Those are separate
+         events and both deserve to be seen; only a re-delivery of the same
+         event is a duplicate. */
+      const { data: alreadyLogged } = await supabase
+        .from("notification_log")
+        .select("id")
+        .eq("type", "payment_failed")
+        .contains("metadata", { event_id: event.id })
+        .limit(1)
+        .maybeSingle();
+
+      if (alreadyLogged) {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+
+      /* The status stays `pending` on purpose. The same client secret still
+         accepts another card, and moving the reservation to a failed state
+         would take that retry away. What was missing is any record that a
+         card was tried at all: until now a pending row looked identical
+         whether the customer never reached the card form or had three cards
+         declined, so there was no way to tell which of them was worth a call
+         back. */
+      await supabase.from("notification_log").insert({
+        reservation_id: reservationId,
+        type: "payment_failed",
+        channel: "system",
+        recipient: "admin",
+        content: `Payment failed for ${reservationCode ?? "?"}: ${reason}`,
+        status: "failed",
+        metadata: {
+          event_id: event.id,
+          reservation_id: reservationId,
+          payment_intent_id: pi.id,
+          decline_code: pi.last_payment_error?.decline_code ?? null,
+          error_code: pi.last_payment_error?.code ?? null,
+        },
+      });
+
+      // Read the customer so the alert carries a number to call, which is the
+      // only reason to send it while the visit is still warm.
+      const { data: resData } = await supabase
+        .from("reservations")
+        .select("reservation_code, regions(name_tr, name_en), customers(first_name, last_name, email, phone)")
+        .eq("id", reservationId)
+        .maybeSingle();
+
+      /* PostgREST hands an embedded relation back as an object for a to-one
+         join but the generated types describe it as an array, and which one
+         arrives depends on how the join was written. Unwrap either shape
+         rather than casting past the disagreement. */
+      const one = <T,>(v: T | T[] | null | undefined): T | null =>
+        (Array.isArray(v) ? v[0] : v) ?? null;
+
+      const customer = one(resData?.customers) as
+        | { first_name?: string; last_name?: string; email?: string; phone?: string }
+        | null;
+      const regionObj = one(resData?.regions) as Record<string, unknown> | null;
+
+      notifyPaymentFailed({
+        code: reservationCode ?? resData?.reservation_code ?? "?",
+        email: pi.receipt_email ?? customer?.email ?? "?",
+        phone: customer?.phone,
+        name: [customer?.first_name, customer?.last_name].filter(Boolean).join(" ") || undefined,
+        region: String(regionObj?.name_tr ?? regionObj?.name_en ?? ""),
+        reason,
+      }).catch(() => {});
     }
   }
 

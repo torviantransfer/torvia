@@ -131,6 +131,35 @@ export function notifyNewCashBooking(data: {
   });
 }
 
+/**
+ * A declined card. Unlike every other notification here this one is a
+ * prompt to act: the customer wanted the transfer, filled the whole form and
+ * got as far as the card, and a call back while they are still deciding is
+ * worth more than the row it leaves in the log. Hence the phone number.
+ */
+export function notifyPaymentFailed(data: {
+  code: string;
+  email: string;
+  phone?: string;
+  name?: string;
+  region?: string;
+  reason?: string;
+}) {
+  return sendTelegram({
+    icon: "\u26A0",
+    title: "ODEME BASARISIZ",
+    fields: [
+      { label: "Kod:", value: data.code },
+      { label: "Musteri:", value: data.name },
+      { label: "Telefon:", value: data.phone },
+      { label: "E-posta:", value: data.email },
+      { label: "Guzergah:", value: data.region },
+      { label: "Sebep:", value: data.reason },
+    ],
+    footer: "REZERVASYON BEKLEMEDE - MUSTERI ARANABILIR",
+  });
+}
+
 export function notifyDriverAssigned(data: {
   code: string;
   driver: string;
