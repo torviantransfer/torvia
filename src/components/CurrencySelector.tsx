@@ -11,13 +11,29 @@ import {
   type Locale,
 } from "@/i18n/config";
 
-export default function CurrencySelector({ darkText = true }: { darkText?: boolean }) {
+/**
+ * `open` is owned by the Header, not by this component.
+ *
+ * A popover that only knows about itself cannot close when a sibling popover
+ * opens, and that is exactly what went wrong: the language menu and this one
+ * could both stand open at once, overlapping. The Header holds every popover's
+ * state so opening one closes the rest, and its outside-click handler covers
+ * this one too.
+ */
+export default function CurrencySelector({
+  darkText = true,
+  open,
+  onOpenChange,
+}: {
+  darkText?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const locale = useLocale() as Locale;
   // Mirrors useCurrency: the locale's currency is the starting point, a stored
   // pick replaces it below. Without this the button would read "$ USD" while
   // the page showed lira.
   const [currency, setCurrency] = useState<Currency>(localeCurrencies[locale] ?? "USD");
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;
@@ -28,7 +44,7 @@ export default function CurrencySelector({ darkText = true }: { darkText?: boole
 
   const handleSelect = (c: Currency) => {
     setCurrency(c);
-    setOpen(false);
+    onOpenChange(false);
     // Store in localStorage for persistence
     if (typeof window !== "undefined") {
       localStorage.setItem("TORVIAN_currency", c);
@@ -39,7 +55,7 @@ export default function CurrencySelector({ darkText = true }: { darkText?: boole
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => onOpenChange(!open)}
         aria-label={`Select currency, current: ${currency}`}
         aria-expanded={open}
         className={`flex items-center gap-1 hover:opacity-100 transition-colors text-xs px-2 py-1.5 rounded-lg ${darkText ? "text-gray-600 hover:text-gray-900" : "text-white/90 hover:text-white"}`}

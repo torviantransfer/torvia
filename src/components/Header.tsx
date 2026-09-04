@@ -9,13 +9,13 @@ import {
   Menu,
   X,
   ChevronDown,
-  Globe,
   User,
   CalendarCheck,
   LogOut,
 } from "lucide-react";
-import { localeNames, localeFlags, type Locale } from "@/i18n/config";
+import { localeNames, type Locale } from "@/i18n/config";
 import CurrencySelector from "./CurrencySelector";
+import FlagIcon from "./FlagIcon";
 import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import AuthModal from "./auth/AuthModal";
@@ -31,11 +31,30 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const currencyRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Open one popover and close the others.
+   *
+   * The navbar carries four of them — currency, language, the user menu and
+   * the mobile menu — in a strip narrow enough that two open at once overlap.
+   * Each trigger used to flip only its own flag, so opening the currency menu
+   * left the language menu standing. Routing every trigger through here makes
+   * "only one is open" a property of the code rather than of the order the
+   * customer happened to click in.
+   */
+  const openOnly = (which: "currency" | "lang" | "user" | "menu" | null) => {
+    setCurrencyOpen(which === "currency");
+    setLangOpen(which === "lang");
+    setUserMenuOpen(which === "user");
+    setMenuOpen(which === "menu");
+  };
 
   // Pages with dark hero images get transparent navbar
   // On booking page, only when NO region is selected (hero is shown)
@@ -63,9 +82,22 @@ export default function Header() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
       }
+      if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
+        setCurrencyOpen(false);
+      }
+    };
+    // Escape closes whatever is open. A popover reachable by keyboard has to
+    // be dismissible by keyboard; without this the only way out of the
+    // language menu was a mouse click somewhere else on the page.
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") openOnly(null);
     };
     document.addEventListener("mousedown", onMouseDown);
-    return () => document.removeEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, []);
 
   // Auth state management
@@ -150,17 +182,26 @@ export default function Header() {
 
             {/* Right side */}
             <div className="flex items-center gap-1.5">
-              <CurrencySelector darkText={showDarkNav} />
+              <div ref={currencyRef}>
+                <CurrencySelector
+                  darkText={showDarkNav}
+                  open={currencyOpen}
+                  onOpenChange={(next) => openOnly(next ? "currency" : null)}
+                />
+              </div>
 
               {/* Language selector */}
               <div className="relative" ref={langRef}>
                 <button
-                  onClick={() => setLangOpen(!langOpen)}
+                  onClick={() => openOnly(langOpen ? null : "lang")}
                   aria-label="Select language"
                   aria-expanded={langOpen}
-                  className={`flex items-center gap-1 transition-colors text-xs px-2 py-1.5 rounded-lg ${showDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                  className={`flex items-center gap-1.5 transition-colors text-xs px-2 py-1.5 rounded-lg ${showDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
-                  <Globe size={14} />
+                  {/* The flag of the language in force, not a globe: the globe
+                      said "this is a language control" to someone already
+                      looking at one, while the flag says which language. */}
+                  <FlagIcon locale={locale} className="h-[13px] w-[18px]" />
                   <span className="font-medium">{locale.toUpperCase()}</span>
                   <ChevronDown size={10} className={`transition-transform ${langOpen ? "rotate-180" : ""}`} />
                 </button>
@@ -174,14 +215,15 @@ export default function Header() {
                           key={loc}
                           href={hrefWithParams}
                           locale={loc}
-                          className={`block px-3.5 py-2 text-xs transition-colors ${
+                          className={`flex items-center gap-2.5 px-3.5 py-2 text-xs transition-colors ${
                             loc === locale
                               ? "text-blue-600 font-medium"
                               : "text-gray-500 hover:text-gray-900"
                           }`}
                           onClick={() => setLangOpen(false)}
                         >
-                          {localeFlags[loc]} {localeNames[loc]}
+                          <FlagIcon locale={loc} />
+                          {localeNames[loc]}
                         </Link>
                       );
                     })}
@@ -193,7 +235,7 @@ export default function Header() {
               {authUser ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    onClick={() => openOnly(userMenuOpen ? null : "user")}
                     className={`flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-full transition-colors ${showDarkNav ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}
                   >
                     {/* 24px on phones so the filled circle reads at the same
@@ -254,7 +296,7 @@ export default function Header() {
               {/* Hamburger menu - visible on all screen sizes */}
               <div className="relative" ref={menuRef}>
                 <button
-                  onClick={() => setMenuOpen(!menuOpen)}
+                  onClick={() => openOnly(menuOpen ? null : "menu")}
                   aria-label={menuOpen ? "Close menu" : "Open menu"}
                   aria-expanded={menuOpen}
                   className={`p-2 transition-colors rounded-lg ${showDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
