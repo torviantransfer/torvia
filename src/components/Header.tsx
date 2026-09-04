@@ -112,6 +112,17 @@ export default function Header() {
     return () => subscription.unsubscribe();
   }, []);
 
+  /**
+   * Every source of a name here can be absent. `full_name` and `first_name`
+   * are only set when a provider sends them, and an OAuth or phone signup can
+   * arrive with no email at all — so `displayName` falls all the way through
+   * to "", and `"".charAt(0)` is "".
+   *
+   * That rendered as an empty coloured circle. On a phone it is the worst
+   * place for it to happen: the name beside the avatar is `hidden sm:inline`,
+   * so that circle is the only thing on the screen telling the customer they
+   * are signed in. A person glyph says it with no name to say it with.
+   */
   const displayName = authUser?.user_metadata?.full_name || authUser?.user_metadata?.first_name || authUser?.email?.split("@")[0] || "";
   const userInitial = displayName.charAt(0).toUpperCase();
 
@@ -242,7 +253,11 @@ export default function Header() {
                         weight as the 22px hamburger beside it — at 28px it was
                         the heaviest thing in the bar. */}
                     <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-[10px] sm:text-xs font-bold leading-none">{userInitial}</span>
+                      {userInitial ? (
+                        <span className="text-white text-[10px] sm:text-xs font-bold leading-none">{userInitial}</span>
+                      ) : (
+                        <User className="h-3.5 w-3.5 text-white sm:h-[17px] sm:w-[17px]" strokeWidth={2.5} aria-hidden="true" />
+                      )}
                     </div>
                     <span className={`hidden sm:inline text-xs font-medium max-w-[100px] truncate ${showDarkNav ? 'text-gray-700' : 'text-white/90'}`}>
                       {displayName}
@@ -252,7 +267,9 @@ export default function Header() {
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                        {displayName && (
+                          <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                        )}
                         <p className="text-xs text-gray-400 truncate">{authUser.email}</p>
                       </div>
                       <Link
@@ -352,10 +369,16 @@ export default function Header() {
                 <div className="border-t border-gray-100 mt-2 pt-2">
                   <div className="flex items-center gap-3 py-2.5">
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-white text-xs font-bold">{userInitial}</span>
+                      {userInitial ? (
+                        <span className="text-white text-xs font-bold">{userInitial}</span>
+                      ) : (
+                        <User className="h-[17px] w-[17px] text-white" strokeWidth={2.5} aria-hidden="true" />
+                      )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                      {displayName && (
+                        <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                      )}
                       <p className="text-[11px] text-gray-400 truncate">{authUser.email}</p>
                     </div>
                   </div>
