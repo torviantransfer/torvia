@@ -150,6 +150,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
         (r.customers?.email ?? "").toLowerCase().includes(q) ||
         (r.customers?.phone ?? "").includes(q) ||
         (r.flight_code ?? "").toLowerCase().includes(q) ||
+        (r.return_flight_code ?? "").toLowerCase().includes(q) ||
         (r.hotel_name ?? "").toLowerCase().includes(q) ||
         regionName(r).toLowerCase().includes(q) ||
         r.driver_assignments?.some((da) =>
@@ -498,6 +499,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                               <span className="inline-flex items-center gap-1">
                                 <Plane size={12} />
                                 {r.flight_code}
+                                {r.return_flight_code && ` / ${r.return_flight_code}`}
                               </span>
                             )}
                             {r.hotel_name && (
@@ -642,6 +644,9 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                                 </>
                               )}
                               <Row label="Uçuş" value={r.flight_code || "—"} />
+                              {r.return_flight_code && (
+                                <Row label="Dönüş uçuşu" value={r.return_flight_code} />
+                              )}
                               <Row label="Araç sınıfı" value={r.vehicle_categories?.name || "—"} />
                               <Row
                                 label="Yolcu"

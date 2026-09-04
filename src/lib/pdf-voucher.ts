@@ -361,6 +361,7 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   leftCol.push({ label: t(loc, "pickup"), value: `${formatDateOnly(data.pickupDate, loc)}  ${data.pickupTime}` });
   if (data.returnDate) leftCol.push({ label: t(loc, "returnLabel"), value: `${formatDateOnly(data.returnDate, loc)}  ${data.returnTime ?? ""}` });
   if (data.flightCode) leftCol.push({ label: t(loc, "flight"), value: data.flightCode });
+  if (data.returnFlightCode) leftCol.push({ label: `${t(loc, "flight")} (${t(loc, "returnLabel")})`, value: data.returnFlightCode });
   if (data.hotelName) leftCol.push({ label: t(loc, "hotel"), value: data.hotelName });
 
   const passengerParts: string[] = [];

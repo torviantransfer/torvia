@@ -69,6 +69,8 @@
     "trackReservation": "Rezervasyon Sorgula",
     "flightCode": "Uçuş Kodu",
     "flightCodePlaceholder": "Örn: TK1234",
+    "returnFlightCode": "Dönüş Uçuş Kodu",
+    "returnFlightCodePlaceholder": "Örn: TK1235",
     "adults": "Yetişkin",
     "children": "Çocuk",
     "luggage": "Bagaj",

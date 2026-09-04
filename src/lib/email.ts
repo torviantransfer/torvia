@@ -34,6 +34,7 @@ export interface ReservationEmailData {
   childSeat: boolean;
   hotelName?: string;
   flightCode?: string;
+  returnFlightCode?: string;
   vehicleName?: string;
   basePrice: number;
   nightSurcharge: number;
@@ -412,6 +413,9 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
     detailRow("&#128197;", t(loc, "pickup"), `${formatDateOnly(data.pickupDate, loc)} &nbsp;|&nbsp; ${data.pickupTime}`, true),
     ...(data.returnDate ? [detailRow("&#8634;", t(loc, "returnLabel"), `${formatDateOnly(data.returnDate!, loc)} &nbsp;|&nbsp; ${data.returnTime}`, true)] : []),
     ...(data.flightCode ? [detailRow("&#9992;", t(loc, "flight"), data.flightCode)] : []),
+    ...(data.returnFlightCode
+      ? [detailRow("&#9992;", `${t(loc, "flight")} (${t(loc, "returnLabel")})`, data.returnFlightCode)]
+      : []),
     ...(data.hotelName ? [detailRow("&#127968;", t(loc, "hotel"), data.hotelName)] : []),
     ...(data.vehicleName ? [detailRow("&#128663;", t(loc, "vehicle"), data.vehicleName)] : []),
     detailRow("&#128101;", t(loc, "passengers"), passengerText),

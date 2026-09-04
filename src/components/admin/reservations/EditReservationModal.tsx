@@ -56,6 +56,7 @@ export default function EditReservationModal({
     pickup_datetime: toDatetimeInput(r.pickup_datetime),
     return_datetime: toDatetimeInput(r.return_datetime),
     flight_code: r.flight_code ?? "",
+    return_flight_code: r.return_flight_code ?? "",
     hotel_name: r.hotel_name ?? "",
     hotel_address: r.hotel_address ?? "",
     notes: r.notes ?? "",
@@ -73,6 +74,7 @@ export default function EditReservationModal({
     const body: Record<string, unknown> = {
       reservationId: r.id,
       flight_code: form.flight_code.trim() || null,
+      return_flight_code: form.return_flight_code.trim() || null,
       hotel_name: form.hotel_name.trim() || null,
       hotel_address: form.hotel_address.trim() || null,
       notes: form.notes.trim() || null,
@@ -151,6 +153,16 @@ export default function EditReservationModal({
                 value={form.flight_code}
                 onChange={(e) => set("flight_code", e.target.value)}
                 placeholder="TK123"
+                className={field}
+              />
+            </div>
+            <div>
+              <label className={label}>Dönüş uçuş kodu</label>
+              <input
+                type="text"
+                value={form.return_flight_code}
+                onChange={(e) => set("return_flight_code", e.target.value)}
+                placeholder="TK124"
                 className={field}
               />
             </div>

@@ -38,6 +38,7 @@ interface Reservation {
   hotel_name: string | null;
   hotel_address: string | null;
   flight_code: string | null;
+  return_flight_code: string | null;
   child_seat: boolean;
   total_price: number;
   base_price: number;

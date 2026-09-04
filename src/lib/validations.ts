@@ -13,6 +13,7 @@ export const reservationSchema = z.object({
   // rather than a no-show. Optional here meant a paid booking could arrive
   // with neither, and the office chased it down by hand afterwards.
   flightCode: z.string().trim().min(2, "Flight code is required").max(20),
+  returnFlightCode: z.string().trim().max(20).optional().nullable(),
   adults: z.number().int().min(1).max(20).default(1),
   children: z.number().int().min(0).max(10).default(0),
   luggage: z.number().int().min(0).max(20).default(0),
@@ -46,6 +47,16 @@ export const reservationSchema = z.object({
     return true;
   },
   { message: "Return date/time required for round trip", path: ["returnDate"] }
+).refine(
+  (data) => {
+    // Only a round trip has a second flight. Requiring it of a one-way booking
+    // would be asking for a number that does not exist.
+    if (data.tripType === "round_trip") {
+      return !!data.returnFlightCode && data.returnFlightCode.trim().length >= 2;
+    }
+    return true;
+  },
+  { message: "Return flight code is required for round trip", path: ["returnFlightCode"] }
 );
 
 export const trackReservationSchema = z.object({

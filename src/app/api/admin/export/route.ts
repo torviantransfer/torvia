@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   let query = admin
     .from("reservations")
     .select(
-      "reservation_code, status, trip_type, pickup_datetime, return_datetime, total_price, base_price, night_surcharge, child_seat_fee, welcome_sign_fee, round_trip_discount, coupon_discount, currency, adults, children, luggage_count, hotel_name, flight_code, notes, created_at, customers(first_name, last_name, email, phone), regions(name_en), vehicle_categories(name), driver_assignments(drivers(full_name))"
+      "reservation_code, status, trip_type, pickup_datetime, return_datetime, total_price, base_price, night_surcharge, child_seat_fee, welcome_sign_fee, round_trip_discount, coupon_discount, currency, adults, children, luggage_count, hotel_name, flight_code, return_flight_code, notes, created_at, customers(first_name, last_name, email, phone), regions(name_en), vehicle_categories(name), driver_assignments(drivers(full_name))"
     )
     .order("pickup_datetime", { ascending: false });
 
@@ -60,6 +60,7 @@ export async function GET(req: NextRequest) {
       "Luggage": r.luggage_count,
       "Hotel": r.hotel_name ?? "",
       "Flight Code": r.flight_code ?? "",
+      "Return Flight Code": r.return_flight_code ?? "",
       "Base Price": r.base_price,
       "Additional Fee": r.night_surcharge,
       "Child Seat Fee": r.child_seat_fee,

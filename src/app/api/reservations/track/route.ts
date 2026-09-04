@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       hotel_name,
       hotel_address,
       flight_code,
+      return_flight_code,
       child_seat,
       welcome_sign,
       welcome_name,
