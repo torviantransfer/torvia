@@ -8,14 +8,22 @@ import { Link } from "@/i18n/routing";
 import { Crown, CheckCircle, Star, Plane, ArrowRight, Wifi, Wind, Users } from "lucide-react";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
 // Keyword source: this site's own Google Trends research (migrations 031/043/044) —
 // "vip transfer antalya" is Germany's #1 query for this service (+30% growth),
 // and shows up as a distinct, non-region-specific commercial term worldwide.
 // Deliberately NOT a copy of the region-page template: this page sells the
 // premium vehicle/service tier itself, not one destination.
-const content: Record<Locale, {
+/* `Partial`, with English standing in for whatever is missing.
+   These five pages carry a whole page of marketing copy per language,
+   written inline. A strict `Record<Locale, …>` means no language can be
+   added to the site at all until every one of them is rewritten in it —
+   which is a reason to postpone a language, not a reason to translate.
+   Falling back matches what the region pages already do with their own
+   per-locale columns, and it is the difference between a locale that
+   ships and a locale that waits. */
+const content: Partial<Record<Locale, {
   title: string;
   metaDesc: string;
   heading: string;
@@ -35,7 +43,7 @@ const content: Record<Locale, {
   whyTitle: string;
   breadcrumb: string;
   standardNote: string;
-}> = {
+}>> = {
   en: {
     title: "VIP Transfer Antalya Airport | Premium Private Car Service",
     metaDesc: "VIP transfer from Antalya Airport: newer Mercedes Vito fleet, English-speaking drivers, priority meet & greet. Fixed price, no shared stops. Book online in 2 minutes.",
@@ -332,7 +340,7 @@ export async function generateMetadata({
   // table is missing, in which case the values below are used verbatim.
   const seoRow = await getSeoPage("vip-transfer-antalya");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
   const path = "/vip-transfer-antalya";
 
   return applySeoPage({
@@ -354,7 +362,7 @@ export default async function VipTransferAntalyaPage({
   // field is blank, so the existing expression stays the fallback.
   const seoRow = await getSeoPage("vip-transfer-antalya");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
 
   const faqSchema = {
     "@context": "https://schema.org",

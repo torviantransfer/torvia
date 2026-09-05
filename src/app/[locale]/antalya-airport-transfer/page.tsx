@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
 // Head-term hub for "Antalya Airport Transfer".
 //
@@ -41,7 +41,15 @@ type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
 // asserted about terminals, named meeting points or night surcharges, since
 // the codebase does not establish those — and pricing.ts in fact supports a
 // configurable night tariff, so "no night surcharge" would be wrong.
-const content: Record<Locale, {
+/* `Partial`, with English standing in for whatever is missing.
+   These five pages carry a whole page of marketing copy per language,
+   written inline. A strict `Record<Locale, …>` means no language can be
+   added to the site at all until every one of them is rewritten in it —
+   which is a reason to postpone a language, not a reason to translate.
+   Falling back matches what the region pages already do with their own
+   per-locale columns, and it is the difference between a locale that
+   ships and a locale that waits. */
+const content: Partial<Record<Locale, {
   title: string;
   metaDesc: string;
   heading: string;
@@ -65,7 +73,7 @@ const content: Record<Locale, {
   breadcrumb: string;
   home: string;
   imageAlt: string;
-}> = {
+}>> = {
   en: {
     title: "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online",
     metaDesc:
@@ -423,30 +431,30 @@ const content: Record<Locale, {
  * other service landing pages; /regions is the DB-driven directory.
  */
 const REGIONS: { slug: string; km: number; min: number; name: Record<Locale, string> }[] = [
-  { slug: "kundu-lara", km: 15, min: 20, name: { tr: "Kundu - Lara", en: "Kundu - Lara", de: "Kundu - Lara", pl: "Kundu - Lara", ru: "Кунду - Лара", nl: "Kundu - Lara" } },
-  { slug: "sehirici", km: 12, min: 20, name: { tr: "Antalya Şehiriçi", en: "Antalya City Center", de: "Antalya Zentrum", pl: "Centrum Antalyi", ru: "Центр Анталии", nl: "Antalya City Center" } },
-  { slug: "kadriye", km: 30, min: 30, name: { tr: "Kadriye", en: "Kadriye", de: "Kadriye", pl: "Kadriye", ru: "Кадрие", nl: "Kadriye" } },
-  { slug: "belek", km: 35, min: 35, name: { tr: "Belek", en: "Belek", de: "Belek", pl: "Belek", ru: "Белек", nl: "Belek" } },
-  { slug: "bogazkent", km: 45, min: 40, name: { tr: "Boğazkent", en: "Bogazkent", de: "Bogazkent", pl: "Bogazkent", ru: "Богазкент", nl: "Bogazkent" } },
-  { slug: "evrenseki", km: 60, min: 50, name: { tr: "Evrenseki", en: "Evrenseki", de: "Evrenseki", pl: "Evrenseki", ru: "Эвренсеки", nl: "Evrenseki" } },
-  { slug: "side", km: 70, min: 60, name: { tr: "Side", en: "Side", de: "Side", pl: "Side", ru: "Сиде", nl: "Side" } },
-  { slug: "kizilagac", km: 80, min: 70, name: { tr: "Kızılağaç", en: "Kizilagac", de: "Kızılağaç", pl: "Kizilagac", ru: "Кызылагач", nl: "Kizilagac" } },
-  { slug: "okurcalar", km: 100, min: 80, name: { tr: "Okurcalar", en: "Okurcalar", de: "Okurcalar", pl: "Okurcalar", ru: "Окурджалар", nl: "Okurcalar" } },
-  { slug: "turkler", km: 110, min: 85, name: { tr: "Türkler", en: "Turkler", de: "Türkler", pl: "Turkler", ru: "Тюрклер", nl: "Turkler" } },
-  { slug: "alanya", km: 130, min: 120, name: { tr: "Alanya", en: "Alanya", de: "Alanya", pl: "Alanya", ru: "Аланья", nl: "Alanya" } },
-  { slug: "mahmutlar", km: 140, min: 130, name: { tr: "Mahmutlar", en: "Mahmutlar", de: "Mahmutlar", pl: "Mahmutlar", ru: "Махмутлар", nl: "Mahmutlar" } },
-  { slug: "kargicak", km: 145, min: 135, name: { tr: "Kargıcak", en: "Kargicak", de: "Kargıcak", pl: "Kargicak", ru: "Каргыджак", nl: "Kargicak" } },
-  { slug: "beldibi", km: 40, min: 35, name: { tr: "Beldibi", en: "Beldibi", de: "Beldibi", pl: "Beldibi", ru: "Бельдиби", nl: "Beldibi" } },
-  { slug: "goynuk", km: 50, min: 40, name: { tr: "Göynük", en: "Goynuk", de: "Göynük", pl: "Goynuk", ru: "Гёйнюк", nl: "Goynuk" } },
-  { slug: "kemer", km: 55, min: 50, name: { tr: "Kemer", en: "Kemer", de: "Kemer", pl: "Kemer", ru: "Кемер", nl: "Kemer" } },
-  { slug: "kiris", km: 60, min: 55, name: { tr: "Kiriş", en: "Kiris", de: "Kiriş", pl: "Kiris", ru: "Кириш", nl: "Kiris" } },
-  { slug: "camyuva", km: 65, min: 55, name: { tr: "Çamyuva", en: "Camyuva", de: "Çamyuva", pl: "Camyuva", ru: "Чамьюва", nl: "Camyuva" } },
-  { slug: "tekirova", km: 70, min: 60, name: { tr: "Tekirova", en: "Tekirova", de: "Tekirova", pl: "Tekirova", ru: "Текирова", nl: "Tekirova" } },
-  { slug: "adrasan", km: 95, min: 90, name: { tr: "Adrasan", en: "Adrasan", de: "Adrasan", pl: "Adrasan", ru: "Адрасан", nl: "Adrasan" } },
-  { slug: "kas", km: 190, min: 180, name: { tr: "Kaş", en: "Kas", de: "Kaş", pl: "Kas", ru: "Каш", nl: "Kas" } },
-  { slug: "kalkan", km: 210, min: 190, name: { tr: "Kalkan", en: "Kalkan", de: "Kalkan", pl: "Kalkan", ru: "Калкан", nl: "Kalkan" } },
-  { slug: "fethiye", km: 220, min: 200, name: { tr: "Fethiye", en: "Fethiye", de: "Fethiye", pl: "Fethiye", ru: "Фетхие", nl: "Fethiye" } },
-  { slug: "marmaris", km: 300, min: 270, name: { tr: "Marmaris", en: "Marmaris", de: "Marmaris", pl: "Marmaris", ru: "Мармарис", nl: "Marmaris" } },
+  { slug: "kundu-lara", km: 15, min: 20, name: { tr: "Kundu - Lara", en: "Kundu - Lara", de: "Kundu - Lara", pl: "Kundu - Lara", ru: "Кунду - Лара", nl: "Kundu - Lara", ro: "Kundu - Lara" } },
+  { slug: "sehirici", km: 12, min: 20, name: { tr: "Antalya Şehiriçi", en: "Antalya City Center", de: "Antalya Zentrum", pl: "Centrum Antalyi", ru: "Центр Анталии", nl: "Antalya City Center", ro: "Antalya City Center" } },
+  { slug: "kadriye", km: 30, min: 30, name: { tr: "Kadriye", en: "Kadriye", de: "Kadriye", pl: "Kadriye", ru: "Кадрие", nl: "Kadriye", ro: "Kadriye" } },
+  { slug: "belek", km: 35, min: 35, name: { tr: "Belek", en: "Belek", de: "Belek", pl: "Belek", ru: "Белек", nl: "Belek", ro: "Belek" } },
+  { slug: "bogazkent", km: 45, min: 40, name: { tr: "Boğazkent", en: "Bogazkent", de: "Bogazkent", pl: "Bogazkent", ru: "Богазкент", nl: "Bogazkent", ro: "Bogazkent" } },
+  { slug: "evrenseki", km: 60, min: 50, name: { tr: "Evrenseki", en: "Evrenseki", de: "Evrenseki", pl: "Evrenseki", ru: "Эвренсеки", nl: "Evrenseki", ro: "Evrenseki" } },
+  { slug: "side", km: 70, min: 60, name: { tr: "Side", en: "Side", de: "Side", pl: "Side", ru: "Сиде", nl: "Side", ro: "Side" } },
+  { slug: "kizilagac", km: 80, min: 70, name: { tr: "Kızılağaç", en: "Kizilagac", de: "Kızılağaç", pl: "Kizilagac", ru: "Кызылагач", nl: "Kizilagac", ro: "Kizilagac" } },
+  { slug: "okurcalar", km: 100, min: 80, name: { tr: "Okurcalar", en: "Okurcalar", de: "Okurcalar", pl: "Okurcalar", ru: "Окурджалар", nl: "Okurcalar", ro: "Okurcalar" } },
+  { slug: "turkler", km: 110, min: 85, name: { tr: "Türkler", en: "Turkler", de: "Türkler", pl: "Turkler", ru: "Тюрклер", nl: "Turkler", ro: "Turkler" } },
+  { slug: "alanya", km: 130, min: 120, name: { tr: "Alanya", en: "Alanya", de: "Alanya", pl: "Alanya", ru: "Аланья", nl: "Alanya", ro: "Alanya" } },
+  { slug: "mahmutlar", km: 140, min: 130, name: { tr: "Mahmutlar", en: "Mahmutlar", de: "Mahmutlar", pl: "Mahmutlar", ru: "Махмутлар", nl: "Mahmutlar", ro: "Mahmutlar" } },
+  { slug: "kargicak", km: 145, min: 135, name: { tr: "Kargıcak", en: "Kargicak", de: "Kargıcak", pl: "Kargicak", ru: "Каргыджак", nl: "Kargicak", ro: "Kargicak" } },
+  { slug: "beldibi", km: 40, min: 35, name: { tr: "Beldibi", en: "Beldibi", de: "Beldibi", pl: "Beldibi", ru: "Бельдиби", nl: "Beldibi", ro: "Beldibi" } },
+  { slug: "goynuk", km: 50, min: 40, name: { tr: "Göynük", en: "Goynuk", de: "Göynük", pl: "Goynuk", ru: "Гёйнюк", nl: "Goynuk", ro: "Goynuk" } },
+  { slug: "kemer", km: 55, min: 50, name: { tr: "Kemer", en: "Kemer", de: "Kemer", pl: "Kemer", ru: "Кемер", nl: "Kemer", ro: "Kemer" } },
+  { slug: "kiris", km: 60, min: 55, name: { tr: "Kiriş", en: "Kiris", de: "Kiriş", pl: "Kiris", ru: "Кириш", nl: "Kiris", ro: "Kiris" } },
+  { slug: "camyuva", km: 65, min: 55, name: { tr: "Çamyuva", en: "Camyuva", de: "Çamyuva", pl: "Camyuva", ru: "Чамьюва", nl: "Camyuva", ro: "Camyuva" } },
+  { slug: "tekirova", km: 70, min: 60, name: { tr: "Tekirova", en: "Tekirova", de: "Tekirova", pl: "Tekirova", ru: "Текирова", nl: "Tekirova", ro: "Tekirova" } },
+  { slug: "adrasan", km: 95, min: 90, name: { tr: "Adrasan", en: "Adrasan", de: "Adrasan", pl: "Adrasan", ru: "Адрасан", nl: "Adrasan", ro: "Adrasan" } },
+  { slug: "kas", km: 190, min: 180, name: { tr: "Kaş", en: "Kas", de: "Kaş", pl: "Kas", ru: "Каш", nl: "Kas", ro: "Kas" } },
+  { slug: "kalkan", km: 210, min: 190, name: { tr: "Kalkan", en: "Kalkan", de: "Kalkan", pl: "Kalkan", ru: "Калкан", nl: "Kalkan", ro: "Kalkan" } },
+  { slug: "fethiye", km: 220, min: 200, name: { tr: "Fethiye", en: "Fethiye", de: "Fethiye", pl: "Fethiye", ru: "Фетхие", nl: "Fethiye", ro: "Fethiye" } },
+  { slug: "marmaris", km: 300, min: 270, name: { tr: "Marmaris", en: "Marmaris", de: "Marmaris", pl: "Marmaris", ru: "Мармарис", nl: "Marmaris", ro: "Marmaris" } },
 ];
 
 /** Destinations that carry the commercial demand — shown as full cards. */
@@ -480,7 +488,7 @@ export async function generateMetadata({
   // table is missing, in which case the values below are used verbatim.
   const seoRow = await getSeoPage("antalya-airport-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
 
   return applySeoPage({
     title: c.title,
@@ -501,7 +509,7 @@ export default async function AntalyaAirportTransferPage({
   // field is blank, so the existing expression stays the fallback.
   const seoRow = await getSeoPage("antalya-airport-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
   const pageUrl = `${BASE_URL}/${loc}${PATH}`;
 
   const featured = FEATURED_SLUGS

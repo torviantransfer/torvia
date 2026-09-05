@@ -9,9 +9,17 @@ import { Link } from "@/i18n/routing";
 import { MapPin, Clock, CheckCircle, Shield, Star, Plane, ArrowRight, CreditCard } from "lucide-react";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
-const content: Record<Locale, {
+/* `Partial`, with English standing in for whatever is missing.
+   These five pages carry a whole page of marketing copy per language,
+   written inline. A strict `Record<Locale, …>` means no language can be
+   added to the site at all until every one of them is rewritten in it —
+   which is a reason to postpone a language, not a reason to translate.
+   Falling back matches what the region pages already do with their own
+   per-locale columns, and it is the difference between a locale that
+   ships and a locale that waits. */
+const content: Partial<Record<Locale, {
   title: string;
   metaDesc: string;
   heading: string;
@@ -26,7 +34,7 @@ const content: Record<Locale, {
   faqQ4: string; faqA4: string;
   bookCta: string;
   whyTitle: string;
-}> = {
+}>> = {
   en: {
     title: "Land of Legends Transfer | Antalya Airport to Land of Legends",
     metaDesc: "Private VIP transfer from Antalya Airport to Land of Legends Theme Park Belek. ~30 min, 35 km. Fixed price, meet & greet, free flight tracking. Book online.",
@@ -207,7 +215,7 @@ export async function generateMetadata({
   // table is missing, in which case the values below are used verbatim.
   const seoRow = await getSeoPage("land-of-legends-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
   const path = "/land-of-legends-transfer";
 
   const schema = {
@@ -251,7 +259,7 @@ export default async function LandOfLegendsPage({
   // field is blank, so the existing expression stays the fallback.
   const seoRow = await getSeoPage("land-of-legends-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
 
   const faqSchema = {
     "@context": "https://schema.org",

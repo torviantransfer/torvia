@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   let query = supabase
     .from("regions")
     .select(
-      "id, slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, distance_km, duration_minutes, is_popular, sort_order, latitude, longitude"
+      "id, slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, distance_km, duration_minutes, is_popular, sort_order, latitude, longitude"
     )
     .eq("is_active", true)
     .order("sort_order", { ascending: true });

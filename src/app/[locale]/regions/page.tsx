@@ -38,7 +38,7 @@ const regionImages: Record<string, string> = {
   marmaris: "/images/regions/marmaris.jpg",
 };
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;

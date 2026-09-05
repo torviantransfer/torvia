@@ -21,7 +21,7 @@ import { Loader2, Lock, CreditCard, MapPin } from "lucide-react";
  * paying. Every locale this site runs in is one Stripe supports; anything
  * else falls back to its own detection.
  */
-const STRIPE_LOCALES = ["tr", "en", "de", "pl", "ru", "nl"];
+const STRIPE_LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!

@@ -35,7 +35,7 @@ interface Props {
   initialLuggage?: number;
 }
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+import type { Locale } from "@/i18n/config";
 
 interface VehicleOption {
   categoryId: string;
@@ -64,6 +64,7 @@ interface RegionData {
   name_pl: string;
   name_ru: string;
   name_nl: string;
+  name_ro: string;
   distance_km: number;
   duration_minutes: number;
   latitude?: number;
