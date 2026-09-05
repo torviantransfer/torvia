@@ -7,6 +7,7 @@ import {
   productSchema,
   type ReviewRow,
 } from "@/lib/reviews";
+import { localeOgTags, type Locale } from "@/i18n/config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -79,7 +80,7 @@ export async function generateMetadata({
       url: `${BASE_URL}/${locale}`,
       siteName: "TORVIAN Transfer",
       type: "website",
-      locale: locale === "tr" ? "tr_TR" : locale === "de" ? "de_DE" : locale === "pl" ? "pl_PL" : locale === "ru" ? "ru_RU" : locale === "nl" ? "nl_NL" : "en_US",
+      locale: localeOgTags[locale as Locale] ?? "en_US",
       images: [{ url: `${BASE_URL}/images/og-default.jpg`, width: 1200, height: 630, alt: "TORVIAN Transfer - Antalya Airport VIP Transfer" }],
     },
     twitter: {
@@ -98,6 +99,8 @@ export async function generateMetadata({
       ? "transfer z lotniska Antalya, VIP transfer Antalya, prywatny transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer do hotelu z lotniska Antalya, prywatny transfer do hotelu, transfer VIP Antalya do Belek, transfer do hotelu Side, transfer Land of Legends, nocny transfer z lotniska Antalya, transfer zamiast taksówki, Titanic Deluxe Lara transfer"
       : locale === "nl"
       ? "antalya airport transfer, antalya private transfer, transfer luchthaven Antalya, privétransfer Antalya, VIP transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, hotel transfer Antalya, luchthaven Antalya naar hotel, Land of Legends transfer, nachttransfer luchthaven Antalya, transfer in plaats van taxi, Titanic Deluxe Lara transfer"
+      : locale === "ro"
+      ? "transfer aeroport Antalya, transfer privat Antalya, transfer VIP Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, transfer aeroport Antalya la hotel, transfer privat de la aeroportul Antalya la hotel, transfer VIP Antalya Belek, transfer hotel Side aeroport Antalya, transfer Land of Legends, transfer de noapte aeroport Antalya, transfer in loc de taxi, transfer Titanic Deluxe Lara"
       : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, antalya airport hotel transfer, private transfer from antalya airport to hotel, vip transfer antalya airport to belek, side hotel transfer antalya airport, Land of Legends private transfer, late night airport transfer, fixed price transfer instead of taxi, Titanic Deluxe Lara transfer",
   }, seoRow, locale);
 }

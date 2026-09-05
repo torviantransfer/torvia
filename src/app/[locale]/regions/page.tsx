@@ -69,7 +69,9 @@ export async function generateMetadata({
           ? "Трансферы из аэропорта Антальи | Белек, Сиде, Аланья, Кемер"
           : locale === "nl"
             ? "Antalya Luchthaven Transferbestemmingen | Belek, Side, Alanya, Kemer"
-            : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
+            : locale === "ro"
+              ? "Destinații transfer Aeroportul Antalya | Belek, Side, Alanya, Kemer"
+              : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
   const description = locale === "tr"
     ? "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve 25+ destinasyona sabit fiyatlı VIP özel transfer rezervasyonu yapın."
     : locale === "de"
@@ -80,7 +82,9 @@ export async function generateMetadata({
           ? "Забронируйте VIP-трансфер из аэропорта Антальи в Белек, Сиде, Аланью, Кемер и более 25 направлений."
           : locale === "nl"
             ? "Boek uw privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en meer dan 25 bestemmingen."
-            : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
+            : locale === "ro"
+              ? "Rezervă un transfer privat VIP de la Aeroportul Antalya către Belek, Side, Alanya, Kemer și peste 25 de destinații."
+              : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
   return applySeoPage({
     title,
     description,

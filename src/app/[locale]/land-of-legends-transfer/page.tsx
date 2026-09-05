@@ -292,10 +292,10 @@ export default async function LandOfLegendsPage({
   };
 
   const whyPoints = [
-    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : loc === "nl" ? "Vaste prijs, geen verrassingen" : "Sabit fiyat, sürpriz yok" },
-    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : loc === "nl" ? "Vluchtmonitoring & gratis wachttijd" : "Uçuş takibi ve ücretsiz bekleme" },
-    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : loc === "nl" ? "Ontvangst bij aankomst" : "Varış salonunda karşılama" },
-    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : loc === "nl" ? "Veilig online boeken en betalen" : "Güvenli online rezervasyon ve ödeme" },
+    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : loc === "nl" ? "Vaste prijs, geen verrassingen" : loc === "ro" ? "Preț fix, fără surprize" : "Sabit fiyat, sürpriz yok" },
+    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : loc === "nl" ? "Vluchtmonitoring & gratis wachttijd" : loc === "ro" ? "Urmărirea zborului și așteptare gratuită" : "Uçuş takibi ve ücretsiz bekleme" },
+    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : loc === "nl" ? "Ontvangst bij aankomst" : loc === "ro" ? "Întâmpinare la sosiri" : "Varış salonunda karşılama" },
+    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : loc === "nl" ? "Veilig online boeken en betalen" : loc === "ro" ? "Rezervare și plată online securizate" : "Güvenli online rezervasyon ve ödeme" },
   ];
 
   return (
