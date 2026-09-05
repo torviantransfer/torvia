@@ -146,7 +146,7 @@ export default function RegionsManager({ initialRegions }: Props) {
       name_pl: r.name_pl,
       name_ru: r.name_ru,
       name_nl: r.name_nl,
-      name_ro: r.name_ro,
+      name_ro: r.name_ro ?? "",
       distance_km: r.distance_km?.toString() ?? "",
       duration_minutes: r.duration_minutes?.toString() ?? "",
       sort_order: r.sort_order.toString(),

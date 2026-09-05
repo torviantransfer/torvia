@@ -180,6 +180,7 @@ export async function GET(request: NextRequest) {
       name_pl: region.name_pl,
       name_ru: region.name_ru,
       name_nl: region.name_nl,
+      name_ro: region.name_ro,
       distance_km: region.distance_km,
       duration_minutes: region.duration_minutes,
       latitude: region.latitude,

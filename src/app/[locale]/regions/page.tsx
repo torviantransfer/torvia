@@ -144,7 +144,7 @@ export default async function RegionsPage({
                 className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
                 style={{ backgroundColor: "#F97316", color: "#fff" }}
               >
-                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : "Book Now"}
+                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : locale === "ro" ? "Rezervă acum" : "Book Now"}
               </Link>
             </div>
           </div>
