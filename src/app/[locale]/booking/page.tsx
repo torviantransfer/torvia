@@ -282,7 +282,7 @@ export default async function BookingPage({
             areaServed: "Antalya, Turkey",
           },
           serviceType: "Airport Transfer",
-          availableLanguage: ["tr", "en", "de", "pl", "ru", "nl"],
+          availableLanguage: ["tr", "en", "de", "pl", "ru", "nl", "ro"],
           areaServed: [
             "Antalya", "Belek", "Side", "Alanya", "Kemer", "Lara", "Kundu",
             "Kadriye", "Manavgat", "Konyaaltı", "Kaş", "Kalkan", "Fethiye",

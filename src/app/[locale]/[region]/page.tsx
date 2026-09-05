@@ -35,8 +35,8 @@ import {
   CalendarCheck,
 } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
-const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
+import type { Locale } from "@/i18n/config";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
 const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
 const BASE_URL = "https://torviantransfer.com";
 
@@ -63,6 +63,7 @@ function formatDuration(minutes: number, locale: string): string {
   if (locale === "pl") return h > 0 ? `${h} godz.${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
   if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
   if (locale === "nl") return h > 0 ? `${h} uur${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
+  if (locale === "ro") return h > 0 ? `${h} ${h === 1 ? "oră" : "ore"}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
   return h > 0 ? `${h} hour${h !== 1 ? "s" : ""}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
 }
 
@@ -365,7 +366,7 @@ export default async function RegionPage({
   // pages around it on the coast.
   const { data: allRegions } = await supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km, is_popular, latitude, longitude, image_url")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, duration_minutes, distance_km, is_popular, latitude, longitude, image_url")
     .eq("is_active", true)
     .neq("slug", region.slug)
     .order("sort_order", { ascending: true });
@@ -373,7 +374,7 @@ export default async function RegionPage({
   type CrossLinkRegion = {
     slug: string;
     name_tr: string; name_en: string; name_de: string;
-    name_pl: string; name_ru: string; name_nl: string;
+    name_pl: string; name_ru: string; name_nl: string; name_ro: string;
     duration_minutes: number | null;
     distance_km: number | null;
     is_popular: boolean | null;

@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug, is_popular, image_url, og_image_url, description_de, description_pl, description_ru, description_nl, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl")
+    .select("slug, is_popular, image_url, og_image_url, description_de, description_pl, description_ru, description_nl, description_ro, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl, meta_title_ro")
     .eq("is_active", true);
 
   // Mirror the region page's translation logic: tr/en are always indexed;
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: blogPosts } = await supabase
     .from("blog_posts")
-    .select("slug, published_at, updated_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
+    .select("slug, published_at, updated_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
     .eq("is_published", true);
 
   const entries: MetadataRoute.Sitemap = [];

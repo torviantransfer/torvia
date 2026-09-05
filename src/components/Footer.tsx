@@ -21,7 +21,7 @@ export default async function Footer() {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("regions")
-      .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl")
+      .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro")
       .eq("is_active", true)
       .eq("is_popular", true)
       .order("sort_order", { ascending: true })

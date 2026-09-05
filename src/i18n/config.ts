@@ -1,4 +1,4 @@
-export const locales = ["tr", "en", "de", "pl", "ru", "nl"] as const;
+export const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
@@ -9,6 +9,7 @@ export const localeNames: Record<Locale, string> = {
   pl: "Polski",
   ru: "Русский",
   nl: "Nederlands",
+  ro: "Română",
 };
 
 export const localeFlags: Record<Locale, string> = {
@@ -18,6 +19,7 @@ export const localeFlags: Record<Locale, string> = {
   pl: "PL",
   ru: "RU",
   nl: "NL",
+  ro: "RO",
 };
 
 /**
@@ -32,6 +34,7 @@ export const localeOgTags: Record<Locale, string> = {
   pl: "pl_PL",
   ru: "ru_RU",
   nl: "nl_NL",
+  ro: "ro_RO",
 };
 
 export const currencies = ["USD", "EUR", "TRY"] as const;
@@ -58,4 +61,5 @@ export const localeCurrencies: Record<Locale, Currency> = {
   nl: "EUR",
   pl: "EUR",
   ru: "USD",
+  ro: "EUR",
 };

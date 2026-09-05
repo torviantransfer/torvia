@@ -10,7 +10,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { Calendar, ArrowRight, BookOpen, Plane } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
 export async function generateMetadata({
   params,

@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       // Send confirmation email to customer
       const { data: resData } = await supabase
         .from("reservations")
-        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, slug, distance_km, duration_minutes), customers(id, email, first_name, last_name, auth_user_id, phone), vehicle_categories(name)")
+        .select("*, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_ro, slug, distance_km, duration_minutes), customers(id, email, first_name, last_name, auth_user_id, phone), vehicle_categories(name)")
         .eq("id", reservationId)
         .single();
 

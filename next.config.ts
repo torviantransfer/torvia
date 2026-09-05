@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
     // locale (migration 038); leaving it out here means Dutch visitors hitting
     // the legacy blog/region URLs do not get the 301 that carries the ranking
     // signal to the surviving URL, so their traffic silently disappears.
-    const locales = ["tr", "en", "de", "pl", "ru", "nl"];
+    const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
     // Known region slugs — redirect bare slug to slug-transfer
     const regionSlugs = [
       "belek", "side", "alanya", "kemer", "konyaalti", "kundu", "lara",

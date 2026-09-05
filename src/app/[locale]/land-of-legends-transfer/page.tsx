@@ -9,9 +9,17 @@ import { Link } from "@/i18n/routing";
 import { MapPin, Clock, CheckCircle, Shield, Star, Plane, ArrowRight, CreditCard } from "lucide-react";
 import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
-const content: Record<Locale, {
+/* `Partial`, with English standing in for whatever is missing.
+   These five pages carry a whole page of marketing copy per language,
+   written inline. A strict `Record<Locale, …>` means no language can be
+   added to the site at all until every one of them is rewritten in it —
+   which is a reason to postpone a language, not a reason to translate.
+   Falling back matches what the region pages already do with their own
+   per-locale columns, and it is the difference between a locale that
+   ships and a locale that waits. */
+const content: Partial<Record<Locale, {
   title: string;
   metaDesc: string;
   heading: string;
@@ -26,7 +34,7 @@ const content: Record<Locale, {
   faqQ4: string; faqA4: string;
   bookCta: string;
   whyTitle: string;
-}> = {
+}>> = {
   en: {
     title: "Land of Legends Transfer | Antalya Airport to Land of Legends",
     metaDesc: "Private VIP transfer from Antalya Airport to Land of Legends Theme Park Belek. ~30 min, 35 km. Fixed price, meet & greet, free flight tracking. Book online.",
@@ -207,7 +215,7 @@ export async function generateMetadata({
   // table is missing, in which case the values below are used verbatim.
   const seoRow = await getSeoPage("land-of-legends-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
   const path = "/land-of-legends-transfer";
 
   const schema = {
@@ -251,7 +259,7 @@ export default async function LandOfLegendsPage({
   // field is blank, so the existing expression stays the fallback.
   const seoRow = await getSeoPage("land-of-legends-transfer");
   const loc = (locale as Locale) in content ? (locale as Locale) : "en";
-  const c = content[loc];
+  const c = content[loc] ?? content.en!;
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -284,10 +292,10 @@ export default async function LandOfLegendsPage({
   };
 
   const whyPoints = [
-    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : loc === "nl" ? "Vaste prijs, geen verrassingen" : "Sabit fiyat, sürpriz yok" },
-    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : loc === "nl" ? "Vluchtmonitoring & gratis wachttijd" : "Uçuş takibi ve ücretsiz bekleme" },
-    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : loc === "nl" ? "Ontvangst bij aankomst" : "Varış salonunda karşılama" },
-    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : loc === "nl" ? "Veilig online boeken en betalen" : "Güvenli online rezervasyon ve ödeme" },
+    { icon: "✓", text: loc === "en" ? "Fixed price, no surprises" : loc === "de" ? "Festpreis, keine Überraschungen" : loc === "pl" ? "Stała cena, bez niespodzianek" : loc === "ru" ? "Фиксированная цена, без сюрпризов" : loc === "nl" ? "Vaste prijs, geen verrassingen" : loc === "ro" ? "Preț fix, fără surprize" : "Sabit fiyat, sürpriz yok" },
+    { icon: "✓", text: loc === "en" ? "Flight tracking & free waiting" : loc === "de" ? "Flugverfolgung & kostenlose Wartezeit" : loc === "pl" ? "Śledzenie lotu i bezpłatne czekanie" : loc === "ru" ? "Отслеживание рейса и бесплатное ожидание" : loc === "nl" ? "Vluchtmonitoring & gratis wachttijd" : loc === "ro" ? "Urmărirea zborului și așteptare gratuită" : "Uçuş takibi ve ücretsiz bekleme" },
+    { icon: "✓", text: loc === "en" ? "Meet & greet at arrivals" : loc === "de" ? "Empfang in der Ankunftshalle" : loc === "pl" ? "Powitanie w hali przylotów" : loc === "ru" ? "Встреча в зале прилёта" : loc === "nl" ? "Ontvangst bij aankomst" : loc === "ro" ? "Întâmpinare la sosiri" : "Varış salonunda karşılama" },
+    { icon: "✓", text: loc === "en" ? "Secure online booking & payment" : loc === "de" ? "Sichere Online-Buchung & Zahlung" : loc === "pl" ? "Bezpieczna rezerwacja i płatność online" : loc === "ru" ? "Безопасное онлайн-бронирование и оплата" : loc === "nl" ? "Veilig online boeken en betalen" : loc === "ro" ? "Rezervare și plată online securizate" : "Güvenli online rezervasyon ve ödeme" },
   ];
 
   return (

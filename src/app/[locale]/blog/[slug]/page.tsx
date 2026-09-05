@@ -21,8 +21,8 @@ import BlogStickyBar from "@/components/blog/BlogStickyBar";
 import { Link } from "@/i18n/routing";
 import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
-const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
+import type { Locale } from "@/i18n/config";
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
@@ -113,7 +113,7 @@ export async function generateStaticParams() {
   // Fetch full post data to check which locales have actual translations
   const { data: fullPosts } = await supabase
     .from("blog_posts")
-    .select("slug, title_tr, title_en, title_de, title_pl, title_ru, title_nl, content_tr, content_en, content_de, content_pl, content_ru, content_nl, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl")
+    .select("slug, title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
     .eq("is_published", true);
 
   const locales: Locale[] = ALL_LOCALES;
@@ -251,7 +251,7 @@ export default async function BlogPostPage({
   if (ctaRegionSlug) {
     const { data: regionRow } = await supabase
       .from("regions")
-      .select("id, slug, duration_minutes, distance_km, name_tr, name_en, name_de, name_pl, name_ru, name_nl")
+      .select("id, slug, duration_minutes, distance_km, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro")
       .eq("slug", ctaRegionSlug)
       .maybeSingle();
     if (regionRow) {
@@ -280,7 +280,7 @@ export default async function BlogPostPage({
   // pointing at it receives a link from that article.
   const crossLinkQuery = supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, duration_minutes, distance_km")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, duration_minutes, distance_km")
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .limit(6);
@@ -492,7 +492,7 @@ export default async function BlogPostPage({
 
         {/* Booking CTA — price pulled live from admin panel "Online Tek ($)" column */}
         {(() => {
-          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : "from";
+          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : locale === "ro" ? "de la" : "from";
           // one_way_price is stored in USD (see supabase/seed.sql) — labeling it
           // with "€" without conversion overstated the EUR price by ~8% (and was
           // wildly wrong for TRY). Server-rendered here, so show the true currency.
@@ -503,6 +503,7 @@ export default async function BlogPostPage({
             locale === "ru" ? "Частный VIP-Трансфер" :
             locale === "tr" ? "Özel VIP Transfer" :
             locale === "nl" ? "Privé VIP-transfer" :
+            locale === "ro" ? "Transfer privat VIP" :
             "Private VIP Transfer";
           const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
           const heading = ctaRegionName

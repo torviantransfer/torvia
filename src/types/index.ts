@@ -197,7 +197,7 @@ export interface CurrencyInfo {
   name: string;
 }
 
-export type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+export type { Locale } from "@/i18n/config";
 
 export interface PriceCalculation {
   basePrice: number;

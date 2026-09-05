@@ -47,7 +47,7 @@ export default async function AccountReservationsPage({
   if (customer) {
     const { data } = await admin
       .from("reservations")
-      .select("id, reservation_code, trip_type, direction, pickup_datetime, return_datetime, status, total_price, exchange_rate_eur, payment_method, driver_amount, hotel_name, adults, children, qr_code_token, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_nl), vehicle_categories(name), driver_assignments(id, leg, pickup_time, status, drivers(full_name, phone), vehicles(plate_number, brand, model))")
+      .select("id, reservation_code, trip_type, direction, pickup_datetime, return_datetime, status, total_price, exchange_rate_eur, payment_method, driver_amount, hotel_name, adults, children, qr_code_token, regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_ro), vehicle_categories(name), driver_assignments(id, leg, pickup_time, status, drivers(full_name, phone), vehicles(plate_number, brand, model))")
       .eq("customer_id", customer.id)
       .order("pickup_datetime", { ascending: false });
 

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       direction,
       qr_code_token,
       created_at,
-      regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, slug),
+      regions(name_en, name_tr, name_de, name_pl, name_ru, name_nl, name_ro, slug),
       customers!inner(first_name, last_name, email),
       vehicle_categories(name),
       driver_assignments(id, leg, pickup_time, status, drivers(full_name, phone), vehicles(plate_number, brand, model))

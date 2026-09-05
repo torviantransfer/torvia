@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Upload, Loader2, X, Link2, ImageOff, AlertCircle } from "lucide-react";
 
-export const LOCALES = ["tr", "en", "de", "pl", "ru", "nl"] as const;
+export const LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
 export type Loc = (typeof LOCALES)[number];
 
 export const LOCALE_LABELS: Record<Loc, string> = {
@@ -13,6 +13,7 @@ export const LOCALE_LABELS: Record<Loc, string> = {
   pl: "Polski",
   ru: "Русский",
   nl: "Nederlands",
+  ro: "Română",
 };
 
 export const LOCALE_FLAGS: Record<Loc, string> = {
@@ -22,6 +23,7 @@ export const LOCALE_FLAGS: Record<Loc, string> = {
   pl: "🇵🇱",
   ru: "🇷🇺",
   nl: "🇳🇱",
+  ro: "🇷🇴",
 };
 
 /**

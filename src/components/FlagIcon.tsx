@@ -63,6 +63,17 @@ function PL() {
   );
 }
 
+/** Vertical bands. Romania is the only one here that runs this way. */
+function RO() {
+  return (
+    <>
+      <rect width="6.667" height="14" x="0" fill="#002B7F" />
+      <rect width="6.667" height="14" x="6.667" fill="#FCD116" />
+      <rect width="6.666" height="14" x="13.334" fill="#CE1126" />
+    </>
+  );
+}
+
 const FLAGS: Record<Locale, React.ReactNode> = {
   tr: <TR />,
   en: <GB />,
@@ -70,6 +81,7 @@ const FLAGS: Record<Locale, React.ReactNode> = {
   pl: <PL />,
   ru: <Bands colors={["#FFFFFF", "#0039A6", "#D52B1E"]} />,
   nl: <Bands colors={["#AE1C28", "#FFFFFF", "#21468B"]} />,
+  ro: <RO />,
 };
 
 export default function FlagIcon({
