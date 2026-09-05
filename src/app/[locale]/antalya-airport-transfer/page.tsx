@@ -16,9 +16,9 @@ import {
   Headphones,
   Home,
 } from "lucide-react";
-import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter, INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
 
-import type { Locale } from "@/i18n/config";
+import { inlineCopyLocales, type Locale } from "@/i18n/config";
 
 // Head-term hub for "Antalya Airport Transfer".
 //
@@ -493,8 +493,9 @@ export async function generateMetadata({
   return applySeoPage({
     title: c.title,
     description: c.metaDesc,
-    alternates: seoAlternates(locale, PATH),
+    alternates: seoAlternates(locale, PATH, [...inlineCopyLocales]),
     openGraph: seoOpenGraph(loc, PATH, c.title, c.metaDesc, "/images/antalya-airport.jpg"),
+    robots: inlineCopyLocales.includes(locale as Locale) ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     twitter: seoTwitter(c.title, c.metaDesc, "/images/antalya-airport.jpg"),
   }, seoRow, locale);
 }

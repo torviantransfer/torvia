@@ -6,9 +6,9 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { Hotel, CheckCircle, Star, ArrowRight, MapPin, Moon, Users2 } from "lucide-react";
-import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter, INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
 
-import type { Locale } from "@/i18n/config";
+import { inlineCopyLocales, type Locale } from "@/i18n/config";
 
 // Keyword source: this site's own Google Trends + Search Console research
 // (migrations 031/033/043/044) — "hotel transfer antalya" is Germany's #1
@@ -370,8 +370,9 @@ export async function generateMetadata({
   return applySeoPage({
     title: c.title,
     description: c.metaDesc,
-    alternates: seoAlternates(locale, path),
+    alternates: seoAlternates(locale, path, [...inlineCopyLocales]),
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/antalya-airport.jpg"),
+    robots: inlineCopyLocales.includes(locale as Locale) ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     twitter: seoTwitter(c.title, c.metaDesc, "/images/antalya-airport.jpg"),
   }, seoRow, locale);
 }

@@ -2,7 +2,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { localizedBlogSlug } from "@/lib/seo";
 import { regionImageUrl } from "@/lib/regionImages";
-import { locales as ALL_LOCALES } from "@/i18n/config";
+import { locales as ALL_LOCALES, inlineCopyLocales } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
 const locales: readonly string[] = ALL_LOCALES;
@@ -81,8 +81,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "cookies", priority: 0.2 },
     { path: "kvkk", priority: 0.2 },
   ];
+  // These five hold their copy inline and fall back to English for any locale
+  // without it, so they mark themselves noindex outside `inlineCopyLocales`.
+  // Emitting them here would submit a URL we have told Google not to index —
+  // the "Submitted URL marked noindex" error in Search Console.
+  const inlineCopyPages = new Set([
+    "antalya-airport-transfer",
+    "hotel-transfer-antalya",
+    "vip-transfer-antalya",
+    "land-of-legends-transfer",
+    "lara-beach-transfer",
+  ]);
+
   for (const locale of locales) {
     for (const page of staticPages) {
+      if (
+        inlineCopyPages.has(page.path) &&
+        !(inlineCopyLocales as readonly string[]).includes(locale)
+      ) {
+        continue;
+      }
       entries.push({
         url: `${BASE_URL}/${locale}/${page.path}`,
         lastModified: new Date(),

@@ -7,9 +7,9 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
 import { MapPin, Clock, CheckCircle, Shield, Star, Plane, ArrowRight, CreditCard } from "lucide-react";
-import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import { seoAlternates, seoOpenGraph, seoTwitter, INDEXABLE_ROBOTS, NOINDEX_ROBOTS } from "@/lib/seo";
 
-import type { Locale } from "@/i18n/config";
+import { inlineCopyLocales, type Locale } from "@/i18n/config";
 
 /* `Partial`, with English standing in for whatever is missing.
    These five pages carry a whole page of marketing copy per language,
@@ -245,6 +245,7 @@ export async function generateMetadata({
       },
     },
     openGraph: seoOpenGraph(loc, path, c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
+    robots: inlineCopyLocales.includes(locale as Locale) ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
     twitter: seoTwitter(c.title, c.metaDesc, "/images/regions/belek-golf.jpg"),
   }, seoRow, locale);
 }

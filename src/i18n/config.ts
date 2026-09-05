@@ -2,6 +2,23 @@ export const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
+/**
+ * Locales that have their own copy on the five landing pages which hold their
+ * text inline rather than in a messages namespace: antalya-airport-transfer,
+ * hotel-transfer-antalya, vip-transfer-antalya, land-of-legends-transfer and
+ * lara-beach-transfer.
+ *
+ * Those pages fall back to English for anything not listed here, so a locale
+ * added to this list without its copy being written publishes an English page
+ * under an hreflang tag claiming another language — which is a duplicate of
+ * the English one, submitted to Google as if it were not. The pages are
+ * noindex outside this list and the sitemap leaves them out, mirroring what
+ * the region pages already do with their own per-locale columns.
+ *
+ * Add a locale here in the same commit that writes its copy, never before.
+ */
+export const inlineCopyLocales: readonly Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
+
 export const localeNames: Record<Locale, string> = {
   tr: "Türkçe",
   en: "English",
