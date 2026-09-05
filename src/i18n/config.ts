@@ -17,7 +17,7 @@ export const defaultLocale: Locale = "en";
  *
  * Add a locale here in the same commit that writes its copy, never before.
  */
-export const inlineCopyLocales: readonly Locale[] = ["tr", "en", "de", "pl", "ru", "nl"];
+export const inlineCopyLocales: readonly Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
 
 export const localeNames: Record<Locale, string> = {
   tr: "Türkçe",
