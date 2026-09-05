@@ -422,6 +422,64 @@ const content: Partial<Record<Locale, {
     home: "Home",
     imageAlt: "Privé transfervoertuig op de luchthaven Antalya",
   },
+  ro: {
+    title: "Transfer Aeroportul Antalya | Preț fix, întâmpinare, rezervare online",
+    metaDesc:
+      "Transfer privat de la Aeroportul Antalya: preț fix per vehicul, urmărirea zborului în timp real și șoferul te așteaptă în holul de sosiri. Anulare gratuită cu 24 de ore înainte.",
+    heading: "Transfer Aeroportul Antalya",
+    subheading:
+      "Transfer privat de la Aeroportul Antalya (AYT) direct la hotelul tău — un singur preț fix per vehicul, cu șoferul care te așteaptă în holul de sosiri.",
+    desc:
+      "Rezervi înainte de plecare, îți urmărim zborul, iar un Mercedes Vito te duce din ușă în ușă. Fără coadă la stația de taxi, fără aparat de taxare pornit, fără surprize la capătul drumului.",
+    badge: "Aeroportul Antalya (AYT)",
+    pills: [
+      "Transfer privat, nu comun",
+      "Preț fix per vehicul",
+      "Urmărirea zborului în timp real",
+      "Direct la hotelul tău",
+      "Asistență 24/7",
+      "Anulare gratuită cu 24 de ore înainte",
+    ],
+    bookCta: "Rezervă transferul de aeroport",
+    secondaryCta: "Vezi toate destinațiile",
+    stepsTitle: "Ce se întâmplă când aterizezi pe Aeroportul Antalya",
+    steps: [
+      { title: "Rezervi înainte de plecare", desc: "Alege destinația, data și ora. Primești imediat un e-mail de confirmare cu datele șoferului și un cod QR." },
+      { title: "Îți urmărim zborul", desc: "Scrie numărul zborului la rezervare. Urmărim toate zborurile în timp real — dacă al tău întârzie, șoferul te așteaptă fără costuri suplimentare." },
+      { title: "Întâmpinare în holul de sosiri", desc: "Șoferul te așteaptă în punctul desemnat din holul de sosiri, cu un panou pe care este scris numele tău, și te însoțește cu bagajele până la vehicul." },
+      { title: "Din ușă în ușă", desc: "Direct de la aeroport la hotelul, vila sau orice adresă de pe Riviera Turcească — fără opriri suplimentare și fără ocolișuri." },
+    ],
+    whyTitle: "De ce să rezervi transferul de la Aeroportul Antalya cu TORVIAN",
+    features: [
+      "Prețurile sunt per vehicul, nu per persoană — până la 5 pasageri călătoresc împreună într-un Mercedes Vito la același preț.",
+      "Prețul pe care îl vezi la rezervare este prețul pe care îl plătești. Fără costuri ascunse, fără tarife majorate.",
+      "Fiecare sosire pe Aeroportul Antalya este urmărită, așa că șoferul este programat după ora reală de aterizare.",
+      "Anulare gratuită cu până la 24 de ore înainte de ora programată de plecare.",
+      "Scaune pentru copii la $10 per rezervare — este suficient să le ceri la rezervare.",
+      "Circulăm 24 de ore din 24, așa că o sosire de noapte se rezervă exact ca oricare alta.",
+      "Vehicule Mercedes Vito VIP cu scaune din piele, Wi-Fi și aer condiționat.",
+      "Plățile cu cardul sunt procesate prin Stripe, pe infrastructură conformă PCI DSS.",
+    ],
+    destinationsTitle: "Unde mergi de la aeroport?",
+    destinationsIntro:
+      "Fiecare destinație are pagina ei, cu distanța exactă, durata drumului și prețul fix pentru acea rută.",
+    allDestinationsTitle: "Toate destinațiile de transfer",
+    minLabel: "min",
+    viewRoute: "Vezi ruta",
+    faqTitle: "Întrebări frecvente despre transferul de la Aeroportul Antalya",
+    faqs: [
+      { q: "Cât costă un transfer de la Aeroportul Antalya?", a: "Prețul depinde doar de destinație și este fix per vehicul, nu per persoană — până la 5 pasageri plătesc la fel. Deschide pagina destinației tale ca să vezi prețul fix exact înainte de a rezerva." },
+      { q: "Cum mă găsește șoferul în aeroport?", a: "Șoferul te așteaptă în punctul desemnat din holul de sosiri, cu un panou pe care este scris numele tău. După rezervare primești un e-mail cu datele șoferului și un cod QR." },
+      { q: "Ce se întâmplă dacă zborul meu are întârziere?", a: "Urmărim toate zborurile în timp real. Dacă al tău întârzie, șoferul te așteaptă fără costuri suplimentare." },
+      { q: "Prețurile sunt per persoană sau per vehicul?", a: "Per vehicul. Până la 5 pasageri călătoresc împreună într-un Mercedes Vito la același preț, așa că o familie plătește cât o singură persoană." },
+      { q: "Pot anula gratuit transferul de aeroport?", a: "Da, poți anula gratuit cu până la 24 de ore înainte de ora programată de plecare." },
+      { q: "Circulați și noaptea?", a: "Da, circulăm 24 de ore din 24. Și pentru zborurile de noapte șoferul te așteaptă." },
+      { q: "Pot rezerva un transfer cu scaun pentru copii?", a: "Da. Scaunele pentru copii sunt disponibile la $10 per rezervare — cere-l la rezervare și va fi montat înainte ca șoferul să plece spre aeroport." },
+    ],
+    breadcrumb: "Transfer Aeroportul Antalya",
+    home: "Acasă",
+    imageAlt: "Vehicul de transfer privat în Aeroportul Antalya",
+  },
 };
 
 /**
