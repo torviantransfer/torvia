@@ -731,7 +731,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           two layouts share is the calendar and passenger popups, which take
           `lg:` overrides so each viewport gets its own accent out of the same
           elements. */}
-      <div className="lg:hidden rounded-[20px] border border-[#E5E7EB] bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.12),0_3px_10px_rgba(15,23,42,0.05)]">
+      <div className="lg:hidden rounded-[20px] border border-[#E5E7EB] bg-white p-3 shadow-[0_24px_56px_rgba(15,23,42,0.24),0_6px_16px_rgba(15,23,42,0.12)]">
         {/* Route — pickup and dropoff share one relative box so the swap
             button can float on the seam between them. */}
         <div className="relative grid gap-2">
@@ -743,7 +743,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="listbox"
               aria-expanded={open === "from"}
               aria-label={`${t("pickup")}: ${from ? getName(from) : t("pickupPlaceholder")}`}
-              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[52px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
                 <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
@@ -766,7 +766,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="listbox"
               aria-expanded={open === "to"}
               aria-label={`${t("dropoff")}: ${to ? getName(to) : t("dropoffPlaceholder")}`}
-              className={`flex min-h-[56px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[52px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 pl-2.5 pr-14 text-left transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
                 <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
@@ -807,7 +807,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="dialog"
               aria-expanded={open === "cal" && calFor === "dep"}
               aria-label={`${t("departureDate")}: ${depFmt ? depFmt.text : t("selectDateShort")}`}
-              className={`flex min-h-[52px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+              className={`flex min-h-[48px] w-full items-center gap-2 rounded-2xl border px-2.5 text-left transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
             >
               <Calendar size={18} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
               <span className="min-w-0 flex-1">
@@ -827,7 +827,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
               aria-haspopup="dialog"
               aria-expanded={open === "time" && calFor === "dep"}
               aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
-              className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+              className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
             >
               <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
@@ -847,7 +847,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             pair the form always had. The switch stays dimmed until there is an
             outbound date, because a return can only be picked relative to
             one. */}
-        <div className={`mt-2 flex min-h-[46px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
+        <div className={`mt-2 flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
           <span className="flex min-w-0 items-center gap-2.5">
             <RefreshCw size={18} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
             <span className={`truncate text-[14px] ${depDate ? "text-[#4B5563]" : "text-[#9CA3AF]"}`}>
@@ -884,7 +884,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
                 aria-haspopup="dialog"
                 aria-expanded={open === "cal" && calFor === "ret"}
                 aria-label={`${t("returnDate")}: ${retFmt ? retFmt.text : t("selectDateShort")}`}
-                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+                className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
               >
                 <Calendar size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
@@ -904,7 +904,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
                 aria-haspopup="dialog"
                 aria-expanded={open === "time" && calFor === "ret"}
                 aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
-                className="flex min-h-[52px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
+                className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-left transition-colors active:bg-gray-50"
               >
                 <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
@@ -930,7 +930,7 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
             aria-haspopup="dialog"
             aria-expanded={open === "pax"}
             aria-label={`${adults + kids} ${t("passengers")}`}
-            className={`mt-2 flex min-h-[46px] w-full items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+            className={`mt-2 flex min-h-[44px] w-full items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
           >
             <span className="flex min-w-0 items-center gap-2.5">
               <User size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
