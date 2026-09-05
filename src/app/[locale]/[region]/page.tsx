@@ -541,7 +541,9 @@ export default async function RegionPage({
           ? `Мы обслуживаем все отели в ${name}, включая:`
           : locale === "nl"
             ? `Wij bedienen alle hotels in ${name}, waaronder:`
-            : `We serve every hotel in ${name}, including:`;
+            : locale === "ro"
+              ? `Deservim toate hotelurile din ${name}, printre care:`
+              : `We serve every hotel in ${name}, including:`;
   const faqHotelsQ = locale === "tr"
     ? `${name} bölgesinde hangi otellere transfer sağlıyorsunuz?`
     : locale === "de"
@@ -552,7 +554,9 @@ export default async function RegionPage({
           ? `В какие отели в ${name} вы осуществляете трансфер?`
           : locale === "nl"
             ? `Welke hotels in ${name} bedient u?`
-            : `Which hotels in ${name} do you provide transfer to?`;
+            : locale === "ro"
+              ? `Către ce hoteluri din ${name} faceți transfer?`
+              : `Which hotels in ${name} do you provide transfer to?`;
   const faqHotelsA = locale === "tr"
     ? `${name} bölgesindeki tüm otellere transfer sağlıyoruz; öne çıkanlar arasında ${hotelsForRegion.join(", ")} bulunur. Rezervasyon sırasında otel adınızı belirtmeniz yeterlidir.`
     : locale === "de"
@@ -563,7 +567,9 @@ export default async function RegionPage({
           ? `Мы осуществляем трансфер во все отели в ${name}, включая ${hotelsForRegion.join(", ")}. Просто укажите название отеля при бронировании.`
           : locale === "nl"
             ? `Wij verzorgen transfers naar alle hotels in ${name}, waaronder ${hotelsForRegion.join(", ")}. Vermeld gewoon uw hotelnaam tijdens het boeken.`
-            : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
+            : locale === "ro"
+              ? `Facem transfer către toate hotelurile din ${name}, printre care ${hotelsForRegion.join(", ")}. Este suficient să scrii numele hotelului la rezervare.`
+              : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -595,7 +601,9 @@ export default async function RegionPage({
           ? `Частный трансфер в ${name} | Аэропорт Анталии → ${name}`
           : locale === "nl"
             ? `Privétransfer naar ${name} | Luchthaven Antalya → ${name}`
-            : `Private Transfer to ${name} | Antalya Airport → ${name}`);
+            : locale === "ro"
+              ? `Transfer privat către ${name} | Aeroportul Antalya → ${name}`
+              : `Private Transfer to ${name} | Antalya Airport → ${name}`);
 
   const heroDescription = locale === "tr"
     ? `${name} için Antalya Havalimanı'ndan özel VIP transfer. Sabit fiyat, profesyonel şoför, uçuş takibi ve online rezervasyon.`
@@ -607,7 +615,9 @@ export default async function RegionPage({
           ? `Частный VIP-трансфер из аэропорта Анталии в ${name}. Фиксированная цена, профессиональный водитель, отслеживание рейса и онлайн-бронирование.`
           : locale === "nl"
             ? `Privé VIP-transfer vanaf de luchthaven Antalya naar ${name}. Vaste prijs, professionele chauffeur, vluchtmonitoring en online reservering.`
-            : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
+            : locale === "ro"
+              ? `Transfer privat VIP de la Aeroportul Antalya la ${name}. Preț fix, șofer profesionist, urmărirea zborului și rezervare online.`
+              : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
 
   const routeKeywords = locale === "tr"
     ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`, `gece varışı ${name} transfer`, `taksi yerine ${name} transfer`, `${name} transfer fiyatları`, `${name} transfer rezervasyon`]
@@ -619,7 +629,9 @@ export default async function RegionPage({
           ? [`трансфер из Анталии в ${name}`, `VIP трансфер ${name}`, `трансфер в отель ${name}`, `трансфер с детским креслом ${name}`, `трансфер с фиксированной ценой ${name}`, `частный трансфер ${name}`, `ночной трансфер в ${name}`, `трансфер вместо такси в ${name}`, `цена трансфера в ${name}`, `забронировать трансфер в ${name}`]
           : locale === "nl"
             ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`, `nachttransfer naar ${name}`, `transfer in plaats van taxi naar ${name}`, `${name} transfer prijs`, `${name} transfer boeken`]
-            : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`, `${name} transfer price`, `book ${name} transfer online`];
+            : locale === "ro"
+              ? [`transfer aeroport Antalya ${name}`, `transfer privat ${name}`, `transfer hotel ${name}`, `transfer cu scaun pentru copii ${name}`, `transfer preț fix ${name}`, `transfer VIP ${name}`, `transfer de noapte ${name}`, `transfer in loc de taxi ${name}`, `preț transfer ${name}`, `rezervare transfer ${name}`]
+              : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`, `${name} transfer price`, `book ${name} transfer online`];
   const routeIntentLabel = locale === "tr"
     ? "Bu rota için sık aranan ifadeler"
     : locale === "de"
@@ -630,7 +642,9 @@ export default async function RegionPage({
           ? "Часто ищут по этому маршруту"
           : locale === "nl"
             ? "Veelgezochte zoekwoorden voor deze route"
-            : "Common search phrases for this route";
+            : locale === "ro"
+              ? "Căutări frecvente pentru această rută"
+              : "Common search phrases for this route";
 
   return (
     <>
@@ -1121,6 +1135,7 @@ export default async function RegionPage({
                  locale === "pl" ? "Zobacz naszą dedykowaną stronę dla hoteli Lara Beach" :
                  locale === "ru" ? "Смотрите нашу страницу для отелей пляжа Лара" :
                  locale === "nl" ? "Bekijk onze speciale pagina voor Lara Beach hotels" :
+                 locale === "ro" ? "Vezi pagina noastră dedicată hotelurilor din Lara Beach" :
                  "See our dedicated Lara Beach transfer page with hotel-specific info"}
               </p>
               <Link
