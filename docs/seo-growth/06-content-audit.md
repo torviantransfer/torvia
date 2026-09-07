@@ -1,20 +1,20 @@
 # 06 — İçerik Denetimi
 
-**Makine okunabilir:** `content-audit.json` (496 satır)
+**Makine okunabilir:** `content-audit.json` (491 satır)
 
 ## Karar dağılımı
 
 | Karar | URL | Pay |
 | --- | ---: | ---: |
-| KEEP | 437 | %88,1 |
-| NO SEO CHANGE | 55 | %11,1 |
+| KEEP | 432 | %88,0 |
+| NO SEO CHANGE | 55 | %11,2 |
 | MINOR | 3 | %0,6 |
 | MAJOR | 1 | %0,2 |
 
 **Bu dağılım bir sonuçtur, bir hedef değil.** Görev tanımı §32: "İçerik düzgünse
 dokunma. Mevcut metnin %90'ını değiştirmek SEO başarı kriteri değildir."
 
-496 URL'nin 4'ünde değişiklik yapıldı çünkü kanıt yalnız 4'ünde değişiklik
+491 URL'nin 4'ünde değişiklik yapıldı çünkü kanıt yalnız 4'ünde değişiklik
 lehine çıktı. Kalanında ya sayfa doğru niyeti hedefliyor, ya değiştirmek için
 gereken kanıt (GSC) yok, ya da sayfa zaten ranking alıyor ve §15 dokunmayı
 yasaklıyor.

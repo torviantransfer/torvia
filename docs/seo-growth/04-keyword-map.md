@@ -6,7 +6,7 @@
 
 ## Yöntem
 
-496 indexlenebilir URL için karar. 496 satırı tek tek elle yazmak, kimsenin
+491 indexlenebilir URL için karar. 491 satırı tek tek elle yazmak, kimsenin
 kontrol edemeyeceği bir doküman üretirdi. Bunun yerine: **sayfa tipi başına
 açık bir kural, sonra kanıtın aksini söylediği adlandırılmış istisnalar.**
 Her istisna kendi kanıtını taşır.
@@ -23,11 +23,11 @@ Her istisna kendi kanıtını taşır.
 
 | Karar | URL |
 | --- | ---: |
-| KEEP | 437 |
+| KEEP | 432 |
 | NO SEO CHANGE | 55 |
 | MINOR | 3 |
 | MAJOR | 1 |
-| **TOPLAM** | **496** |
+| **TOPLAM** | **491** |
 
 Dil bazında:
 
