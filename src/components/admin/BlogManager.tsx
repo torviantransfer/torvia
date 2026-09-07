@@ -24,36 +24,42 @@ interface BlogPost {
   title_pl: string | null;
   title_ru: string | null;
   title_nl: string | null;
+  title_ro: string | null;
   content_tr: string | null;
   content_en: string | null;
   content_de: string | null;
   content_pl: string | null;
   content_ru: string | null;
   content_nl: string | null;
+  content_ro: string | null;
   excerpt_tr: string | null;
   excerpt_en: string | null;
   excerpt_de: string | null;
   excerpt_pl: string | null;
   excerpt_ru: string | null;
   excerpt_nl: string | null;
+  excerpt_ro: string | null;
   focus_keyword_tr: string | null;
   focus_keyword_en: string | null;
   focus_keyword_de: string | null;
   focus_keyword_pl: string | null;
   focus_keyword_ru: string | null;
   focus_keyword_nl: string | null;
+  focus_keyword_ro: string | null;
   secondary_keywords_tr: string | null;
   secondary_keywords_en: string | null;
   secondary_keywords_de: string | null;
   secondary_keywords_pl: string | null;
   secondary_keywords_ru: string | null;
   secondary_keywords_nl: string | null;
+  secondary_keywords_ro: string | null;
   slug_tr: string | null;
   slug_en: string | null;
   slug_de: string | null;
   slug_pl: string | null;
   slug_ru: string | null;
   slug_nl: string | null;
+  slug_ro: string | null;
   image_url: string | null;
   primary_region_slug: string | null;
   is_published: boolean;
@@ -72,7 +78,10 @@ interface Props {
   initialPosts: BlogPost[];
 }
 
-const LOCALES = ["en", "tr", "de", "pl", "ru", "nl"] as const;
+// Romanian was missing here while the SEO panel offered it, so a post could
+// have its Romanian meta title written but never its Romanian title, body or
+// slug -- the two editors disagreed about how many languages the site has.
+const LOCALES = ["en", "tr", "de", "pl", "ru", "nl", "ro"] as const;
 const LOCALE_LABELS: Record<string, string> = {
   en: "English",
   tr: "Türkçe",
@@ -80,18 +89,19 @@ const LOCALE_LABELS: Record<string, string> = {
   pl: "Polski",
   ru: "Русский",
   nl: "Nederlands",
+  ro: "Română",
 };
 
 const emptyForm = {
   slug: "",
   image_url: "",
   primary_region_slug: "",
-  title_en: "", title_tr: "", title_de: "", title_pl: "", title_ru: "", title_nl: "",
-  content_en: "", content_tr: "", content_de: "", content_pl: "", content_ru: "", content_nl: "",
-  excerpt_en: "", excerpt_tr: "", excerpt_de: "", excerpt_pl: "", excerpt_ru: "", excerpt_nl: "",
-  focus_keyword_en: "", focus_keyword_tr: "", focus_keyword_de: "", focus_keyword_pl: "", focus_keyword_ru: "", focus_keyword_nl: "",
-  secondary_keywords_en: "", secondary_keywords_tr: "", secondary_keywords_de: "", secondary_keywords_pl: "", secondary_keywords_ru: "", secondary_keywords_nl: "",
-  slug_en: "", slug_tr: "", slug_de: "", slug_pl: "", slug_ru: "", slug_nl: "",
+  title_en: "", title_tr: "", title_de: "", title_pl: "", title_ru: "", title_nl: "", title_ro: "",
+  content_en: "", content_tr: "", content_de: "", content_pl: "", content_ru: "", content_nl: "", content_ro: "",
+  excerpt_en: "", excerpt_tr: "", excerpt_de: "", excerpt_pl: "", excerpt_ru: "", excerpt_nl: "", excerpt_ro: "",
+  focus_keyword_en: "", focus_keyword_tr: "", focus_keyword_de: "", focus_keyword_pl: "", focus_keyword_ru: "", focus_keyword_nl: "", focus_keyword_ro: "",
+  secondary_keywords_en: "", secondary_keywords_tr: "", secondary_keywords_de: "", secondary_keywords_pl: "", secondary_keywords_ru: "", secondary_keywords_nl: "", secondary_keywords_ro: "",
+  slug_en: "", slug_tr: "", slug_de: "", slug_pl: "", slug_ru: "", slug_nl: "", slug_ro: "",
 };
 
 type FormState = typeof emptyForm;
@@ -197,23 +207,34 @@ export default function BlogManager({ initialPosts }: Props) {
     }
   };
 
+  /** The six per-language columns a post carries, in one place. */
+  const LOCALISED_FIELDS = [
+    "title",
+    "content",
+    "excerpt",
+    "focus_keyword",
+    "secondary_keywords",
+    "slug",
+  ] as const;
+
   const startEdit = (p: BlogPost) => {
+    // Built from LOCALES × LOCALISED_FIELDS rather than written out. The
+    // hand-written version listed thirty-six assignments and stopped at `nl`,
+    // so adding a seventh language meant remembering six more lines in this
+    // one function — and the language that was added did not get them.
     setForm({
+      ...emptyForm,
       slug: p.slug,
       image_url: p.image_url ?? "",
       primary_region_slug: p.primary_region_slug ?? "",
-      title_en: p.title_en ?? "", title_tr: p.title_tr ?? "", title_de: p.title_de ?? "",
-      title_pl: p.title_pl ?? "", title_ru: p.title_ru ?? "", title_nl: p.title_nl ?? "",
-      content_en: p.content_en ?? "", content_tr: p.content_tr ?? "", content_de: p.content_de ?? "",
-      content_pl: p.content_pl ?? "", content_ru: p.content_ru ?? "", content_nl: p.content_nl ?? "",
-      excerpt_en: p.excerpt_en ?? "", excerpt_tr: p.excerpt_tr ?? "", excerpt_de: p.excerpt_de ?? "",
-      excerpt_pl: p.excerpt_pl ?? "", excerpt_ru: p.excerpt_ru ?? "", excerpt_nl: p.excerpt_nl ?? "",
-      focus_keyword_en: p.focus_keyword_en ?? "", focus_keyword_tr: p.focus_keyword_tr ?? "", focus_keyword_de: p.focus_keyword_de ?? "",
-      focus_keyword_pl: p.focus_keyword_pl ?? "", focus_keyword_ru: p.focus_keyword_ru ?? "", focus_keyword_nl: p.focus_keyword_nl ?? "",
-      secondary_keywords_en: p.secondary_keywords_en ?? "", secondary_keywords_tr: p.secondary_keywords_tr ?? "", secondary_keywords_de: p.secondary_keywords_de ?? "",
-      secondary_keywords_pl: p.secondary_keywords_pl ?? "", secondary_keywords_ru: p.secondary_keywords_ru ?? "", secondary_keywords_nl: p.secondary_keywords_nl ?? "",
-      slug_en: p.slug_en ?? "", slug_tr: p.slug_tr ?? "", slug_de: p.slug_de ?? "",
-      slug_pl: p.slug_pl ?? "", slug_ru: p.slug_ru ?? "", slug_nl: p.slug_nl ?? "",
+      ...(Object.fromEntries(
+        LOCALES.flatMap((l) =>
+          LOCALISED_FIELDS.map((f) => [
+            `${f}_${l}`,
+            (p[`${f}_${l}` as keyof BlogPost] as string | null) ?? "",
+          ])
+        )
+      ) as Partial<FormState>),
     });
     setEditingId(p.id);
     setShowForm(true);

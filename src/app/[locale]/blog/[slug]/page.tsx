@@ -10,7 +10,7 @@ import {
   INDEXABLE_ROBOTS,
   NOINDEX_ROBOTS,
 } from "@/lib/seo";
-import { applyOverrides } from "@/lib/seoOverrides";
+import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import sanitizeHtml from "sanitize-html";
@@ -134,32 +134,62 @@ export async function generateStaticParams() {
   );
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string; slug: string }>;
-}): Promise<Metadata> {
-  const supabase = createAdminClient();
-  const { locale, slug } = await params;
+/**
+ * Everything `generateMetadata` does once the post has been loaded.
+ *
+ * Split out so it can be exercised directly by `npm run verify:seo`. That is
+ * not a stylistic preference — the defect this file carried was invisible to a
+ * unit test of `applyOverrides`, because `applyOverrides` was behaving exactly
+ * as documented. The bug was in what this caller passed it, and only a test of
+ * the caller can see that. `generateMetadata` below is now a database read and
+ * a call to this function, so a test of this function is a test of the page.
+ */
+export function blogMetadata(
+  post: Record<string, unknown>,
+  locale: string
+): Metadata {
   const loc = locale as Locale;
-
-  const post = await findPost(supabase, slug);
-
-  if (!post) return { title: "Not Found", robots: { index: false, follow: false } };
 
   // This locale's own slug — hreflang must point each language at its own URL.
   const canonicalSlug = localizedBlogSlug(post, loc);
   const translatedLocales = getTranslatedLocales(post);
   const isTranslated = translatedLocales.includes(loc);
 
-  const title = post[`title_${loc}`] || post.title_en || "Blog";
-  const rawContent = post[`content_${loc}`] || post.content_en || "";
+  // The heading a reader sees on the page. Also the SERP title, but only
+  // until someone writes a dedicated one.
+  const heading =
+    (post[`title_${loc}`] as string | null) || (post.title_en as string | null) || "Blog";
+  const rawContent =
+    (post[`content_${loc}`] as string | null) || (post.content_en as string | null) || "";
   const rawText = rawContent.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-  const description = post[`excerpt_${loc}`] || post.excerpt_en || rawText.slice(0, 155) + (rawText.length > 155 ? "..." : "");
+  const excerpt =
+    (post[`excerpt_${loc}`] as string | null) ||
+    (post.excerpt_en as string | null) ||
+    rawText.slice(0, 155) + (rawText.length > 155 ? "..." : "");
+
+  // ---- Source of truth --------------------------------------------------
+  //
+  // `meta_title_*` / `meta_description_*` exist precisely so a post's SERP
+  // title can differ from its on-page H1 (migration 058), and the SEO panel
+  // has been offering both fields in all seven languages ever since. They
+  // reached nothing: this function built its metadata from `title_*` and
+  // `excerpt_*` and then passed `rowOwnsMetaText: true`, which is the flag
+  // that tells applyOverrides "the caller already consumed those columns".
+  // It had not. So the flag disabled the only code path that would have
+  // applied them, and every blog meta title typed into the admin — in every
+  // locale — was written to the database and never served.
+  //
+  // Resolving them here, before the flag, is what makes the flag true.
+  // `rowOwnsMetaText` stays set because it is still doing its real job:
+  // stopping applyOverrides from re-applying the raw column over the value
+  // resolved below, which is where the region page lost its price suffix.
+  const title = ov(post, `meta_title_${loc}`) ?? heading;
+  const description = ov(post, `meta_description_${loc}`) ?? excerpt;
 
   // Primary locale = first locale that has a translation (usually "tr")
   const primaryLocale = translatedLocales[0] ?? "tr";
   const BASE = "https://torviantransfer.com";
+  const image = (post.image_url as string | null) || undefined;
 
   // Admin overrides last. A post with no SEO columns filled in keeps the
   // title/excerpt behaviour it has today.
@@ -182,11 +212,26 @@ export async function generateMetadata({
           )}`,
         },
     robots: isTranslated ? INDEXABLE_ROBOTS : NOINDEX_ROBOTS,
-    openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, post.image_url || undefined),
-    twitter: { card: "summary_large_image" as const, title, description, images: post.image_url ? [post.image_url] : undefined },
+    openGraph: seoOpenGraph(locale, `/blog/${canonicalSlug}`, title, description, image),
+    twitter: { card: "summary_large_image" as const, title, description, images: image ? [image] : undefined },
     },
-    { row: post as Record<string, unknown>, locale: loc, rowOwnsMetaText: true }
+    { row: post, locale: loc, rowOwnsMetaText: true }
   );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const supabase = createAdminClient();
+  const { locale, slug } = await params;
+
+  const post = await findPost(supabase, slug);
+
+  if (!post) return { title: "Not Found", robots: { index: false, follow: false } };
+
+  return blogMetadata(post as Record<string, unknown>, locale);
 }
 
 export default async function BlogPostPage({
@@ -225,20 +270,64 @@ export default async function BlogPostPage({
       "*": ["class", "id", "style"],
     },
     allowedIframeHostnames: ["www.youtube.com", "www.google.com"],
+    // The page already renders the post title as its <h1>. A body that opens
+    // with its own <h1> — which several imported posts do — gives the page two,
+    // and the second one usually disagrees with the first
+    // (/en/blog/flughafen-transfer-antalya shipped a German heading under an
+    // English one). Demote it to <h2> so the document outline has exactly one
+    // top-level heading no matter what an editor pastes in.
+    transformTags: { h1: "h2" },
   });
 
   // Calculate reading time
   const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
   const readingTime = Math.max(1, Math.round(wordCount / 200));
 
-  // Related posts
-  const { data: related } = await supabase
+  // Related posts.
+  //
+  // This used to be `order(published_at desc).limit(3)` — the three newest
+  // posts, site-wide, on every article. Measured on production 2026-09-07 that
+  // gave the two most recent posts 28 inbound links each while the posts that
+  // actually earn impressions (the Uber article at 6,341, the taxi comparison
+  // at 2,894) had exactly one. Internal links were flowing to whatever was
+  // published last rather than to what the reader was reading about, and the
+  // block was labelled "related posts" while relating to nothing.
+  //
+  // It also ignored translation: `rp[title_${loc}] || rp.title_en` put English
+  // headlines under a Dutch article and linked to URLs that are noindex in that
+  // locale, so link equity was being spent on pages Google was told to ignore.
+  const { data: relatedPool } = await supabase
     .from("blog_posts")
     .select("*")
     .eq("is_published", true)
     .neq("slug", slug)
-    .order("published_at", { ascending: false })
-    .limit(3);
+    .order("published_at", { ascending: false });
+
+  const related = (() => {
+    const pool = (relatedPool ?? []) as Record<string, unknown>[];
+    // Only posts a reader of this language can actually read, and that Google
+    // indexes in this language.
+    const translated = pool.filter((p) => {
+      const t = (p[`title_${loc}`] as string | null) ?? "";
+      const c = (p[`content_${loc}`] as string | null) ?? "";
+      return t.trim().length > 0 && c.trim().length > 0;
+    });
+    const thisRegion = getCtaRegionSlug(post);
+    const scored = translated.map((p) => {
+      const region = getCtaRegionSlug(p);
+      // Same destination first — someone reading about the Belek route is far
+      // more likely to want another Belek page than the newest article.
+      let score = thisRegion && region === thisRegion ? 2 : 0;
+      // Then a shared topic word from the shared (Turkish) slug, which is the
+      // one identifier every translation of a post has in common.
+      const words = new Set(normalizeSlug(String(post.slug ?? "")).split("-").filter((w) => w.length > 3));
+      const other = normalizeSlug(String(p.slug ?? "")).split("-");
+      if (other.some((w) => w.length > 3 && words.has(w))) score += 1;
+      return { p, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 3).map((s) => s.p);
+  })();
 
   // The region this post is actually about. Drives both the live CTA price
   // and the in-article link to that region's sales page — blog posts rank far
@@ -565,17 +654,17 @@ export default async function BlogPostPage({
               </h2>
               <div className="grid md:grid-cols-3 gap-6">
                 {related.map((rp) => {
-                  const rpTitle =
-                    rp[`title_${loc}`] || rp.title_en || "Untitled";
-                  const rpContent = rp[`content_${loc}`] || rp.content_en || "";
+                  // `related` is filtered to posts translated into this locale,
+                  // so the English fallbacks that used to sit here — and put an
+                  // English headline under a Dutch article — are gone.
+                  const rpTitle = (rp[`title_${loc}`] as string) ?? "";
+                  const rpContent = (rp[`content_${loc}`] as string) ?? "";
+                  const rpImage = (rp.image_url as string | null) ?? null;
                   const rpExcerpt = rpContent.replace(/<[^>]*>/g, "").slice(0, 100);
                   return (
                     <Link
-                      key={rp.id}
-                      href={`/blog/${localizedBlogSlug(
-                        rp as Record<string, unknown>,
-                        loc
-                      )}`}
+                      key={String(rp.id)}
+                      href={`/blog/${localizedBlogSlug(rp, loc)}`}
                       className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
                       style={{
                         backgroundColor: "rgba(0,0,0,0.03)",
@@ -583,9 +672,9 @@ export default async function BlogPostPage({
                       }}
                     >
                       <div className="relative aspect-[16/9] overflow-hidden">
-                        {rp.image_url ? (
+                        {rpImage ? (
                           <Image
-                            src={rp.image_url}
+                            src={rpImage}
                             alt={rpTitle}
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"

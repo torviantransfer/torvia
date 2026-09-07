@@ -16,7 +16,9 @@ export async function generateMetadata({
   // table is missing, in which case the values below are used verbatim.
   const seoRow = await getSeoPage("cancellation");
   const t = await getTranslations({ locale, namespace: "cancellation" });
-  const title = `${t("heading")} | TORVIAN Transfer`;
+  // No brand suffix here: the root layout appends " | TORVIAN Transfer"
+  // through title.template, so adding it by hand shipped it twice.
+  const title = t("heading");
   const description = t("subtitle");
   return applySeoPage({
     title,

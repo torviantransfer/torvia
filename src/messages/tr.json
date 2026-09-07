@@ -455,7 +455,8 @@
     "langPolish": "Lehçe",
     "langRussian": "Rusça",
     "mapTitle": "Konumumuz",
-    "langDutch": "Felemenkçe"
+    "langDutch": "Felemenkçe",
+    "langRomanian": "Romence"
   },
   "faq": {
     "title": "Antalya Havalimanı Transfer SSS | Transfer Süresi, Mesafe ve Fiyatlar",
@@ -626,7 +627,12 @@
     "newsletterSuccess": "Abone oldunuz! Teşekkürler.",
     "newsletterDuplicate": "Zaten abonesiniz.",
     "newsletterError": "Bir hata oluştu. Tekrar deneyin.",
-    "tagline": "Antalya Havalimanı (AYT) VIP Transfer Hizmeti"
+    "tagline": "Antalya Havalimanı (AYT) VIP Transfer Hizmeti",
+    "servicesHeading": "Transfer Hizmetleri",
+    "linkAirportTransfer": "Antalya Havalimanı Transfer",
+    "linkVipTransfer": "VIP Transfer Antalya",
+    "linkHotelTransfer": "Otel Transferi Antalya",
+    "linkLaraBeach": "Lara Beach Transfer"
   },
   "cookieConsent": {
     "message": "Deneyiminizi iyileştirmek için çerezler kullanıyoruz. Sitemizi kullanmaya devam ederek çerez politikamızı kabul etmiş olursunuz.",

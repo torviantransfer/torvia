@@ -455,7 +455,8 @@
     "langPolish": "Polonă",
     "langRussian": "Rusă",
     "mapTitle": "Locația noastră",
-    "langDutch": "Neerlandeză"
+    "langDutch": "Neerlandeză",
+    "langRomanian": "Română"
   },
   "faq": {
     "title": "Întrebări frecvente transfer Aeroportul Antalya | Durată, distanță și prețuri",
@@ -626,7 +627,12 @@
     "newsletterButton": "Abonează-te",
     "newsletterSuccess": "Te-ai abonat! Mulțumim.",
     "newsletterDuplicate": "Ești deja abonat.",
-    "newsletterError": "A apărut o eroare. Încearcă din nou."
+    "newsletterError": "A apărut o eroare. Încearcă din nou.",
+    "servicesHeading": "Servicii de transfer",
+    "linkAirportTransfer": "Transfer Aeroportul Antalya",
+    "linkVipTransfer": "Transfer VIP Antalya",
+    "linkHotelTransfer": "Transfer hotel Antalya",
+    "linkLaraBeach": "Transfer Lara Beach"
   },
   "cookieConsent": {
     "message": "Folosim cookie-uri pentru a-ți îmbunătăți experiența. Continuând să folosești acest site, ești de acord cu politica noastră de cookie-uri.",

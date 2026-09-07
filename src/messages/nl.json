@@ -455,7 +455,8 @@
     "langPolish": "Pools",
     "langRussian": "Russisch",
     "mapTitle": "Onze locatie",
-    "langDutch": "Nederlands"
+    "langDutch": "Nederlands",
+    "langRomanian": "Roemeens"
   },
   "faq": {
     "title": "Veelgestelde vragen luchthaventransfer Antalya | Reistijd, afstand en prijzen",
@@ -626,7 +627,12 @@
     "newsletterButton": "Aanmelden",
     "newsletterSuccess": "Aangemeld! Hartelijk dank.",
     "newsletterDuplicate": "U bent al aangemeld.",
-    "newsletterError": "Er is iets misgegaan. Probeer het opnieuw."
+    "newsletterError": "Er is iets misgegaan. Probeer het opnieuw.",
+    "servicesHeading": "Transferdiensten",
+    "linkAirportTransfer": "Transfer luchthaven Antalya",
+    "linkVipTransfer": "VIP-transfer Antalya",
+    "linkHotelTransfer": "Hoteltransfer Antalya",
+    "linkLaraBeach": "Transfer Lara Beach"
   },
   "cookieConsent": {
     "message": "Wij gebruiken cookies om uw ervaring te verbeteren. Door deze site te blijven gebruiken, gaat u akkoord met ons cookiebeleid.",

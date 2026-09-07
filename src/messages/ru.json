@@ -455,7 +455,8 @@
     "langPolish": "Польский",
     "langRussian": "Русский",
     "mapTitle": "Наше Местоположение",
-    "langDutch": "Нидерландский"
+    "langDutch": "Нидерландский",
+    "langRomanian": "Румынский"
   },
   "faq": {
     "title": "FAQ — Трансфер из Аэропорта Анталья | Время в пути, Расстояние и Цены",
@@ -626,7 +627,12 @@
     "newsletterSuccess": "Подписка оформлена! Спасибо.",
     "newsletterDuplicate": "Вы уже подписаны.",
     "newsletterError": "Что-то пошло не так. Попробуйте ещё раз.",
-    "tagline": "Аэропорт Анталии (AYT) VIP Трансфер"
+    "tagline": "Аэропорт Анталии (AYT) VIP Трансфер",
+    "servicesHeading": "Услуги трансфера",
+    "linkAirportTransfer": "Трансфер из аэропорта Анталии",
+    "linkVipTransfer": "VIP трансфер Анталья",
+    "linkHotelTransfer": "Трансфер в отель Анталья",
+    "linkLaraBeach": "Трансфер Лара Бич"
   },
   "cookieConsent": {
     "message": "Мы используем файлы cookie для улучшения вашего опыта. Продолжая использовать сайт, вы соглашаетесь с нашей политикой cookie.",

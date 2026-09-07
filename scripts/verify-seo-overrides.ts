@@ -735,8 +735,17 @@ assert(
   }).title === "Adminden gelen"
 );
 
-console.log(
-  `
+// -------------------------------------------------------------------------
+// The caller-level contracts live in their own file because they have to
+// import the page modules, which makes them async. Everything above this line
+// tests a helper; everything in there tests a page.
+// -------------------------------------------------------------------------
+import { runCallerContracts } from "./verify-seo-callers";
+
+runCallerContracts(assert).then(() => {
+  console.log(
+    `
 ${failures === 0 ? "[32mTÜM KONTRATLAR GEÇTİ[0m" : `[31m${failures} KONTRAT BAŞARISIZ[0m`}`
-);
-process.exit(failures === 0 ? 0 : 1);
+  );
+  process.exit(failures === 0 ? 0 : 1);
+});

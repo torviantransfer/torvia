@@ -1,0 +1,110 @@
+[
+ {
+  "id": "CANN-01",
+  "cluster": "airport-to-hotel (blog layer)",
+  "locales": [
+   "tr",
+   "en",
+   "de",
+   "pl",
+   "ru",
+   "nl",
+   "ro"
+  ],
+  "urls": [
+   "blog: '…Private VIP Direct to Your Resort'",
+   "blog: '…How It Works, Prices & Tips'",
+   "landing: /{loc}/hotel-transfer-antalya"
+  ],
+  "evidence": "Both blog posts cover: what a hotel transfer is, prices, comparison to shuttle/taxi, how to book. Same sections, same entities, ~500-730 words each. Their titles are near-identical to each other and to the landing page's.",
+  "decision": "CONSOLIDATE — gated",
+  "note": "Not applied. Choosing a survivor without query data is exactly what migration 030 did when it unpublished the stronger Alanya post and had to be undone by 037. Requires the GSC query in 09-content-migrations.md first."
+ },
+ {
+  "id": "CANN-02",
+  "cluster": "airport-transfer guide (blog layer)",
+  "locales": [
+   "en",
+   "de"
+  ],
+  "urls": [
+   "blog: flughafen-transfer-antalya (1,258w)",
+   "blog: antalya-airport-transfer-guide (562w)",
+   "landing: /{loc}/antalya-airport-transfer"
+  ],
+  "evidence": "Two 'complete guide to the airport transfer' posts per locale plus the landing page. The 1,258-word one is the site's strongest English article on the topic and out-words the landing page it competes with.",
+  "decision": "CONSOLIDATE — gated",
+  "note": "Same reasoning as CANN-01. Title language fixed now (GROWTH-006); consolidation needs GSC."
+ },
+ {
+  "id": "CANN-03",
+  "cluster": "alanya travel time",
+  "locales": [
+   "tr",
+   "en",
+   "de",
+   "pl",
+   "ru",
+   "nl"
+  ],
+  "urls": [
+   "blog: …-alanya-transfer-kac-saat",
+   "blog: …-alanya-transfer-suresi"
+  ],
+  "evidence": "Identified and resolved in the first audit (SEO-008).",
+  "decision": "RESOLVED — migration 071 pending",
+  "note": "Redirects already shipped in src/lib/redirects.ts; the unpublish is migration 071."
+ },
+ {
+  "id": "CANN-04",
+  "cluster": "vip / premium (DE)",
+  "locales": [
+   "de"
+  ],
+  "urls": [
+   "/de",
+   "/de/antalya-airport-transfer",
+   "/de/vip-transfer-antalya",
+   "/de/blog/flughafentransfer-antalya",
+   "/de/blog/antalya-flughafentransfer-ratgeber"
+  ],
+  "evidence": "Five German URLs led with 'Flughafentransfer Antalya' / 'Antalya Flughafen Transfer'.",
+  "decision": "RESOLVED",
+  "note": "The VIP landing's override is cleared in 074, returning it to its own intent. The two blog posts remain in CANN-02."
+ },
+ {
+  "id": "CANN-05",
+  "cluster": "lara / kundu destination",
+  "locales": [
+   "tr",
+   "en",
+   "de",
+   "pl",
+   "ru",
+   "nl",
+   "ro"
+  ],
+  "urls": [
+   "/{loc}/lara-beach-transfer (landing)",
+   "/{loc}/kundu-lara-transfer (region)"
+  ],
+  "evidence": "The landing page and the region page target the same destination; title similarity 0.67. Both are indexable and in the sitemap.",
+  "decision": "KEEP BOTH — intent split",
+  "note": "Deliberate. The region page is the priced route page inside the destination set; the landing page is the standalone Lara Beach entry point and carries its own inline copy in seven languages. They are not merged because merging costs one of two indexed URLs on a destination that has ranking history, and the intent difference (route pricing vs destination landing) is real."
+ },
+ {
+  "id": "CANN-06",
+  "cluster": "destination list (TR)",
+  "locales": [
+   "tr"
+  ],
+  "urls": [
+   "/tr",
+   "/tr/regions",
+   "/tr/booking"
+  ],
+  "evidence": "All three titled with the same destination list 'Belek, Side, Alanya, Kemer'; similarity 0.60-0.86.",
+  "decision": "KEEP — monitor",
+  "note": "These are the three highest-linked Turkish pages and Turkey is the only market where the site earns meaningful clicks (61 of 138). Retitling them without query data risks the one locale that works. Recorded, not acted on."
+ }
+]

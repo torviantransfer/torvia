@@ -37,10 +37,15 @@ function pathsFor(table: string, row: Record<string, unknown> | null): string[] 
   switch (table) {
     case "seo_pages": {
       const route = typeof row?.route === "string" ? row.route : null;
+      // sitemap.ts reads the `noindex` column now, so an admin taking a page
+      // out of the index has to purge the sitemap too — otherwise the URL set
+      // Google is given keeps contradicting the page's own directive, which is
+      // the "Submitted URL marked 'noindex'" error the column exists to avoid.
+      const sitemap = "/sitemap.xml";
       // A page_key with no route (or a delete, where there is no row) can
       // affect any of them, so fall back to the whole locale tree.
-      if (route === null) return all.map((l) => `/${l}`);
-      return all.map((l) => (route ? `/${l}/${route}` : `/${l}`));
+      if (route === null) return [...all.map((l) => `/${l}`), sitemap];
+      return [...all.map((l) => (route ? `/${l}/${route}` : `/${l}`)), sitemap];
     }
 
     case "regions": {

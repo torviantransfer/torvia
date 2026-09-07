@@ -4,9 +4,26 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import TrackReservation from "@/components/TrackReservation";
 import { Shield, Clock, MapPin } from "lucide-react";
-import { seoAlternates, seoOpenGraph, seoTwitter } from "@/lib/seo";
+import { seoOpenGraph, seoTwitter, NOINDEX_ROBOTS } from "@/lib/seo";
 import type { Metadata } from "next";
 
+/**
+ * A lookup form for a booking someone already made, reached from the
+ * confirmation email — not a page anyone searches for, and not one that can
+ * rank for anything the region and landing pages are not already competing
+ * for. It nevertheless shipped a self-referencing canonical, a full seven-way
+ * hreflang cluster and `index, follow`, while being deliberately absent from
+ * the sitemap: seven URLs claiming to be indexable content that the site
+ * never submits.
+ *
+ * robots.txt cannot fix it — its `/track` rule predates `localePrefix:
+ * "always"` and matches no real URL — so the directive is stated here.
+ * `follow` is kept so the header and footer links out of this page still
+ * carry equity.
+ *
+ * The hreflang cluster is dropped with the index: alternates on a noindex
+ * page tell Google to consider seven URLs it has been asked to ignore.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -19,7 +36,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: seoAlternates(locale, "/track"),
+    robots: NOINDEX_ROBOTS,
     openGraph: seoOpenGraph(locale, "/track", title, description),
     twitter: seoTwitter(title, description),
   };

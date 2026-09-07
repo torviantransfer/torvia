@@ -1066,6 +1066,26 @@ function SeoEditor({
         </p>
       )}
 
+      {entry.shadowedBy && (
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-300">
+          <AlertOctagon size={15} className="text-amber-700 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[12.5px] font-semibold text-amber-900">
+              Bu adresi bu kayıt üretmiyor.
+            </p>
+            <p className="text-[11.5px] text-amber-800 mt-0.5">
+              /{locale}/{entry.routeFor(locale)} adresini kod içindeki landing sayfası servis
+              ediyor; bölge satırı yalnızca fiyat, mesafe ve rezervasyon için kullanılıyor.
+              Buradaki SEO alanları yayına çıkmaz.
+            </p>
+            <p className="text-[11.5px] text-slate-700 mt-1">
+              Bu sayfanın SEO&apos;sunu <strong>Landing → {entry.shadowedBy}</strong> kaydından
+              düzenleyin.
+            </p>
+          </div>
+        </div>
+      )}
+
       <LocaleTabs active={locale} onChange={onLocale} status={localeStatus} />
 
       <div className="grid xl:grid-cols-[minmax(0,1fr)_400px] gap-4 items-start">
@@ -1499,6 +1519,10 @@ function NewRegionDialog({
             name_pl: names.pl.trim(),
             name_ru: names.ru.trim(),
             name_nl: (names.nl ?? "").trim() || null,
+            // Left out when Romanian was added, so a region created here had a
+            // NULL name_ro and every Romanian page fell back to the English
+            // name -- silently, because `name_ro || name_en` never complains.
+            name_ro: (names.ro ?? "").trim() || null,
             distance_km: distance ? parseFloat(distance) : null,
             duration_minutes: duration ? parseInt(duration, 10) : null,
             // Inactive on purpose: a region with no copy, no photo and no price

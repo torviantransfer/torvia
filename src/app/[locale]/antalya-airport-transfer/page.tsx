@@ -603,7 +603,7 @@ export default async function AntalyaAirportTransferPage({
       "@type": "ServiceChannel",
       serviceUrl: pageUrl,
       servicePhone: "+90-546-940-79-55",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
   };
 

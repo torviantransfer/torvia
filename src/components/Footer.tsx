@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import NewsletterForm from "@/components/NewsletterForm";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru" | "nl";
+import type { Locale } from "@/i18n/config";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
 
@@ -16,7 +16,7 @@ export default async function Footer() {
   // Fetch popular regions SERVER-SIDE so the internal links are present in the
   // initial HTML and crawlable by Googlebot (previously loaded via client fetch,
   // so search engines never saw these site-wide internal links).
-  let popularRegions: { slug: string; name_tr: string; name_en: string; name_de: string; name_pl: string; name_ru: string; name_nl: string }[] = [];
+  let popularRegions: ({ slug: string } & Record<string, string>)[] = [];
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -63,7 +63,34 @@ export default async function Footer() {
         </div>
 
         {/* Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-10 md:mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6 md:gap-8 mb-10 md:mb-12">
+          {/* Transfer services — the commercial landing pages.
+              Measured on production 2026-09-07: /en/hotel-transfer-antalya and
+              /en/vip-transfer-antalya each had exactly one internal link on the
+              whole site (from /en/booking), and /en/lara-beach-transfer had one
+              (from /en/kundu-lara-transfer). Meanwhile /en/about, /en/contact
+              and /en/faq had seventy-four each, because they are in this footer
+              and the landing pages were not. Internal links are how Google
+              decides which pages matter, and the three pages that sell were the
+              least linked indexable pages on the site. */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("servicesHeading")}</h3>
+            <ul className="space-y-3">
+              {[
+                { href: "/antalya-airport-transfer", label: t("linkAirportTransfer") },
+                { href: "/vip-transfer-antalya", label: t("linkVipTransfer") },
+                { href: "/hotel-transfer-antalya", label: t("linkHotelTransfer") },
+                { href: "/lara-beach-transfer", label: t("linkLaraBeach") },
+              ].map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="text-gray-500 hover:text-gray-900 text-sm transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Company */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("company")}</h3>

@@ -2,6 +2,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { localizedBlogSlug } from "@/lib/seo";
 import { regionImageUrl } from "@/lib/regionImages";
+import { redirectedBlogSlugs } from "@/lib/redirects";
 import { locales as ALL_LOCALES, inlineCopyLocales } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
@@ -25,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
   const { data: regions } = await supabase
     .from("regions")
-    .select("slug, is_popular, image_url, og_image_url, description_de, description_pl, description_ru, description_nl, description_ro, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl, meta_title_ro")
+    .select("slug, is_popular, noindex, image_url, og_image_url, description_de, description_pl, description_ru, description_nl, description_ro, meta_title_de, meta_title_pl, meta_title_ru, meta_title_nl, meta_title_ro")
     .eq("is_active", true);
 
   // Mirror the region page's translation logic: tr/en are always indexed;
@@ -42,14 +43,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const { data: blogPosts } = await supabase
     .from("blog_posts")
-    .select("slug, published_at, updated_at, image_url, title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
+    .select("slug, published_at, updated_at, image_url, noindex, title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
     .eq("is_published", true);
 
+  const { data: seoPages } = await supabase
+    .from("seo_pages")
+    .select("page_key, noindex");
+
+  // The admin panel's `noindex` switch writes to the row, and the page reads
+  // it through applyOverrides -- but this file never did, so taking a page out
+  // of the index from the panel left its URL in the sitemap and produced
+  // "Submitted URL marked 'noindex'" in Search Console. One map per table,
+  // consulted below.
+  const pageNoindex = new Set(
+    (seoPages ?? []).filter((p) => p.noindex === true).map((p) => p.page_key as string)
+  );
+
   const entries: MetadataRoute.Sitemap = [];
+  // Guards against the same URL being emitted by two different loops. The
+  // "land-of-legends-transfer" region has a slug that already ends in
+  // `-transfer`, so the region loop produced exactly the URL the static-page
+  // loop had already produced -- seven duplicated entries, one per locale.
+  const seen = new Set<string>();
+  const push = (entry: MetadataRoute.Sitemap[number]) => {
+    if (seen.has(entry.url)) return;
+    seen.add(entry.url);
+    entries.push(entry);
+  };
 
   // Homepage for each locale
   for (const locale of locales) {
-    entries.push({
+    if (pageNoindex.has("home")) break;
+    push({
       url: `${BASE_URL}/${locale}`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -60,26 +85,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages = [
     // Conversion pages — highest priority after homepage
-    { path: "booking", priority: 0.95 },
+    { path: "booking", key: "booking", priority: 0.95 },
     // Head-term hub for "Antalya Airport Transfer" — links out to every
     // region page, so it ranks just under the booking flow itself.
-    { path: "antalya-airport-transfer", priority: 0.95 },
-    { path: "regions", priority: 0.9 },
-    { path: "land-of-legends-transfer", priority: 0.9 },
-    { path: "vip-transfer-antalya", priority: 0.9 },
-    { path: "hotel-transfer-antalya", priority: 0.9 },
+    { path: "antalya-airport-transfer", key: "antalya-airport-transfer", priority: 0.95 },
+    { path: "regions", key: "regions", priority: 0.9 },
+    { path: "land-of-legends-transfer", key: "land-of-legends-transfer", priority: 0.9 },
+    { path: "vip-transfer-antalya", key: "vip-transfer-antalya", priority: 0.9 },
+    { path: "hotel-transfer-antalya", key: "hotel-transfer-antalya", priority: 0.9 },
     // Support + info pages
-    { path: "contact", priority: 0.8 },
-    { path: "faq", priority: 0.7 },
-    { path: "about", priority: 0.7 },
-    { path: "blog", priority: 0.7 },
-    { path: "lara-beach-transfer", priority: 0.9 },
+    { path: "contact", key: "contact", priority: 0.8 },
+    { path: "faq", key: "faq", priority: 0.7 },
+    { path: "about", key: "about", priority: 0.7 },
+    { path: "blog", key: "blog", priority: 0.7 },
+    { path: "lara-beach-transfer", key: "lara-beach-transfer", priority: 0.9 },
     // Legal — low priority, no crawl budget waste
-    { path: "cancellation", priority: 0.4 },
-    { path: "privacy", priority: 0.3 },
-    { path: "terms", priority: 0.3 },
-    { path: "cookies", priority: 0.2 },
-    { path: "kvkk", priority: 0.2 },
+    { path: "cancellation", key: "cancellation", priority: 0.4 },
+    { path: "privacy", key: "privacy", priority: 0.3 },
+    { path: "terms", key: "terms", priority: 0.3 },
+    { path: "cookies", key: "cookies", priority: 0.2 },
+    { path: "kvkk", key: "kvkk", priority: 0.2 },
   ];
   // These five hold their copy inline and fall back to English for any locale
   // without it, so they mark themselves noindex outside `inlineCopyLocales`.
@@ -95,13 +120,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const locale of locales) {
     for (const page of staticPages) {
+      if (pageNoindex.has(page.key)) continue;
       if (
         inlineCopyPages.has(page.path) &&
         !(inlineCopyLocales as readonly string[]).includes(locale)
       ) {
         continue;
       }
-      entries.push({
+      push({
         url: `${BASE_URL}/${locale}/${page.path}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
@@ -114,6 +140,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of locales) {
     const isPrimary = primaryLocales.includes(locale);
     for (const region of regions ?? []) {
+      // An admin-set noindex takes a region out of the index; it has to take
+      // it out of the sitemap too or the two contradict each other.
+      if (region.noindex === true) continue;
       // Skip locales this region isn't translated into (matches page noindex).
       if (!regionHasLocale(region as Record<string, unknown>, locale)) continue;
       const isPopular = region.is_popular === true;
@@ -128,7 +157,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         region.og_image_url as string | null,
         region.image_url as string | null
       );
-      entries.push({
+      push({
         url: `${BASE_URL}/${locale}/${regionPath}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
@@ -144,16 +173,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // to ASCII for clean canonical URLs.
   for (const locale of locales) {
     const isPrimary = primaryLocales.includes(locale);
+    // Slugs that next.config.ts 308s away in this language. A post can still
+    // be flagged published while its URL redirects — that is exactly what
+    // /tr/blog/antalya-alanya-transfer-suresi was doing while sitting in this
+    // sitemap — and submitting a redirect is a Search Console error.
+    const redirected = redirectedBlogSlugs(locale);
     for (const post of blogPosts ?? []) {
+      if (post.noindex === true) continue;
       const title = (post[`title_${locale}` as keyof typeof post] as string | null) ?? "";
       const content = (post[`content_${locale}` as keyof typeof post] as string | null) ?? "";
       if (!title.trim() || !content.trim()) continue;
+      const slug = localizedBlogSlug(post as Record<string, unknown>, locale);
+      if (redirected.has(slug)) continue;
       const postImage = post.image_url as string | null;
-      entries.push({
-        url: `${BASE_URL}/${locale}/blog/${localizedBlogSlug(
-          post as Record<string, unknown>,
-          locale
-        )}`,
+      push({
+        url: `${BASE_URL}/${locale}/blog/${slug}`,
         lastModified: post.updated_at
           ? new Date(post.updated_at)
           : post.published_at

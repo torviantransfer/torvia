@@ -78,6 +78,35 @@ export function safeCanonical(raw: string | undefined): string | undefined {
   return url.toString();
 }
 
+/**
+ * The site name the root layout appends to every title via
+ * `title.template: "%s | TORVIAN Transfer"`.
+ */
+const SITE_NAME = "TORVIAN Transfer";
+
+/** " | TORVIAN Transfer" and its dash/middot variants, at the very end. */
+const BRAND_SUFFIX = new RegExp(String.raw`\s*[|\-–—·]\s*${SITE_NAME}\s*$`, "i");
+
+/**
+ * Stops the brand being appended twice.
+ *
+ * The root layout declares a title template, so a page only ever supplies the
+ * distinctive half. Five legal pages appended the brand themselves anyway and
+ * shipped `Privacy Policy | TORVIAN Transfer | TORVIAN Transfer` in all seven
+ * languages — 35 URLs spending a third of the SERP's title width on a repeat.
+ *
+ * Fixing those pages is not enough on its own, because an admin typing a full
+ * title into the panel will naturally include the brand and has no way to know
+ * a template exists. So the rule lives here, where every table's metadata
+ * passes through: a title that already ends in the brand is emitted as
+ * `title.absolute`, which is Next's own opt-out from the parent template.
+ *
+ * Titles without the brand are returned as plain strings and keep the template.
+ */
+export function withoutDuplicateBrand(title: string): string | { absolute: string } {
+  return BRAND_SUFFIX.test(title) ? { absolute: title } : title;
+}
+
 export interface RobotsOverride {
   noindex?: boolean;
   nofollow?: boolean;
@@ -147,7 +176,15 @@ export interface ApplyOptions {
  */
 export function applyOverrides(fallback: Metadata, options: ApplyOptions): Metadata {
   const { row, locale, imageField = "image_url", rowOwnsMetaText = false } = options;
-  if (!row) return fallback;
+
+  // A missing row disables every override, but not the title-template rule at
+  // the bottom of this function: a page can duplicate the brand on its own,
+  // and most of the pages that did have no `seo_pages` row filled in at all.
+  if (!row) {
+    if (typeof fallback.title !== "string") return fallback;
+    const title = withoutDuplicateBrand(fallback.title);
+    return title === fallback.title ? fallback : { ...fallback, title };
+  }
 
   const next: Metadata = { ...fallback };
 
@@ -223,6 +260,14 @@ export function applyOverrides(fallback: Metadata, options: ApplyOptions): Metad
   const nofollow = flag(row, "nofollow");
   if (noindex !== undefined || nofollow !== undefined) {
     next.robots = resolveRobots(fallback.robots, { noindex, nofollow });
+  }
+
+  // ---- Title template ---------------------------------------------------
+  // Applied to whatever title survived above -- the override, or the page's
+  // own fallback when there was none -- because the brand can be duplicated
+  // from either side. See `withoutDuplicateBrand`.
+  if (typeof next.title === "string") {
+    next.title = withoutDuplicateBrand(next.title);
   }
 
   return next;

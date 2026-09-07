@@ -1,0 +1,481 @@
+{
+ "fetchedAt": "2026-09-07T21:08:24.696Z",
+ "source": "Google Autocomplete (suggestqueries.google.com), per market hl/gl",
+ "note": "Popularity order, not volume. Google Trends returned HTTP 429 from this environment.",
+ "markets": {
+  "tr": {
+   "hl": "tr",
+   "gl": "tr",
+   "seeds": {
+    "antalya havalimanı transfer": {
+     "suggestions": [
+      "antalya havalimanı transfer",
+      "antalya havalimanı transfer ücretleri",
+      "antalya havalimanı transfer alanya",
+      "antalya havalimanı transfer firmaları",
+      "antalya havalimanı transfer manavgat",
+      "antalya havalimanı transfer shuttle",
+      "antalya havalimanı transfer otobüs",
+      "antalya havalimanı transfer havaş",
+      "antalya havalimanı transfer vip",
+      "antalya havalimanı transfer hizmeti"
+     ]
+    },
+    "antalya havalimanı özel transfer": {
+     "suggestions": [
+      "antalya havalimanı özel transfer",
+      "antalya havalimanı belek özel transfer"
+     ]
+    },
+    "antalya transfer": {
+     "suggestions": [
+      "antalya transfer",
+      "antalya transfer firmaları",
+      "antalya transfer merkezi",
+      "antalya transfer vip",
+      "antalya transfer aras kargo",
+      "antalya transfer whatsapp grupları",
+      "antalya transfer ücretleri",
+      "antalya transfer hizmetleri",
+      "antalya transfer iş ilanları",
+      "antalya transfer yasağı"
+     ]
+    },
+    "antalya havalimanı otel": {
+     "suggestions": [
+      "antalya havalimanı otel transfer",
+      "antalya havalimanı otel transfer fiyatları",
+      "antalya havalimanı otel",
+      "antalya havalimanı otel fiyatları",
+      "antalya havalimanı otel ulaşım",
+      "antalya havalimanı otel servis",
+      "antalya havalimanı otel shuttle",
+      "antalya havalimanı yakın oteller",
+      "antalya havalimanı susesi otel arası kaç km",
+      "antalya havalimanı akra otel arası kaç km"
+     ]
+    },
+    "antalya havalimanı belek": {
+     "suggestions": [
+      "antalya havalimanı belek arası kaç km",
+      "antalya havalimanı belek arası kaç saat",
+      "antalya havalimanı belek arası taksi ücreti",
+      "antalya havalimanı belek transfer",
+      "antalya havalimanı belek ulaşım",
+      "antalya havalimanı belek arası kaç kilometre",
+      "antalya havalimanı belek havaş",
+      "antalya havalimanı belek",
+      "antalya havalimanı belek transfer ücreti",
+      "antalya havalimanı belek arası"
+     ]
+    }
+   }
+  },
+  "en": {
+   "hl": "en-GB",
+   "gl": "gb",
+   "seeds": {
+    "antalya airport transfer": {
+     "suggestions": [
+      "antalya airport transfer",
+      "antalya airport transfer reviews",
+      "antalya airport transfer to hotel",
+      "antalya airport transfer between terminals",
+      "antalya airport transfer to side",
+      "antalya airport transfer time",
+      "antalya airport transfer vip",
+      "antalya airport transfer to alanya",
+      "antalya airport transfer tripadvisor",
+      "antalya airport transfer cheap"
+     ]
+    },
+    "antalya private transfer": {
+     "suggestions": [
+      "antalya private transfer",
+      "antalya private transfer reviews",
+      "antalya private transfer tripadvisor",
+      "antalya private transfer vip",
+      "@antalya private transfers göreme nevşehir",
+      "antalya private transfer service",
+      "antalya private transfer price",
+      "antalya private taxi",
+      "private transfer antalya",
+      "antalya private car"
+     ]
+    },
+    "antalya airport to": {
+     "suggestions": [
+      "antalya airport tobacco prices",
+      "antalya airport to side transfer time",
+      "antalya airport to city centre",
+      "antalya airport today",
+      "antalya airport to side",
+      "antalya airport to lara beach",
+      "antalya airport to eftalia aqua resort",
+      "antalya airport to belek",
+      "antalya airport to kemer",
+      "antalya airport to dalaman airport"
+     ]
+    },
+    "antalya transfer to hotel": {
+     "suggestions": [
+      "antalya transfers to hotel",
+      "antalya airport transfer to hotel",
+      "antalya airport transport to hotel",
+      "best antalya airport transfer to hotel",
+      "private transfer antalya airport to hotel",
+      "antalya transport to hotel",
+      "antalya transfer zum hotel",
+      "antalya transfer flughafen hotel",
+      "transfer antalya hotel side",
+      "transfer antalya hotel buchen"
+     ]
+    },
+    "antalya airport taxi": {
+     "suggestions": [
+      "antalya airport taxi",
+      "antalya airport taxi prices",
+      "antalya airport taxi transfer",
+      "antalya airport taxi booking",
+      "antalya airport taxi reddit",
+      "antalya airport taxi to belek",
+      "antalya airport taxi service",
+      "antalya airport taxi reviews",
+      "antalya airport taxi to side",
+      "antalya airport taxi rank"
+     ]
+    }
+   }
+  },
+  "de": {
+   "hl": "de",
+   "gl": "de",
+   "seeds": {
+    "antalya flughafen transfer": {
+     "suggestions": [
+      "antalya flughafen transfer",
+      "antalya flughafen transfer vip",
+      "antalya flughafen transfer zum hotel",
+      "antalya flughafen transfer nach side",
+      "antalya flughafen transfer ella car",
+      "antalya flughafen transfer änderung",
+      "antalya flughafen transfer maybach",
+      "antalya flughafen transfer empfehlung",
+      "antalya flughafen transfer schwarzwald",
+      "antalya flughafen transfer 724"
+     ]
+    },
+    "flughafentransfer antalya": {
+     "suggestions": [
+      "flughafentransfer antalya",
+      "flughafentransfer antalya side",
+      "flughafentransfer antalya alanya",
+      "flughafentransfer antalya belek",
+      "flughafentransfer antalya nach side",
+      "flughafentransfer antalya manavgat",
+      "flughafentransfer antalya nach kumköy",
+      "flughafentransfer antalya schwarzwald",
+      "flughafentransfer antalya nach colakli",
+      "flughafentransfer antalya lara"
+     ]
+    },
+    "privattransfer antalya": {
+     "suggestions": [
+      "privattransfer antalya",
+      "privattransfer antalya flughafen",
+      "privattransfer antalya erfahrungen",
+      "privattransfer antalya nach alanya",
+      "privat transfer antalya manavgat",
+      "privattransfer antalya evrenseki",
+      "privattransfer antalya flughafen zum hotel",
+      "privattransfer antalya side",
+      "privattransfer antalya nach side",
+      "privattransfer antalya belek"
+     ]
+    },
+    "antalya transfer hotel": {
+     "suggestions": [
+      "antalya transfer hotel",
+      "antalya hotel transfer vip",
+      "antalya hotel transfer buchen",
+      "transfer antalya hotel side",
+      "antalya hotel transfer privat",
+      "antalya transfer flughafen hotel",
+      "antalya transfer airport hotel",
+      "antalya havalimani hotel transfer",
+      "antalya alanya hotel transfer",
+      "türkei antalya hotel transfer"
+     ]
+    },
+    "antalya flughafen nach": {
+     "suggestions": [
+      "antalya flughafen nachrichten",
+      "antalya flughafen nach side",
+      "antalya flughafen nach alanya",
+      "antalya flughafen nach manavgat",
+      "antalya flughafen nach lara",
+      "antalya flughafen nach kumköy",
+      "antalya flughafen nach kemer",
+      "antalya flughafen nach side kumköy",
+      "antalya flughafen nach alanya km",
+      "antalya flughafen nach fethiye"
+     ]
+    }
+   }
+  },
+  "pl": {
+   "hl": "pl",
+   "gl": "pl",
+   "seeds": {
+    "transfer z lotniska antalya": {
+     "suggestions": [
+      "transfer z lotniska antalya do alanya",
+      "transfer z lotniska antalya do hotelu",
+      "transfer z lotniska antalya",
+      "transfer z lotniska antalya do side",
+      "transfer z lotniska antalya do kemer",
+      "transfer z lotniska antalya do alanya czas",
+      "transfer z lotniska antalya do okurcalar",
+      "transfer z lotniska antalya do belek",
+      "transfer z lotniska antalya do side ile trwa",
+      "transfer z lotniska antalya do avsallar"
+     ]
+    },
+    "transfer lotnisko antalya": {
+     "suggestions": [
+      "transfer lotnisko antalya",
+      "transfer lotnisko antalya do alanya",
+      "transfer lotnisko antalya side",
+      "transfer lotnisko antalya do hotelu",
+      "transfer lotnisko antalya do side",
+      "transfer na lotnisko antalya",
+      "prywatny transfer lotnisko antalya",
+      "transfer z hotelu na lotnisko antalya"
+     ]
+    },
+    "prywatny transfer antalya": {
+     "suggestions": [
+      "prywatny transfer antalya",
+      "prywatny transfer antalya alanya",
+      "prywatny transfer antalya side",
+      "prywatny transfer turcja antalya",
+      "prywatny transfer lotnisko antalya"
+     ]
+    },
+    "antalya transfer do hotelu": {
+     "suggestions": [
+      "antalya transfer do hotelu",
+      "transfer lotnisko antalya do hotelu"
+     ]
+    },
+    "lotnisko antalya": {
+     "suggestions": [
+      "lotnisko antalya",
+      "lotnisko antalya odloty",
+      "lotnisko antalya odprawa",
+      "lotnisko antalya rozkład lotów",
+      "lotnisko antalya na żywo",
+      "lotnisko antalya terminal 2",
+      "lotnisko antalya woda pitna",
+      "lotnisko antalya ile plynow",
+      "lotnisko antalya przyloty",
+      "lotnisko antalya sklepy"
+     ]
+    }
+   }
+  },
+  "ru": {
+   "hl": "ru",
+   "gl": "ru",
+   "seeds": {
+    "трансфер из аэропорта анталии": {
+     "suggestions": [
+      "трансфер из аэропорта анталии",
+      "трансфер из аэропорта анталии в аланию",
+      "трансфер из аэропорта анталии в отель",
+      "трансфер из аэропорта анталии в кемер",
+      "трансфер из аэропорта анталии отзывы",
+      "трансфер из аэропорта анталии в сиде",
+      "трансфер из аэропорта анталии в каш",
+      "трансфер из аэропорта анталии в белек",
+      "трансфер из аэропорта анталии в текирова",
+      "трансфер из аэропорта анталии в махмутлар"
+     ]
+    },
+    "трансфер анталия": {
+     "suggestions": [
+      "трансфер анталия",
+      "трансфер анталия алания",
+      "трансфер анталия алания 24 7",
+      "трансфер анталия кемер",
+      "трансфер анталия аэропорт",
+      "трансфер анталия ташуджу",
+      "трансфер анталия махмутлар",
+      "трансфер анталия сиде",
+      "трансфер анталия алания цена",
+      "трансфер анталия кемер цена"
+     ]
+    },
+    "частный трансфер анталия": {
+     "suggestions": [
+      "частный трансфер анталия"
+     ]
+    },
+    "аэропорт анталия отель": {
+     "suggestions": [
+      "аэропорт анталия отель",
+      "анталия аэропорт отель рядом",
+      "аэропорт анталия капсульный отель",
+      "трансфер аэропорт анталия отель"
+     ]
+    },
+    "анталия аэропорт до": {
+     "suggestions": [
+      "анталия аэропорт до алании",
+      "анталия аэропорт до кемера",
+      "анталия аэропорт до города",
+      "анталия аэропорт до сиде",
+      "анталия аэропорт до белека",
+      "расстояние аэропорт анталия до алании",
+      "анталия аэропорт до конаклы",
+      "анталия аэропорт до кемера расстояние",
+      "аэропорт анталия до сиде расстояние",
+      "аэропорт анталия до кемера сколько ехать"
+     ]
+    }
+   }
+  },
+  "nl": {
+   "hl": "nl",
+   "gl": "nl",
+   "seeds": {
+    "antalya luchthaven transfer": {
+     "suggestions": [
+      "antalya luchthaven transfer"
+     ]
+    },
+    "antalya airport transfer": {
+     "suggestions": [
+      "antalya airport transfer",
+      "antalya airport transfer to hotel",
+      "antalya airport transfer reviews",
+      "antalya airport transfer emrah",
+      "antalya airport transfer to side",
+      "antalya airport transfer booking",
+      "antalya airport transfer to lara",
+      "antalya airport transfer alanya"
+     ]
+    },
+    "prive transfer antalya": {
+     "suggestions": [
+      "prive transfer antalya",
+      "prive transfer antalya side",
+      "prive transfer antalya airport",
+      "prive transfer antalya naar alanya",
+      "prive transfer antalya alanya",
+      "prive transfer antalya corendon",
+      "prive transfer antalya naar side",
+      "prive transfer antalya lara",
+      "prive transfer antalya belek",
+      "prive transfer turkije antalya"
+     ]
+    },
+    "antalya luchthaven naar": {
+     "suggestions": [
+      "antalya luchthaven naar side",
+      "antalya luchthaven naar alanya",
+      "luchthaven antalya naar belek",
+      "luchthaven antalya naar lara",
+      "luchthaven antalya naar kemer",
+      "afstand antalya luchthaven naar alanya",
+      "vervoer antalya luchthaven naar centrum",
+      "afstand luchthaven antalya naar side",
+      "afstand luchthaven antalya naar kemer",
+      "afstand luchthaven antalya naar belek"
+     ]
+    },
+    "transfer luchthaven antalya": {
+     "suggestions": [
+      "transfer luchthaven antalya",
+      "transfer luchthaven antalya naar side",
+      "transfer luchthaven antalya naar alanya"
+     ]
+    }
+   }
+  },
+  "ro": {
+   "hl": "ro",
+   "gl": "ro",
+   "seeds": {
+    "transfer aeroport antalya": {
+     "suggestions": [
+      "transfer aeroport antalya",
+      "transfer aeroport antalya alanya",
+      "transfer aeroport antalya side",
+      "transfer aeroport antalya belek",
+      "transfer aeroport antalya kemer",
+      "transfer aeroport antalya hotel",
+      "transfer aeroport antalya lara",
+      "transfer privat aeroport antalya"
+     ]
+    },
+    "transfer privat antalya": {
+     "suggestions": [
+      "transfer privat antalya",
+      "transfer privat antalya side",
+      "transfer privat antalya belek",
+      "transfer privat antalya alanya",
+      "transfer privat antalya flughafen",
+      "privat transfer antalya airport",
+      "privat transfer antalya hotel",
+      "privat transfer antalya erfahrungen",
+      "privat transfer antalya nach alanya",
+      "privat transfer antalya okurcalar"
+     ]
+    },
+    "antalya transfer hotel": {
+     "suggestions": [
+      "antalya transfer hotel",
+      "transfer antalya hotel side",
+      "antalya hotel transfer privat",
+      "antalya transfer zum hotel",
+      "antalya transfer flughafen hotel",
+      "antalya transfer airport hotel",
+      "antalya alanya hotel transfer",
+      "antalya hotel transfer vip",
+      "antalya hotel transfer buchen",
+      "antalya havalimani hotel transfer"
+     ]
+    },
+    "aeroport antalya": {
+     "suggestions": [
+      "aeroport antalya",
+      "aeroport antalya plecari",
+      "aeroport antalya sosiri",
+      "aeroport antalya zboruri",
+      "aeroport antalya terminal 2",
+      "aeroport antalya magazine",
+      "aeroport antalya live",
+      "aeroport antalya harta",
+      "aeroport antalya lichide",
+      "aeroport antalya plecari maine"
+     ]
+    },
+    "transfer antalya": {
+     "suggestions": [
+      "transfer antalya airport",
+      "transfer antalya",
+      "transfer antalya alanya",
+      "transfer antalya side",
+      "transfer antalya belek",
+      "transfer antalya kemer",
+      "transfer antalya aeroport",
+      "transfer antalya airport alanya",
+      "transfer antalya lara",
+      "transfer antalya bodrum"
+     ]
+    }
+   }
+  }
+ }
+}

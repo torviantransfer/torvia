@@ -2,9 +2,24 @@
 import { Link } from "@/i18n/routing";
 import { ArrowRight, BookOpen, Calendar } from "lucide-react";
 import Image from "next/image";
-import { normalizeSlug } from "@/lib/seo";
+import { localizedBlogSlug } from "@/lib/seo";
+import { defaultLocale, type Locale } from "@/i18n/config";
 
-type Locale = "tr" | "en" | "de" | "pl" | "ru";
+/**
+ * The three most recent posts, on the homepage.
+ *
+ * This has never rendered. It selected `slug, title, content` — columns that
+ * do not exist on `blog_posts`, which has carried `title_<locale>` and
+ * `content_<locale>` since migration 001. PostgREST answered with an error,
+ * the destructured `data` was null, and the `if (!posts) return null` below
+ * turned that into an empty section on all seven homepages rather than into
+ * anything anyone would notice. The homepage lost its only contextual links
+ * into the blog, in every language, silently.
+ *
+ * Reading the per-locale columns is the fix; using `localizedBlogSlug` for the
+ * href is the other half, because a post's URL differs per language and
+ * `/nl/blog/<turkish-slug>` 301s rather than resolving.
+ */
 
 const headings: Record<Locale, string> = {
   tr: "Blog & Rehber",
@@ -12,6 +27,8 @@ const headings: Record<Locale, string> = {
   de: "Blog & Reiseführer",
   pl: "Blog i Przewodniki",
   ru: "Блог и Гиды",
+  nl: "Blog & Reisgidsen",
+  ro: "Blog și ghiduri",
 };
 
 const subheadings: Record<Locale, string> = {
@@ -20,6 +37,8 @@ const subheadings: Record<Locale, string> = {
   de: "Antalya Reisetipps, Transferführer und Reiseziel-Entdeckungen",
   pl: "Porady podróżnicze, przewodniki transferowe i odkrywanie regionów",
   ru: "Советы путешественникам, гиды по трансферам и открытие регионов",
+  nl: "Reistips voor Antalya, transfergidsen en bestemmingen om te ontdekken",
+  ro: "Sfaturi de călătorie în Antalya, ghiduri de transfer și destinații",
 };
 
 const viewAll: Record<Locale, string> = {
@@ -28,7 +47,20 @@ const viewAll: Record<Locale, string> = {
   de: "Alle Beiträge",
   pl: "Wszystkie wpisy",
   ru: "Все статьи",
+  nl: "Alle artikelen",
+  ro: "Toate articolele",
 };
+
+/**
+ * Written out rather than joined from an array: supabase-js parses the select
+ * string at the type level, and a value it cannot see as a literal collapses
+ * the row type to a parser error.
+ */
+const SELECT =
+  "slug, image_url, published_at, " +
+  "title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, " +
+  "content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, " +
+  "slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro";
 
 export default async function BlogPreview({ locale }: { locale: string }) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -36,16 +68,35 @@ export default async function BlogPreview({ locale }: { locale: string }) {
   }
 
   const supabase = createAdminClient();
-  const loc = (locale as Locale) || "en";
+  const loc = (locale in headings ? locale : defaultLocale) as Locale;
 
-  const { data: posts } = await supabase
+  const { data, error } = await supabase
     .from("blog_posts")
-    .select("slug, title, content, image_url, published_at")
+    .select(SELECT)
     .eq("is_published", true)
     .order("published_at", { ascending: false })
-    .limit(3);
+    .limit(6);
+  const posts = (data ?? []) as unknown as Record<string, unknown>[];
 
+  if (error) {
+    // The silent `return null` above is what hid this component's absence for
+    // months. A query failure is not the same as "no posts", so say so.
+    console.error("[BlogPreview] blog_posts okunamadı:", error.message);
+    return null;
+  }
   if (!posts || posts.length === 0) return null;
+
+  // Only posts translated into this language. Showing a Turkish headline on
+  // the Dutch homepage is worse than showing one card fewer.
+  const translated = posts
+    .filter((row) => {
+      const title = (row[`title_${loc}`] as string | null) ?? "";
+      const content = (row[`content_${loc}`] as string | null) ?? "";
+      return title.trim().length > 0 && content.trim().length > 0;
+    })
+    .slice(0, 3);
+
+  if (translated.length === 0) return null;
 
   return (
     <section className="py-24 lg:py-32" style={{ backgroundColor: "#FFFFFF" }}>
@@ -67,13 +118,15 @@ export default async function BlogPreview({ locale }: { locale: string }) {
         </div>
 
         <div className="grid md:grid-cols-3 gap-5">
-          {posts.map((post) => {
-            const excerpt = post.content
-              ?.replace(/<[^>]*>/g, "")
-              .substring(0, 120)
-              .trim();
-            const date = post.published_at
-              ? new Date(post.published_at).toLocaleDateString(locale, {
+          {translated.map((row) => {
+            const slug = String(row.slug ?? "");
+            const imageUrl = (row.image_url as string | null) ?? null;
+            const publishedAt = (row.published_at as string | null) ?? null;
+            const title = (row[`title_${loc}`] as string) ?? "";
+            const body = (row[`content_${loc}`] as string) ?? "";
+            const excerpt = body.replace(/<[^>]*>/g, "").substring(0, 120).trim();
+            const date = publishedAt
+              ? new Date(publishedAt).toLocaleDateString(locale, {
                   day: "numeric",
                   month: "short",
                   year: "numeric",
@@ -82,8 +135,8 @@ export default async function BlogPreview({ locale }: { locale: string }) {
 
             return (
               <Link
-                key={post.slug}
-                href={`/blog/${normalizeSlug(post.slug)}`}
+                key={slug}
+                href={`/blog/${localizedBlogSlug(row, loc)}`}
                 className="group rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02]"
                 style={{
                   backgroundColor: "#F5F5F7",
@@ -92,10 +145,10 @@ export default async function BlogPreview({ locale }: { locale: string }) {
               >
                 {/* Image */}
                 <div className="relative h-44 overflow-hidden">
-                  {post.image_url ? (
+                  {imageUrl ? (
                     <Image
-                      src={post.image_url}
-                      alt={post.title}
+                      src={imageUrl}
+                      alt={title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, 33vw"
@@ -116,7 +169,7 @@ export default async function BlogPreview({ locale }: { locale: string }) {
                     </div>
                   )}
                   <h3 className="text-gray-900 font-semibold text-base mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-                    {post.title}
+                    {title}
                   </h3>
                   {excerpt && (
                     <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">

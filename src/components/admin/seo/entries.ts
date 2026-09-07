@@ -32,6 +32,12 @@ export interface Entry {
   routeFor: (locale: string) => string;
   /** False for a deactivated region or an unpublished post. */
   isPublic: boolean;
+  /**
+   * Set when a file route under src/app/[locale] serves this entry's URL, so
+   * nothing typed here can reach it. Holds the `seo_pages.page_key` that does
+   * control the page. See `FILE_ROUTE_SHADOWED`.
+   */
+  shadowedBy?: string | null;
   /** Whether this page is supposed to be indexed at all. */
   shouldIndex: boolean;
   row: Record<string, unknown>;
@@ -165,11 +171,29 @@ export function pageEntry(row: Record<string, unknown>): Entry {
   };
 }
 
+/**
+ * Region routes that a file under src/app/[locale] already claims.
+ *
+ * `land-of-legends-transfer` is a bookable region *and* a hand-written landing
+ * page. A static route always wins over `[region]` in the App Router, so the
+ * landing page is what /tr/land-of-legends-transfer serves — and every SEO
+ * field on the region row is dead copy that nothing renders. The panel used to
+ * offer the region as if editing it changed the page.
+ *
+ * The region row itself is not the problem: it carries the pricing, distance
+ * and coordinates the booking flow needs, and deleting it would break
+ * bookings. Only its SEO surface is a lie, and only the panel can say so.
+ */
+export const FILE_ROUTE_SHADOWED: Record<string, string> = {
+  "land-of-legends-transfer": "land-of-legends-transfer",
+};
+
 export function regionEntry(row: Record<string, unknown>): Entry {
   const slug = String(row.slug ?? "");
   const bare = slug.replace(/-transfer$/, "");
   const route = slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
   const isActive = row.is_active !== false;
+  const shadowedBy = FILE_ROUTE_SHADOWED[route] ?? null;
   return {
     kind: "region",
     table: "regions",
@@ -179,6 +203,7 @@ export function regionEntry(row: Record<string, unknown>): Entry {
     pageType: "region",
     routeFor: () => route,
     isPublic: isActive,
+    shadowedBy,
     // An inactive region is not in the sitemap and should not be audited as
     // if a missing index were a fault.
     shouldIndex: isActive,

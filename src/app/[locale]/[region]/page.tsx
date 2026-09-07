@@ -118,55 +118,159 @@ export async function generateStaticParams() {
   return params;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string; region: string }>;
-}): Promise<Metadata> {
-  const supabase = createAdminClient();
-  const { locale, region: regionParam } = await params;
-  if (!regionParam.endsWith("-transfer")) return {};
-  const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
-  const region = await findRegionByPath(supabase, normalizedRegionPath);
+/**
+ * The " · From $80" fragment appended to a region's title, per locale.
+ *
+ * Written as a function with a real default rather than a
+ * `Record<string, string>` literal. The record had no `ro` key, so
+ * `priceLabel[locale]` was `undefined` on Romanian pages — and it was
+ * interpolated into a template string anyway, which shipped
+ * "…| Privat VIP · 2 oreundefined" as the <title> of every Romanian region
+ * page for as long as Romanian has existed. A lookup that cannot miss cannot
+ * do that again.
+ *
+ * one_way_price is stored in USD (see supabase/seed.sql), so the label says $.
+ * Metadata is server-rendered with no per-visitor currency; labelling it "€"
+ * without converting misstated the price in every title tag.
+ */
+function priceLabelFor(locale: string, price: number | null | undefined): string {
+  if (!price) return "";
+  const amount = Math.round(Number(price));
+  if (!Number.isFinite(amount) || amount <= 0) return "";
+  switch (locale) {
+    case "tr": return ` · $${amount}'den`;
+    case "de": return ` · Ab $${amount}`;
+    case "pl": return ` · Od $${amount}`;
+    case "ru": return ` · От $${amount}`;
+    case "nl": return ` · Vanaf $${amount}`;
+    case "ro": return ` · De la $${amount}`;
+    default: return ` · From $${amount}`;
+  }
+}
 
-  if (!region) return {};
+/** The token an admin writes to pull the live price into their own copy. */
+const PRICE_TOKEN = /\{price\}/g;
 
-  const regionPath = normalizeRegionPath(region.slug);
+/**
+ * Substitutes `{price}` in admin-entered copy, and leaves copy without the
+ * token exactly as written.
+ *
+ * This is the whole source-of-truth rule for region meta text. The previous
+ * behaviour appended the price to any admin title that did not already
+ * contain a currency symbol, so the SEO panel showed one string and Google
+ * received another — an editor who deliberately wrote a 58-character title
+ * got a 71-character one and had no way to see it, let alone stop it.
+ *
+ * The price stays available, but only where the copy asks for it. That keeps
+ * the CTR feature, makes it visible in the panel, and keeps the rule "what
+ * you type is what ships".
+ */
+export function resolvePriceTokens(copy: string, priceLabel: string): string {
+  PRICE_TOKEN.lastIndex = 0;
+  if (!PRICE_TOKEN.test(copy)) return copy;
+  PRICE_TOKEN.lastIndex = 0;
+  // The label carries its own " · " separator, so a token written after one
+  // would double it. Collapse that here rather than asking every editor to
+  // remember the rule — and trim a trailing separator left behind when the
+  // region has no pricing row and the token resolves to nothing.
+  return copy
+    .replace(PRICE_TOKEN, priceLabel)
+    .replace(/\s*·\s*·\s*/g, " · ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/[\s·|–-]+$/, "")
+    .trim();
+}
+
+/**
+ * The title and description a region page falls back to when its own column
+ * for this locale is empty.
+ *
+ * Format matches Google Trends top queries per market:
+ *   EN: "transfer from antalya airport" (UK #1, 100 interest, +4%)
+ *   DE: "vip privattransfer" (+30%), "hotel transfer antalya" (#1 DE)
+ *   PL: correct "do {name}" grammar + VIP keyword
+ *
+ * Romanian was missing from both maps, so /ro fell through to the generic
+ * untranslated `meta_title` column — an English title on a Romanian page —
+ * whenever the Romanian column was empty.
+ */
+function regionFallbackCopy(
+  locale: string,
+  v: {
+    name: string;
+    priceLabel: string;
+    oneWayPrice: number | null | undefined;
+    info: string;
+    durStr: string;
+  }
+): { title: string; description: string } {
+  const { name, priceLabel, oneWayPrice, info, durStr } = v;
+  const dur = durStr ? ` · ${durStr}` : "";
+  const price = oneWayPrice ? Math.round(Number(oneWayPrice)) : null;
+
+  switch (locale) {
+    case "tr":
+      return {
+        title: `Antalya Havalimanı ${name} Özel Transfer | VIP${priceLabel}${dur}`.trim(),
+        description: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${price ? ` Araç başına $${price}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
+      };
+    case "de":
+      return {
+        title: `VIP Privattransfer Flughafen Antalya → ${name}${priceLabel}${dur}`.trim(),
+        description: `VIP Privattransfer Flughafen Antalya → ${name}.${info}${price ? ` Ab $${price} pro Fahrzeug.` : ""} Mercedes Vito, Abholung mit Schild, Flugverfolgung, kein Nachtzuschlag. Jetzt buchen.`,
+      };
+    case "pl":
+      return {
+        title: `Transfer z lotniska Antalya do ${name} | VIP Prywatny${priceLabel}${dur}`.trim(),
+        description: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${price ? ` Od $${price} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
+      };
+    case "ru":
+      return {
+        title: `Трансфер Аэропорт Анталия → ${name} | VIP${priceLabel}${dur}`.trim(),
+        description: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${price ? ` От $${price} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
+      };
+    case "nl":
+      return {
+        title: `Transfer Luchthaven Antalya naar ${name} | Privé VIP${priceLabel}${dur}`.trim(),
+        description: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${price ? ` Vanaf $${price} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
+      };
+    case "ro":
+      return {
+        title: `Transfer Aeroportul Antalya → ${name} | Privat VIP${priceLabel}${dur}`.trim(),
+        description: `Transfer privat VIP de la Aeroportul Antalya la ${name}.${info}${price ? ` De la $${price} per vehicul.` : ""} Mercedes Vito, întâmpinare cu placă, urmărirea zborului, anulare gratuită 24h. Rezervă online.`,
+      };
+    default:
+      return {
+        title: `Transfer from Antalya Airport to ${name} | Private VIP${priceLabel}${dur}`.trim(),
+        description: `Private transfer from Antalya Airport to ${name}.${info}${price ? ` From $${price} per vehicle.` : ""} Mercedes Vito, meet & greet, flight tracking, free cancellation 24h. Book online — instant confirmation.`,
+      };
+  }
+}
+
+/**
+ * Everything `generateMetadata` does once the region row and its cheapest
+ * price have been loaded.
+ *
+ * Exported so `npm run verify:seo` can assert the source-of-truth contract
+ * against the page's own code rather than against a copy of its rules. The two
+ * defects this file carried — a `priceLabel` map with no Romanian key, and a
+ * price suffix appended over an admin's title — were both invisible to a unit
+ * test of `applyOverrides`, because neither was in `applyOverrides`.
+ */
+export function regionMetadata(
+  region: Record<string, unknown>,
+  locale: string,
+  oneWayPrice: number | null | undefined
+): Metadata {
+  const regionPath = normalizeRegionPath(String(region.slug));
   const regionSlugBase = stripTransferSuffix(regionPath);
 
-  const name = region[`name_${locale}`] || region.name_en;
+  const name = (region[`name_${locale}`] as string | null) || (region.name_en as string);
 
-  // Fetch pricing to include in meta title/description for better SERP CTR.
-  // Google Trends (Jun 2026): "private transfer antalya airport" +100% Worldwide,
-  // "antalya to belek transfer" +60%. Price in title improves qualified CTR.
-  // Lowest price across every vehicle for this region. The label this feeds
-  // is "From / İtibaren / Ab", so the cheapest vehicle is the honest number.
-  // `.single()` used to be fine because there was exactly one vehicle
-  // category; the moment a second one is added it errors and the price
-  // silently vanishes from all 144 region titles.
-  const { data: pricingMeta } = await supabase
-    .from("pricing")
-    .select("one_way_price")
-    .eq("region_id", region.id)
-    .order("one_way_price", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  const oneWayPrice = pricingMeta?.one_way_price as number | null | undefined;
-  // one_way_price is stored in USD (see supabase/seed.sql) — labeling it with
-  // "€" without conversion misrepresented the price in every title tag across
-  // all 6 locales (Google SERP snippet + on-page). Metadata is server-rendered
-  // with no per-visitor currency, so show the true base currency ($).
-  const priceLabel: Record<string, string> = {
-    en: oneWayPrice ? ` · From $${Math.round(oneWayPrice)}` : "",
-    de: oneWayPrice ? ` · Ab $${Math.round(oneWayPrice)}` : "",
-    pl: oneWayPrice ? ` · Od $${Math.round(oneWayPrice)}` : "",
-    tr: oneWayPrice ? ` · $${Math.round(oneWayPrice)}'den` : "",
-    ru: oneWayPrice ? ` · От $${Math.round(oneWayPrice)}` : "",
-    nl: oneWayPrice ? ` · Vanaf $${Math.round(oneWayPrice)}` : "",
-  };
+  const priceLabel = priceLabelFor(locale, oneWayPrice);
 
   const km = region.distance_km ? `${Number(region.distance_km)} km` : "";
-  const durMin: number = region.duration_minutes ?? 0;
+  const durMin: number = (region.duration_minutes as number | null) ?? 0;
   const durStr = durMin > 0
     ? durMin < 60
       ? `${durMin} min`
@@ -174,50 +278,31 @@ export async function generateMetadata({
     : "";
   const info = km && durStr ? ` ${durStr}, ${km}.` : "";
 
-  // Fallback titles — used only when DB meta_title_{locale} is empty.
-  // Format matches Google Trends top queries per market:
-  //   EN: "transfer from antalya airport" (UK #1, 100 interest, +4%)
-  //   DE: "vip privattransfer" (+30%), "hotel transfer antalya" (#1 DE)
-  //   PL: correct "do {name}" grammar + VIP keyword
-  const fallbackTitle: Record<string, string> = {
-    en: `Transfer from Antalya Airport to ${name} | Private VIP${priceLabel.en}${durStr ? ` · ${durStr}` : ""}`.trim(),
-    de: `VIP Privattransfer Flughafen Antalya → ${name}${priceLabel.de}${durStr ? ` · ${durStr}` : ""}`.trim(),
-    pl: `Transfer z lotniska Antalya do ${name} | VIP Prywatny${priceLabel.pl}${durStr ? ` · ${durStr}` : ""}`.trim(),
-    tr: `Antalya Havalimanı ${name} Özel Transfer | VIP${priceLabel.tr}${durStr ? ` · ${durStr}` : ""}`.trim(),
-    ru: `Трансфер Аэропорт Анталия → ${name} | VIP${priceLabel.ru}${durStr ? ` · ${durStr}` : ""}`.trim(),
-    nl: `Transfer Luchthaven Antalya naar ${name} | Privé VIP${priceLabel.nl}${durStr ? ` · ${durStr}` : ""}`.trim(),
-  };
+  // Used only when this locale's own DB column is empty. These carry the
+  // price; a DB column does not unless it asks for it with {price}.
+  const fallback = regionFallbackCopy(locale, { name, priceLabel, oneWayPrice, info, durStr });
 
-  // DB title takes priority, but only this locale's own column — falling back
-  // to the untranslated `meta_title` column here served an English title on
-  // /nl, /de, /pl, /ru pages whenever the locale-specific DB field was empty
-  // (confirmed live on /nl/kemer-transfer, /nl/belek-transfer, /nl/alanya-transfer
-  // 2026-08-10 and again 2026-08-24 — GSC shows these rank fine but get ~0% CTR).
-  // The localized fallbackTitle template must win over the generic English column.
-  const dbTitleLocale = region[`meta_title_${locale}`] as string | null;
-  const dbTitle = dbTitleLocale || fallbackTitle[locale] || (region.meta_title as string | null);
-  const metaTitle = dbTitle
-    ? (oneWayPrice && !/[€$]/.test(dbTitle) ? `${dbTitle}${priceLabel[locale]}` : dbTitle)
-    : fallbackTitle.en;
+  // ---- Source of truth --------------------------------------------------
+  //
+  // A non-empty `meta_title_{locale}` is what the SEO panel displays, so it is
+  // what production must serve — character for character, minus the {price}
+  // token it may deliberately contain.
+  //
+  // Only this locale's own column counts. Falling back to the untranslated
+  // `meta_title` column served an English title on /nl, /de, /pl, /ru pages
+  // whenever the locale column was empty (confirmed live on /nl/kemer-transfer,
+  // /nl/belek-transfer, /nl/alanya-transfer 2026-08-10 and again 2026-08-24 —
+  // GSC shows these rank fine but get ~0% CTR), so the localized template wins
+  // over the generic column and the generic column is not consulted at all.
+  const dbTitleLocale = ov(region, `meta_title_${locale}`);
+  const metaTitle = dbTitleLocale
+    ? resolvePriceTokens(dbTitleLocale, priceLabel)
+    : fallback.title;
 
-  // Fallback descriptions — include price, USPs optimised per Trends:
-  //   EN: "meet & greet, flight tracking, free cancellation" (top UK USPs)
-  //   DE: "hotel transfer" angle — "direkt zu Ihrem Hotel"
-  const fallbackDesc: Record<string, string> = {
-    en: `Private transfer from Antalya Airport to ${name}.${info}${oneWayPrice ? ` From $${Math.round(oneWayPrice)} per vehicle.` : ""} Mercedes Vito, meet & greet, flight tracking, free cancellation 24h. Book online — instant confirmation.`,
-    de: `VIP Privattransfer Flughafen Antalya → ${name}.${info}${oneWayPrice ? ` Ab $${Math.round(oneWayPrice)} pro Fahrzeug.` : ""} Mercedes Vito, Abholung mit Schild, Flugverfolgung, kein Nachtzuschlag. Jetzt buchen.`,
-    pl: `Prywatny transfer VIP z lotniska Antalya do ${name}.${info}${oneWayPrice ? ` Od $${Math.round(oneWayPrice)} za pojazd.` : ""} Mercedes Vito, spotkanie, śledzenie lotu, bezpłatne odwołanie 24h. Rezerwuj online.`,
-    tr: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${oneWayPrice ? ` Araç başına $${Math.round(oneWayPrice)}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
-    ru: `Частный VIP-трансфер из аэропорта Анталии в ${name}.${info}${oneWayPrice ? ` От $${Math.round(oneWayPrice)} за авто.` : ""} Mercedes Vito, встреча, отслеживание рейса, отмена за 24ч. Бронировать онлайн.`,
-    nl: `Privétransfer van de luchthaven Antalya naar ${name}.${info}${oneWayPrice ? ` Vanaf $${Math.round(oneWayPrice)} per voertuig.` : ""} Mercedes Vito, chauffeur met naambord, vluchtmonitoring, gratis annuleren tot 24 uur. Boek online — directe bevestiging.`,
-  };
-  // Same locale-fallback fix as metaTitle above: this locale's own DB column,
-  // then this locale's own template, only then the generic (English) column.
-  const metaDesc =
-    (region[`meta_description_${locale}`] as string | null) ||
-    fallbackDesc[locale] ||
-    (region.meta_description as string | null) ||
-    fallbackDesc.en;
+  const dbDescLocale = ov(region, `meta_description_${locale}`);
+  const metaDesc = dbDescLocale
+    ? resolvePriceTokens(dbDescLocale, priceLabel)
+    : fallback.description;
 
   // Social preview image. This used to be built as
   // `/images/regions/{slug}.jpg`, but the files on disk are not named after
@@ -248,7 +333,7 @@ export async function generateMetadata({
   const regionImgAlt = ((region.image_alt as string | null) ?? "").trim() || `${name} Transfer`;
 
   // Which locales have actual content for this region?
-  const translatedLocales = getTranslatedLocales(region as Record<string, unknown>);
+  const translatedLocales = getTranslatedLocales(region);
   const isTranslated = translatedLocales.includes(locale as Locale);
 
   // Admin overrides on top of everything computed above. A region row with no
@@ -288,7 +373,49 @@ export async function generateMetadata({
       images: [regionImg],
     },
     },
-    { row: region as Record<string, unknown>, locale, rowOwnsMetaText: true }
+    { row: region, locale, rowOwnsMetaText: true }
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; region: string }>;
+}): Promise<Metadata> {
+  const supabase = createAdminClient();
+  const { locale, region: regionParam } = await params;
+  if (!regionParam.endsWith("-transfer")) return {};
+  const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
+  const region = await findRegionByPath(supabase, normalizedRegionPath);
+
+  // A slug with no row, or a row an admin has deactivated, renders a 404 body
+  // below. Returning `{}` let that 404 inherit the root layout's index/follow,
+  // so a dead URL advertised itself to Google as indexable content. Say
+  // noindex explicitly.
+  if (!region || region.is_active !== true) {
+    return { title: "Not Found", robots: NOINDEX_ROBOTS };
+  }
+
+  // Fetch pricing to include in meta title/description for better SERP CTR.
+  // Google Trends (Jun 2026): "private transfer antalya airport" +100% Worldwide,
+  // "antalya to belek transfer" +60%. Price in title improves qualified CTR.
+  // Lowest price across every vehicle for this region. The label this feeds
+  // is "From / İtibaren / Ab", so the cheapest vehicle is the honest number.
+  // `.single()` used to be fine because there was exactly one vehicle
+  // category; the moment a second one is added it errors and the price
+  // silently vanishes from all 144 region titles.
+  const { data: pricingMeta } = await supabase
+    .from("pricing")
+    .select("one_way_price")
+    .eq("region_id", region.id)
+    .order("one_way_price", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  return regionMetadata(
+    region as Record<string, unknown>,
+    locale,
+    pricingMeta?.one_way_price as number | null | undefined
   );
 }
 
@@ -459,7 +586,7 @@ export default async function RegionPage({
       "@type": "ServiceChannel",
       serviceUrl: `https://torviantransfer.com/${locale}/${regionPath}`,
       servicePhone: "+90-546-940-79-55",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
     offers: pricing
       ? [

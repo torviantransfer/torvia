@@ -1,0 +1,317 @@
+[
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "tr",
+  "owner": "code",
+  "code": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon",
+  "live": "Antalya Havalimanı Transfer | Sabit Fiyat, Karşılama, Online Rezervasyon",
+  "inbound": 25,
+  "words": 662
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "en",
+  "owner": "db(seo_pages)",
+  "code": "Antalya Airport Transfer | Fixed Price, Meet & Greet, Book Online",
+  "live": "Antalya Airport Transfer | Private & VIP Transfer",
+  "inbound": 25,
+  "words": 801
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "de",
+  "owner": "code",
+  "code": "Flughafen Antalya Transfer | Festpreis, Meet & Greet, Online buchen",
+  "live": "Flughafen Antalya Transfer | Festpreis, Meet & Greet, Online buchen",
+  "inbound": 25,
+  "words": 756
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "pl",
+  "owner": "code",
+  "code": "Transfer z Lotniska Antalya | Stała cena, powitanie, rezerwacja online",
+  "live": "Transfer z Lotniska Antalya | Stała cena, powitanie, rezerwacja online",
+  "inbound": 25,
+  "words": 675
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "ru",
+  "owner": "code",
+  "code": "Трансфер из Аэропорта Анталии | Фиксированная цена, встреча, онлайн",
+  "live": "Трансфер из Аэропорта Анталии | Фиксированная цена, встреча, онлайн",
+  "inbound": 25,
+  "words": 667
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "nl",
+  "owner": "code",
+  "code": "Antalya Luchthaven Transfer | Vaste prijs, ontvangst, online boeken",
+  "live": "Antalya Luchthaven Transfer | Vaste prijs, ontvangst, online boeken",
+  "inbound": 25,
+  "words": 770
+ },
+ {
+  "route": "antalya-airport-transfer",
+  "loc": "ro",
+  "owner": "code",
+  "code": "Transfer Aeroportul Antalya | Preț fix, întâmpinare, rezervare online",
+  "live": "Transfer Aeroportul Antalya | Preț fix, întâmpinare, rezervare online",
+  "inbound": 25,
+  "words": 825
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "tr",
+  "owner": "code",
+  "code": "Antalya Havalimanı VIP Transfer | Özel Şoförlü Premium Araç",
+  "live": "Antalya Havalimanı VIP Transfer | Özel Şoförlü Premium Araç",
+  "inbound": 1,
+  "words": 512
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "en",
+  "owner": "code",
+  "code": "VIP Transfer Antalya Airport | Premium Private Car Service",
+  "live": "VIP Transfer Antalya Airport | Premium Private Car Service",
+  "inbound": 1,
+  "words": 616
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "de",
+  "owner": "db(seo_pages)",
+  "code": "VIP Transfer Antalya Flughafen | Premium Privatfahrzeug",
+  "live": "Flughafentransfer Antalya | Privat & VIP zum Festpreis",
+  "inbound": 1,
+  "words": 619
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "pl",
+  "owner": "code",
+  "code": "VIP Transfer Antalya Lotnisko | Prywatny Pojazd Premium",
+  "live": "VIP Transfer Antalya Lotnisko | Prywatny Pojazd Premium",
+  "inbound": 1,
+  "words": 537
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "ru",
+  "owner": "code",
+  "code": "VIP Трансфер Аэропорт Анталии | Премиальный Частный Автомобиль",
+  "live": "VIP Трансфер Аэропорт Анталии | Премиальный Частный Автомобиль",
+  "inbound": 1,
+  "words": 519
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "nl",
+  "owner": "code",
+  "code": "VIP Transfer Antalya Luchthaven | Premium Privévoertuig",
+  "live": "VIP Transfer Antalya Luchthaven | Premium Privévoertuig",
+  "inbound": 1,
+  "words": 576
+ },
+ {
+  "route": "vip-transfer-antalya",
+  "loc": "ro",
+  "owner": "code",
+  "code": "Transfer VIP Aeroportul Antalya | Vehicul privat premium",
+  "live": "Transfer VIP Aeroportul Antalya | Vehicul privat premium",
+  "inbound": 1,
+  "words": 660
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "tr",
+  "owner": "code",
+  "code": "Antalya Havalimanı Otel Transferi | Her Otele, Her Bölgeye Direkt",
+  "live": "Antalya Havalimanı Otel Transferi | Her Otele, Her Bölgeye Direkt",
+  "inbound": 1,
+  "words": 512
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "en",
+  "owner": "code",
+  "code": "Hotel Transfer Antalya Airport | Direct to Any Hotel, Any Resort",
+  "live": "Hotel Transfer Antalya Airport | Direct to Any Hotel, Any Resort",
+  "inbound": 1,
+  "words": 603
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "de",
+  "owner": "code",
+  "code": "Hotel Transfer Antalya Flughafen | Direkt zu Jedem Hotel, Jedem Ort",
+  "live": "Hotel Transfer Antalya Flughafen | Direkt zu Jedem Hotel, Jedem Ort",
+  "inbound": 1,
+  "words": 585
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "pl",
+  "owner": "code",
+  "code": "Transfer do Hotelu Antalya Lotnisko | Bezpośrednio do Każdego Hotelu",
+  "live": "Transfer do Hotelu Antalya Lotnisko | Bezpośrednio do Każdego Hotelu",
+  "inbound": 1,
+  "words": 534
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "ru",
+  "owner": "code",
+  "code": "Трансфер в Отель из Аэропорта Анталии | Прямо к Любому Отелю",
+  "live": "Трансфер в Отель из Аэропорта Анталии | Прямо к Любому Отелю",
+  "inbound": 1,
+  "words": 530
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "nl",
+  "owner": "code",
+  "code": "Hotel Transfer Antalya Luchthaven | Direct naar Elk Hotel, Elke Regio",
+  "live": "Hotel Transfer Antalya Luchthaven | Direct naar Elk Hotel, Elke Regio",
+  "inbound": 1,
+  "words": 600
+ },
+ {
+  "route": "hotel-transfer-antalya",
+  "loc": "ro",
+  "owner": "code",
+  "code": "Transfer hotel Aeroportul Antalya | Direct la orice hotel, în orice regiune",
+  "live": "Transfer hotel Aeroportul Antalya | Direct la orice hotel, în orice regiune",
+  "inbound": 1,
+  "words": 644
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "tr",
+  "owner": "code",
+  "code": "Antalya Havalimanı'ndan Lara Beach'e Transfer | Özel VIP | ~20 dk",
+  "live": "Antalya Havalimanı'ndan Lara Beach'e Transfer | Özel VIP | ~20 dk",
+  "inbound": 1,
+  "words": 449
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "en",
+  "owner": "code",
+  "code": "Antalya Airport to Lara Beach Transfer | Private VIP | ~20 min",
+  "live": "Antalya Airport to Lara Beach Transfer | Private VIP | ~20 min",
+  "inbound": 1,
+  "words": 531
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "de",
+  "owner": "code",
+  "code": "Flughafen Antalya nach Lara Beach Transfer | Privat VIP | ~20 Min",
+  "live": "Flughafen Antalya nach Lara Beach Transfer | Privat VIP | ~20 Min",
+  "inbound": 1,
+  "words": 472
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "pl",
+  "owner": "code",
+  "code": "Transfer Lotnisko Antalya — Lara Beach | Prywatny VIP | ~20 min",
+  "live": "Transfer Lotnisko Antalya — Lara Beach | Prywatny VIP | ~20 min",
+  "inbound": 1,
+  "words": 429
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "ru",
+  "owner": "code",
+  "code": "Трансфер Аэропорт Анталья — Пляж Лара | Частный VIP | ~20 мин",
+  "live": "Трансфер Аэропорт Анталья — Пляж Лара | Частный VIP | ~20 мин",
+  "inbound": 1,
+  "words": 436
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "nl",
+  "owner": "code",
+  "code": "Luchthaven Antalya naar Lara Beach Transfer | Privé VIP | ~20 min",
+  "live": "Luchthaven Antalya naar Lara Beach Transfer | Privé VIP | ~20 min",
+  "inbound": 1,
+  "words": 513
+ },
+ {
+  "route": "lara-beach-transfer",
+  "loc": "ro",
+  "owner": "code",
+  "code": "Transfer Aeroportul Antalya - Lara Beach | Privat VIP | ~20 min",
+  "live": "Transfer Aeroportul Antalya - Lara Beach | Privat VIP | ~20 min",
+  "inbound": 1,
+  "words": 565
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "tr",
+  "owner": "code",
+  "code": "Land of Legends Transfer | Antalya Havalimanı'ndan Land of Legends'a",
+  "live": "Land of Legends Transfer | Antalya Havalimanı'ndan Land of Legends'a",
+  "inbound": 68,
+  "words": 326
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "en",
+  "owner": "code",
+  "code": "Land of Legends Transfer | Antalya Airport to Land of Legends",
+  "live": "Land of Legends Transfer | Antalya Airport to Land of Legends",
+  "inbound": 69,
+  "words": 391
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "de",
+  "owner": "code",
+  "code": "Land of Legends Transfer | Flughafen Antalya nach Land of Legends",
+  "live": "Land of Legends Transfer | Flughafen Antalya nach Land of Legends",
+  "inbound": 69,
+  "words": 356
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "pl",
+  "owner": "code",
+  "code": "Transfer Land of Legends | Lotnisko Antalya do Land of Legends",
+  "live": "Transfer Land of Legends | Lotnisko Antalya do Land of Legends",
+  "inbound": 68,
+  "words": 335
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "ru",
+  "owner": "code",
+  "code": "Трансфер Land of Legends | Аэропорт Анталья — Land of Legends",
+  "live": "Трансфер Land of Legends | Аэропорт Анталья — Land of Legends",
+  "inbound": 68,
+  "words": 333
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "nl",
+  "owner": "code",
+  "code": "Land of Legends Transfer | Luchthaven Antalya naar Land of Legends",
+  "live": "Land of Legends Transfer | Luchthaven Antalya naar Land of Legends",
+  "inbound": 67,
+  "words": 371
+ },
+ {
+  "route": "land-of-legends-transfer",
+  "loc": "ro",
+  "owner": "code",
+  "code": "Transfer Land of Legends | Aeroportul Antalya - Land of Legends",
+  "live": "Transfer Land of Legends | Aeroportul Antalya - Land of Legends",
+  "inbound": 66,
+  "words": 414
+ }
+]

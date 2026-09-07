@@ -32,11 +32,47 @@ export interface SeoPage {
  * which both need the row, share one query per request rather than issuing
  * two.
  *
- * Returns null rather than throwing on any failure — a missing table (the
- * migration has not been applied yet), a network blip, or a missing row all
- * mean the same thing to the caller: use the hardcoded values. An SEO edit
- * failing to load must never turn into a 500 on a public page.
+ * Returns null rather than throwing on any failure. A public page must never
+ * 500 because an SEO edit could not be loaded, and the caller's behaviour is
+ * the same either way: use the hardcoded values.
+ *
+ * But "the row is empty" and "the query failed" are not the same fact, and
+ * collapsing them was hiding real problems. A missing table, a column the code
+ * asks for that a migration never created, a revoked service key — all of them
+ * looked exactly like an untouched row, so the site kept serving its fallbacks
+ * and nothing anywhere said why. That is how twenty-eight Romanian columns
+ * could be absent for months while the admin panel showed seven languages.
+ *
+ * So the two are separated: an expected miss stays quiet, and an unexpected
+ * failure is logged with the page key that triggered it and recorded for
+ * `seoReadFailures()` to surface. Neither changes what the visitor gets.
  */
+export interface SeoReadFailure {
+  pageKey: string;
+  message: string;
+  at: string;
+}
+
+const readFailures = new Map<string, SeoReadFailure>();
+
+/**
+ * Unexpected `seo_pages` read failures seen by this server instance.
+ *
+ * Read by the admin's diagnostics so a schema problem is visible somewhere
+ * other than a log nobody opens. Per-instance and in-memory on purpose: this
+ * is a health signal, not an audit trail — `seo_audit_log` is the audit trail.
+ */
+export function seoReadFailures(): SeoReadFailure[] {
+  return [...readFailures.values()];
+}
+
+function recordFailure(pageKey: string, message: string) {
+  readFailures.set(pageKey, { pageKey, message, at: new Date().toISOString() });
+  console.error(
+    `[seo] seo_pages okunamadı (page_key=${pageKey}): ${message} — sayfa hardcoded değerlerle render edildi.`
+  );
+}
+
 export const getSeoPage = cache(async (pageKey: string): Promise<SeoPage | null> => {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
   try {
@@ -46,9 +82,18 @@ export const getSeoPage = cache(async (pageKey: string): Promise<SeoPage | null>
       .select("*")
       .eq("page_key", pageKey)
       .maybeSingle();
-    if (error || !data) return null;
+    if (error) {
+      recordFailure(pageKey, error.message);
+      return null;
+    }
+    if (!data) {
+      // Expected: the page has no row yet. Nothing to report.
+      return null;
+    }
+    readFailures.delete(pageKey);
     return data as SeoPage;
-  } catch {
+  } catch (err) {
+    recordFailure(pageKey, err instanceof Error ? err.message : String(err));
     return null;
   }
 });

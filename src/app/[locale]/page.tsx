@@ -7,7 +7,7 @@ import {
   productSchema,
   type ReviewRow,
 } from "@/lib/reviews";
-import { localeOgTags, type Locale } from "@/i18n/config";
+import { locales, localeOgTags, type Locale } from "@/i18n/config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -41,13 +41,27 @@ export async function generateMetadata({
   // Jul 2026: "antalya airport transfer" / "flughafen transfer antalya" = 100),
   // then the rising commercial modifier "private transfer" (DE +200%, NL +110%,
   // WW +70%). "VIP" kept secondary — it is declining everywhere except UK.
+  //
+  // Romanian was the one language missing from both maps, so /ro fell through
+  // to the `meta` namespace instead — a different, older headline from every
+  // other homepage, carrying a hardcoded year.
   const titleByLocale: Record<string, string> = {
     tr: "Antalya Havalimanı Transfer | Özel Transfer Belek, Side, Alanya, Kemer",
     en: "Antalya Airport Transfer | Private Transfer to Belek, Side, Alanya, Kemer",
     de: "Antalya Flughafen Transfer | Privattransfer Belek, Side, Alanya, Kemer",
     pl: "Transfer z Lotniska Antalya | Prywatny Transfer Belek, Side, Alanya, Kemer",
     ru: "Трансфер из Аэропорта Анталии | Частный Трансфер Белек, Сиде, Аланья, Кемер",
+    // Left as it is, deliberately. Dutch competitors title themselves with
+    // "luchthaven" almost uniformly, which looks like a reason to change this —
+    // but Google's own completions for the Netherlands say Dutch searchers do
+    // not: "antalya airport transfer" returns eight completions (to hotel,
+    // reviews, to side, booking, to lara, alanya…) while "antalya luchthaven
+    // transfer" returns exactly one, itself. The richest Dutch commercial
+    // phrase is "prive transfer antalya" with ten. This title already leads
+    // with the first and carries the second.
+    // Evidence: docs/seo-growth/autocomplete-research.json (nl, 2026-09-08).
     nl: "Antalya Airport Transfer | Privétransfer Belek, Side, Alanya, Kemer",
+    ro: "Transfer Aeroport Antalya | Transfer Privat Belek, Side, Alanya, Kemer",
   };
 
   const descriptionByLocale: Record<string, string> = {
@@ -57,26 +71,34 @@ export async function generateMetadata({
     pl: "Transfer z lotniska Antalya do Belek, Side, Alanya, Kemer i wszystkich hoteli. Prywatny transfer pod drzwi, stała cena, Mercedes Vito, śledzenie lotu, rezerwacja online.",
     ru: "Трансфер из аэропорта Анталии в Белек, Сиде, Аланью, Кемер и все отели. Частный трансфер от двери до двери, фиксированная цена, Mercedes Vito, отслеживание рейса.",
     nl: "Antalya Airport transfer naar Belek, Side, Alanya, Kemer en alle hotels. Privétransfer van deur tot deur, vaste prijs, Mercedes Vito, vluchtmonitoring, direct boeken.",
+    ro: "Transfer de la Aeroportul Antalya către Belek, Side, Alanya, Kemer și toate hotelurile. Transfer privat din poartă în poartă, preț fix, Mercedes Vito, urmărirea zborului.",
   };
 
+  const title = titleByLocale[locale] ?? t("title");
+  const description = descriptionByLocale[locale] ?? t("description");
+
   return applySeoPage({
-    title: titleByLocale[locale] ?? t("title"),
-    description: descriptionByLocale[locale] ?? t("description"),
+    title,
+    description,
     alternates: {
       canonical: `${BASE_URL}/${locale}`,
+      // Built from the locale list rather than typed out. The hand-written
+      // version was missing `ro`, so the Romanian homepage was in the sitemap
+      // and canonical to itself while no homepage — its own included —
+      // declared it as an alternate. A cluster that is not reciprocal is a
+      // cluster Google discards, so all seven homepages lost the signal, not
+      // just the Romanian one.
       languages: {
         "x-default": `${BASE_URL}/en`,
-        tr: `${BASE_URL}/tr`,
-        en: `${BASE_URL}/en`,
-        de: `${BASE_URL}/de`,
-        pl: `${BASE_URL}/pl`,
-        ru: `${BASE_URL}/ru`,
-        nl: `${BASE_URL}/nl`,
+        ...Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}`])),
       },
     },
+    // og:title used to read from the `meta` namespace while <title> came from
+    // the map above, so the two disagreed on six of seven homepages: Google
+    // saw one headline and every share card showed another.
     openGraph: {
-      title: t("title"),
-      description: t("description"),
+      title,
+      description,
       url: `${BASE_URL}/${locale}`,
       siteName: "TORVIAN Transfer",
       type: "website",
@@ -85,8 +107,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: t("title"),
-      description: t("description"),
+      title,
+      description,
       images: [`${BASE_URL}/images/og-default.jpg`],
     },
     keywords: locale === "tr"
@@ -146,7 +168,7 @@ export default async function HomePage({
       "@type": "ContactPoint",
       telephone: "+90-546-940-79-55",
       contactType: "customer service",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
     sameAs: [
       "https://instagram.com/torviantransfer",
@@ -248,7 +270,7 @@ export default async function HomePage({
       "@type": "ServiceChannel",
       serviceUrl: `${BASE_URL}/${locale}/booking`,
       servicePhone: "+90-546-940-79-55",
-      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch"],
+      availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
     offers: {
       "@type": "AggregateOffer",

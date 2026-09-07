@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { buildRedirects } from "./src/lib/redirects";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -23,118 +24,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Every rule lives in src/lib/redirects.ts so sitemap.ts can read the same
+  // list and stop submitting URLs that redirect away. See the note there.
   async redirects() {
-    // Keep in sync with src/i18n/config.ts. Dutch (nl) was added as the 6th
-    // locale (migration 038); leaving it out here means Dutch visitors hitting
-    // the legacy blog/region URLs do not get the 301 that carries the ranking
-    // signal to the surviving URL, so their traffic silently disappears.
-    const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
-    // Known region slugs — redirect bare slug to slug-transfer
-    const regionSlugs = [
-      "belek", "side", "alanya", "kemer", "konyaalti", "kundu", "lara",
-      "kundu-lara", "manavgat", "kas", "kalkan", "fethiye", "marmaris",
-      "beldibi", "goynuk", "tekirova", "camyuva", "olympos", "adrasan",
-      "demre", "finike", "kumluca", "gazipasa", "okurcalar", "turkler",
-      "avsallar", "konakli", "mahmutlar", "kestel", "antalya-city-center",
-      "kadriye", "bogazkent", "evrenseki", "kizilagac", "kargicak", "kiris",
-    ];
-    const rules: { source: string; destination: string; permanent: boolean }[] = [];
-    for (const locale of locales) {
-      for (const slug of regionSlugs) {
-        rules.push({
-          source: `/${locale}/${slug}`,
-          destination: `/${locale}/${slug}-transfer`,
-          permanent: true,
-        });
-        rules.push({
-          source: `/${locale}/${slug}-transfer-transfer`,
-          destination: `/${locale}/${slug}-transfer`,
-          permanent: true,
-        });
-      }
-    }
-    // Land of Legends alternative URL forms
-    for (const locale of locales) {
-      rules.push(
-        { source: `/${locale}/land-of-legends`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
-        { source: `/${locale}/landoflegends-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
-        { source: `/${locale}/land-of-legends-belek`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
-        { source: `/${locale}/land-of-legends-transfer-transfer`, destination: `/${locale}/land-of-legends-transfer`, permanent: true },
-      );
-    }
-    // Locale-less region URLs (e.g. /alanya-transfer) currently fall through
-    // to next-intl middleware, which issues a 307 (temporary) redirect to
-    // /en/alanya-transfer. A temporary redirect keeps BOTH URLs indexed in
-    // Search Console, splitting ranking signals (duplicate content). Emit an
-    // explicit 308 (permanent) redirect so Google consolidates to the canonical
-    // /en/ version. Only the 24 seeded ACTIVE regions are listed here — their
-    // /en/{slug}-transfer target is guaranteed to return 200. (The broader
-    // regionSlugs array above intentionally is NOT reused: it contains slugs
-    // like "lara"/"kundu" whose /en/{slug}-transfer would 404, since the active
-    // region is "kundu-lara".)
-    const activeRegionSlugs = [
-      "kundu-lara", "sehirici", "kadriye", "belek", "bogazkent", "evrenseki",
-      "side", "kizilagac", "okurcalar", "turkler", "alanya", "mahmutlar",
-      "kargicak", "beldibi", "goynuk", "kemer", "kiris", "camyuva", "tekirova",
-      "adrasan", "kas", "kalkan", "fethiye", "marmaris",
-    ];
-    for (const slug of activeRegionSlugs) {
-      rules.push({
-        source: `/${slug}-transfer`,
-        destination: `/en/${slug}-transfer`,
-        permanent: true,
-      });
-    }
-    // Blog consolidation — posts unpublished by migration 030 return 200 today
-    // (static build not yet redeployed) but will 404 on the next deploy, throwing
-    // away their accumulated ranking signal. 301-redirect each dead post to its
-    // surviving sibling so the equity is preserved. Only clusters where the KEPT
-    // post is the stronger performer in Search Console are listed here:
-    //   • Kemer  → kept `antalya-kemer-transfer-mesafe-sure` (pos ~5, 900+ impr)
-    //   • Taxi   → kept `antalya-havalimani-taksi-mi-vip-transfer-mi`
-    // Alanya cluster: migration 037 (already applied) re-published the stronger page
-    // Google ranks (`antalya-havalimani-alanya-transfer-kac-saat`, pos 9.4, 2798 impr)
-    // and unpublished the weaker `antalya-alanya-transfer-suresi`; this 301 forwards
-    // the weaker URL's equity to the winner.
-    const blogConsolidation: Record<string, string> = {
-      "antalya-havalimani-kemer-transfer": "antalya-kemer-transfer-mesafe-sure",
-      "antalya-havalimani-kemer-vip-transfer": "antalya-kemer-transfer-mesafe-sure",
-      "antalya-taksi-mi-ozel-transfer-mi": "antalya-havalimani-taksi-mi-vip-transfer-mi",
-      "antalya-alanya-transfer-suresi": "antalya-havalimani-alanya-transfer-kac-saat",
-      // Abandoned original (dotless "ı") of the maintained uber post; unpublished
-      // in migration 050. Forward its equity to the "i" version Google indexes.
-      "uber-antalya-havalimanı-ulasim": "uber-antalya-havalimani-ulasim",
-    };
-    for (const locale of locales) {
-      for (const [oldSlug, newSlug] of Object.entries(blogConsolidation)) {
-        rules.push({
-          source: `/${locale}/blog/${oldSlug}`,
-          destination: `/${locale}/blog/${newSlug}`,
-          permanent: true,
-        });
-      }
-    }
-    // Redirect bare (locale-less) blog/page paths to default locale
-    rules.push(
-      { source: "/blog", destination: "/en/blog", permanent: true },
-      { source: "/blog/:slug*", destination: "/en/blog/:slug*", permanent: true },
-      { source: "/faq", destination: "/en/faq", permanent: true },
-      { source: "/about", destination: "/en/about", permanent: true },
-      { source: "/contact", destination: "/en/contact", permanent: true },
-      { source: "/regions", destination: "/en/regions", permanent: true },
-      // Additional locale-less paths — ensure 308 permanent (not 307 from middleware)
-      { source: "/terms", destination: "/en/terms", permanent: true },
-      { source: "/privacy", destination: "/en/privacy", permanent: true },
-      { source: "/cookies", destination: "/en/cookies", permanent: true },
-      { source: "/cancellation", destination: "/en/cancellation", permanent: true },
-      { source: "/land-of-legends-transfer", destination: "/en/land-of-legends-transfer", permanent: true },
-      // Head-term hub. Not covered by the activeRegionSlugs loop above —
-      // "antalya-airport" is deliberately not a region (every transfer starts
-      // at the airport), so the locale-less form needs its own 308.
-      { source: "/antalya-airport-transfer", destination: "/en/antalya-airport-transfer", permanent: true },
-      { source: "/track", destination: "/en/track", permanent: true },
-    );
-    return rules;
+    return buildRedirects();
   },
 
   async headers() {

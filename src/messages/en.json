@@ -455,7 +455,8 @@
     "langPolish": "Polish",
     "langRussian": "Russian",
     "mapTitle": "Our Location",
-    "langDutch": "Dutch"
+    "langDutch": "Dutch",
+    "langRomanian": "Romanian"
   },
   "faq": {
     "title": "Antalya Airport Transfer FAQ | Transfer Time, Distance & Prices",
@@ -626,7 +627,12 @@
     "newsletterButton": "Subscribe",
     "newsletterSuccess": "Subscribed! Thank you.",
     "newsletterDuplicate": "You're already subscribed.",
-    "newsletterError": "Something went wrong. Try again."
+    "newsletterError": "Something went wrong. Try again.",
+    "servicesHeading": "Transfer Services",
+    "linkAirportTransfer": "Antalya Airport Transfer",
+    "linkVipTransfer": "VIP Transfer Antalya",
+    "linkHotelTransfer": "Hotel Transfer Antalya",
+    "linkLaraBeach": "Lara Beach Transfer"
   },
   "cookieConsent": {
     "message": "We use cookies to improve your experience. By continuing to use this site, you agree to our cookie policy.",

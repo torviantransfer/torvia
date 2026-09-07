@@ -455,7 +455,8 @@
     "langPolish": "Polnisch",
     "langRussian": "Russisch",
     "mapTitle": "Unser Standort",
-    "langDutch": "Niederländisch"
+    "langDutch": "Niederländisch",
+    "langRomanian": "Rumänisch"
   },
   "faq": {
     "title": "Flughafen Antalya Transfer FAQ | Fahrtzeit, Entfernung & Preise",
@@ -626,7 +627,12 @@
     "newsletterSuccess": "Abonniert! Vielen Dank.",
     "newsletterDuplicate": "Sie sind bereits angemeldet.",
     "newsletterError": "Etwas ist schiefgelaufen. Nochmals versuchen.",
-    "tagline": "Antalya Flughafen (AYT) VIP Transfer Service"
+    "tagline": "Antalya Flughafen (AYT) VIP Transfer Service",
+    "servicesHeading": "Transfer-Services",
+    "linkAirportTransfer": "Antalya Flughafen Transfer",
+    "linkVipTransfer": "VIP Transfer Antalya",
+    "linkHotelTransfer": "Hoteltransfer Antalya",
+    "linkLaraBeach": "Lara Beach Transfer"
   },
   "cookieConsent": {
     "message": "Wir verwenden Cookies, um Ihre Erfahrung zu verbessern. Durch die weitere Nutzung stimmen Sie unserer Cookie-Richtlinie zu.",
