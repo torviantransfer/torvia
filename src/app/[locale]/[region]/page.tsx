@@ -11,7 +11,7 @@ import {
 } from "@/lib/reviews";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound, redirect, permanentRedirect } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -34,6 +34,8 @@ import {
   Navigation,
   CalendarCheck,
 } from "lucide-react";
+import LandingPageView from "@/components/landing/LandingPageView";
+import { getLandingPage, landingMetadata, landingCanonicalSlug } from "@/lib/landingPages";
 
 import type { Locale } from "@/i18n/config";
 const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
@@ -99,20 +101,71 @@ async function findRegionByPath(supabase: ReturnType<typeof createAdminClient>, 
   return region;
 }
 
+/**
+ * The admin-created landing page at this exact slug, or null.
+ *
+ * This segment is the only dynamic one directly under the locale, so it is
+ * where a root-level `/tr/<slug>` has to be resolved — the App Router does not
+ * allow a second `[landing]` folder beside `[region]`. Two rules keep that
+ * sharing honest:
+ *
+ * 1. It is consulted *before* the `-transfer` normalisation below, which would
+ *    otherwise 308 /tr/kampanya to /tr/kampanya-transfer and 404 it.
+ * 2. An active region always wins the slug. Regions carry the pricing rows the
+ *    booking flow reads and the rankings the site already has, so a collision
+ *    costs the landing page its URL, never the region. The admin refuses to
+ *    save a colliding slug in the first place; this is the second line, for a
+ *    row written directly to the database or a region added afterwards.
+ */
+async function findLandingByPath(
+  supabase: ReturnType<typeof createAdminClient>,
+  slugParam: string
+) {
+  const landing = await getLandingPage(slugParam);
+  if (!landing) return null;
+  const region = await findRegionByPath(supabase, normalizeRegionPath(stripTransferSuffix(slugParam)));
+  if (region && region.is_active === true) return null;
+  return landing;
+}
+
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const supabase = createAdminClient();
-  const { data: regions } = await supabase
-    .from("regions")
-    .select("slug")
-    .eq("is_active", true);
+  const [{ data: regions }, { data: landings }] = await Promise.all([
+    supabase.from("regions").select("slug").eq("is_active", true),
+    supabase
+      .from("landing_pages")
+      .select("slug, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
+      .eq("is_published", true),
+  ]);
 
   const locales: Locale[] = ALL_LOCALES;
   const params: { locale: string; region: string }[] = [];
 
   for (const locale of locales) {
+    // Two sources feed one segment now, so a slug present in both would be
+    // prerendered twice. The admin refuses to create such a slug, but a region
+    // added afterwards can still collide, and a duplicate param is a build
+    // error rather than a wrong page.
+    const seen = new Set<string>();
+    const add = (slug: string) => {
+      if (seen.has(slug)) return;
+      seen.add(slug);
+      params.push({ locale, region: slug });
+    };
+
     for (const region of regions ?? []) {
-      params.push({ locale, region: normalizeRegionPath(region.slug) });
+      add(normalizeRegionPath(region.slug));
+    }
+    // Prerendered alongside the regions rather than left to on-demand ISR: a
+    // landing page is published precisely when someone is about to send paid
+    // traffic to it, and the first visitor should not be the one who pays for
+    // the render.
+    for (const landing of landings ?? []) {
+      // This locale's own slug, which is the only address it will not be
+      // redirected away from. Prerendering the shared slug for every language
+      // would build seven pages whose first act is a 301.
+      add(landingCanonicalSlug(landing as never, locale));
     }
   }
   return params;
@@ -384,6 +437,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
+
+  // Checked before the `-transfer` guard below, which returns `{}` for any
+  // other shape and would have left every landing page with no metadata at all
+  // — no title, no canonical, and the root layout's index/follow inherited by
+  // a page Google had never been told about.
+  const landing = await findLandingByPath(supabase, regionParam);
+  if (landing) return landingMetadata(landing, locale);
+
   if (!regionParam.endsWith("-transfer")) return {};
   const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
   const region = await findRegionByPath(supabase, normalizedRegionPath);
@@ -426,6 +487,23 @@ export default async function RegionPage({
 }) {
   const supabase = createAdminClient();
   const { locale, region: regionParam } = await params;
+
+  // An admin-created landing page claims its slug exactly as typed — before
+  // the suffix rule below, which exists for regions and would redirect
+  // /tr/kampanya to a /tr/kampanya-transfer that does not exist.
+  const landing = await findLandingByPath(supabase, regionParam);
+  if (landing) {
+    // A page answers on every slug it has ever carried, in any language, but
+    // it only *belongs* on this locale's own. 301 the rest so an old address
+    // and another language's address both keep working and hand their ranking
+    // to the canonical URL rather than competing with it.
+    const canonical = landingCanonicalSlug(landing, locale);
+    if (canonical && canonical !== regionParam) {
+      permanentRedirect(`/${locale}/${canonical}`);
+    }
+    return <LandingPageView page={landing} locale={locale} />;
+  }
+
   // Keep a single canonical suffix and immediately redirect malformed variants.
   if (!regionParam.endsWith("-transfer")) {
     redirect(`/${locale}/${normalizeRegionPath(regionParam)}`);

@@ -20,6 +20,7 @@ import {
   Calendar,
   Radio,
   Search,
+  LayoutTemplate,
   X,
 } from "lucide-react";
 
@@ -36,6 +37,9 @@ const navDefs = [
   { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },
   { path: "/regions", label: "Bölgeler", icon: MapPin },
   { path: "/blog", label: "Blog Yazıları", icon: FileText },
+  // Sits next to the SEO screen rather than next to the blog: the two are
+  // edited in the same session, since a landing page is created to rank.
+  { path: "/landing", label: "Landing Sayfaları", icon: LayoutTemplate },
   { path: "/seo", label: "SEO Yönetimi", icon: Search },
   { path: "/coupons", label: "Kuponlar", icon: Ticket },
   { path: "/reviews", label: "Değerlendirmeler", icon: Star },

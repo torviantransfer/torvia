@@ -68,6 +68,28 @@ function pathsFor(table: string, row: Record<string, unknown> | null): string[] 
       return paths;
     }
 
+    case "landing_pages": {
+      const paths: string[] = [];
+      // Each language can carry its own slug, so purging one path per locale
+      // means reading that locale's column -- the shared slug alone would
+      // leave every localised URL serving the previous copy.
+      for (const l of all) {
+        const localised = typeof row?.[`slug_${l}`] === "string" ? (row[`slug_${l}`] as string) : "";
+        const slug = localised.trim() || (typeof row?.slug === "string" ? row.slug : "");
+        if (slug) paths.push(`/${l}/${slug}`);
+      }
+      // A landing page is served by the `[region]` segment, so a rename leaves
+      // the old slug prerendered under that same segment. Purging the segment
+      // is what actually retires the previous URL -- without it a renamed page
+      // keeps answering on both addresses, which is a duplicate of itself.
+      paths.push("/[locale]/[region]");
+      // Publishing, unpublishing or renaming all change which URLs the sitemap
+      // may list, and a sitemap that disagrees with the page is the
+      // "Submitted URL marked noindex" error in Search Console.
+      paths.push("/sitemap.xml");
+      return paths;
+    }
+
     case "blog_posts": {
       const paths: string[] = [];
       for (const l of all) paths.push(`/${l}/blog`);
