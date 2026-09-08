@@ -16,9 +16,9 @@ import { regionImages, ogImageOverrides } from "@/lib/regionImages";
  * branch on the table again.
  */
 
-export type EntryKind = "page" | "region" | "blog";
+export type EntryKind = "page" | "region" | "blog" | "landing";
 export type PageType = "home" | "landing" | "static" | "region" | "blog";
-export type Table = "seo_pages" | "regions" | "blog_posts";
+export type Table = "seo_pages" | "regions" | "blog_posts" | "landing_pages";
 
 export interface Entry {
   kind: EntryKind;
@@ -97,6 +97,22 @@ export const PAGE_FIELDS: FieldMap = {
   keywords: "keywords_{loc}",
 };
 
+/**
+ * Admin-created landing pages.
+ *
+ * Column-for-column the same as `PAGE_FIELDS` — that was the point of naming
+ * `landing_pages`' SEO columns after `seo_pages`' own. It is a separate export
+ * rather than a reuse of the constant so the two can diverge later without
+ * anyone having to work out which pages a shared object was serving.
+ */
+export const LANDING_FIELDS: FieldMap = {
+  ...SHARED,
+  h1: "h1_{loc}",
+  intro: "intro_{loc}",
+  focusKeyword: "focus_keyword_{loc}",
+  keywords: "keywords_{loc}",
+};
+
 export const REGION_FIELDS: FieldMap = {
   ...SHARED,
   h1: "h1_{loc}",
@@ -167,6 +183,36 @@ export function pageEntry(row: Record<string, unknown>): Entry {
     shouldIndex: pageType !== "static" || ["regions", "blog", "about", "contact", "faq"].includes(String(row.page_key)),
     row,
     fieldMap: PAGE_FIELDS,
+    updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
+  };
+}
+
+/**
+ * A landing page an admin created, as opposed to one of the five written in
+ * React. It groups under "Landing" with those five, because from the outside
+ * they are the same kind of URL competing for the same kind of term — the
+ * editor should not have to know which of them happens to be a file.
+ */
+export function landingEntry(row: Record<string, unknown>): Entry {
+  const slug = String(row.slug ?? "");
+  const isPublished = row.is_published === true;
+  return {
+    kind: "landing",
+    table: "landing_pages",
+    id: String(row.id),
+    key: slug,
+    label: label(row, ["label", "h1_tr", "h1_en"], slug),
+    pageType: "landing",
+    routeFor: () => slug,
+    isPublic: isPublished,
+    shouldIndex: isPublished,
+    row: {
+      ...row,
+      // No dedicated social image column is required of the editor; the hero
+      // stands in, exactly as it does for a blog post.
+      og_image_url: row.og_image_url ?? row.image_url ?? null,
+    },
+    fieldMap: LANDING_FIELDS,
     updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
   };
 }
@@ -258,6 +304,14 @@ export function blogEntry(row: Record<string, unknown>): Entry {
  */
 export function translatedLocales(entry: Entry, all: readonly string[]): string[] {
   if (entry.kind === "page") return [...all];
+  // Mirrors `landingHasLocale` in src/lib/landingPages.ts, which is what the
+  // page and the sitemap both decide by. If these two ever disagree the audit
+  // reports a defect the site does not have, or misses one it does.
+  if (entry.kind === "landing") {
+    return all.filter(
+      (l) => str(entry.row, `h1_${l}`).trim() && str(entry.row, `content_${l}`).trim()
+    );
+  }
   if (entry.kind === "region") {
     return all.filter((l) => {
       if (l === "tr" || l === "en") return true;

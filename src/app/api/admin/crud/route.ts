@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { revalidateForTable } from "@/lib/revalidate";
 import { logSeoChange } from "@/lib/seoAuditLog";
+import { landingSlugProblem, regionSlugForms } from "@/lib/landingSlug";
 
 const ALLOWED_TABLES = [
   "drivers",
@@ -16,12 +17,45 @@ const ALLOWED_TABLES = [
   "exchange_rates",
   "blog_posts",
   "seo_pages",
+  "landing_pages",
 ] as const;
 
 type AllowedTable = (typeof ALLOWED_TABLES)[number];
 
 function isAllowedTable(table: string): table is AllowedTable {
   return ALLOWED_TABLES.includes(table as AllowedTable);
+}
+
+/**
+ * Rejects a landing-page slug that cannot work as a URL.
+ *
+ * Lives on the write path rather than only in the form, because a slug is the
+ * one field here whose mistakes are invisible: a page saved on `about` or on a
+ * region's slug looks published in the panel, enters the sitemap, and serves
+ * somebody else's page — the failure `FILE_ROUTE_SHADOWED` documents for the
+ * land-of-legends region. The rules themselves live in landingSlug.ts so the
+ * form can show the same message before the request is sent.
+ *
+ * Returns the reason, in Turkish, or null when the slug is usable.
+ */
+async function landingSlugError(
+  supabase: ReturnType<typeof createAdminClient>,
+  slug: unknown,
+  currentId: string | null
+): Promise<string | null> {
+  if (typeof slug !== "string") return "Slug metin olmalı.";
+
+  const [{ data: regions }, { data: landings }] = await Promise.all([
+    supabase.from("regions").select("slug"),
+    supabase.from("landing_pages").select("id, slug"),
+  ]);
+
+  const regionSlugs = (regions ?? []).flatMap((r) => regionSlugForms(String(r.slug)));
+  const takenSlugs = (landings ?? [])
+    .filter((l) => String(l.id) !== currentId)
+    .map((l) => String(l.slug));
+
+  return landingSlugProblem(slug, regionSlugs, takenSlugs);
 }
 
 export async function POST(request: NextRequest) {
@@ -43,6 +77,23 @@ export async function POST(request: NextRequest) {
 
     if (!isAllowedTable(table)) {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
+    }
+
+    // Runs for create and for update, but only when the slug is actually part
+    // of the write — the SEO panel edits landing rows too, and a meta-title
+    // save should not be refused because of a slug it never touched.
+    if (
+      table === "landing_pages" &&
+      (action === "create" || action === "update") &&
+      data &&
+      "slug" in data
+    ) {
+      const problem = await landingSlugError(
+        supabase,
+        data.slug,
+        action === "update" ? String(id ?? "") : null
+      );
+      if (problem) return NextResponse.json({ error: problem }, { status: 400 });
     }
 
     switch (action) {

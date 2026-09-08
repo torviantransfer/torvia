@@ -9,6 +9,7 @@ import {
   DESC_MAX,
 } from "@/lib/seoScore";
 import { LOCALES, LOCALE_LABELS, type Loc } from "./fields";
+import type { Table } from "./entries";
 
 /**
  * Fills meta copy across many pages from one template.
@@ -30,7 +31,13 @@ import { LOCALES, LOCALE_LABELS, type Loc } from "./fields";
 
 export interface BulkTarget {
   id: string;
-  table: "seo_pages" | "regions" | "blog_posts";
+  /**
+   * Imported from `entries` rather than written out again. The literal union
+   * that used to sit here was a second list of the tables the panel edits, and
+   * adding a fourth one to `entries` left this one behind — the dialog would
+   * have refused to bulk-fill a kind of page the list beside it was showing.
+   */
+  table: Table;
   /** Region or page name, for the {ad} token. */
   name: string;
   /** Path after the locale segment, for the {url} token. */

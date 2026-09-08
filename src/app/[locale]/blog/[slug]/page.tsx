@@ -13,7 +13,7 @@ import {
 import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { notFound, permanentRedirect } from "next/navigation";
 import Image from "next/image";
-import sanitizeHtml from "sanitize-html";
+import { sanitizeArticleHtml } from "@/lib/richText";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
@@ -259,25 +259,10 @@ export default async function BlogPostPage({
 
   const title = post[`title_${loc}`] || post.title_en || "Untitled";
   const rawContent = post[`content_${loc}`] || post.content_en || "";
-  const content = sanitizeHtml(rawContent, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "iframe", "video", "source"]),
-    allowedAttributes: {
-      ...sanitizeHtml.defaults.allowedAttributes,
-      img: ["src", "alt", "width", "height", "loading", "class"],
-      iframe: ["src", "width", "height", "frameborder", "allowfullscreen"],
-      video: ["src", "controls", "width", "height"],
-      source: ["src", "type"],
-      "*": ["class", "id", "style"],
-    },
-    allowedIframeHostnames: ["www.youtube.com", "www.google.com"],
-    // The page already renders the post title as its <h1>. A body that opens
-    // with its own <h1> — which several imported posts do — gives the page two,
-    // and the second one usually disagrees with the first
-    // (/en/blog/flughafen-transfer-antalya shipped a German heading under an
-    // English one). Demote it to <h2> so the document outline has exactly one
-    // top-level heading no matter what an editor pastes in.
-    transformTags: { h1: "h2" },
-  });
+  // The allow-list moved to src/lib/richText.ts when admin-created landing
+  // pages started rendering typed HTML too. Two copies of a sanitiser drift,
+  // and the half that drifts is the half that stops blocking something.
+  const content = sanitizeArticleHtml(rawContent);
 
   // Calculate reading time
   const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;

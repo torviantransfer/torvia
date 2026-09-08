@@ -29,7 +29,7 @@ import {
   LOCALES, type Loc, LocaleTabs, TextField, KeywordField, ImageField, Section,
 } from "./seo/fields";
 import {
-  pageEntry, regionEntry, blogEntry, field, str, translatedLocales,
+  pageEntry, regionEntry, blogEntry, landingEntry, field, str, translatedLocales,
   type Entry, type FieldMap,
 } from "./seo/entries";
 
@@ -71,14 +71,21 @@ export default function SeoManager({
   initialPages,
   initialRegions,
   initialPosts,
+  initialLandings,
 }: {
   initialPages: Record<string, unknown>[];
   initialRegions: Record<string, unknown>[];
   initialPosts: Record<string, unknown>[];
+  /**
+   * Admin-created landing pages. Optional so the prop can be added without
+   * every existing render site having to pass it on the same commit.
+   */
+  initialLandings?: Record<string, unknown>[];
 }) {
   const [pages, setPages] = useState(initialPages);
   const [regions, setRegions] = useState(initialRegions);
   const [posts, setPosts] = useState(initialPosts);
+  const [landings, setLandings] = useState(initialLandings ?? []);
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState<string>("all");
@@ -104,8 +111,13 @@ export default function SeoManager({
   const [target, setTarget] = useState<"public" | "deployment">("public");
 
   const entries: Entry[] = useMemo(
-    () => [...pages.map(pageEntry), ...regions.map(regionEntry), ...posts.map(blogEntry)],
-    [pages, regions, posts]
+    () => [
+      ...pages.map(pageEntry),
+      ...landings.map(landingEntry),
+      ...regions.map(regionEntry),
+      ...posts.map(blogEntry),
+    ],
+    [pages, landings, regions, posts]
   );
 
   const pathOf = useCallback((entry: Entry, loc: string) => {
@@ -215,6 +227,7 @@ export default function SeoManager({
     const update = (rows: Record<string, unknown>[]) =>
       rows.map((r) => (String(r.id) === entry.id ? { ...r, ...next } : r));
     if (entry.table === "seo_pages") setPages(update);
+    else if (entry.table === "landing_pages") setLandings(update);
     else if (entry.table === "regions") setRegions(update);
     else setPosts(update);
   }, []);
