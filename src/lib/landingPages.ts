@@ -3,13 +3,19 @@ import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { applyOverrides } from "@/lib/seoOverrides";
 import {
-  seoAlternates,
+  seoAlternatesPerLocale,
   seoOpenGraph,
   seoTwitter,
   INDEXABLE_ROBOTS,
   NOINDEX_ROBOTS,
 } from "@/lib/seo";
-import { SLUG_RE, columnText, landingHasLocale } from "@/lib/landingSlug";
+import {
+  SLUG_RE,
+  columnText,
+  landingHasLocale,
+  localizedLandingSlug,
+  allLandingSlugs,
+} from "@/lib/landingSlug";
 import { locales, type Locale } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
@@ -58,11 +64,18 @@ export const getLandingPage = cache(async (slug: string): Promise<LandingPage | 
   if (!SLUG_RE.test(slug)) return null;
   try {
     const supabase = createAdminClient();
+    // Any of the eight slug columns, in one query rather than a scan of the
+    // table: a page has to answer on the address it was linked from, whichever
+    // language that address belongs to, so the request can then be 301'd onto
+    // this locale's own slug. The API refuses a slug already used by another
+    // page in any language, so at most one row can match.
+    const columns = ["slug", ...locales.map((l) => `slug_${l}`)];
     const { data, error } = await supabase
       .from("landing_pages")
       .select("*")
-      .eq("slug", slug)
+      .or(columns.map((c) => `${c}.eq.${slug}`).join(","))
       .eq("is_published", true)
+      .limit(1)
       .maybeSingle();
     if (error) {
       console.error(`[landing] landing_pages okunamadı (slug=${slug}): ${error.message}`);
@@ -74,6 +87,20 @@ export const getLandingPage = cache(async (slug: string): Promise<LandingPage | 
     return null;
   }
 });
+
+/**
+ * The URL this page belongs on in `locale`, and whether the request arrived on
+ * it. A request on any other slug the page answers to is 301'd onto this one
+ * by the route, so an old or another language's address keeps working.
+ */
+export function landingCanonicalSlug(row: LandingPage, locale: string): string {
+  return localizedLandingSlug(row, locale);
+}
+
+/** Every address this page answers on, in any language. */
+export function landingSlugs(row: LandingPage): string[] {
+  return allLandingSlugs(row);
+}
 
 /** Every locale this page is genuinely translated into. */
 export function landingLocales(row: Record<string, unknown>): Locale[] {
@@ -149,7 +176,7 @@ export function absoluteUrl(url: string | null | undefined): string | undefined 
  */
 export function landingMetadata(row: LandingPage, locale: string): Metadata {
   const copy = landingCopy(row, locale);
-  const path = `/${row.slug}`;
+  const path = `/${localizedLandingSlug(row, locale)}`;
 
   // hreflang lists only the languages that have their own copy, and an
   // untranslated locale is noindex. Same contract as the region pages.
@@ -165,7 +192,15 @@ export function landingMetadata(row: LandingPage, locale: string): Metadata {
     {
       title,
       description,
-      alternates: seoAlternates(locale, path, available),
+      // Per-locale, because each language can carry its own slug now. The
+      // shared-path helper would have pointed every hreflang at this locale's
+      // URL, which is a cluster that does not reciprocate -- exactly what
+      // Google drops.
+      alternates: seoAlternatesPerLocale(
+        locale,
+        (l) => `/${localizedLandingSlug(row, l)}`,
+        available
+      ),
       // The copy locale, not the requested one, for the same reason the five
       // hardcoded landing pages pass theirs: when the text on screen is
       // English, og:locale claiming ro_RO would describe a page that does not

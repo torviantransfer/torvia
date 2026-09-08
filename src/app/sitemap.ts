@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { localizedBlogSlug } from "@/lib/seo";
 import { regionImageUrl } from "@/lib/regionImages";
 import { redirectedBlogSlugs } from "@/lib/redirects";
-import { landingHasLocale } from "@/lib/landingSlug";
+import { landingHasLocale, localizedLandingSlug } from "@/lib/landingSlug";
 import { locales as ALL_LOCALES, inlineCopyLocales } from "@/i18n/config";
 
 const BASE_URL = "https://torviantransfer.com";
@@ -54,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: landingPages } = await supabase
     .from("landing_pages")
     .select(
-      "slug, noindex, image_url, og_image_url, updated_at, h1_tr, h1_en, h1_de, h1_pl, h1_ru, h1_nl, h1_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro"
+      "slug, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro, noindex, image_url, og_image_url, updated_at, h1_tr, h1_en, h1_de, h1_pl, h1_ru, h1_nl, h1_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro"
     )
     .eq("is_published", true);
 
@@ -189,7 +189,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!landingHasLocale(page as Record<string, unknown>, locale)) continue;
       const img = (page.og_image_url as string | null) ?? (page.image_url as string | null);
       push({
-        url: `${BASE_URL}/${locale}/${page.slug}`,
+        // This locale's own slug. Submitting the shared one would submit a URL
+        // the page 301s away from -- Search Console's "Submitted URL has
+        // redirect", the error the redirect table is read for elsewhere.
+        url: `${BASE_URL}/${locale}/${localizedLandingSlug(page as Record<string, unknown>, locale)}`,
         lastModified: page.updated_at ? new Date(page.updated_at as string) : new Date(),
         changeFrequency: "weekly",
         // Landing pages exist to take paid and organic traffic for a specific

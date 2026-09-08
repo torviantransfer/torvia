@@ -69,10 +69,14 @@ function pathsFor(table: string, row: Record<string, unknown> | null): string[] 
     }
 
     case "landing_pages": {
-      const slug = typeof row?.slug === "string" ? row.slug : null;
       const paths: string[] = [];
-      if (slug) {
-        for (const l of all) paths.push(`/${l}/${slug}`);
+      // Each language can carry its own slug, so purging one path per locale
+      // means reading that locale's column -- the shared slug alone would
+      // leave every localised URL serving the previous copy.
+      for (const l of all) {
+        const localised = typeof row?.[`slug_${l}`] === "string" ? (row[`slug_${l}`] as string) : "";
+        const slug = localised.trim() || (typeof row?.slug === "string" ? row.slug : "");
+        if (slug) paths.push(`/${l}/${slug}`);
       }
       // A landing page is served by the `[region]` segment, so a rename leaves
       // the old slug prerendered under that same segment. Purging the segment

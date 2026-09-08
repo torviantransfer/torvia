@@ -100,15 +100,24 @@ export const PAGE_FIELDS: FieldMap = {
 /**
  * Admin-created landing pages.
  *
- * Column-for-column the same as `PAGE_FIELDS` — that was the point of naming
- * `landing_pages`' SEO columns after `seo_pages`' own. It is a separate export
- * rather than a reuse of the constant so the two can diverge later without
- * anyone having to work out which pages a shared object was serving.
+ * The SEO columns are named exactly as `seo_pages` names them, which is what
+ * lets this panel edit them with no branch of its own.
+ *
+ * `h1` and `intro` are null on purpose, and this is the important line in the
+ * file. They are the page's *copy*, written on the Landing Sayfaları screen
+ * alongside the body — so offering them here too would be a second place to
+ * change one string, which is how two editors end up disagreeing about what a
+ * page says. Blog posts already settle this the same way: their H1 is the post
+ * title, edited in the blog editor, shown here read-only. The panel still
+ * scores the copy, because `scoreEntry` falls through to `content_{loc}`.
+ *
+ * The split is the whole rule: this screen owns what Google is told, the
+ * content screen owns what the visitor reads.
  */
 export const LANDING_FIELDS: FieldMap = {
   ...SHARED,
-  h1: "h1_{loc}",
-  intro: "intro_{loc}",
+  h1: null,
+  intro: null,
   focusKeyword: "focus_keyword_{loc}",
   keywords: "keywords_{loc}",
 };
@@ -203,7 +212,11 @@ export function landingEntry(row: Record<string, unknown>): Entry {
     key: slug,
     label: label(row, ["label", "h1_tr", "h1_en"], slug),
     pageType: "landing",
-    routeFor: () => slug,
+    // Locale-dependent, like a blog post's: a landing page carries a slug per
+    // language now, and the panel's SERP preview, live scan and audit all
+    // address the page by this path. Returning the shared slug here would have
+    // had the panel inspecting /de/<turkish-slug>, which 301s.
+    routeFor: (locale) => str(row, `slug_${locale}`).trim() || slug,
     isPublic: isPublished,
     shouldIndex: isPublished,
     row: {

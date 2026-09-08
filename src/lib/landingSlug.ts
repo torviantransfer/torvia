@@ -179,6 +179,38 @@ export function landingSlugProblem(
   return null;
 }
 
+/**
+ * The slug this page is served on in a given locale.
+ *
+ * `slug_<locale>` when the editor has localised it, the shared `slug`
+ * otherwise. Same contract as `localizedBlogSlug` in src/lib/seo.ts, and for
+ * the same measured reason: a Turkish URL under a German title is an
+ * unreadable address in the SERP, and it costs clicks on rankings the site
+ * already holds.
+ */
+export function localizedLandingSlug(row: Record<string, unknown>, locale: string): string {
+  return columnText(row, `slug_${locale}`) ?? String(row.slug ?? "");
+}
+
+/**
+ * Every slug this page can be reached by, in any locale.
+ *
+ * Used to resolve an incoming request to the right row *before* deciding
+ * whether it is on the canonical URL for its locale. A page renamed in German
+ * still answers on its old address that way, and the 301 that follows carries
+ * the ranking forward instead of dropping it.
+ */
+export function allLandingSlugs(row: Record<string, unknown>): string[] {
+  const out = new Set<string>();
+  const base = columnText(row, "slug");
+  if (base) out.add(base);
+  for (const l of locales) {
+    const s = columnText(row, `slug_${l}`);
+    if (s) out.add(s);
+  }
+  return [...out];
+}
+
 /** A trimmed string, or undefined when the column is null, absent or blank. */
 export function columnText(
   row: Record<string, unknown> | null,

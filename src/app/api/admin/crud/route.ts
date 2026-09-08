@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { revalidateForTable } from "@/lib/revalidate";
 import { logSeoChange } from "@/lib/seoAuditLog";
 import { landingSlugProblem, regionSlugForms } from "@/lib/landingSlug";
+import { locales } from "@/i18n/config";
 
 const ALLOWED_TABLES = [
   "drivers",
@@ -27,7 +28,7 @@ function isAllowedTable(table: string): table is AllowedTable {
 }
 
 /**
- * Rejects a landing-page slug that cannot work as a URL.
+ * Rejects any landing-page slug that cannot work as a URL.
  *
  * Lives on the write path rather than only in the form, because a slug is the
  * one field here whose mistakes are invisible: a page saved on `about` or on a
@@ -36,26 +37,58 @@ function isAllowedTable(table: string): table is AllowedTable {
  * land-of-legends region. The rules themselves live in landingSlug.ts so the
  * form can show the same message before the request is sent.
  *
- * Returns the reason, in Turkish, or null when the slug is usable.
+ * Checks the shared slug and every per-locale override in the same write, so a
+ * German address cannot land on a reserved route while the Turkish one passes.
+ *
+ * Returns the reason, in Turkish, or null when every submitted slug is usable.
  */
-async function landingSlugError(
+async function landingSlugErrors(
   supabase: ReturnType<typeof createAdminClient>,
-  slug: unknown,
+  data: Record<string, unknown>,
   currentId: string | null
 ): Promise<string | null> {
-  if (typeof slug !== "string") return "Slug metin olmalı.";
+  const columns = ["slug", ...locales.map((l) => `slug_${l}`)];
+  const submitted = columns.filter((c) => c in data);
+  if (submitted.length === 0) return null;
 
   const [{ data: regions }, { data: landings }] = await Promise.all([
     supabase.from("regions").select("slug"),
-    supabase.from("landing_pages").select("id, slug"),
+    // Written out rather than built from `columns`: the Supabase client parses
+    // the select string at the type level, and a template literal defeats that.
+    supabase
+      .from("landing_pages")
+      .select("id, slug, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro"),
   ]);
 
-  const regionSlugs = (regions ?? []).flatMap((r) => regionSlugForms(String(r.slug)));
-  const takenSlugs = (landings ?? [])
-    .filter((l) => String(l.id) !== currentId)
-    .map((l) => String(l.slug));
+  const regionSlugs = (regions ?? []).flatMap((r) =>
+    regionSlugForms(String((r as Record<string, unknown>).slug))
+  );
 
-  return landingSlugProblem(slug, regionSlugs, takenSlugs);
+  // Every address another page already answers on, in any language. Read this
+  // way rather than from the base slug alone because a page reached at
+  // /de/<slug_de> is just as taken as one reached at /tr/<slug>, and two rows
+  // sharing an address would make the lookup ambiguous.
+  const takenSlugs = (landings ?? [])
+    .filter((l) => String((l as Record<string, unknown>).id) !== currentId)
+    .flatMap((l) =>
+      columns
+        .map((c) => String((l as Record<string, unknown>)[c] ?? "").trim())
+        .filter(Boolean)
+    );
+
+  for (const column of submitted) {
+    const raw = data[column];
+    // A localised slug is optional; clearing it falls back to the base slug.
+    if (column !== "slug" && (raw === null || raw === undefined || String(raw).trim() === "")) {
+      continue;
+    }
+    if (typeof raw !== "string") return `${column}: slug metin olmalı.`;
+    const problem = landingSlugProblem(raw.trim(), regionSlugs, takenSlugs);
+    if (problem) {
+      return column === "slug" ? problem : `${column.replace("slug_", "").toUpperCase()} adresi: ${problem}`;
+    }
+  }
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -79,18 +112,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
     }
 
-    // Runs for create and for update, but only when the slug is actually part
-    // of the write — the SEO panel edits landing rows too, and a meta-title
-    // save should not be refused because of a slug it never touched.
-    if (
-      table === "landing_pages" &&
-      (action === "create" || action === "update") &&
-      data &&
-      "slug" in data
-    ) {
-      const problem = await landingSlugError(
+    if (table === "landing_pages" && (action === "create" || action === "update") && data) {
+      // Runs only over the slug columns actually present in the write: the SEO
+      // panel edits landing rows too, and a meta-title save must not be
+      // refused because of a slug it never touched.
+      const problem = await landingSlugErrors(
         supabase,
-        data.slug,
+        data as Record<string, unknown>,
         action === "update" ? String(id ?? "") : null
       );
       if (problem) return NextResponse.json({ error: problem }, { status: 400 });

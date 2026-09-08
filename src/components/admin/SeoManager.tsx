@@ -1211,10 +1211,27 @@ function SeoEditor({
                 label="H1 başlığı"
                 override=""
                 onChange={() => {}}
-                live={(unreadable ? undefined : inspection?.h1s[0]) ?? str(draft, `title_${locale}`)}
+                live={
+                  (unreadable ? undefined : inspection?.h1s[0]) ??
+                  str(draft, entry.kind === "landing" ? `h1_${locale}` : `title_${locale}`)
+                }
                 readOnly={{
                   reason:
-                    "Blog yazılarında H1, yazının başlığıdır ve Blog Yazıları ekranından düzenlenir. Arama sonucundaki başlığı ondan ayırmak için yukarıdaki meta başlığı doldurun.",
+                    entry.kind === "landing"
+                      ? "Landing sayfalarının H1'i ve giriş paragrafı, gövde metniyle birlikte Landing Sayfaları ekranından düzenlenir. Arama sonucundaki başlığı sayfadaki başlıktan ayırmak için yukarıdaki meta başlığı doldurun."
+                      : "Blog yazılarında H1, yazının başlığıdır ve Blog Yazıları ekranından düzenlenir. Arama sonucundaki başlığı ondan ayırmak için yukarıdaki meta başlığı doldurun.",
+                }}
+              />
+            )}
+            {!entry.fieldMap.intro && entry.kind === "landing" && (
+              <EffectiveField
+                label="Giriş paragrafı"
+                override=""
+                onChange={() => {}}
+                live={str(draft, `intro_${locale}`)}
+                readOnly={{
+                  reason:
+                    "Sayfanın giriş paragrafı. Landing Sayfaları ekranından düzenlenir; meta açıklama boş bırakılırsa arama sonucunda bu metin kullanılır.",
                 }}
               />
             )}
