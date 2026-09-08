@@ -51,11 +51,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from("seo_pages")
     .select("page_key, noindex");
 
+  // `*` rather than a column list. Naming `slug_tr`…`slug_ro` here meant that
+  // a deployment reaching a database where migration 077 had not been applied
+  // failed the whole query and silently emitted no landing pages at all —
+  // indistinguishable from having none. The table holds a handful of rows and
+  // this runs once per sitemap request, so the extra columns cost nothing next
+  // to that failure mode.
   const { data: landingPages } = await supabase
     .from("landing_pages")
-    .select(
-      "slug, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro, noindex, image_url, og_image_url, updated_at, h1_tr, h1_en, h1_de, h1_pl, h1_ru, h1_nl, h1_ro, content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro"
-    )
+    .select("*")
     .eq("is_published", true);
 
   // The admin panel's `noindex` switch writes to the row, and the page reads

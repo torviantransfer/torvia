@@ -59,31 +59,75 @@ export interface LandingPage {
  * through to the region route's own 404 rather than 500 the request, and an
  * unpublished row is simply not a page yet.
  */
+const readFailures = new Map<string, { slug: string; message: string; at: string }>();
+
+/**
+ * Unexpected `landing_pages` read failures seen by this server instance.
+ *
+ * Mirrors `seoReadFailures()` in seoPages.ts, and exists for the same reason:
+ * "no such row" and "the query failed" are not the same fact, and collapsing
+ * them hides real problems. A landing page whose migration has not been
+ * applied looks exactly like a page nobody created — the request falls
+ * through, and nothing anywhere says why.
+ */
+export function landingReadFailures(): { slug: string; message: string; at: string }[] {
+  return [...readFailures.values()];
+}
+
+function recordFailure(slug: string, message: string) {
+  readFailures.set(slug, { slug, message, at: new Date().toISOString() });
+  console.error(
+    `[landing] landing_pages okunamadı (slug=${slug}): ${message} — sayfa 404 döndü. ` +
+      `Sütun bulunamadı hatası alıyorsanız supabase/migrations/077_landing_page_locale_slugs.sql uygulanmamış demektir.`
+  );
+}
+
 export const getLandingPage = cache(async (slug: string): Promise<LandingPage | null> => {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
   if (!SLUG_RE.test(slug)) return null;
   try {
     const supabase = createAdminClient();
-    // Any of the eight slug columns, in one query rather than a scan of the
-    // table: a page has to answer on the address it was linked from, whichever
-    // language that address belongs to, so the request can then be 301'd onto
-    // this locale's own slug. The API refuses a slug already used by another
-    // page in any language, so at most one row can match.
-    const columns = ["slug", ...locales.map((l) => `slug_${l}`)];
-    const { data, error } = await supabase
+
+    // The shared slug first, on its own. It is the column every row has, it is
+    // indexed and unique, and it resolves every page that has not been given a
+    // per-language address — which is most of them.
+    //
+    // Split from the per-locale lookup below deliberately. Asking for all
+    // eight columns in one `or()` means a deployment whose `slug_*` columns do
+    // not exist yet cannot resolve *any* landing page, because the whole query
+    // errors: migration 077 lagging the deploy by a few minutes took the
+    // entire feature down rather than just its localised half. Now the base
+    // slug keeps working and only localised addresses wait for the migration.
+    const { data: direct, error: directError } = await supabase
       .from("landing_pages")
       .select("*")
-      .or(columns.map((c) => `${c}.eq.${slug}`).join(","))
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (directError) {
+      recordFailure(slug, directError.message);
+      return null;
+    }
+    if (direct) {
+      readFailures.delete(slug);
+      return direct as LandingPage;
+    }
+
+    const { data: localised, error: localisedError } = await supabase
+      .from("landing_pages")
+      .select("*")
+      .or(locales.map((l) => `slug_${l}.eq.${slug}`).join(","))
       .eq("is_published", true)
       .limit(1)
       .maybeSingle();
-    if (error) {
-      console.error(`[landing] landing_pages okunamadı (slug=${slug}): ${error.message}`);
+    if (localisedError) {
+      recordFailure(slug, localisedError.message);
       return null;
     }
-    return (data as LandingPage | null) ?? null;
+    readFailures.delete(slug);
+    return (localised as LandingPage | null) ?? null;
   } catch (err) {
-    console.error("[landing] landing_pages okunamadı:", err);
+    recordFailure(slug, err instanceof Error ? err.message : String(err));
     return null;
   }
 });

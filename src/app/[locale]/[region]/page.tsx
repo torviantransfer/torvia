@@ -133,10 +133,11 @@ export async function generateStaticParams() {
   const supabase = createAdminClient();
   const [{ data: regions }, { data: landings }] = await Promise.all([
     supabase.from("regions").select("slug").eq("is_active", true),
-    supabase
-      .from("landing_pages")
-      .select("slug, slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro")
-      .eq("is_published", true),
+    // `*` for the same reason sitemap.ts uses it: naming the per-locale slug
+    // columns makes the whole query fail wherever migration 077 has not been
+    // applied, and a build that quietly prerenders no landing pages is harder
+    // to notice than one that prerenders them without their localised slugs.
+    supabase.from("landing_pages").select("*").eq("is_published", true),
   ]);
 
   const locales: Locale[] = ALL_LOCALES;
@@ -445,7 +446,14 @@ export async function generateMetadata({
   const landing = await findLandingByPath(supabase, regionParam);
   if (landing) return landingMetadata(landing, locale);
 
-  if (!regionParam.endsWith("-transfer")) return {};
+  // A slug without the suffix either redirects onto a real region or, since
+  // the page stopped appending the suffix blindly, 404s here. `{}` let that
+  // 404 inherit the root layout's index/follow — the same defect the branch
+  // below was already fixed for. Say noindex either way; a redirect discards
+  // this metadata anyway.
+  if (!regionParam.endsWith("-transfer")) {
+    return { title: "Not Found", robots: NOINDEX_ROBOTS };
+  }
   const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
   const region = await findRegionByPath(supabase, normalizedRegionPath);
 
@@ -505,8 +513,22 @@ export default async function RegionPage({
   }
 
   // Keep a single canonical suffix and immediately redirect malformed variants.
+  //
+  // Only when a region actually answers at the suffixed path. This rule was
+  // written when every slug reaching this segment was a region, so appending
+  // the suffix unconditionally was harmless. It is not harmless now: a landing
+  // page whose row could not be read -- a schema change not yet applied, a
+  // transient Supabase failure -- fell through to here and sent
+  // /en/antalya-airport-transfer-prices to
+  // /en/antalya-airport-transfer-prices-transfer, which then 404s. A redirect
+  // onto a dead URL is worse than a 404: it hides the real problem from
+  // whoever is looking at it, and it teaches Google an address that will never
+  // exist. An unknown slug now 404s where it stands.
   if (!regionParam.endsWith("-transfer")) {
-    redirect(`/${locale}/${normalizeRegionPath(regionParam)}`);
+    const suffixed = normalizeRegionPath(regionParam);
+    const target = await findRegionByPath(supabase, suffixed);
+    if (target && target.is_active === true) redirect(`/${locale}/${suffixed}`);
+    notFound();
   }
   const normalizedRegionPath = normalizeRegionPath(stripTransferSuffix(regionParam));
   if (normalizedRegionPath !== regionParam) {
