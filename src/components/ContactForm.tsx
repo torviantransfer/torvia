@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { pixelContact } from "@/lib/pixel";
+import { newPixelEventId, pixelContact } from "@/lib/pixel";
 
 export default function ContactForm() {
   const t = useTranslations("contact");
@@ -16,11 +16,15 @@ export default function ContactForm() {
     setErrorMsg("");
 
     const formData = new FormData(e.currentTarget);
+    // Shared by the browser and server copies of the Contact event, so Meta
+    // treats them as one enquiry.
+    const eventId = newPixelEventId();
     const data = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       email: formData.get("email") as string,
       message: formData.get("message") as string,
+      eventId,
     };
 
     try {
@@ -35,7 +39,7 @@ export default function ContactForm() {
         throw new Error(body.error || t("errorSendFailed"));
       }
 
-      pixelContact();
+      pixelContact(eventId);
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch (err) {

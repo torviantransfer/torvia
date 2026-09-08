@@ -1,13 +1,13 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyContactForm } from "@/lib/telegram";
-import { capiContact } from "@/lib/capi";
+import { capiContact, identityFromRequest, isEventId } from "@/lib/capi";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
   try {
     const body = await request.json();
-    const { firstName, lastName, email, message } = body;
+    const { firstName, lastName, email, message, eventId } = body;
 
     // Validation
     if (!firstName || !lastName || !email || !message) {
@@ -60,12 +60,13 @@ export async function POST(request: NextRequest) {
       message,
     }).catch(() => {});
 
-    // Server-side Contact event to Meta Conversions API
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
-    const userAgent = request.headers.get("user-agent") || undefined;
+    // Server-side Contact event to Meta Conversions API. eventId is the id the
+    // browser pixel used for this same submission, so Meta merges the two into
+    // one enquiry instead of reporting two.
     capiContact(
-      { email, firstName, lastName, clientIp, clientUserAgent: userAgent },
-      request.headers.get("referer") || undefined
+      { email, firstName, lastName, ...identityFromRequest(request) },
+      request.headers.get("referer") || undefined,
+      isEventId(eventId) ? eventId : undefined
     ).catch(() => {});
 
     return NextResponse.json({ success: true });

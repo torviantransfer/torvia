@@ -6,7 +6,7 @@ import { reservationSchema } from "@/lib/validations";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendReservationEmail } from "@/lib/email";
 import { notifyNewCashBooking, sendDriverVoucherToTelegram } from "@/lib/telegram";
-import { capiInitiateCheckout } from "@/lib/capi";
+import { capiInitiateCheckout, identityFromRequest } from "@/lib/capi";
 import { evaluateCoupon, type CouponRow } from "@/lib/coupon";
 import {
   capacityFor,
@@ -456,6 +456,12 @@ export async function POST(request: NextRequest) {
       ? `TORVIAN Deposit — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`
       : `TORVIAN VIP Transfer — ${regionName} | ${tripType === "round_trip" ? "Round Trip" : "One Way"} | ${pickupDate} ${pickupTime} | Ref: ${reservationCode}`;
 
+    // Meta's own cookies, carried on the PaymentIntent so the webhook can
+    // report the Purchase with the match signals the customer's browser had.
+    // Stripe calls that webhook, not the customer, so it has no cookies, IP or
+    // user agent of its own.
+    const metaIdentity = identityFromRequest(request);
+
     const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(stripeAmount * 100),
       currency: "usd",
@@ -470,6 +476,8 @@ export async function POST(request: NextRequest) {
         is_deposit: isCash ? "true" : "false",
         cash_total: isCash ? String(finalTotalPrice) : "",
         driver_amount: isCash ? String(finalDriverAmount) : "",
+        ...(metaIdentity.fbp ? { fbp: metaIdentity.fbp } : {}),
+        ...(metaIdentity.fbc ? { fbc: metaIdentity.fbc } : {}),
       },
     });
 
@@ -480,12 +488,10 @@ export async function POST(request: NextRequest) {
       .eq("id", reservation.id);
 
     // Server-side InitiateCheckout to Meta Conversions API
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined;
-    const userAgent = request.headers.get("user-agent") || undefined;
     capiInitiateCheckout(
       finalTotalPrice,
       "USD",
-      { email, phone, firstName, lastName, clientIp, clientUserAgent: userAgent },
+      { email, phone, firstName, lastName, ...metaIdentity },
       request.headers.get("referer") || undefined,
       `checkout_${reservationCode}`
     ).catch(() => {});

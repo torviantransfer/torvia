@@ -212,6 +212,9 @@ export async function POST(request: NextRequest) {
             phone: (resData.customers as Record<string, string> | null)?.phone,
             firstName: resData.customers.first_name,
             lastName: resData.customers.last_name ?? undefined,
+            // Put there by /api/reservations, which did see the browser.
+            fbp: paymentIntent.metadata?.fbp || undefined,
+            fbc: paymentIntent.metadata?.fbc || undefined,
           },
           undefined,
           `purchase_${reservationCode}`

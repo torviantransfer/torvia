@@ -6,6 +6,8 @@ declare global {
     _fbq?: (...args: any[]) => void;
     gtag?: (...args: any[]) => void;
     dataLayer?: any[];
+    /** Event id of the pageview the pixel snippet fired before hydration. */
+    __fbPageViewId?: string;
   }
 }
 
@@ -26,11 +28,28 @@ function gtag(...args: any[]) {
   }
 }
 
+/**
+ * Bir olayın tarayıcı ve sunucu kopyalarını eşleştiren kimlik.
+ *
+ * Aynı olay iki kez sayılmasın diye hem fbq çağrısına hem de Dönüşümler API'si
+ * isteğine bu kimlik verilir; Meta ikisini tek olayda birleştirir.
+ */
+export function newPixelEventId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `pv_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
 // ─── Standard events ─────────────────────────────────────────────────────────
 
-/** Her sayfa geçişinde tetiklenir (layout.tsx'te zaten var) */
-export function pixelPageView() {
-  fbq("track", "PageView");
+/**
+ * Sayfa görüntülemesi. Sayfanın ilk açılışını layout.tsx'teki piksel snippet'i
+ * gönderir; bu fonksiyon istemci tarafı geçişler için MetaPageView'dan
+ * çağrılır. Sunucu kopyasıyla eşleşmesi için eventId verilmeli.
+ */
+export function pixelPageView(eventId?: string) {
+  fbq("track", "PageView", {}, eventId ? { eventID: eventId } : undefined);
 }
 
 /**
@@ -128,9 +147,12 @@ export function markPurchaseTracked(reservationCode: string): void {
 
 /**
  * İletişim formu başarıyla gönderildiğinde tetiklenir.
+ *
+ * eventId, /api/contact'a gönderilen kimliğin aynısı olmalı — sunucu da aynı
+ * Contact olayını Dönüşümler API'sine yolluyor.
  */
-export function pixelContact() {
-  fbq("track", "Contact");
+export function pixelContact(eventId?: string) {
+  fbq("track", "Contact", {}, eventId ? { eventID: eventId } : undefined);
 }
 
 /**
