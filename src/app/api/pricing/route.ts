@@ -181,6 +181,7 @@ export async function GET(request: NextRequest) {
       name_ru: region.name_ru,
       name_nl: region.name_nl,
       name_ro: region.name_ro,
+      name_ar: region.name_ar,
       distance_km: region.distance_km,
       duration_minutes: region.duration_minutes,
       latitude: region.latitude,

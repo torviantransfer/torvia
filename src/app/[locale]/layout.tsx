@@ -1,8 +1,9 @@
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Inter, Montserrat } from "next/font/google";
+import { Inter, Montserrat, Noto_Sans_Arabic } from "next/font/google";
 import { routing } from "@/i18n/routing";
+import { localeDirection } from "@/i18n/config";
 import CookieConsent from "@/components/CookieConsent";
 import PresenceTracker from "@/components/analytics/PresenceTracker";
 import MetaPageView from "@/components/analytics/MetaPageView";
@@ -12,6 +13,21 @@ import { PIXEL_ID, GOOGLE_ADS_ID } from "@/lib/pixel";
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-inter",
+});
+
+/**
+ * Inter carries no Arabic glyphs, and neither does Montserrat — which only
+ * ever sets the Latin wordmark, so it needs none.
+ *
+ * Loaded with the Arabic subset alone: the @font-face it produces declares a
+ * unicode-range covering Arabic script only, so a browser on the other seven
+ * languages never requests the file. It costs those pages nothing, and it
+ * means stray Arabic anywhere on the site renders properly rather than as
+ * empty boxes.
+ */
+const notoArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-arabic",
 });
 
 const montserrat = Montserrat({
@@ -43,7 +59,13 @@ export default async function LocaleLayout({
   const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID || PIXEL_ID;
 
   return (
-    <html lang={locale} className={`${inter.variable} ${montserrat.variable} h-full`} data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={localeDirection(locale)}
+      className={`${inter.variable} ${montserrat.variable} ${notoArabic.variable} h-full`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         {/* The tag and pixel scripts are the first third-party bytes the page
             waits on; opening those connections while the HTML is still

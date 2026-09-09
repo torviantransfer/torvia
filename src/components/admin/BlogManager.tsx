@@ -25,6 +25,7 @@ interface BlogPost {
   title_ru: string | null;
   title_nl: string | null;
   title_ro: string | null;
+  title_ar: string | null;
   content_tr: string | null;
   content_en: string | null;
   content_de: string | null;
@@ -32,6 +33,7 @@ interface BlogPost {
   content_ru: string | null;
   content_nl: string | null;
   content_ro: string | null;
+  content_ar: string | null;
   excerpt_tr: string | null;
   excerpt_en: string | null;
   excerpt_de: string | null;
@@ -39,6 +41,7 @@ interface BlogPost {
   excerpt_ru: string | null;
   excerpt_nl: string | null;
   excerpt_ro: string | null;
+  excerpt_ar: string | null;
   focus_keyword_tr: string | null;
   focus_keyword_en: string | null;
   focus_keyword_de: string | null;
@@ -46,6 +49,7 @@ interface BlogPost {
   focus_keyword_ru: string | null;
   focus_keyword_nl: string | null;
   focus_keyword_ro: string | null;
+  focus_keyword_ar: string | null;
   secondary_keywords_tr: string | null;
   secondary_keywords_en: string | null;
   secondary_keywords_de: string | null;
@@ -53,6 +57,7 @@ interface BlogPost {
   secondary_keywords_ru: string | null;
   secondary_keywords_nl: string | null;
   secondary_keywords_ro: string | null;
+  secondary_keywords_ar: string | null;
   slug_tr: string | null;
   slug_en: string | null;
   slug_de: string | null;
@@ -60,6 +65,7 @@ interface BlogPost {
   slug_ru: string | null;
   slug_nl: string | null;
   slug_ro: string | null;
+  slug_ar: string | null;
   image_url: string | null;
   primary_region_slug: string | null;
   is_published: boolean;
@@ -81,7 +87,7 @@ interface Props {
 // Romanian was missing here while the SEO panel offered it, so a post could
 // have its Romanian meta title written but never its Romanian title, body or
 // slug -- the two editors disagreed about how many languages the site has.
-const LOCALES = ["en", "tr", "de", "pl", "ru", "nl", "ro"] as const;
+const LOCALES = ["en", "tr", "de", "pl", "ru", "nl", "ro", "ar"] as const;
 const LOCALE_LABELS: Record<string, string> = {
   en: "English",
   tr: "Türkçe",

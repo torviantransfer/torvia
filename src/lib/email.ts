@@ -487,10 +487,81 @@ const i18n: Record<string, Record<string, string>> = {
     driverAssignmentFooter: "Acest e-mail conține doar informații despre transfer.",
     airport: "Aeroportul Antalya",
   },
+  ar: {
+    subject: "قسيمة النقل الخاصة بك من TORVIAN",
+    greeting: "مرحباً",
+    confirmed: "تم تأكيد نقلك VIP ودفعه.",
+    confirmedCash: "استلمنا عربونك، وتم تأكيد رحلتك.",
+    depositPaid: "العربون مدفوع",
+    depositLine: "يُدفع للسائق (نقداً)",
+    showVoucher: "يرجى إبراز هذه القسيمة (مطبوعة أو على الشاشة) للسائق عند الاستقبال.",
+    totalCash: "الإجمالي (يُدفع عند المركبة)",
+    code: "رمز الحجز",
+    route: "المسار",
+    type: "نوع الرحلة",
+    oneWay: "ذهاب فقط",
+    roundTrip: "ذهاب وعودة",
+    pickup: "الاستقبال",
+    returnLabel: "العودة",
+    flight: "الرحلة",
+    hotel: "الفندق",
+    vehicle: "المركبة",
+    passengers: "الركاب",
+    adult: "بالغ",
+    adults: "بالغون",
+    child: "طفل",
+    childrenLabel: "أطفال",
+    luggage: "الأمتعة",
+    pieces: "قطعة",
+    extras: "إضافات",
+    childSeatLabel: "مقعد أطفال",
+    priceSummary: "ملخص السعر",
+    base: "السعر الأساسي",
+    nightCharge: "رسوم إضافية",
+    childSeatFee: "رسوم مقعد الأطفال",
+    rtDiscount: "خصم الذهاب والعودة",
+    couponDiscount: "خصم الكوبون",
+    total: "الإجمالي المدفوع",
+    qrTitle: "قسيمة QR الخاصة بك",
+    qrInfo: "أبرز رمز QR هذا لسائقك للتحقق الفوري.",
+    importantTitle: "معلومات مهمة",
+    imp1: "سيتابع سائقك رحلتك — لا داعي للقلق من التأخير.",
+    imp2: "سيلتقيك سائقك في نقطة اللقاء المخصصة بالمطار.",
+    imp3: "وقت انتظار مجاني: 60 دقيقة للرحلات الجوية و15 دقيقة للفنادق.",
+    imp4: "مقعد الأطفال ومقعد الرفع متاحان مقابل 10$ لكل حجز.",
+    imp5: "يرجى عدم التواصل مع السائق مباشرة للحجوزات المقبلة. شركتنا غير مسؤولة عن أي مشكلات قد تنشأ عن ذلك.",
+    contact: "تحتاج مساعدة؟ نحن متاحون على مدار الساعة",
+    footer: "تُعد هذه الرسالة قسيمة النقل الرسمية الخاصة بك.",
+    driverAssignmentSubjectOutbound: "تم تعيين سائق رحلة الذهاب",
+    driverAssignmentSubjectReturn: "تم تعيين سائق رحلة العودة",
+    driverAssignmentBanner: "تم تعيين سائقك",
+    driverAssignmentBody: "تم إسناد رحلتك إلى سائق. تجد التفاصيل أدناه.",
+    driverAssignmentDriverInfoTitle: "بيانات السائق",
+    driverAssignmentDriverLabel: "السائق",
+    driverAssignmentPhoneLabel: "الهاتف",
+    driverAssignmentVehicleLabel: "المركبة",
+    driverAssignmentTransferDetailsTitle: "تفاصيل الرحلة",
+    driverAssignmentDateLabel: "التاريخ",
+    driverAssignmentPickupTimeLabel: "وقت الاستقبال",
+    driverAssignmentImportantLabel: "تنبيه مهم",
+    driverAssignmentEarlyWarningTitle: "يرجى الاستعداد قبل موعد الاستقبال بساعتين على الأقل.",
+    driverAssignmentEarlyWarningBody: "سيصل سائقك في الموعد المحدد إلى فندقك أو عنوانك.",
+    driverAssignmentFooter: "هذه الرسالة لمعلومات النقل فقط.",
+    airport: "مطار أنطاليا",
+  },
 };
 
 function t(locale: string, key: string): string {
   return i18n[locale]?.[key] ?? i18n.en[key] ?? key;
+}
+
+/**
+ * Kept local rather than imported from i18n/config: this module is reached
+ * from the Stripe webhook, where the locale arrives as a bare string off the
+ * PaymentIntent and has not been through the app's Locale type.
+ */
+function isRtlLocale(locale: string): boolean {
+  return locale === "ar";
 }
 
 // ─── QR Code URL (external API — data: URLs are blocked by most email clients) ───
@@ -549,14 +620,14 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
 
   return `
 <!DOCTYPE html>
-<html lang="${loc}">
+<html lang="${loc}" dir="${isRtlLocale(loc) ? "rtl" : "ltr"}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${t(loc, "subject")}</title>
   <!--[if mso]><style>table,td{font-family:Arial,sans-serif!important;}</style><![endif]-->
 </head>
-<body style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body dir="${isRtlLocale(loc) ? "rtl" : "ltr"}" style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr><td align="center">
@@ -755,7 +826,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
   const datetime = isReturn && data.returnDatetime
     ? new Date(data.returnDatetime)
     : new Date(data.pickupDatetime);
-  const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : locale === "nl" ? "nl-NL" : locale === "ro" ? "ro-RO" : "en-US";
+  const regionalDateLocale = locale === "tr" ? "tr-TR" : locale === "de" ? "de-DE" : locale === "pl" ? "pl-PL" : locale === "ru" ? "ru-RU" : locale === "nl" ? "nl-NL" : locale === "ro" ? "ro-RO" : locale === "ar" ? "ar" : "en-US";
   const dateStr = datetime.toLocaleDateString(regionalDateLocale, { day: "2-digit", month: "long", year: "numeric" });
   const timeStr = formatBookingTime(datetime, regionalDateLocale);
 
@@ -788,13 +859,13 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
 
   const html = `
 <!DOCTYPE html>
-<html lang="${locale}">
+<html lang="${locale}" dir="${isRtlLocale(locale) ? "rtl" : "ltr"}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${subject}</title>
 </head>
-<body style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+<body dir="${isRtlLocale(locale) ? "rtl" : "ltr"}" style="margin:0;padding:20px 10px;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr><td align="center">

@@ -29,6 +29,7 @@ const headings: Record<Locale, string> = {
   ru: "Блог и Гиды",
   nl: "Blog & Reisgidsen",
   ro: "Blog și ghiduri",
+  ar: "المدونة والأدلة",
 };
 
 const subheadings: Record<Locale, string> = {
@@ -39,6 +40,7 @@ const subheadings: Record<Locale, string> = {
   ru: "Советы путешественникам, гиды по трансферам и открытие регионов",
   nl: "Reistips voor Antalya, transfergidsen en bestemmingen om te ontdekken",
   ro: "Sfaturi de călătorie în Antalya, ghiduri de transfer și destinații",
+  ar: "نصائح السفر إلى أنطاليا وأدلة النقل واستكشاف الوجهات",
 };
 
 const viewAll: Record<Locale, string> = {
@@ -49,6 +51,7 @@ const viewAll: Record<Locale, string> = {
   ru: "Все статьи",
   nl: "Alle artikelen",
   ro: "Toate articolele",
+  ar: "جميع المقالات",
 };
 
 /**
@@ -58,8 +61,8 @@ const viewAll: Record<Locale, string> = {
  */
 const SELECT =
   "slug, image_url, published_at, " +
-  "title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, " +
-  "content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, " +
+  "title_tr, title_en, title_de, title_pl, title_ru, title_nl, title_ro, title_ar, " +
+  "content_tr, content_en, content_de, content_pl, content_ru, content_nl, content_ro, content_ar, " +
   "slug_tr, slug_en, slug_de, slug_pl, slug_ru, slug_nl, slug_ro";
 
 export default async function BlogPreview({ locale }: { locale: string }) {

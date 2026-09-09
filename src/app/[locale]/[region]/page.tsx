@@ -38,7 +38,7 @@ import LandingPageView from "@/components/landing/LandingPageView";
 import { getLandingPage, landingMetadata, landingCanonicalSlug } from "@/lib/landingPages";
 
 import type { Locale } from "@/i18n/config";
-const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
+const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro", "ar"];
 const PRIMARY_LOCALES: Locale[] = ["tr", "en"];
 const BASE_URL = "https://torviantransfer.com";
 
@@ -66,6 +66,10 @@ function formatDuration(minutes: number, locale: string): string {
   if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
   if (locale === "nl") return h > 0 ? `${h} uur${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
   if (locale === "ro") return h > 0 ? `${h} ${h === 1 ? "oră" : "ore"}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
+  if (locale === "ar") {
+    const hours = h === 1 ? "ساعة" : h === 2 ? "ساعتان" : h <= 10 ? "ساعات" : "ساعة";
+    return h > 0 ? `${h} ${hours}${m > 0 ? ` ${m} دقيقة` : ""}` : `${m} دقيقة`;
+  }
   return h > 0 ? `${h} hour${h !== 1 ? "s" : ""}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
 }
 
@@ -197,7 +201,8 @@ function priceLabelFor(locale: string, price: number | null | undefined): string
     case "pl": return ` · Od $${amount}`;
     case "ru": return ` · От $${amount}`;
     case "nl": return ` · Vanaf $${amount}`;
-    case "ro": return ` · De la $${amount}`;
+    case "ro": return ` · De la ${amount}`;
+    case "ar": return ` · ابتداءً من ${amount}`;
     default: return ` · From $${amount}`;
   }
 }
@@ -291,7 +296,12 @@ function regionFallbackCopy(
     case "ro":
       return {
         title: `Transfer Aeroportul Antalya → ${name} | Privat VIP${priceLabel}${dur}`.trim(),
-        description: `Transfer privat VIP de la Aeroportul Antalya la ${name}.${info}${price ? ` De la $${price} per vehicul.` : ""} Mercedes Vito, întâmpinare cu placă, urmărirea zborului, anulare gratuită 24h. Rezervă online.`,
+        description: `Transfer privat VIP de la Aeroportul Antalya la ${name}.${info}${price ? ` De la ${price} per vehicul.` : ""} Mercedes Vito, întâmpinare cu placă, urmărirea zborului, anulare gratuită 24h. Rezervă online.`,
+      };
+    case "ar":
+      return {
+        title: `نقل من مطار أنطاليا إلى ${name} | خاص VIP${priceLabel}${dur}`.trim(),
+        description: `نقل خاص VIP من مطار أنطاليا إلى ${name}.${info}${price ? ` ابتداءً من ${price} للمركبة.` : ""} مرسيدس فيتو، استقبال بلافتة تحمل اسمك، متابعة الرحلة، إلغاء مجاني حتى 24 ساعة. احجز عبر الإنترنت — تأكيد فوري.`,
       };
     default:
       return {
@@ -593,7 +603,7 @@ export default async function RegionPage({
   // pages around it on the coast.
   const { data: allRegions } = await supabase
     .from("regions")
-    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, duration_minutes, distance_km, is_popular, latitude, longitude, image_url")
+    .select("slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, duration_minutes, distance_km, is_popular, latitude, longitude, image_url")
     .eq("is_active", true)
     .neq("slug", region.slug)
     .order("sort_order", { ascending: true });
@@ -602,6 +612,7 @@ export default async function RegionPage({
     slug: string;
     name_tr: string; name_en: string; name_de: string;
     name_pl: string; name_ru: string; name_nl: string; name_ro: string;
+    name_ar: string;
     duration_minutes: number | null;
     distance_km: number | null;
     is_popular: boolean | null;
@@ -770,7 +781,9 @@ export default async function RegionPage({
             ? `Wij bedienen alle hotels in ${name}, waaronder:`
             : locale === "ro"
               ? `Deservim toate hotelurile din ${name}, printre care:`
-              : `We serve every hotel in ${name}, including:`;
+              : locale === "ar"
+                ? `نخدم جميع الفنادق في ${name}، ومنها:`
+                : `We serve every hotel in ${name}, including:`;
   const faqHotelsQ = locale === "tr"
     ? `${name} bölgesinde hangi otellere transfer sağlıyorsunuz?`
     : locale === "de"
@@ -783,7 +796,9 @@ export default async function RegionPage({
             ? `Welke hotels in ${name} bedient u?`
             : locale === "ro"
               ? `Către ce hoteluri din ${name} faceți transfer?`
-              : `Which hotels in ${name} do you provide transfer to?`;
+              : locale === "ar"
+                ? `إلى أي فنادق في ${name} توفّرون النقل؟`
+                : `Which hotels in ${name} do you provide transfer to?`;
   const faqHotelsA = locale === "tr"
     ? `${name} bölgesindeki tüm otellere transfer sağlıyoruz; öne çıkanlar arasında ${hotelsForRegion.join(", ")} bulunur. Rezervasyon sırasında otel adınızı belirtmeniz yeterlidir.`
     : locale === "de"
@@ -796,7 +811,9 @@ export default async function RegionPage({
             ? `Wij verzorgen transfers naar alle hotels in ${name}, waaronder ${hotelsForRegion.join(", ")}. Vermeld gewoon uw hotelnaam tijdens het boeken.`
             : locale === "ro"
               ? `Facem transfer către toate hotelurile din ${name}, printre care ${hotelsForRegion.join(", ")}. Este suficient să scrii numele hotelului la rezervare.`
-              : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
+              : locale === "ar"
+                ? `نوفّر النقل إلى جميع الفنادق في ${name}، ومنها ${hotelsForRegion.join("، ")}. يكفي كتابة اسم فندقك عند الحجز.`
+                : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
 
   const faqSchema = {
     "@context": "https://schema.org",
@@ -858,6 +875,8 @@ export default async function RegionPage({
             ? [`Luchthaven Antalya ${name} transfer`, `${name} privétransfer`, `${name} hoteltransfer`, `${name} transfer met kinderzitje`, `vaste prijs ${name} transfer`, `${name} VIP transfer`, `nachttransfer naar ${name}`, `transfer in plaats van taxi naar ${name}`, `${name} transfer prijs`, `${name} transfer boeken`]
             : locale === "ro"
               ? [`transfer aeroport Antalya ${name}`, `transfer privat ${name}`, `transfer hotel ${name}`, `transfer cu scaun pentru copii ${name}`, `transfer preț fix ${name}`, `transfer VIP ${name}`, `transfer de noapte ${name}`, `transfer in loc de taxi ${name}`, `preț transfer ${name}`, `rezervare transfer ${name}`]
+              : locale === "ar"
+                ? [`نقل من مطار أنطاليا إلى ${name}`, `نقل خاص إلى ${name}`, `نقل فندق ${name}`, `نقل مع مقعد أطفال إلى ${name}`, `نقل بسعر ثابت إلى ${name}`, `نقل VIP ${name}`, `نقل ليلي إلى ${name}`, `بديل التاكسي إلى ${name}`, `سعر النقل إلى ${name}`, `حجز نقل ${name}`]
               : [`Antalya Airport to ${name} transfer`, `private transfer to ${name}`, `${name} hotel transfer`, `family transfer to ${name}`, `fixed-price transfer to ${name}`, `VIP transfer ${name}`, `late night transfer to ${name}`, `${name} transfer instead of taxi`, `${name} transfer price`, `book ${name} transfer online`];
   const routeIntentLabel = locale === "tr"
     ? "Bu rota için sık aranan ifadeler"
@@ -871,7 +890,9 @@ export default async function RegionPage({
             ? "Veelgezochte zoekwoorden voor deze route"
             : locale === "ro"
               ? "Căutări frecvente pentru această rută"
-              : "Common search phrases for this route";
+              : locale === "ar"
+                ? "عبارات البحث الشائعة لهذا المسار"
+                : "Common search phrases for this route";
 
   return (
     <>
@@ -1363,6 +1384,7 @@ export default async function RegionPage({
                  locale === "ru" ? "Смотрите нашу страницу для отелей пляжа Лара" :
                  locale === "nl" ? "Bekijk onze speciale pagina voor Lara Beach hotels" :
                  locale === "ro" ? "Vezi pagina noastră dedicată hotelurilor din Lara Beach" :
+                 locale === "ar" ? "اطّلع على صفحتنا المخصصة لفنادق شاطئ لارا" :
                  "See our dedicated Lara Beach transfer page with hotel-specific info"}
               </p>
               <Link

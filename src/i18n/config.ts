@@ -1,4 +1,4 @@
-export const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
+export const locales = ["tr", "en", "de", "pl", "ru", "nl", "ro", "ar"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
@@ -19,6 +19,19 @@ export const defaultLocale: Locale = "en";
  */
 export const inlineCopyLocales: readonly Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro"];
 
+/**
+ * Locales written right to left.
+ *
+ * The layout no longer hard-codes a direction — every spacing, inset, border
+ * and alignment utility is a logical property — so this list is the whole of
+ * what decides which way a page runs.
+ */
+export const rtlLocales: readonly Locale[] = ["ar"];
+
+export function localeDirection(locale: string): "rtl" | "ltr" {
+  return rtlLocales.includes(locale as Locale) ? "rtl" : "ltr";
+}
+
 export const localeNames: Record<Locale, string> = {
   tr: "Türkçe",
   en: "English",
@@ -27,6 +40,7 @@ export const localeNames: Record<Locale, string> = {
   ru: "Русский",
   nl: "Nederlands",
   ro: "Română",
+  ar: "العربية",
 };
 
 export const localeFlags: Record<Locale, string> = {
@@ -37,6 +51,7 @@ export const localeFlags: Record<Locale, string> = {
   ru: "RU",
   nl: "NL",
   ro: "RO",
+  ar: "AR",
 };
 
 /**
@@ -52,6 +67,10 @@ export const localeOgTags: Record<Locale, string> = {
   ru: "ru_RU",
   nl: "nl_NL",
   ro: "ro_RO",
+  // og:locale wants a territory. Arabic is published as "ar" — the language
+  // without a country, so Google offers it to every Arabic-speaking market —
+  // and ar_AR is the conventional way to say that in Open Graph.
+  ar: "ar_AR",
 };
 
 export const currencies = ["USD", "EUR", "TRY"] as const;
@@ -79,4 +98,7 @@ export const localeCurrencies: Record<Locale, Currency> = {
   pl: "EUR",
   ru: "USD",
   ro: "EUR",
+  // Gulf visitors are the market this language is for, and the currencies
+  // there are dollar-pegged.
+  ar: "USD",
 };

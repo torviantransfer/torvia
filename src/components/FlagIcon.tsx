@@ -74,6 +74,27 @@ function RO() {
   );
 }
 
+/**
+ * Pan-Arab colours rather than any one country's flag.
+ *
+ * The site publishes Arabic as "ar" — the language with no territory attached,
+ * so search engines offer it to every Arabic-speaking market. Flying the Saudi
+ * or Emirati flag over that menu entry would claim a country the language does
+ * not, and tell visitors from the others they are in the wrong place. Black,
+ * white and green bands behind a red hoist triangle is the shared design those
+ * flags are drawn from, and reads as "Arabic" without naming a state.
+ */
+function AR() {
+  return (
+    <>
+      <rect width="20" height="4.667" y="0" fill="#000000" />
+      <rect width="20" height="4.666" y="4.667" fill="#FFFFFF" />
+      <rect width="20" height="4.667" y="9.333" fill="#007A3D" />
+      <path d="M0 0 7.5 7 0 14Z" fill="#CE1126" />
+    </>
+  );
+}
+
 const FLAGS: Record<Locale, React.ReactNode> = {
   tr: <TR />,
   en: <GB />,
@@ -82,6 +103,7 @@ const FLAGS: Record<Locale, React.ReactNode> = {
   ru: <Bands colors={["#FFFFFF", "#0039A6", "#D52B1E"]} />,
   nl: <Bands colors={["#AE1C28", "#FFFFFF", "#21468B"]} />,
   ro: <RO />,
+  ar: <AR />,
 };
 
 export default function FlagIcon({

@@ -123,6 +123,8 @@ export async function generateMetadata({
       ? "antalya airport transfer, antalya private transfer, transfer luchthaven Antalya, privétransfer Antalya, VIP transfer Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, hotel transfer Antalya, luchthaven Antalya naar hotel, Land of Legends transfer, nachttransfer luchthaven Antalya, transfer in plaats van taxi, Titanic Deluxe Lara transfer"
       : locale === "ro"
       ? "transfer aeroport Antalya, transfer privat Antalya, transfer VIP Antalya, transfer Belek, transfer Side, transfer Alanya, transfer Kemer, transfer aeroport Antalya la hotel, transfer privat de la aeroportul Antalya la hotel, transfer VIP Antalya Belek, transfer hotel Side aeroport Antalya, transfer Land of Legends, transfer de noapte aeroport Antalya, transfer in loc de taxi, transfer Titanic Deluxe Lara"
+      : locale === "ar"
+      ? "نقل مطار أنطاليا, توصيل من مطار أنطاليا, نقل خاص أنطاليا, نقل VIP أنطاليا, نقل بيليك, نقل سيده, نقل ألانيا, نقل كيمر, توصيل من مطار أنطاليا إلى الفندق, نقل خاص من المطار إلى الفندق, سيارة خاصة من مطار أنطاليا, بديل تاكسي مطار أنطاليا, حجز سيارة مطار أنطاليا, نقل لاند أوف ليجندز, نقل ليلي من مطار أنطاليا, نقل بسعر ثابت, نقل تيتانيك ديلوكس لارا"
       : "antalya airport transfer, antalya vip transfer, private transfer antalya airport, belek transfer, side transfer, alanya transfer, kemer transfer, antalya airport hotel transfer, private transfer from antalya airport to hotel, vip transfer antalya airport to belek, side hotel transfer antalya airport, Land of Legends private transfer, late night airport transfer, fixed price transfer instead of taxi, Titanic Deluxe Lara transfer",
   }, seoRow, locale);
 }

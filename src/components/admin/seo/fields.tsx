@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Upload, Loader2, X, Link2, ImageOff, AlertCircle } from "lucide-react";
 
-export const LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
+export const LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro", "ar"] as const;
 export type Loc = (typeof LOCALES)[number];
 
 export const LOCALE_LABELS: Record<Loc, string> = {
@@ -14,6 +14,7 @@ export const LOCALE_LABELS: Record<Loc, string> = {
   ru: "Русский",
   nl: "Nederlands",
   ro: "Română",
+  ar: "العربية",
 };
 
 export const LOCALE_FLAGS: Record<Loc, string> = {
@@ -24,6 +25,9 @@ export const LOCALE_FLAGS: Record<Loc, string> = {
   ru: "🇷🇺",
   nl: "🇳🇱",
   ro: "🇷🇴",
+  // No flag: "ar" is the language without a country. This is the admin
+  // language picker, where a globe is clearer than picking one Arab state.
+  ar: "🌐",
 };
 
 /**

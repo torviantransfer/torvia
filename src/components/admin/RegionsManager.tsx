@@ -13,6 +13,7 @@ interface Region {
   name_ru: string;
   name_nl: string;
   name_ro: string;
+  name_ar: string;
   distance_km: number | null;
   duration_minutes: number | null;
   is_popular: boolean;
@@ -37,6 +38,7 @@ export default function RegionsManager({ initialRegions }: Props) {
     name_ru: "",
     name_nl: "",
     name_ro: "",
+    name_ar: "",
     distance_km: "",
     duration_minutes: "",
     sort_order: "0",
@@ -53,6 +55,7 @@ export default function RegionsManager({ initialRegions }: Props) {
       name_ru: "",
       name_nl: "",
       name_ro: "",
+      name_ar: "",
       distance_km: "",
       duration_minutes: "",
       sort_order: "0",
@@ -145,6 +148,7 @@ export default function RegionsManager({ initialRegions }: Props) {
       name_de: r.name_de,
       name_pl: r.name_pl,
       name_ru: r.name_ru,
+      name_ar: r.name_ar ?? "",
       name_nl: r.name_nl,
       name_ro: r.name_ro ?? "",
       distance_km: r.distance_km?.toString() ?? "",

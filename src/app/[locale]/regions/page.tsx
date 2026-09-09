@@ -71,7 +71,9 @@ export async function generateMetadata({
             ? "Antalya Luchthaven Transferbestemmingen | Belek, Side, Alanya, Kemer"
             : locale === "ro"
               ? "Destinații transfer Aeroportul Antalya | Belek, Side, Alanya, Kemer"
-              : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
+              : locale === "ar"
+                ? "وجهات النقل من مطار أنطاليا | بيليك، سيده، ألانيا، كيمر"
+                : "Antalya Airport Transfers | Belek, Side, Alanya, Kemer";
   const description = locale === "tr"
     ? "Antalya Havalimanı'ndan Belek, Side, Alanya, Kemer ve 25+ destinasyona sabit fiyatlı VIP özel transfer rezervasyonu yapın."
     : locale === "de"
@@ -84,7 +86,9 @@ export async function generateMetadata({
             ? "Boek uw privé VIP-transfer van de luchthaven Antalya naar Belek, Side, Alanya, Kemer en meer dan 25 bestemmingen."
             : locale === "ro"
               ? "Rezervă un transfer privat VIP de la Aeroportul Antalya către Belek, Side, Alanya, Kemer și peste 25 de destinații."
-              : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
+              : locale === "ar"
+                ? "احجز نقلاً خاصاً VIP من مطار أنطاليا إلى بيليك وسيده وألانيا وكيمر وأكثر من 25 وجهة بسعر ثابت."
+                : "Book a private VIP transfer from Antalya Airport to Belek, Side, Alanya, Kemer and 25+ destinations.";
   return applySeoPage({
     title,
     description,
@@ -144,7 +148,7 @@ export default async function RegionsPage({
                 className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
                 style={{ backgroundColor: "#F97316", color: "#fff" }}
               >
-                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : locale === "ro" ? "Rezervă acum" : "Book Now"}
+                {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : locale === "ro" ? "Rezervă acum" : locale === "ar" ? "احجز الآن" : "Book Now"}
               </Link>
             </div>
           </div>

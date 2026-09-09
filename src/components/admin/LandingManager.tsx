@@ -20,7 +20,7 @@ import {
 import { landingSlugProblem, regionSlugForms, slugifyLanding } from "@/lib/landingSlug";
 import { htmlWordCount } from "@/lib/richText";
 
-const LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro"] as const;
+const LOCALES = ["tr", "en", "de", "pl", "ru", "nl", "ro", "ar"] as const;
 type Loc = (typeof LOCALES)[number];
 
 const LOCALE_LABELS: Record<Loc, string> = {
@@ -31,6 +31,7 @@ const LOCALE_LABELS: Record<Loc, string> = {
   ru: "Русский",
   nl: "Nederlands",
   ro: "Română",
+  ar: "العربية",
 };
 
 /**

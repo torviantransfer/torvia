@@ -45,6 +45,8 @@ function fromWord(locale: string): string {
       return "vanaf";
     case "ro":
       return "de la";
+    case "ar":
+      return "ابتداءً من";
     default:
       return "from";
   }

@@ -65,6 +65,7 @@ interface RegionData {
   name_ru: string;
   name_nl: string;
   name_ro: string;
+  name_ar: string;
   distance_km: number;
   duration_minutes: number;
   latitude?: number;
