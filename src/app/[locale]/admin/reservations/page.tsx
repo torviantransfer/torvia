@@ -1,41 +1,52 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import ReservationList from "@/components/admin/ReservationList";
 import ExportButton from "@/components/admin/ExportButton";
+import type { Reservation } from "@/components/admin/reservations/types";
 
 // The list is refreshed in place via router.refresh() after every mutation, so the
 // segment must never be served from a prerender.
 export const dynamic = "force-dynamic";
 
-export default async function AdminReservationsPage() {
+/**
+ * Only what a row shows or a filter reads.
+ *
+ * This used to be `*` plus four joins for two hundred rows — every price
+ * component, every note and address, the full assignment records with their
+ * drivers and vehicles — because the row expanded in place and needed all of
+ * it eventually. Now that opening a reservation loads its own page, the list
+ * carries a fraction of the payload, which is the difference that shows on a
+ * phone.
+ *
+ * The text columns that look surplus are the ones the search box reads:
+ * flight codes, hotel name, the customer's email and phone, and the assigned
+ * driver's name. Dropping those would quietly narrow what search can find.
+ */
+const LIST_COLUMNS = `
+  id, reservation_code, status, trip_type, direction, locale, created_at,
+  pickup_datetime, return_datetime, total_price, payment_method, driver_amount,
+  adults, children, luggage_count, child_seat, welcome_sign, welcome_name,
+  hotel_address, notes, base_price, night_surcharge, child_seat_fee,
+  round_trip_discount, coupon_discount, deposit_amount,
+  flight_code, return_flight_code, hotel_name,
+  customers(first_name, last_name, email, phone),
+  regions(name_en, name_tr, slug),
+  vehicle_categories(name),
+  driver_assignments(id, leg, status, drivers(full_name))
+`;
+
+export default async function AdminReservationsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const supabase = createAdminClient();
 
   const { data: reservations } = await supabase
     .from("reservations")
-    .select(
-      `*,
-       customers(first_name, last_name, email, phone),
-       regions(name_en, name_tr, slug),
-       vehicle_categories(name),
-       driver_assignments(
-         *,
-         drivers(full_name, phone),
-         vehicles(plate_number, brand, model)
-       )`
-    )
+    .select(LIST_COLUMNS)
     .order("created_at", { ascending: false })
     .limit(200);
-
-  const { data: drivers } = await supabase
-    .from("drivers")
-    .select("id, full_name, phone")
-    .eq("is_active", true)
-    .order("full_name");
-
-  const { data: vehicles } = await supabase
-    .from("vehicles")
-    .select("id, plate_number, brand, model")
-    .eq("is_active", true)
-    .order("plate_number");
 
   return (
     <div>
@@ -49,9 +60,8 @@ export default async function AdminReservationsPage() {
         <ExportButton />
       </div>
       <ReservationList
-        reservations={reservations ?? []}
-        drivers={drivers ?? []}
-        vehicles={vehicles ?? []}
+        reservations={(reservations ?? []) as unknown as Reservation[]}
+        adminBase={`/${locale}/admin`}
       />
     </div>
   );
