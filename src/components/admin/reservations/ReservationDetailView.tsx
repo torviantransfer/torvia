@@ -13,7 +13,6 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  MoreHorizontal,
   Pencil,
   Phone,
   Send,
@@ -22,6 +21,11 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import ActionMenu, {
+  MENU_ITEM,
+  MENU_ITEM_DANGER,
+  MenuSeparator,
+} from "./ActionMenu";
 import AssignDriverModal from "./AssignDriverModal";
 import AssignmentCard from "./AssignmentCard";
 import DriverLinkModal from "./DriverLinkModal";
@@ -53,9 +57,6 @@ interface Props {
   adminBase: string;
 }
 
-const MENU_ITEM =
-  "flex w-full items-center gap-2.5 px-3.5 py-2 text-start text-xs font-medium text-slate-700 hover:bg-slate-50";
-
 /**
  * One reservation, on its own page.
  *
@@ -79,7 +80,6 @@ export default function ReservationDetailView({
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
   const [telegramSending, setTelegramSending] = useState(false);
   const [linkModal, setLinkModal] = useState<{
@@ -112,6 +112,14 @@ export default function ReservationDetailView({
   const ret = live("return");
   const assignable = ["paid", "driver_assigned"].includes(r.status);
   const profit = reservationProfit(r);
+
+  const driverStatus = (() => {
+    if (!assignable) return { label: "—", tone: undefined as "ok" | "warning" | undefined };
+    const needsReturn = r.trip_type === "round_trip" && !ret;
+    if (outbound && !needsReturn) return { label: "Atandı", tone: "ok" as const };
+    if (outbound && needsReturn) return { label: "Dönüş bekliyor", tone: "warning" as const };
+    return { label: "Bekliyor", tone: "warning" as const };
+  })();
 
   const unassign = async (assignmentId: string) => {
     if (!window.confirm("Bu şoför ataması kaldırılsın mı? Şoförün linki geçersiz olacak."))
@@ -191,15 +199,20 @@ export default function ReservationDetailView({
         Rezervasyonlar
       </Link>
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4 p-4 sm:p-5">
+      {/* ── Header ─────────────────────────────────────────────────────
+          Deliberately no overflow-hidden: the action menu opens out of this
+          box, and clipping it was what cut the menu in half. The rounded
+          bottom corners live on the summary strip instead. */}
+      <div className="mb-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-start justify-between gap-3 p-4 sm:gap-4 sm:p-5">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="font-mono text-xl font-bold tracking-wide text-slate-900">
-                {r.reservation_code}
-              </h1>
-              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}>
+            <h1 className="font-mono text-xl font-bold tracking-wide text-slate-900 sm:text-2xl">
+              {r.reservation_code}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}
+              >
                 {meta.label}
               </span>
               {r.trip_type === "round_trip" && (
@@ -218,105 +231,105 @@ export default function ReservationDetailView({
                 {cash ? "Nakit" : "Online"}
               </span>
             </div>
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              {customerName(r)} · {routeFor(r)} · {fmtDateTime(r.pickup_datetime)}
-            </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-start gap-2">
             <div className="text-end">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Toplam
               </span>
-              <span className="text-2xl font-bold tracking-tight text-slate-900">
+              <span className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                 {money(r.total_price)}
               </span>
+              {/* On a cash booking the figure above is not what we hold — the
+                  driver collects the rest at the airport. */}
+              {cash && Number(r.driver_amount) > 0 && (
+                <span className="mt-0.5 block whitespace-nowrap text-[10px] font-semibold text-orange-600">
+                  Şoförde {money(r.driver_amount)}
+                </span>
+              )}
             </div>
-            <div className="relative">
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Diğer işlemler"
-              >
-                <MoreHorizontal size={18} />
-              </button>
-              {menuOpen && (
+
+            <ActionMenu>
+              {(close) => (
                 <>
-                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                  <div className="absolute end-0 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
                   <a
                     href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={MENU_ITEM}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={close}
                   >
-                    <FileText size={13} className="text-slate-400" />
+                    <FileText size={15} className="text-slate-400" />
                     Müşteri voucher
-                    <ExternalLink size={10} className="ms-auto text-slate-300" />
+                    <ExternalLink size={11} className="ms-auto text-slate-300" />
                   </a>
                   <a
                     href={`/api/admin/voucher-pdf?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
                     className={MENU_ITEM}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={close}
                   >
-                    <Download size={13} className="text-slate-400" />
+                    <Download size={15} className="text-slate-400" />
                     PDF indir
                   </a>
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
+                      close();
                       sendToTelegram();
                     }}
                     disabled={telegramSending}
                     className={`${MENU_ITEM} disabled:opacity-60`}
                   >
-                    <Send size={13} className="text-sky-500" />
+                    <Send size={15} className="text-sky-500" />
                     {telegramSending ? "Gönderiliyor…" : "Telegram'a gönder"}
                   </button>
 
-                  <div className="my-1 h-px bg-slate-100" />
+                  <MenuSeparator />
 
                   <button
                     onClick={() => {
-                      setMenuOpen(false);
+                      close();
                       setEditing(true);
                     }}
                     className={MENU_ITEM}
                   >
-                    <Pencil size={13} className="text-slate-400" />
+                    <Pencil size={15} className="text-slate-400" />
                     Düzenle
                   </button>
                   {r.status !== "completed" && (
                     <button
                       onClick={() => {
-                        setMenuOpen(false);
+                        close();
                         setDeleteOpen(true);
                       }}
-                      className={`${MENU_ITEM} text-rose-600 hover:bg-rose-50`}
+                      className={MENU_ITEM_DANGER}
                     >
-                      <Trash2 size={13} />
-                      {["pending", "cancelled"].includes(r.status) ? "Kaydı sil" : "İptal et"}
+                      <Trash2 size={15} />
+                      {["pending", "cancelled"].includes(r.status)
+                        ? "Kaydı sil"
+                        : "İptal et"}
                     </button>
                   )}
-                  </div>
                 </>
               )}
-            </div>
+            </ActionMenu>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-t border-slate-100 bg-slate-50/70 sm:grid-cols-4">
+        {/* The four facts you check before doing anything else. They used to be
+            repeated word for word in a subtitle directly above this strip. */}
+        <div className="grid grid-cols-2 rounded-b-2xl border-t border-slate-100 bg-slate-50/70 sm:grid-cols-4">
           <SummaryItem label="Alış" value={fmtDateTime(r.pickup_datetime)} />
           <SummaryItem label="Rota" value={routeFor(r)} />
           <SummaryItem label="Müşteri" value={customerName(r)} />
           <SummaryItem
-            label="Şoför durumu"
-            value={outbound ? "Atandı" : "Bekliyor"}
-            tone={outbound ? "ok" : "warning"}
+            label="Şoför"
+            value={driverStatus.label}
+            tone={driverStatus.tone}
           />
         </div>
       </div>
+
 
       {r.status === "cancel_requested" && (
         <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">

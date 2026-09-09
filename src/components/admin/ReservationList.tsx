@@ -287,38 +287,43 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                   <Link
                     key={r.id}
                     href={`${adminBase}/reservations/${encodeURIComponent(r.reservation_code)}`}
-                    className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-white px-3.5 py-3.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:px-4 ${
-                      needsDriver ? "border-amber-200 bg-amber-50/20" : "border-slate-200"
+                    className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-white py-3 pe-3 ps-4 shadow-sm transition duration-200 hover:border-slate-300 hover:shadow-md sm:gap-3.5 sm:pe-4 ${
+                      needsDriver ? "border-amber-200" : "border-slate-200"
                     }`}
                   >
                     <span className={`absolute inset-y-0 start-0 w-1 ${meta.rail}`} />
-
-                    <div className="w-[3.75rem] shrink-0 ps-1 text-center sm:w-16">
-                      <p className="text-lg font-bold leading-tight tracking-tight text-slate-900">
+                  
+                    {/* When — the list is read as a schedule, so this anchors the row */}
+                    <div className="w-12 shrink-0 text-center sm:w-14">
+                      <p className="text-[17px] font-bold leading-none tracking-tight text-slate-900">
                         {fmtTime(r.pickup_datetime)}
                       </p>
-                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                         {fmtDate(r.pickup_datetime).slice(0, 5)}
                       </p>
                     </div>
-
+                  
+                    <span className="h-9 w-px shrink-0 bg-slate-100" />
+                  
+                    {/* Who and where */}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="font-mono text-[13px] font-bold text-slate-900">
+                        <span className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
                           {r.reservation_code}
                         </span>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${meta.chip}`}
+                          className={`rounded-full px-1.5 py-px text-[10px] font-semibold ${meta.chip}`}
                         >
                           {meta.label}
                         </span>
                         {needsDriver && (
-                          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">
-                            Şoför bekliyor
+                          <span className="rounded-full bg-amber-50 px-1.5 py-px text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">
+                            Şoför yok
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 truncate text-sm font-bold text-slate-900">
+                  
+                      <p className="mt-0.5 truncate text-[15px] font-bold leading-snug text-slate-900">
                         {customerName(r)}
                       </p>
                       <p className="truncate text-xs font-medium text-slate-500">
@@ -326,25 +331,31 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                         <span className="mx-1 text-slate-300">→</span>
                         {shortRouteFor(r).to}
                       </p>
-                      <p className="mt-1 truncate text-[10px] font-medium text-slate-400">
-                        {r.flight_code || "Uçuş bilgisi yok"}
-                        <span className="mx-1.5 text-slate-300">·</span>
-                        {r.adults}+{r.children} yolcu
-                        <span className="mx-1.5 text-slate-300">·</span>
+                      <p className="truncate text-[11px] text-slate-400">
+                        {r.flight_code || "Uçuş yok"} · {r.adults + r.children} yolcu
+                      </p>
+                    </div>
+                  
+                    {/* What it is worth. Cash sits with the money, not in the meta line:
+                        on a cash job the driver collects at the airport, which changes
+                        what the number means. */}
+                    <div className="shrink-0 text-end">
+                      <p className="text-[15px] font-bold tracking-tight text-slate-900">
+                        {money(r.total_price)}
+                      </p>
+                      <p
+                        className={`mt-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                          cash ? "text-orange-600" : "text-slate-300"
+                        }`}
+                      >
                         {cash ? "Nakit" : "Online"}
                       </p>
                     </div>
-
-                    <div className="shrink-0 text-end">
-                      <p className="text-base font-bold tracking-tight text-slate-900">
-                        {money(r.total_price)}
-                      </p>
-                      <span className="mt-1 block text-[10px] font-semibold text-slate-400 group-hover:text-slate-600">
-                        Aç
-                      </span>
-                    </div>
-
-                    <ChevronRight size={17} className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
+                  
+                    <ChevronRight
+                      size={16}
+                      className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500"
+                    />
                   </Link>
                 );
               })}

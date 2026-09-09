@@ -22,15 +22,11 @@ export const dynamic = "force-dynamic";
  * driver's name. Dropping those would quietly narrow what search can find.
  */
 const LIST_COLUMNS = `
-  id, reservation_code, status, trip_type, direction, locale, created_at,
-  pickup_datetime, return_datetime, total_price, payment_method, driver_amount,
-  adults, children, luggage_count, child_seat, welcome_sign, welcome_name,
-  hotel_address, notes, base_price, night_surcharge, child_seat_fee,
-  round_trip_discount, coupon_discount, deposit_amount,
-  flight_code, return_flight_code, hotel_name,
+  id, reservation_code, status, trip_type, direction, created_at,
+  pickup_datetime, total_price, payment_method,
+  adults, children, flight_code, return_flight_code, hotel_name,
   customers(first_name, last_name, email, phone),
   regions(name_en, name_tr, slug),
-  vehicle_categories(name),
   driver_assignments(id, leg, status, drivers(full_name))
 `;
 
