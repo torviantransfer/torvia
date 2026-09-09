@@ -10,26 +10,17 @@ import {
   ChevronDown,
   Copy,
   CreditCard,
-  Download,
-  ExternalLink,
   FileText,
   Hotel,
-  Mail,
-  MapPin,
   MessageCircle,
-  Pencil,
-  Phone,
   Plane,
   Search,
-  Send,
-  Trash2,
   UserPlus,
-  UserRound,
   Users,
   X,
 } from "lucide-react";
 import AssignDriverModal from "./reservations/AssignDriverModal";
-import AssignmentCard from "./reservations/AssignmentCard";
+import ReservationDetail from "./reservations/ReservationDetail";
 import EditReservationModal from "./reservations/EditReservationModal";
 import {
   type Driver,
@@ -41,14 +32,12 @@ import {
   dayLabel,
   fmtDate,
   fmtDateTime,
-  fmtStamp,
   fmtTime,
   isCash,
   liveAssignment,
   money,
   offsetDayKey,
   regionName,
-  routeFor,
   shortRouteFor,
   statusMeta,
   todayKey,
@@ -103,7 +92,6 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
   const [deleteTarget, setDeleteTarget] = useState<Reservation | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [unassigningId, setUnassigningId] = useState<string | null>(null);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [telegramSendingId, setTelegramSendingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; tone: "ok" | "error" } | null>(null);
   const [linkModal, setLinkModal] = useState<{
@@ -261,12 +249,6 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
     }
   };
 
-  const copyCode = async (r: Reservation) => {
-    await navigator.clipboard.writeText(r.reservation_code);
-    setCopiedCode(r.id);
-    setTimeout(() => setCopiedCode(null), 1600);
-  };
-
   return (
     <div className="pb-16">
       {/* ─── Stat tiles ─── */}
@@ -418,9 +400,6 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                 const outbound = liveAssignment(r, "outbound");
                 const ret = liveAssignment(r, "return");
                 const expanded = expandedId === r.id;
-                const needsDriver =
-                  ["paid", "driver_assigned"].includes(r.status) &&
-                  (!outbound || (r.trip_type === "round_trip" && !ret));
                 const cash = isCash(r);
 
                 return (
@@ -555,316 +534,19 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
 
                     {/* Expanded */}
                     {expanded && (
-                      <div className="border-t border-slate-100 ps-5 pe-4 pb-4 pt-4">
-                        {r.status === "cancel_requested" && (
-                          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
-                            <p className="mb-1 text-sm font-bold text-rose-800">
-                              Müşteri iptal talep etti
-                            </p>
-                            {r.notes && (
-                              <p className="mb-3 text-xs text-rose-700">{r.notes}</p>
-                            )}
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => cancelAction(r, "approve")}
-                                className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700"
-                              >
-                                İptali Onayla
-                              </button>
-                              <button
-                                onClick={() => cancelAction(r, "reject")}
-                                className="rounded-lg bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
-                              >
-                                Reddet (aktif tut)
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="grid gap-x-6 gap-y-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
-                          {/* Customer */}
-                          <section>
-                            <SectionTitle icon={<UserRound size={13} />}>Müşteri</SectionTitle>
-                            <p className="font-semibold text-slate-900">{customerName(r)}</p>
-                            <a
-                              href={`mailto:${r.customers?.email}`}
-                              className="mt-2 flex items-center gap-2 break-all text-slate-600 hover:text-slate-900"
-                            >
-                              <Mail size={13} className="shrink-0 text-slate-400" />
-                              {r.customers?.email || "—"}
-                            </a>
-                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                              <a
-                                href={`tel:${r.customers?.phone}`}
-                                className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
-                              >
-                                <Phone size={13} className="shrink-0 text-slate-400" />
-                                {r.customers?.phone || "—"}
-                              </a>
-                              {r.customers?.phone && (
-                                <a
-                                  href={`https://wa.me/${r.customers.phone.replace(/[^0-9]/g, "")}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-100"
-                                >
-                                  <MessageCircle size={11} />
-                                  WhatsApp
-                                </a>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => copyCode(r)}
-                              className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800"
-                            >
-                              {copiedCode === r.id ? (
-                                <Check size={12} className="text-emerald-600" />
-                              ) : (
-                                <Copy size={12} />
-                              )}
-                              {copiedCode === r.id ? "Kod kopyalandı" : "Rezervasyon kodunu kopyala"}
-                            </button>
-                          </section>
-
-                          {/* Transfer */}
-                          <section>
-                            <SectionTitle icon={<MapPin size={13} />}>Transfer</SectionTitle>
-                            <p className="font-semibold text-slate-900">{routeFor(r)}</p>
-                            <dl className="mt-2 space-y-1.5 text-slate-600">
-                              <Row label="Gidiş" value={fmtDateTime(r.pickup_datetime)} />
-                              {r.trip_type === "round_trip" && (
-                                <>
-                                  <Row label="Dönüş rotası" value={routeFor(r, "return")} />
-                                  <Row
-                                    label="Dönüş"
-                                    value={
-                                      r.return_datetime ? fmtDateTime(r.return_datetime) : "—"
-                                    }
-                                  />
-                                </>
-                              )}
-                              <Row label="Uçuş" value={r.flight_code || "—"} />
-                              {r.return_flight_code && (
-                                <Row label="Dönüş uçuşu" value={r.return_flight_code} />
-                              )}
-                              <Row label="Araç sınıfı" value={r.vehicle_categories?.name || "—"} />
-                              <Row
-                                label="Yolcu"
-                                value={`${r.adults} yetişkin, ${r.children} çocuk${
-                                  r.luggage_count ? ` · ${r.luggage_count} bagaj` : ""
-                                }`}
-                              />
-                            </dl>
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {r.child_seat && (
-                                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                                  Çocuk koltuğu
-                                </span>
-                              )}
-                              {r.welcome_sign && (
-                                <span className="rounded-md bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
-                                  Karşılama tabelası
-                                  {r.welcome_name ? `: ${r.welcome_name}` : ""}
-                                </span>
-                              )}
-                            </div>
-                          </section>
-
-                          {/* Payment */}
-                          <section>
-                            <SectionTitle icon={cash ? <Banknote size={13} /> : <CreditCard size={13} />}>
-                              Ödeme & Fiyat
-                            </SectionTitle>
-                            <p className="font-semibold text-slate-900">
-                              {cash ? "Araçta nakit ödeme" : "Online ödeme"}
-                            </p>
-                            <dl className="mt-2 space-y-1.5 text-slate-600">
-                              {Number(r.base_price) > 0 && (
-                                <Row label="Temel ücret" value={money(r.base_price)} />
-                              )}
-                              {Number(r.night_surcharge) > 0 && (
-                                <Row label="Gece farkı" value={money(r.night_surcharge)} />
-                              )}
-                              {Number(r.child_seat_fee) > 0 && (
-                                <Row label="Çocuk koltuğu" value={money(r.child_seat_fee)} />
-                              )}
-                              {Number(r.round_trip_discount) > 0 && (
-                                <Row
-                                  label="Gidiş-dönüş indirimi"
-                                  value={`−${money(r.round_trip_discount)}`}
-                                />
-                              )}
-                              {Number(r.coupon_discount) > 0 && (
-                                <Row label="Kupon indirimi" value={`−${money(r.coupon_discount)}`} />
-                              )}
-                              <Row label="Toplam" value={money(r.total_price)} strong />
-                              {cash && (
-                                <>
-                                  <Row label="Alınan kapora" value={money(r.deposit_amount)} />
-                                  <Row
-                                    label="Şoför tahsil edecek"
-                                    value={money(r.driver_amount)}
-                                    strong
-                                    tone="orange"
-                                  />
-                                </>
-                              )}
-                            </dl>
-                            <p className="mt-2 text-[11px] text-slate-400">
-                              Kayıt: {fmtStamp(r.created_at)}
-                            </p>
-                          </section>
-                        </div>
-
-                        {(r.hotel_name || r.hotel_address || r.notes) && (
-                          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                            {(r.hotel_name || r.hotel_address) && (
-                              <div className="rounded-lg bg-slate-50 px-3 py-2.5">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                                  Otel
-                                </p>
-                                <p className="mt-0.5 text-sm font-medium text-slate-800">
-                                  {r.hotel_name || "—"}
-                                </p>
-                                {r.hotel_address && (
-                                  <p className="text-xs text-slate-500">{r.hotel_address}</p>
-                                )}
-                              </div>
-                            )}
-                            {r.notes && (
-                              <div className="rounded-lg bg-amber-50 px-3 py-2.5">
-                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">
-                                  Not
-                                </p>
-                                <p className="mt-0.5 text-sm text-amber-900">{r.notes}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* ── Actions ──
-                            One toolbar, grouped and labelled. It used to be a
-                            flat row of five differently-coloured buttons next to
-                            a second row of assign buttons, so nothing read as
-                            "the thing to do next". Exactly one button is filled
-                            at a time: whatever this reservation still needs. */}
-                        <div className="mt-4 space-y-3 border-t border-slate-100 pt-4">
-                          {needsDriver && (
-                            <div className="flex flex-wrap items-center gap-2">
-                              {!outbound && (
-                                <button
-                                  onClick={() => setAssignTarget({ r, leg: "outbound" })}
-                                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800"
-                                >
-                                  <UserPlus size={13} />
-                                  Gidiş şoförü ata
-                                </button>
-                              )}
-                              {r.trip_type === "round_trip" && !ret && (
-                                <button
-                                  onClick={() => setAssignTarget({ r, leg: "return" })}
-                                  className={`inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold ${
-                                    outbound
-                                      ? "bg-slate-900 text-white hover:bg-slate-800"
-                                      : "border border-slate-300 text-slate-700 hover:bg-slate-50"
-                                  }`}
-                                >
-                                  <UserPlus size={13} />
-                                  Dönüş şoförü ata
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
-                            <ActionGroup label="Belgeler">
-                              <a
-                                href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={ACTION_BTN}
-                              >
-                                <FileText size={13} className="text-slate-400" />
-                                Müşteri voucher
-                                <ExternalLink size={10} className="text-slate-300" />
-                              </a>
-                              <a
-                                href={`/api/admin/voucher-pdf?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
-                                className={ACTION_BTN}
-                              >
-                                <Download size={13} className="text-slate-400" />
-                                PDF indir
-                              </a>
-                            </ActionGroup>
-
-                            <ActionGroup label="Şoförlere duyur">
-                              <button
-                                onClick={() => sendToTelegram(r)}
-                                disabled={telegramSendingId === r.id}
-                                className={`${ACTION_BTN} disabled:opacity-60`}
-                                title="Telegram'a gönder — boşta olan şoför alsın"
-                              >
-                                <Send size={13} className="text-sky-500" />
-                                {telegramSendingId === r.id ? "Gönderiliyor…" : "Telegram'a gönder"}
-                              </button>
-                            </ActionGroup>
-
-                            <ActionGroup label="Kayıt">
-                              <button onClick={() => setEditTarget(r)} className={ACTION_BTN}>
-                                <Pencil size={13} className="text-slate-400" />
-                                Düzenle
-                              </button>
-                              {r.status !== "completed" && (
-                                <button
-                                  onClick={() => setDeleteTarget(r)}
-                                  className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"
-                                >
-                                  <Trash2 size={13} />
-                                  {["pending", "cancelled"].includes(r.status)
-                                    ? "Kaydı sil"
-                                    : "İptal et"}
-                                </button>
-                              )}
-                            </ActionGroup>
-                          </div>
-                        </div>
-
-                        {/* Driver assignments */}
-                        <div className="mt-4 border-t border-slate-100 pt-4">
-                          <h4 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                            Şoför ataması
-                          </h4>
-
-                          {r.driver_assignments?.length > 0 ? (
-                            <div className="space-y-2.5">
-                              {[...r.driver_assignments]
-                                .sort((a, b) => (a.leg === "return" ? 1 : 0) - (b.leg === "return" ? 1 : 0))
-                                .map((da) => (
-                                  <AssignmentCard
-                                    key={da.id}
-                                    reservation={r}
-                                    assignment={da}
-                                    unassigning={unassigningId === da.id}
-                                    onReplace={() =>
-                                      setAssignTarget({
-                                        r,
-                                        leg: da.leg === "return" ? "return" : "outbound",
-                                      })
-                                    }
-                                    onUnassign={() => unassignDriver(da.id)}
-                                    onToast={showToast}
-                                  />
-                                ))}
-                            </div>
-                          ) : (
-                            <p className="rounded-lg border border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-400">
-                              {["paid", "driver_assigned"].includes(r.status)
-                                ? "Henüz şoför atanmadı."
-                                : "Şoför ataması için rezervasyonun ödenmiş olması gerekir."}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      <ReservationDetail
+                        reservation={r}
+                        onAssign={(leg) => setAssignTarget({ r, leg })}
+                        onReplaceAssignment={(leg) => setAssignTarget({ r, leg })}
+                        onUnassign={unassignDriver}
+                        unassigningId={unassigningId}
+                        onEdit={() => setEditTarget(r)}
+                        onDelete={() => setDeleteTarget(r)}
+                        onCancelAction={(action) => cancelAction(r, action)}
+                        onSendTelegram={() => sendToTelegram(r)}
+                        telegramSending={telegramSendingId === r.id}
+                        onToast={showToast}
+                      />
                     )}
                   </div>
                 );
@@ -982,31 +664,6 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
 
 // ─── small presentational pieces ───
 
-/**
- * One neutral button style for every secondary action. Colour is reserved for
- * the single primary action and for the destructive one, so the eye lands on
- * what matters instead of on five competing buttons.
- */
-const ACTION_BTN =
-  "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50";
-
-function ActionGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </div>
-  );
-}
-
 function StatTile({
   label,
   value,
@@ -1066,50 +723,6 @@ function LegBadge({
       {driver}
       {plate && <span className="font-mono text-slate-400">· {plate}</span>}
     </span>
-  );
-}
-
-function SectionTitle({
-  icon,
-  children,
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-      {icon}
-      {children}
-    </div>
-  );
-}
-
-function Row({
-  label,
-  value,
-  strong,
-  tone,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-  tone?: "orange";
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-xs text-slate-400">{label}</dt>
-      <dd
-        className={`text-end text-xs ${
-          tone === "orange"
-            ? "text-orange-600"
-            : strong
-              ? "text-slate-900"
-              : "text-slate-600"
-        } ${strong ? "font-bold" : "font-medium"}`}
-      >
-        {value}
-      </dd>
-    </div>
   );
 }
 

@@ -71,6 +71,25 @@ function driverWorkload(all: Reservation[], driverId: string, target: Date) {
   return { sameDay, tight };
 }
 
+/**
+ * A numbered marker that fills in once its step has an answer.
+ *
+ * The dialog asks four things in a fixed order and used to present them as
+ * four unrelated headings, so nothing showed how far through you were or what
+ * was still missing when the submit button stayed disabled.
+ */
+function Step({ n, done }: { n: number; done?: boolean }) {
+  return (
+    <span
+      className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${
+        done ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-500"
+      }`}
+    >
+      {n}
+    </span>
+  );
+}
+
 export default function AssignDriverModal({
   reservation: r,
   allReservations,
@@ -90,11 +109,22 @@ export default function AssignDriverModal({
   // modal books a driver, and an already-agreed rate is edited on the
   // assignment card instead, where it belongs to one leg unambiguously.
   const [driverFee, setDriverFee] = useState("");
+  /**
+   * Both lists collapse to their answer once one is picked.
+   *
+   * Open, they are a scrolling column of drivers stacked on a grid of vehicles,
+   * and the fee field and the submit button sit below the fold — so the dialog
+   * asked four questions at once and hid the button that ends it.
+   */
+  const [driverPicker, setDriverPicker] = useState(true);
+  const [vehiclePicker, setVehiclePicker] = useState(true);
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [busy, setBusy] = useState<null | "checking" | "assigning">(null);
   const [error, setError] = useState<string | null>(null);
 
   const existing = liveAssignment(r, leg);
+  const selectedDriver = drivers.find((d) => d.id === driverId);
+  const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
   const targetIso = legDateTime(r, leg);
   const isRoundTrip = r.trip_type === "round_trip";
 
@@ -295,7 +325,8 @@ export default function AssignDriverModal({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Leg selector */}
           <div>
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <Step n={1} done />
               Hangi bacak?
             </p>
             <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
@@ -325,13 +356,35 @@ export default function AssignDriverModal({
           {/* Driver picker */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <Step n={2} done={!!driverId} />
                 Şoför
               </p>
-              <span className="text-[11px] text-slate-400">
-                {filteredDrivers.length} aktif şoför · en müsait üstte
-              </span>
+              {driverPicker && (
+                <span className="text-[11px] text-slate-400">
+                  {filteredDrivers.length} aktif şoför · en müsait üstte
+                </span>
+              )}
             </div>
+            {!driverPicker && selectedDriver ? (
+              <button
+                onClick={() => setDriverPicker(true)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-900 bg-slate-900/[0.03] px-3 py-2.5 text-start"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-slate-900">
+                    {selectedDriver.full_name}
+                  </span>
+                  <span className="block text-[11px] text-slate-500">
+                    {selectedDriver.phone}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[11px] font-semibold text-slate-500">
+                  Değiştir
+                </span>
+              </button>
+            ) : (
+              <>
             <div className="relative mb-2">
               <Search
                 size={14}
@@ -355,7 +408,10 @@ export default function AssignDriverModal({
                 return (
                   <button
                     key={d.id}
-                    onClick={() => setDriverId(d.id)}
+                    onClick={() => {
+                      setDriverId(d.id);
+                      setDriverPicker(false);
+                    }}
                     className={`w-full rounded-xl border px-3 py-2.5 text-start transition ${
                       selected
                         ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
@@ -405,13 +461,41 @@ export default function AssignDriverModal({
                 </p>
               )}
             </div>
+              </>
+            )}
           </div>
 
-          {/* Vehicle picker */}
-          <div>
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          {/* Vehicle picker — inert until there is a driver to put in it */}
+          <div className={driverId ? "" : "pointer-events-none opacity-40"}>
+            <p className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <Step n={3} done={!!vehicleId} />
               Araç
+              {!driverId && (
+                <span className="font-medium normal-case tracking-normal text-slate-400">
+                  — önce şoför seçin
+                </span>
+              )}
             </p>
+            {!vehiclePicker && selectedVehicle ? (
+              <button
+                onClick={() => setVehiclePicker(true)}
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-900 bg-slate-900/[0.03] px-3 py-2.5 text-start"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <Car size={14} className="shrink-0 text-slate-400" />
+                  <span className="font-mono text-sm font-bold text-slate-900">
+                    {selectedVehicle.plate_number}
+                  </span>
+                  <span className="truncate text-xs text-slate-500">
+                    {selectedVehicle.brand} {selectedVehicle.model}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[11px] font-semibold text-slate-500">
+                  Değiştir
+                </span>
+              </button>
+            ) : (
+              <>
             <div className="relative mb-2">
               <Search
                 size={14}
@@ -430,7 +514,10 @@ export default function AssignDriverModal({
                 return (
                   <button
                     key={v.id}
-                    onClick={() => setVehicleId(v.id)}
+                    onClick={() => {
+                      setVehicleId(v.id);
+                      setVehiclePicker(false);
+                    }}
                     className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-start transition ${
                       selected
                         ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
@@ -458,14 +545,17 @@ export default function AssignDriverModal({
                 </p>
               )}
             </div>
+              </>
+            )}
           </div>
 
           {/* Driver fee */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
             <label
               htmlFor="driver-fee"
-              className="block text-[11px] font-bold uppercase tracking-wider text-slate-400"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400"
             >
+              <Step n={4} done={feeMath.thisLeg !== null} />
               Şoföre ödenecek ($)
             </label>
             <input

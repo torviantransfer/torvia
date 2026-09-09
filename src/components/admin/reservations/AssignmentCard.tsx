@@ -3,18 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Car,
   Check,
-  Clock,
   Copy,
   FileText,
   Mail,
   MessageCircle,
-  Phone,
   Pencil,
   RefreshCw,
   UserMinus,
-  Wallet,
 } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
 import {
@@ -60,19 +56,16 @@ function whatsappUrl(r: Reservation, da: DriverAssignment) {
   return `https://wa.me/${da.drivers.phone.replace(/[^0-9]/g, "")}?text=${text}`;
 }
 
-const BTN =
-  "inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50";
-
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-        {label}
-      </p>
-      <div className="flex flex-wrap gap-2">{children}</div>
-    </div>
-  );
-}
+/**
+ * Secondary actions are icons with tooltips rather than labelled buttons.
+ *
+ * There are six things you can do to an assignment and only one of them —
+ * handing the job to the driver — is the point. Six labelled buttons in three
+ * captioned groups made them all look equally urgent and took four lines to
+ * say so.
+ */
+const ICON_BTN =
+  "inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40";
 
 export default function AssignmentCard({
   reservation: r,
@@ -97,7 +90,18 @@ export default function AssignmentCard({
   const driverPanel =
     typeof window === "undefined" ? "" : `${window.location.origin}/driver/${da.link_token}`;
 
+  /**
+   * The furthest point this assignment has actually reached.
+   *
+   * This replaces a four-step progress bar with timestamps under each node.
+   * That bar cost eight lines to say what the status chip already said, and
+   * since the drivers do not open their panel it sat on step one essentially
+   * always — a progress indicator that never progressed.
+   */
   const stamps = [da.assigned_at, da.accepted_at, da.picked_up_at, da.completed_at];
+  const lastIndex = stamps.reduce((last, s, i) => (s ? i : last), -1);
+  const lastStamp =
+    lastIndex >= 0 ? `${ASSIGNMENT_STEPS[lastIndex]} ${fmtStamp(stamps[lastIndex])}` : null;
 
   // null while any leg of this booking is still unpriced — see reservationProfit.
   const profit = reservationProfit(r);
@@ -107,8 +111,7 @@ export default function AssignmentCard({
    * we owe him. Outbound only: the passenger pays once, at the airport pickup,
    * and driver_amount is one figure for the whole booking.
    */
-  const cashOffset =
-    isCash(r) && !isReturn ? Number(r.driver_amount) || 0 : 0;
+  const cashOffset = isCash(r) && !isReturn ? Number(r.driver_amount) || 0 : 0;
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(driverPanel);
@@ -163,244 +166,175 @@ export default function AssignmentCard({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-4 py-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-          <span
-            className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold ${
-              isReturn
-                ? "bg-blue-100 text-blue-700"
-                : "bg-emerald-100 text-emerald-700"
-            }`}
+    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
+      {/* Line 1 — who, in what, and where it stands */}
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+        <span
+          className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold ${
+            isReturn ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700"
+          }`}
+        >
+          {isReturn ? "DÖNÜŞ" : "GİDİŞ"}
+        </span>
+
+        <span className="text-sm font-bold text-slate-900">
+          {da.drivers?.full_name ?? "Şoför kaydı silinmiş"}
+        </span>
+
+        {da.drivers?.phone && (
+          <a
+            href={`tel:${da.drivers.phone}`}
+            className="text-xs text-sky-700 hover:underline"
           >
-            {isReturn ? "DÖNÜŞ" : "GİDİŞ"}
+            {da.drivers.phone}
+          </a>
+        )}
+
+        {da.vehicles && (
+          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-bold text-slate-600">
+            {da.vehicles.plate_number}
           </span>
-          <span className="truncate text-sm font-bold text-slate-900">
-            {da.drivers?.full_name ?? "Şoför kaydı silinmiş"}
-          </span>
-          {da.drivers?.phone && (
-            <a
-              href={`tel:${da.drivers.phone}`}
-              className="inline-flex shrink-0 items-center gap-1 text-xs text-sky-700 hover:underline"
-            >
-              <Phone size={11} />
-              {da.drivers.phone}
-            </a>
-          )}
-          {da.vehicles && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-              <Car size={11} />
-              <span className="font-mono font-bold">{da.vehicles.plate_number}</span>
-              <span className="text-slate-400">
-                {da.vehicles.brand} {da.vehicles.model}
-              </span>
-            </span>
-          )}
-        </div>
-        <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}>
+        )}
+
+        <span className={`ms-auto rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}>
           {meta.label}
         </span>
       </div>
 
-      {/* Timeline */}
-      <div className="px-4 pt-4">
-        <div className="flex items-start">
-          {ASSIGNMENT_STEPS.map((step, i) => {
-            const done = i <= meta.step;
-            const stamp = fmtStamp(stamps[i]);
-            return (
-              <div key={step} className="flex flex-1 items-start">
-                <div className="flex min-w-0 flex-col items-center text-center">
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
-                      done
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-400 ring-1 ring-slate-200"
-                    }`}
-                  >
-                    {done ? <Check size={12} /> : i + 1}
-                  </span>
-                  <span
-                    className={`mt-1.5 text-[10px] font-semibold leading-tight ${
-                      done ? "text-slate-700" : "text-slate-400"
-                    }`}
-                  >
-                    {step}
-                  </span>
-                  <span className="mt-0.5 h-3 text-[9px] text-slate-400">
-                    {done && stamp ? stamp : ""}
-                  </span>
-                </div>
-                {i < ASSIGNMENT_STEPS.length - 1 && (
-                  <div
-                    className={`mt-3 h-0.5 flex-1 ${
-                      i < meta.step ? "bg-slate-900" : "bg-slate-200"
-                    }`}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
+      {/* Line 2 — when, what it costs, what it leaves */}
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+        <span>{fmtDateTime(legDateTime(r, da.leg))}</span>
 
-        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-100 pt-2.5 text-xs text-slate-500">
-          <span className="inline-flex items-center gap-1.5">
-            <Clock size={12} className="text-slate-400" />
-            Transfer: <strong className="text-slate-700">{fmtDateTime(legDateTime(r, da.leg))}</strong>
-          </span>
-          {da.pickup_time && (
-            <span className="inline-flex items-center gap-1.5 text-orange-600">
-              Otelden alış: <strong>{da.pickup_time}</strong>
-            </span>
-          )}
-        </p>
-      </div>
+        {da.pickup_time && (
+          <span className="text-orange-600">Otelden {da.pickup_time}</span>
+        )}
 
-      {/* Driver fee */}
-      <div className="border-t border-slate-100 px-4 py-3">
         {editingFee ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Şoföre ödenecek
-            </span>
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-slate-400">$</span>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                inputMode="decimal"
-                autoFocus
-                value={feeInput}
-                onChange={(e) => setFeeInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveFee();
-                  if (e.key === "Escape") setEditingFee(false);
-                }}
-                placeholder="110"
-                className="w-24 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
-              />
-            </div>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="text-slate-400">Şoföre $</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              inputMode="decimal"
+              autoFocus
+              value={feeInput}
+              onChange={(e) => setFeeInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveFee();
+                if (e.key === "Escape") setEditingFee(false);
+              }}
+              placeholder="110"
+              className="w-20 rounded-md border border-slate-200 px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-slate-900/10"
+            />
             <button
               onClick={saveFee}
               disabled={savingFee}
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-md bg-slate-900 px-2 py-1 text-[11px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
             >
-              {savingFee ? "Kaydediliyor..." : "Kaydet"}
+              {savingFee ? "…" : "Kaydet"}
             </button>
             <button
               onClick={() => {
                 setFeeInput(da.driver_fee != null ? String(da.driver_fee) : "");
                 setEditingFee(false);
               }}
-              className="rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
+              className="text-[11px] font-semibold text-slate-400 hover:text-slate-700"
             >
               Vazgeç
             </button>
-          </div>
+          </span>
         ) : da.driver_fee == null ? (
           <button
             onClick={() => setEditingFee(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+            className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-100"
           >
-            <Wallet size={13} />
-            Şoför ücreti girilmedi — gir
+            Ücret girilmedi — gir
           </button>
         ) : (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
-            <span className="inline-flex items-center gap-1.5 text-slate-500">
-              <Wallet size={12} className="text-slate-400" />
-              Şoföre{" "}
-              <strong className="text-slate-900">{money(da.driver_fee)}</strong>
-              <button
-                onClick={() => setEditingFee(true)}
-                className="text-slate-400 hover:text-slate-700"
-                aria-label="Şoför ücretini düzenle"
-              >
-                <Pencil size={11} />
-              </button>
-            </span>
-
-            {profit !== null && (
-              <span className="text-slate-500">
-                Bu rezervasyondan kalan{" "}
-                <strong
-                  className={profit < 0 ? "text-rose-600" : "text-emerald-700"}
-                >
-                  {money(profit)}
-                </strong>
-              </span>
-            )}
-
-            {cashOffset > 0 && (
-              <span className="text-amber-700">
-                Müşteriden {money(cashOffset)} tahsil edecek — cari borç{" "}
-                <strong>{money(Number(da.driver_fee) - cashOffset)}</strong>
-              </span>
-            )}
-          </div>
+          <span className="inline-flex items-center gap-1">
+            Şoföre <strong className="text-slate-900">{money(da.driver_fee)}</strong>
+            <button
+              onClick={() => setEditingFee(true)}
+              className="text-slate-400 hover:text-slate-700"
+              aria-label="Şoför ücretini düzenle"
+            >
+              <Pencil size={10} />
+            </button>
+          </span>
         )}
+
+        {da.driver_fee != null && profit !== null && (
+          <span>
+            Kalan{" "}
+            <strong className={profit < 0 ? "text-rose-600" : "text-emerald-700"}>
+              {money(profit)}
+            </strong>
+          </span>
+        )}
+
+        {da.driver_fee != null && cashOffset > 0 && (
+          <span className="text-amber-700">
+            Müşteriden {money(cashOffset)} alacak · borç{" "}
+            <strong>{money(Number(da.driver_fee) - cashOffset)}</strong>
+          </span>
+        )}
+
+        {lastStamp && <span className="text-slate-400">{lastStamp}</span>}
       </div>
 
-      {/* Actions */}
+      {/* Line 3 — the handover, then everything else at icon weight */}
       {da.link_token && (
-        <div className="flex flex-wrap items-start gap-x-5 gap-y-3 px-4 py-3">
-          {/* WhatsApp keeps its brand colour because it is the one action that
-              actually hands the job over; everything else stays neutral so the
-              row does not read as six equally urgent buttons. */}
-          <Group label="Şoföre ilet">
-            {wa && (
-              <a
-                href={wa}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
-              >
-                <MessageCircle size={13} />
-                WhatsApp
-              </a>
-            )}
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+          {wa && (
             <a
-              href={`/api/driver-voucher?token=${da.link_token}`}
+              href={wa}
               target="_blank"
               rel="noopener noreferrer"
-              className={BTN}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-600"
             >
-              <FileText size={13} className="text-slate-400" />
-              Transfer belgesi
+              <MessageCircle size={13} />
+              WhatsApp
             </a>
-            <button onClick={copyLink} className={BTN}>
-              {copied ? (
-                <Check size={13} className="text-emerald-600" />
-              ) : (
-                <Copy size={13} className="text-slate-400" />
-              )}
-              {copied ? "Kopyalandı" : "Panel linki"}
-            </button>
-          </Group>
+          )}
 
-          <Group label="Müşteri">
-            <button onClick={sendEmail} disabled={emailing} className={`${BTN} disabled:opacity-60`}>
-              <Mail size={13} className="text-slate-400" />
-              {emailing ? "Gönderiliyor…" : "Şoförü bildir"}
-            </button>
-          </Group>
+          <a
+            href={`/api/driver-voucher?token=${da.link_token}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={ICON_BTN}
+            title="Transfer belgesi"
+          >
+            <FileText size={14} />
+          </a>
 
-          <Group label="Atama">
-            <button onClick={onReplace} className={BTN}>
-              <RefreshCw size={13} className="text-slate-400" />
-              Değiştir
-            </button>
-            <button
-              onClick={onUnassign}
-              disabled={unassigning}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-60"
-            >
-              <UserMinus size={13} />
-              {unassigning ? "Kaldırılıyor…" : "Kaldır"}
-            </button>
-          </Group>
+          <button onClick={copyLink} className={ICON_BTN} title="Şoför paneli linkini kopyala">
+            {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+          </button>
+
+          <button
+            onClick={sendEmail}
+            disabled={emailing}
+            className={ICON_BTN}
+            title="Müşteriye şoför bilgisini e-postala"
+          >
+            <Mail size={14} />
+          </button>
+
+          <span className="mx-1 h-4 w-px bg-slate-200" />
+
+          <button onClick={onReplace} className={ICON_BTN} title="Şoförü değiştir">
+            <RefreshCw size={14} />
+          </button>
+
+          <button
+            onClick={onUnassign}
+            disabled={unassigning}
+            className={`${ICON_BTN} hover:bg-amber-50 hover:text-amber-700`}
+            title="Atamayı kaldır"
+          >
+            <UserMinus size={14} />
+          </button>
         </div>
       )}
     </div>
