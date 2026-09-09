@@ -26,6 +26,7 @@ import {
   legDateTime,
   liveAssignment,
   regionName,
+  isCash,
   LIVE_ASSIGNMENT_STATUSES,
 } from "./types";
 
@@ -85,6 +86,10 @@ export default function AssignDriverModal({
   const [driverQuery, setDriverQuery] = useState("");
   const [vehicleQuery, setVehicleQuery] = useState("");
   const [returnPickupTime, setReturnPickupTime] = useState("");
+  // Starts empty rather than prefilled from any existing assignment: this
+  // modal books a driver, and an already-agreed rate is edited on the
+  // assignment card instead, where it belongs to one leg unambiguously.
+  const [driverFee, setDriverFee] = useState("");
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [busy, setBusy] = useState<null | "checking" | "assigning">(null);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +97,41 @@ export default function AssignDriverModal({
   const existing = liveAssignment(r, leg);
   const targetIso = legDateTime(r, leg);
   const isRoundTrip = r.trip_type === "round_trip";
+
+  /**
+   * What this booking leaves us once every driver on it is paid.
+   *
+   * The other leg counts: on a round trip the profit is the fare minus both
+   * drivers, so pricing the outbound at 55 against a 125 fare does not mean 70
+   * in hand if the return is already promised 60. Legs still without a rate are
+   * left out of the subtraction and called out instead — treating an unpriced
+   * leg as free would show a profit that is not there.
+   */
+  const feeMath = useMemo(() => {
+    const fare = Number(r.total_price) || 0;
+    const entered = driverFee.trim() === "" ? null : Number(driverFee);
+    const thisLeg =
+      entered !== null && Number.isFinite(entered) && entered >= 0 ? entered : null;
+
+    let othersTotal = 0;
+    let othersUnpriced = 0;
+    for (const da of r.driver_assignments ?? []) {
+      if (da.leg === leg) continue;
+      if (!LIVE_ASSIGNMENT_STATUSES.includes(da.status)) continue;
+      if (da.driver_fee == null) othersUnpriced += 1;
+      else othersTotal += Number(da.driver_fee) || 0;
+    }
+
+    const driversTotal = (thisLeg ?? 0) + othersTotal;
+    return {
+      fare,
+      thisLeg,
+      othersTotal,
+      driversTotal,
+      othersUnpriced,
+      profit: fare - driversTotal,
+    };
+  }, [r, leg, driverFee]);
 
   const filteredDrivers = useMemo(() => {
     const target = new Date(targetIso);
@@ -167,6 +207,7 @@ export default function AssignDriverModal({
           ...(leg === "return" && returnPickupTime
             ? { pickupTime: returnPickupTime }
             : {}),
+          driverFee: driverFee.trim() === "" ? null : driverFee.trim(),
         }),
       });
       const text = await res.text();
@@ -417,6 +458,80 @@ export default function AssignDriverModal({
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Driver fee */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+            <label
+              htmlFor="driver-fee"
+              className="block text-[11px] font-bold uppercase tracking-wider text-slate-400"
+            >
+              Şoföre ödenecek ($)
+            </label>
+            <input
+              id="driver-fee"
+              type="number"
+              min="0"
+              step="1"
+              inputMode="decimal"
+              value={driverFee}
+              onChange={(e) => setDriverFee(e.target.value)}
+              placeholder="örn. 110"
+              className="mt-2 w-36 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+            />
+
+            {feeMath.thisLeg === null ? (
+              <p className="mt-1.5 text-[11px] text-slate-500">
+                Şimdi girmek zorunda değilsin — sonra atama kartından
+                yazabilirsin. Girilene kadar bu transfer kazanç özetinde
+                &quot;ücreti girilmemiş&quot; sayılır.
+              </p>
+            ) : (
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+                <span className="text-slate-500">
+                  Müşteri{" "}
+                  <span className="font-semibold text-slate-700">
+                    ${feeMath.fare.toFixed(0)}
+                  </span>
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-slate-500">
+                  Şoför{feeMath.othersTotal > 0 ? "ler" : ""}{" "}
+                  <span className="font-semibold text-slate-700">
+                    ${feeMath.driversTotal.toFixed(0)}
+                  </span>
+                  {feeMath.othersTotal > 0 && (
+                    <span className="text-slate-400">
+                      {" "}
+                      ({feeMath.thisLeg.toFixed(0)} + {feeMath.othersTotal.toFixed(0)})
+                    </span>
+                  )}
+                </span>
+                <span className="text-slate-300">·</span>
+                <span
+                  className={
+                    feeMath.profit < 0
+                      ? "font-bold text-rose-600"
+                      : "font-bold text-emerald-700"
+                  }
+                >
+                  Sana kalan ${feeMath.profit.toFixed(0)}
+                </span>
+                {feeMath.othersUnpriced > 0 && (
+                  <span className="text-amber-600">
+                    · diğer bacağın ücreti henüz girilmedi
+                  </span>
+                )}
+              </div>
+            )}
+
+            {isCash(r) && Number(r.driver_amount) > 0 && leg === "outbound" && (
+              <p className="mt-2 rounded-lg bg-amber-50 px-2.5 py-2 text-[11px] text-amber-800">
+                Nakit rezervasyon: şoför müşteriden{" "}
+                {Number(r.driver_amount).toFixed(0)}$ tahsil edecek. Bu tutar
+                cari hesabında borcundan otomatik düşülecek.
+              </p>
+            )}
           </div>
 
           {/* Return pickup time */}

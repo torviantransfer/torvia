@@ -81,6 +81,9 @@ export const assignDriverSchema = z.object({
   vehicleId: z.string().regex(/^[0-9a-fA-F-]{36}$/, "Invalid UUID-like vehicleId"),
   leg: z.enum(["outbound", "return"]).default("outbound"),
   pickupTime: z.string().optional(),
+  // What we pay this driver for this leg. Optional because the rate is often
+  // agreed after the driver is booked; null and absent both mean "not yet".
+  driverFee: z.coerce.number().min(0).nullable().optional(),
 });
 
 export type ReservationInput = z.infer<typeof reservationSchema>;

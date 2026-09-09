@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Car,
   Check,
@@ -10,8 +11,10 @@ import {
   Mail,
   MessageCircle,
   Phone,
+  Pencil,
   RefreshCw,
   UserMinus,
+  Wallet,
 } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
 import {
@@ -22,8 +25,11 @@ import {
   customerName,
   fmtDateTime,
   fmtStamp,
+  isCash,
   legDateTime,
+  money,
   regionName,
+  reservationProfit,
 } from "./types";
 
 interface Props {
@@ -78,6 +84,12 @@ export default function AssignmentCard({
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [emailing, setEmailing] = useState(false);
+  const [editingFee, setEditingFee] = useState(false);
+  const [feeInput, setFeeInput] = useState(
+    da.driver_fee != null ? String(da.driver_fee) : ""
+  );
+  const [savingFee, setSavingFee] = useState(false);
+  const router = useRouter();
 
   const meta = assignmentMeta(da.status);
   const isReturn = da.leg === "return";
@@ -87,11 +99,51 @@ export default function AssignmentCard({
 
   const stamps = [da.assigned_at, da.accepted_at, da.picked_up_at, da.completed_at];
 
+  // null while any leg of this booking is still unpriced — see reservationProfit.
+  const profit = reservationProfit(r);
+
+  /**
+   * The fare this driver takes off the passenger in cash, which comes off what
+   * we owe him. Outbound only: the passenger pays once, at the airport pickup,
+   * and driver_amount is one figure for the whole booking.
+   */
+  const cashOffset =
+    isCash(r) && !isReturn ? Number(r.driver_amount) || 0 : 0;
+
   const copyLink = async () => {
     await navigator.clipboard.writeText(driverPanel);
     setCopied(true);
     onToast("Şoför paneli linki kopyalandı.");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const saveFee = async () => {
+    setSavingFee(true);
+    const res = await fetch("/api/admin/assignment-fee", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        assignmentId: da.id,
+        // Empty clears the rate back to "not agreed yet", which the earnings
+        // summary counts as unpriced rather than as a free transfer.
+        driverFee: feeInput.trim() === "" ? null : feeInput.trim(),
+      }),
+    });
+    setSavingFee(false);
+
+    if (!res.ok) {
+      const d = await res.json().catch(() => null);
+      onToast(d?.error ?? "Ücret kaydedilemedi.", "error");
+      return;
+    }
+
+    setEditingFee(false);
+    onToast(
+      feeInput.trim() === ""
+        ? "Şoför ücreti kaldırıldı."
+        : "Şoför ücreti kaydedildi, cari hesaba işlendi."
+    );
+    router.refresh();
   };
 
   const sendEmail = async () => {
@@ -203,6 +255,92 @@ export default function AssignmentCard({
             </span>
           )}
         </p>
+      </div>
+
+      {/* Driver fee */}
+      <div className="border-t border-slate-100 px-4 py-3">
+        {editingFee ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Şoföre ödenecek
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-slate-400">$</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                inputMode="decimal"
+                autoFocus
+                value={feeInput}
+                onChange={(e) => setFeeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveFee();
+                  if (e.key === "Escape") setEditingFee(false);
+                }}
+                placeholder="110"
+                className="w-24 rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+              />
+            </div>
+            <button
+              onClick={saveFee}
+              disabled={savingFee}
+              className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {savingFee ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+            <button
+              onClick={() => {
+                setFeeInput(da.driver_fee != null ? String(da.driver_fee) : "");
+                setEditingFee(false);
+              }}
+              className="rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
+            >
+              Vazgeç
+            </button>
+          </div>
+        ) : da.driver_fee == null ? (
+          <button
+            onClick={() => setEditingFee(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+          >
+            <Wallet size={13} />
+            Şoför ücreti girilmedi — gir
+          </button>
+        ) : (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+            <span className="inline-flex items-center gap-1.5 text-slate-500">
+              <Wallet size={12} className="text-slate-400" />
+              Şoföre{" "}
+              <strong className="text-slate-900">{money(da.driver_fee)}</strong>
+              <button
+                onClick={() => setEditingFee(true)}
+                className="text-slate-400 hover:text-slate-700"
+                aria-label="Şoför ücretini düzenle"
+              >
+                <Pencil size={11} />
+              </button>
+            </span>
+
+            {profit !== null && (
+              <span className="text-slate-500">
+                Bu rezervasyondan kalan{" "}
+                <strong
+                  className={profit < 0 ? "text-rose-600" : "text-emerald-700"}
+                >
+                  {money(profit)}
+                </strong>
+              </span>
+            )}
+
+            {cashOffset > 0 && (
+              <span className="text-amber-700">
+                Müşteriden {money(cashOffset)} tahsil edecek — cari borç{" "}
+                <strong>{money(Number(da.driver_fee) - cashOffset)}</strong>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Actions */}

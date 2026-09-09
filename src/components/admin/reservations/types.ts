@@ -22,6 +22,12 @@ export interface DriverAssignment {
   accepted_at?: string | null;
   picked_up_at?: string | null;
   completed_at?: string | null;
+  /**
+   * What we pay this driver for this leg, in USD. null means the rate has not
+   * been agreed yet — which is not the same as free, and is why the earnings
+   * summary counts such a transfer as unpriced rather than as pure profit.
+   */
+  driver_fee?: number | null;
   drivers: { full_name: string; phone: string } | null;
   vehicles?: { plate_number: string; brand: string; model: string } | null;
 }
@@ -227,7 +233,24 @@ export const liveAssignment = (r: Reservation, leg: Leg) =>
 export const isCash = (r: Reservation) => r.payment_method === "cash";
 
 export const money = (v: number | null | undefined) =>
-  `$${(Number(v) || 0).toFixed(2)}`;
+  `${(Number(v) || 0).toFixed(2)}`;
+
+/**
+ * What a booking leaves us once every driver on it has been paid.
+ *
+ * null while any live leg still has no agreed rate. A round trip priced on the
+ * outbound alone is not 70% profit — the return driver is owed too — and
+ * treating a missing rate as zero is exactly how a summary reports money that
+ * was never earned. The caller shows "not priced yet" instead.
+ */
+export const reservationProfit = (r: Reservation): number | null => {
+  const live = (r.driver_assignments ?? []).filter((da) =>
+    LIVE_ASSIGNMENT_STATUSES.includes(da.status)
+  );
+  if (live.length === 0 || live.some((da) => da.driver_fee == null)) return null;
+  const drivers = live.reduce((sum, da) => sum + (Number(da.driver_fee) || 0), 0);
+  return (Number(r.total_price) || 0) - drivers;
+};
 
 export const customerName = (r: Reservation) =>
   `${r.customers?.first_name ?? ""} ${r.customers?.last_name ?? ""}`.trim() ||

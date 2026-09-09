@@ -5,6 +5,7 @@ import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
 import { assignDriverSchema } from "@/lib/validations";
 import { formatBookingDateTime } from "@/lib/datetime";
+import { syncAssignmentLedger } from "@/lib/driverLedger";
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient();
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reservationId, driverId, vehicleId, leg, pickupTime } = parsed.data;
+    const { reservationId, driverId, vehicleId, leg, pickupTime, driverFee } = parsed.data;
 
     // Verify reservation exists and is paid
     const { data: reservation } = await supabase
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
         status: "assigned",
         leg,
         pickup_time: pickupTime || null,
+        driver_fee: driverFee ?? null,
       })
       .select()
       .single();
@@ -106,6 +108,10 @@ export async function POST(request: NextRequest) {
       .from("reservations")
       .update({ status: "driver_assigned" })
       .eq("id", reservationId);
+
+    // What the driver is owed, and — on a cash booking — the fare he collects
+    // from the passenger against it. A no-op while the rate is still unset.
+    await syncAssignmentLedger(supabase, assignment.id);
 
     // Generate the one-time driver link. Prefer NEXT_PUBLIC_SITE_URL, fallback to request host/proto.
     const proto = (request.headers.get("x-forwarded-proto") || request.headers.get("referer")?.split(":")[0] || "https");
