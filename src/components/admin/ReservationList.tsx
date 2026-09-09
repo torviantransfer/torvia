@@ -287,17 +287,17 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                   <Link
                     key={r.id}
                     href={`${adminBase}/reservations/${encodeURIComponent(r.reservation_code)}`}
-                    className={`relative flex items-center gap-3 overflow-hidden rounded-xl border bg-white px-4 py-3 shadow-sm transition hover:border-slate-300 hover:bg-slate-50/70 ${
-                      needsDriver ? "border-amber-200" : "border-slate-200"
+                    className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl border bg-white px-3.5 py-3.5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md sm:px-4 ${
+                      needsDriver ? "border-amber-200 bg-amber-50/20" : "border-slate-200"
                     }`}
                   >
                     <span className={`absolute inset-y-0 start-0 w-1 ${meta.rail}`} />
 
-                    <div className="w-14 shrink-0 ps-1 text-center">
-                      <p className="text-base font-bold leading-tight text-slate-900">
+                    <div className="w-[3.75rem] shrink-0 ps-1 text-center sm:w-16">
+                      <p className="text-lg font-bold leading-tight tracking-tight text-slate-900">
                         {fmtTime(r.pickup_datetime)}
                       </p>
-                      <p className="text-[11px] font-medium text-slate-400">
+                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                         {fmtDate(r.pickup_datetime).slice(0, 5)}
                       </p>
                     </div>
@@ -318,7 +318,7 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                           </span>
                         )}
                       </div>
-                      <p className="mt-0.5 truncate text-sm font-semibold text-slate-900">
+                      <p className="mt-1 truncate text-sm font-bold text-slate-900">
                         {customerName(r)}
                       </p>
                       <p className="truncate text-xs font-medium text-slate-500">
@@ -326,22 +326,25 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                         <span className="mx-1 text-slate-300">→</span>
                         {shortRouteFor(r).to}
                       </p>
-                    </div>
-
-                    <div className="shrink-0 text-end">
-                      <p className="text-sm font-bold text-slate-900">
-                        {money(r.total_price)}
-                      </p>
-                      <p
-                        className={`text-[10px] font-semibold ${
-                          cash ? "text-orange-600" : "text-slate-400"
-                        }`}
-                      >
+                      <p className="mt-1 truncate text-[10px] font-medium text-slate-400">
+                        {r.flight_code || "Uçuş bilgisi yok"}
+                        <span className="mx-1.5 text-slate-300">·</span>
+                        {r.adults}+{r.children} yolcu
+                        <span className="mx-1.5 text-slate-300">·</span>
                         {cash ? "Nakit" : "Online"}
                       </p>
                     </div>
 
-                    <ChevronRight size={16} className="shrink-0 text-slate-300" />
+                    <div className="shrink-0 text-end">
+                      <p className="text-base font-bold tracking-tight text-slate-900">
+                        {money(r.total_price)}
+                      </p>
+                      <span className="mt-1 block text-[10px] font-semibold text-slate-400 group-hover:text-slate-600">
+                        Aç
+                      </span>
+                    </div>
+
+                    <ChevronRight size={17} className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500" />
                   </Link>
                 );
               })}

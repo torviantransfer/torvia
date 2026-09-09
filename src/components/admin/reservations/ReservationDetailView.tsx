@@ -192,50 +192,58 @@ export default function ReservationDetailView({
       </Link>
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="font-mono text-xl font-bold tracking-wide text-slate-900">
-              {r.reservation_code}
-            </h1>
-            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}>
-              {meta.label}
-            </span>
-            {r.trip_type === "round_trip" && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                Gidiş-Dönüş
+      <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4 p-4 sm:p-5">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-mono text-xl font-bold tracking-wide text-slate-900">
+                {r.reservation_code}
+              </h1>
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${meta.chip}`}>
+                {meta.label}
               </span>
-            )}
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                cash
-                  ? "bg-orange-50 text-orange-700 ring-1 ring-orange-200"
-                  : "bg-slate-100 text-slate-600"
-              }`}
-            >
-              {cash ? <Banknote size={11} /> : <CreditCard size={11} />}
-              {cash ? "Nakit" : "Online"}
-            </span>
+              {r.trip_type === "round_trip" && (
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+                  Gidiş-Dönüş
+                </span>
+              )}
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                  cash
+                    ? "bg-orange-50 text-orange-700 ring-1 ring-orange-200"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {cash ? <Banknote size={11} /> : <CreditCard size={11} />}
+                {cash ? "Nakit" : "Online"}
+              </span>
+            </div>
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              {customerName(r)} · {routeFor(r)} · {fmtDateTime(r.pickup_datetime)}
+            </p>
           </div>
-          <p className="mt-1 text-sm font-medium text-slate-500">
-            {customerName(r)} · {routeFor(r)} · {fmtDateTime(r.pickup_datetime)}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-slate-900">{money(r.total_price)}</span>
-          <div className="relative">
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Diğer işlemler"
-            >
-              <MoreHorizontal size={18} />
-            </button>
-            {menuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                <div className="absolute end-0 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+          <div className="flex items-center gap-2">
+            <div className="text-end">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Toplam
+              </span>
+              <span className="text-2xl font-bold tracking-tight text-slate-900">
+                {money(r.total_price)}
+              </span>
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Diğer işlemler"
+              >
+                <MoreHorizontal size={18} />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute end-0 z-20 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
                   <a
                     href={`/api/voucher?code=${encodeURIComponent(r.reservation_code)}&locale=${r.locale ?? "tr"}`}
                     target="_blank"
@@ -291,10 +299,22 @@ export default function ReservationDetailView({
                       {["pending", "cancelled"].includes(r.status) ? "Kaydı sil" : "İptal et"}
                     </button>
                   )}
-                </div>
-              </>
-            )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 border-t border-slate-100 bg-slate-50/70 sm:grid-cols-4">
+          <SummaryItem label="Alış" value={fmtDateTime(r.pickup_datetime)} />
+          <SummaryItem label="Rota" value={routeFor(r)} />
+          <SummaryItem label="Müşteri" value={customerName(r)} />
+          <SummaryItem
+            label="Şoför durumu"
+            value={outbound ? "Atandı" : "Bekliyor"}
+            tone={outbound ? "ok" : "warning"}
+          />
         </div>
       </div>
 
@@ -605,6 +625,33 @@ export default function ReservationDetailView({
           {toast.message}
         </div>
       )}
+    </div>
+  );
+}
+
+function SummaryItem({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "ok" | "warning";
+}) {
+  return (
+    <div className="min-w-0 border-b border-slate-100 px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-e sm:last:border-e-0">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <p
+        className={`mt-1 truncate text-xs font-semibold ${
+          tone === "ok"
+            ? "text-emerald-700"
+            : tone === "warning"
+              ? "text-amber-700"
+              : "text-slate-700"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
