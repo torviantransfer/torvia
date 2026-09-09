@@ -44,6 +44,15 @@ interface Props {
   drivers: Driver[];
   vehicles: Vehicle[];
   initialLeg: Leg;
+  /**
+   * Render as a panel inside the page instead of as an overlay.
+   *
+   * On a phone a dialog opened from a detail page is a trap: the hardware back
+   * button closes the page under it rather than the dialog on top, and a long
+   * scrolling body inside a fixed box fights the page's own scrolling. Inline,
+   * back means back and there is only one thing scrolling.
+   */
+  inline?: boolean;
   onClose: () => void;
   onAssigned: (result: {
     driverLink: string;
@@ -96,6 +105,7 @@ export default function AssignDriverModal({
   drivers,
   vehicles,
   initialLeg,
+  inline = false,
   onClose,
   onAssigned,
 }: Props) {
@@ -292,14 +302,17 @@ export default function AssignDriverModal({
     );
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-3xl sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[92vh]">
+  const body = (
+    <>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-slate-100">
           <div className="min-w-0">
             <h3 className="text-base font-bold text-slate-900">Şoför Ata</h3>
-            <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+            <p
+              className={`mt-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 ${
+                inline ? "hidden" : "flex"
+              }`}
+            >
               <span className="font-mono font-semibold text-slate-700">
                 {r.reservation_code}
               </span>
@@ -713,6 +726,21 @@ export default function AssignDriverModal({
             </button>
           </div>
         </div>
+    </>
+  );
+
+  if (inline) {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4">
+      <div className="bg-white w-full sm:max-w-3xl sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[92vh]">
+        {body}
       </div>
     </div>
   );
