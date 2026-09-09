@@ -196,7 +196,7 @@ export default function EditReservationModal({
                     key={d}
                     type="button"
                     onClick={() => set("direction", d)}
-                    className={`rounded-lg border px-3 py-2.5 text-left transition ${
+                    className={`rounded-lg border px-3 py-2.5 text-start transition ${
                       active
                         ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
                         : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"

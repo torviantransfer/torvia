@@ -644,7 +644,7 @@ function BookingWizardInner(props: Props) {
             <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 flex-shrink-0">
               {t("stepProgress", { current: step, total: 3 })}
             </span>
-            <span className="text-sm font-bold text-gray-900 text-right">{stepLabels[step - 1]}</span>
+            <span className="text-sm font-bold text-gray-900 text-end">{stepLabels[step - 1]}</span>
           </div>
           <div className="h-1 rounded-full bg-gray-100 overflow-hidden">
             <div
@@ -726,7 +726,7 @@ function BookingWizardInner(props: Props) {
       {error && (
         <div className="mb-6 p-4 rounded-lg text-red-600 flex items-center gap-2 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
           <AlertCircle size={16} />{error}
-          <button onClick={() => setError(null)} className="ml-auto"><X size={14} /></button>
+          <button onClick={() => setError(null)} className="ms-auto"><X size={14} /></button>
         </div>
       )}
       {/* STEP 1: Vehicle Selection */}
@@ -935,8 +935,8 @@ function BookingWizardInner(props: Props) {
                         TRY total runs to "12.500,00 ₺" and the German label
                         to "Dieses Fahrzeug wählen", which together want
                         ~175px; a 360px phone has ~310px for the whole row. */}
-                    <div className="hidden shrink-0 flex-col items-end justify-center gap-2.5 pl-1 sm:flex">
-                      <div className="text-right">
+                    <div className="hidden shrink-0 flex-col items-end justify-center gap-2.5 ps-1 sm:flex">
+                      <div className="text-end">
                         <span className="block text-[22px] font-extrabold leading-none tracking-tight text-gray-900">
                           {fmt(vehicle.calculation.basePrice, exchangeRates)}
                         </span>
@@ -997,7 +997,7 @@ function BookingWizardInner(props: Props) {
               the figure is the thing being confirmed, so it should not have to
               share a control with the action. */}
           <div className="mx-auto flex max-w-5xl items-stretch px-2 py-1.5 sm:px-4">
-            <div className="flex min-w-0 flex-1 flex-col justify-center py-1 pl-1 pr-3">
+            <div className="flex min-w-0 flex-1 flex-col justify-center py-1 ps-1 pe-3">
               <span className="block text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
                 {t("selectedVehicleLabel")}
               </span>
@@ -1015,7 +1015,7 @@ function BookingWizardInner(props: Props) {
 
             <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
 
-            <div className="flex shrink-0 flex-col justify-center px-3 text-right">
+            <div className="flex shrink-0 flex-col justify-center px-3 text-end">
               <span className="block whitespace-nowrap text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
                 {t("totalPrice")}
               </span>
@@ -1029,7 +1029,7 @@ function BookingWizardInner(props: Props) {
             <button
               type="button"
               onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="my-1 ml-2 flex h-[42px] shrink-0 items-center gap-1.5 self-center whitespace-nowrap rounded-xl bg-[#0e8a61] px-3.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
+              className="my-1 ms-2 flex h-[42px] shrink-0 items-center gap-1.5 self-center whitespace-nowrap rounded-xl bg-[#0e8a61] px-3.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
             >
               {t("continueStep")}
               <ArrowRight size={15} className="shrink-0" />
@@ -1190,7 +1190,7 @@ function BookingWizardInner(props: Props) {
                   <div>
                     <label htmlFor="booking-flightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} *</label>
                     <div className="relative">
-                      <Plane size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Plane size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         id="booking-flightCode"
                         type="text"
@@ -1201,10 +1201,10 @@ function BookingWizardInner(props: Props) {
                         placeholder={t("flightCodePlaceholder")}
                         aria-invalid={!!fieldErrors.flightCode}
                         /* Written out rather than composed from `fieldClass`:
-                           the icon needs `pl-10`, and adding it alongside that
+                           the icon needs `ps-10`, and adding it alongside that
                            helper's `px-4` leaves which padding wins up to the
                            order of the generated stylesheet. */
-                        className={`w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.flightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
+                        className={`w-full ps-10 pe-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.flightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
                         style={fieldStyle("flightCode")}
                       />
                     </div>
@@ -1225,7 +1225,7 @@ function BookingWizardInner(props: Props) {
                     <div>
                       <label htmlFor="booking-returnFlightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("returnFlightCode")} *</label>
                       <div className="relative">
-                        <ArrowLeftRight size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <ArrowLeftRight size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                           id="booking-returnFlightCode"
                           type="text"
@@ -1235,7 +1235,7 @@ function BookingWizardInner(props: Props) {
                           onChange={(e) => { setReturnFlightCode(e.target.value.toUpperCase()); clearFieldError("returnFlightCode"); }}
                           placeholder={t("returnFlightCodePlaceholder")}
                           aria-invalid={!!fieldErrors.returnFlightCode}
-                          className={`w-full pl-10 pr-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.returnFlightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
+                          className={`w-full ps-10 pe-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.returnFlightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
                           style={fieldStyle("returnFlightCode")}
                         />
                       </div>
@@ -1382,9 +1382,9 @@ function BookingWizardInner(props: Props) {
                     {/* Online savings nudge when cash is selected */}
                     {paymentMethod === "cash" && selectedVehicle?.cashPrice != null && (
                       <p className="text-xs text-blue-600 px-0.5">
-                        <Sparkles size={11} className="inline mr-1" />
+                        <Sparkles size={11} className="inline me-1" />
                         {t("payOnline")}: {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-                        <span className="text-blue-400 ml-1">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
+                        <span className="text-blue-400 ms-1">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
                       </p>
                     )}
                   </div>
@@ -1496,9 +1496,9 @@ function BookingWizardInner(props: Props) {
                     )}
                     {couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0 && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-400 truncate mr-2">
+                        <span className="text-gray-400 truncate me-2">
                           {t("couponDiscount")}
-                          {couponApplied && <span className="ml-1 text-gray-300">· {couponApplied}</span>}
+                          {couponApplied && <span className="ms-1 text-gray-300">· {couponApplied}</span>}
                         </span>
                         <span className="font-semibold text-emerald-500 whitespace-nowrap">
                           -{fmt(selectedVehicle.calculation.couponDiscount, exchangeRates)}
@@ -1514,7 +1514,7 @@ function BookingWizardInner(props: Props) {
                       {/* Cash total row */}
                       <div className="flex justify-between items-center px-4 py-2.5 bg-amber-50">
                         <span className="text-xs font-medium text-amber-700">{t("totalPrice")}</span>
-                        <div className="text-right">
+                        <div className="text-end">
                           <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
                         </div>
                       </div>

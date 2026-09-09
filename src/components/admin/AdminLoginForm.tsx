@@ -61,14 +61,14 @@ export default function AdminLoginForm() {
             <div className="relative">
               <Mail
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
                 placeholder="torviantransfer@gmail.com"
               />
             </div>
@@ -81,14 +81,14 @@ export default function AdminLoginForm() {
             <div className="relative">
               <Lock
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
                 placeholder="••••••••"
               />
             </div>

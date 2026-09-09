@@ -69,8 +69,8 @@ export default function SocialPreview({
 
       <div className="p-4 bg-slate-100">
         {network === "whatsapp" && (
-          <div className="max-w-[320px] ml-auto">
-            <div className="rounded-lg rounded-br-sm bg-[#d9fdd3] p-1.5 shadow-sm">
+          <div className="max-w-[320px] ms-auto">
+            <div className="rounded-lg rounded-ee-sm bg-[#d9fdd3] p-1.5 shadow-sm">
               <div className="rounded-md bg-black/[0.06] overflow-hidden flex">
                 <Thumb src={imageUrl} className="w-[72px] h-[72px] shrink-0" />
                 <div className="px-2.5 py-2 min-w-0 flex-1">
@@ -85,7 +85,7 @@ export default function SocialPreview({
               </div>
               <p className="px-1 pt-1.5 text-[13px] text-slate-800 break-all">https://{url}</p>
             </div>
-            <p className="mt-2 text-[10.5px] text-slate-500 text-right">
+            <p className="mt-2 text-[10.5px] text-slate-500 text-end">
               WhatsApp görseli kareye kırpar — kenarlardaki detaylar kaybolur.
             </p>
           </div>

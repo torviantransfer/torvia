@@ -191,7 +191,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </div>
             <div className="flex items-center justify-between gap-3 pt-1 border-t border-amber-200">
               <span className="text-amber-700 text-sm font-bold">{t("depositNow")}</span>
-              <div className="text-right">
+              <div className="text-end">
                 <span className="block text-amber-700 text-xl font-bold">{money(depositAmount)}</span>
               </div>
             </div>
@@ -199,7 +199,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
         ) : (
           <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-200">
             <span className="text-gray-500 text-sm">{t("totalPrice")}</span>
-            <div className="text-right">
+            <div className="text-end">
               <span className="block text-gray-900 text-xl font-bold">{money(totalPrice)}</span>
             </div>
           </div>

@@ -201,7 +201,7 @@ export default function AssignDriverModal({
           setConflicts([]);
           setError(null);
         }}
-        className={`flex-1 rounded-lg px-3 py-2.5 text-left transition ${
+        className={`flex-1 rounded-lg px-3 py-2.5 text-start transition ${
           active ? "bg-white shadow-sm ring-1 ring-slate-900/10" : "hover:bg-white/60"
         }`}
       >
@@ -294,16 +294,16 @@ export default function AssignDriverModal({
             <div className="relative mb-2">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 value={driverQuery}
                 onChange={(e) => setDriverQuery(e.target.value)}
                 placeholder="Şoför adı veya telefon ara..."
-                className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
+                className="w-full rounded-lg border border-slate-200 py-2 ps-9 pe-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
               />
             </div>
-            <div className="max-h-56 space-y-1.5 overflow-y-auto pr-1">
+            <div className="max-h-56 space-y-1.5 overflow-y-auto pe-1">
               {filteredDrivers.map((d) => {
                 const { sameDay, tight } = driverWorkload(
                   allReservations,
@@ -315,7 +315,7 @@ export default function AssignDriverModal({
                   <button
                     key={d.id}
                     onClick={() => setDriverId(d.id)}
-                    className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                    className={`w-full rounded-xl border px-3 py-2.5 text-start transition ${
                       selected
                         ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
                         : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
@@ -374,23 +374,23 @@ export default function AssignDriverModal({
             <div className="relative mb-2">
               <Search
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
                 value={vehicleQuery}
                 onChange={(e) => setVehicleQuery(e.target.value)}
                 placeholder="Plaka, marka veya model ara..."
-                className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
+                className="w-full rounded-lg border border-slate-200 py-2 ps-9 pe-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
               />
             </div>
-            <div className="grid max-h-44 grid-cols-1 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2">
+            <div className="grid max-h-44 grid-cols-1 gap-1.5 overflow-y-auto pe-1 sm:grid-cols-2">
               {filteredVehicles.map((v) => {
                 const selected = vehicleId === v.id;
                 return (
                   <button
                     key={v.id}
                     onClick={() => setVehicleId(v.id)}
-                    className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-left transition ${
+                    className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-start transition ${
                       selected
                         ? "border-slate-900 bg-slate-900/[0.03] ring-1 ring-slate-900"
                         : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"

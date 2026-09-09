@@ -174,22 +174,22 @@ export default async function AdminDashboard({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-50">
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Kod
                 </th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Müşteri
                 </th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Bölge
                 </th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Tarih
                 </th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Fiyat
                 </th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Durum
                 </th>
               </tr>

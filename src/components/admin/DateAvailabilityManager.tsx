@@ -270,7 +270,7 @@ export default function DateAvailabilityManager() {
                 <div>
                   <span className="text-sm font-semibold text-slate-900">{bd.blocked_date}</span>
                   {bd.reason && (
-                    <span className="text-xs text-slate-500 ml-3">{bd.reason}</span>
+                    <span className="text-xs text-slate-500 ms-3">{bd.reason}</span>
                   )}
                 </div>
                 <button

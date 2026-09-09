@@ -127,7 +127,7 @@ export default function SaveDiffDialog({
               <p className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-[11.5px] font-medium text-slate-700">
                 {c.label}
                 {c.critical && (
-                  <span className="ml-1.5 px-1 py-0.5 rounded text-[9.5px] font-bold bg-red-100 text-red-700">
+                  <span className="ms-1.5 px-1 py-0.5 rounded text-[9.5px] font-bold bg-red-100 text-red-700">
                     KRİTİK
                   </span>
                 )}

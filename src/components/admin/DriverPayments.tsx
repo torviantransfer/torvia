@@ -207,7 +207,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-left">
+            <tr className="bg-gray-50 text-start">
               <th className="px-5 py-3 font-medium text-gray-500">Tarih</th>
               <th className="px-5 py-3 font-medium text-gray-500">Şoför</th>
               <th className="px-5 py-3 font-medium text-gray-500">Tür</th>
@@ -215,7 +215,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
               <th className="px-5 py-3 font-medium text-gray-500">
                 Açıklama
               </th>
-              <th className="px-5 py-3 font-medium text-gray-500 text-right">
+              <th className="px-5 py-3 font-medium text-gray-500 text-end">
                 Tutar
               </th>
             </tr>
@@ -256,7 +256,7 @@ export default function DriverPayments({ drivers, payments, balances }: Props) {
                   {p.description || "—"}
                 </td>
                 <td
-                  className={`px-5 py-3 font-bold text-right ${
+                  className={`px-5 py-3 font-bold text-end ${
                     p.type === "earning" || p.type === "adjustment"
                       ? "text-green-600"
                       : "text-red-600"

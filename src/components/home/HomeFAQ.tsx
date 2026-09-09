@@ -65,7 +65,7 @@ export default function HomeFAQ() {
             >
               <summary className="flex items-center justify-between cursor-pointer p-5 text-gray-900 font-medium text-sm sm:text-base hover:text-blue-600 transition-colors list-none [&::-webkit-details-marker]:hidden">
                 {faq.q}
-                <span className="text-gray-400 group-open:rotate-45 transition-transform text-xl ml-4 shrink-0">+</span>
+                <span className="text-gray-400 group-open:rotate-45 transition-transform text-xl ms-4 shrink-0">+</span>
               </summary>
               <div className="px-5 pb-5 text-gray-500 text-sm leading-relaxed">
                 {faq.a}

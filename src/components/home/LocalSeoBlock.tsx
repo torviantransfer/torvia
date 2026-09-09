@@ -61,7 +61,7 @@ export default function LocalSeoBlock() {
                   className="px-3 py-1.5 rounded-full text-xs font-medium text-gray-600 hover:text-blue-600 hover:border-blue-400/40 transition-colors"
                   style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
                 >
-                  <MapPin size={10} className="inline mr-1" />
+                  <MapPin size={10} className="inline me-1" />
                   {dest.label}
                 </Link>
               ))}

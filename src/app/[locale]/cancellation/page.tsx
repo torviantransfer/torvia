@@ -51,7 +51,7 @@ export default async function CancellationPage() {
         >
           <div className="absolute inset-0">
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
+              className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
               style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
@@ -124,20 +124,20 @@ export default async function CancellationPage() {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>4</div>
                 <h2 className="text-lg font-bold text-gray-900">{t("s4Title")}</h2>
               </div>
-              <ul className="list-disc pl-5 space-y-1">{renderList("s4Items")}</ul>
+              <ul className="list-disc ps-5 space-y-1">{renderList("s4Items")}</ul>
 
               <div className="flex items-center gap-3 mt-10 mb-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>5</div>
                 <h2 className="text-lg font-bold text-gray-900">{t("s5Title")}</h2>
               </div>
-              <ol className="list-decimal pl-5 space-y-1">{renderList("s5Items")}</ol>
+              <ol className="list-decimal ps-5 space-y-1">{renderList("s5Items")}</ol>
               <p>{t("s5Extra")}</p>
 
               <div className="flex items-center gap-3 mt-10 mb-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#FF9500" }}>6</div>
                 <h2 className="text-lg font-bold text-gray-900">{t("s6Title")}</h2>
               </div>
-              <ul className="list-disc pl-5 space-y-1">{renderList("s6Items")}</ul>
+              <ul className="list-disc ps-5 space-y-1">{renderList("s6Items")}</ul>
 
               <div className="flex items-center gap-3 mt-10 mb-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#34C759" }}>7</div>

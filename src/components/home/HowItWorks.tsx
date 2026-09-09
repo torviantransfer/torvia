@@ -35,7 +35,7 @@ export default function HowItWorks() {
                 {step.number}
               </div>
               {i < 2 && (
-                <div className="hidden md:block absolute top-7 left-[calc(50%+42px)] w-[calc(100%-84px)] h-px" style={{ background: "rgba(0,0,0,0.08)" }} />
+                <div className="hidden md:block absolute top-7 start-[calc(50%+42px)] w-[calc(100%-84px)] h-px" style={{ background: "rgba(0,0,0,0.08)" }} />
               )}
               <h3 className="text-gray-900 font-semibold text-lg mb-3">{t(step.titleKey)}</h3>
               <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">{t(step.descKey)}</p>

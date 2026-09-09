@@ -202,18 +202,18 @@ export default function ReservationsList({
       <div className="bg-white rounded-2xl p-5 overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={16} className="absolute start-3.5 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
               placeholder={t.search[locale] ?? t.search.en}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-50 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+              className="w-full bg-gray-50 rounded-xl ps-10 pe-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
               style={{ border: "1px solid rgba(0,0,0,0.08)" }}
             />
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Filter size={14} className="text-gray-500 mr-1" />
+            <Filter size={14} className="text-gray-500 me-1" />
             {FILTER_STATUSES.map((s) => (
               <button
                 key={s}
@@ -252,7 +252,7 @@ export default function ReservationsList({
                 {/* Summary row */}
                 <button
                   onClick={() => setExpandedId(expanded ? null : r.id)}
-                  className="w-full flex items-center gap-4 px-5 py-4 text-left"
+                  className="w-full flex items-center gap-4 px-5 py-4 text-start"
                 >
                   {/* Status badge */}
                   <span className={`shrink-0 text-[10px] font-semibold uppercase px-2.5 py-1 rounded-full border ${STATUS_BADGE[r.status] ?? STATUS_BADGE.pending}`}>

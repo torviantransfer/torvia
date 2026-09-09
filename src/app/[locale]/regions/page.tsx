@@ -132,7 +132,7 @@ export default async function RegionsPage({
         }) }} />
         <section className="relative pb-14 sm:pb-18 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
+            <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("destinations")}</p>
@@ -202,7 +202,7 @@ export default async function RegionsPage({
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         {lowestOneWay !== null && (
-                          <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-900" style={{ backgroundColor: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", color: "#1d1d1f" }}>
+                          <div className="absolute bottom-3 end-3 px-3 py-1.5 rounded-lg text-sm font-bold text-gray-900" style={{ backgroundColor: "rgba(255,255,255,0.9)", backdropFilter: "blur(8px)", color: "#1d1d1f" }}>
                             <PriceTag amount={lowestOneWay} />
                           </div>
                         )}

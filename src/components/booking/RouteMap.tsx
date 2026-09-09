@@ -199,7 +199,7 @@ export default function RouteMap({
 
       {/* Route info badge */}
       {routeInfo && (
-        <div className="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-xs font-medium text-white flex items-center gap-2 z-[1000]" style={{ background: "rgba(0,122,255,0.9)", backdropFilter: "blur(8px)" }}>
+        <div className="absolute top-3 start-3 px-3 py-1.5 rounded-lg text-xs font-medium text-white flex items-center gap-2 z-[1000]" style={{ background: "rgba(0,122,255,0.9)", backdropFilter: "blur(8px)" }}>
           <span>{routeInfo.km} km</span>
           <span className="w-1 h-1 rounded-full bg-white" />
           <span>~{routeInfo.min} min</span>
@@ -207,7 +207,7 @@ export default function RouteMap({
       )}
 
       {/* Powered by badge */}
-      <div className="absolute bottom-1 left-1 px-2 py-0.5 text-[10px] text-gray-900/30 z-[1000]">
+      <div className="absolute bottom-1 start-1 px-2 py-0.5 text-[10px] text-gray-900/30 z-[1000]">
         OpenStreetMap
       </div>
     </div>

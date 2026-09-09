@@ -433,13 +433,13 @@ export default function VehicleCategoriesManager({
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-400">
+            <thead className="bg-gray-50 text-start text-xs uppercase tracking-wide text-gray-400">
               <tr>
                 <th className="px-5 py-3 font-medium">Araç</th>
                 <th className="px-5 py-3 font-medium">Kapasite</th>
                 <th className="px-5 py-3 font-medium">Özellikler</th>
                 <th className="px-5 py-3 font-medium">Durum</th>
-                <th className="px-5 py-3 font-medium text-right">İşlem</th>
+                <th className="px-5 py-3 font-medium text-end">İşlem</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -462,7 +462,7 @@ export default function VehicleCategoriesManager({
                     </div>
                   </td>
                   <td className="px-5 py-3 whitespace-nowrap text-gray-600">
-                    <span className="inline-flex items-center gap-1 mr-3">
+                    <span className="inline-flex items-center gap-1 me-3">
                       <Users size={13} className="text-gray-400" />{c.max_passengers}
                     </span>
                     <span className="inline-flex items-center gap-1">

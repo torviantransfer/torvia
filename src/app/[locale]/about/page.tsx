@@ -74,7 +74,7 @@ export default async function AboutPage({
         {/* Hero */}
         <section className="relative pb-14 sm:pb-18 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
+            <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("title")}</p>
@@ -161,7 +161,7 @@ export default async function AboutPage({
                 sizes="(max-width: 896px) 100vw, 896px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <div className="absolute bottom-6 left-6">
+              <div className="absolute bottom-6 start-6">
                 <p className="text-white font-bold text-lg">Mercedes Vito VIP</p>
                 <p className="text-white/80 text-sm">{t("vehicleOverlay")}</p>
               </div>
@@ -227,7 +227,7 @@ export default async function AboutPage({
                   featureKeys: ["featPanorama", "featAirCon", "featUsb", "featLegRoom"],
                 },
               ].map(({ name, capacityKey, luggageKey, featureKeys }) => (
-                <div key={name} className="p-6 rounded-2xl relative overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}><div className="absolute top-0 left-0 right-0 h-1" style={{ background: "linear-gradient(90deg, #007AFF, #34C759)" }} />
+                <div key={name} className="p-6 rounded-2xl relative overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}><div className="absolute top-0 start-0 end-0 h-1" style={{ background: "linear-gradient(90deg, #007AFF, #34C759)" }} />
                   <h3 className="font-bold text-gray-900 text-lg mb-1">{name}</h3>
                   <div className="flex gap-3 mb-4">
                     <span className="text-xs px-3 py-1 rounded-full font-medium text-blue-600" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>{t(capacityKey)}</span>

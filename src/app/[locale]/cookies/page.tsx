@@ -51,7 +51,7 @@ export default async function CookiesPage() {
         >
           <div className="absolute inset-0">
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
+              className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px]"
               style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>
@@ -89,7 +89,7 @@ export default async function CookiesPage() {
 
               <h3 className="font-bold text-gray-900 mt-4">{t("s2aTitle")}</h3>
               <p>{t("s2aText")}</p>
-              <ul className="list-disc pl-5 space-y-1">{renderList("s2aItems")}</ul>
+              <ul className="list-disc ps-5 space-y-1">{renderList("s2aItems")}</ul>
 
               <h3 className="font-bold text-gray-900 mt-4">{t("s2bTitle")}</h3>
               <p>{t("s2bText")}</p>
@@ -105,7 +105,7 @@ export default async function CookiesPage() {
                 <h2 className="text-lg font-bold text-gray-900">{t("s4Title")}</h2>
               </div>
               <p>{t("s4Text")}</p>
-              <ul className="list-disc pl-5 space-y-1">{renderList("s4Items")}</ul>
+              <ul className="list-disc ps-5 space-y-1">{renderList("s4Items")}</ul>
 
               <div className="flex items-center gap-3 mt-10 mb-3">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "#007AFF" }}>5</div>

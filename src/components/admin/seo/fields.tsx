@@ -224,7 +224,7 @@ export function KeywordField({
           {items.map((kw) => (
             <span
               key={kw}
-              className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md bg-slate-100 text-[12px] text-slate-700"
+              className="inline-flex items-center gap-1 ps-2 pe-1 py-0.5 rounded-md bg-slate-100 text-[12px] text-slate-700"
             >
               {kw}
               <button
@@ -342,7 +342,7 @@ export function ImageField({
           <div className="relative">
             <Link2
               size={13}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute start-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
             />
             <input
               type="text"
@@ -352,7 +352,7 @@ export function ImageField({
                 setBroken(false);
               }}
               placeholder="/images/regions/ornek.jpg veya https://…"
-              className="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-300 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+              className="w-full ps-8 pe-3 py-2 rounded-lg border border-slate-300 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
             />
           </div>
 

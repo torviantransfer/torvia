@@ -106,14 +106,14 @@ export default function PricingManager({
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-left">
+            <tr className="bg-gray-50 text-start">
               <th className="px-4 py-3 font-medium text-gray-500">#</th>
               <th className="px-4 py-3 font-medium text-gray-500">Bölge</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-right text-blue-700 bg-blue-50/50">Online Tek ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-right text-blue-700 bg-blue-50/50">Online G/D ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-right text-amber-700 bg-amber-50/50">Nakit Tek ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-right text-amber-700 bg-amber-50/50">Nakit G/D ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-right text-emerald-700 bg-emerald-50/50">Depozit ($)</th>
+              <th className="px-4 py-3 font-medium text-gray-500 text-end text-blue-700 bg-blue-50/50">Online Tek ($)</th>
+              <th className="px-4 py-3 font-medium text-gray-500 text-end text-blue-700 bg-blue-50/50">Online G/D ($)</th>
+              <th className="px-4 py-3 font-medium text-gray-500 text-end text-amber-700 bg-amber-50/50">Nakit Tek ($)</th>
+              <th className="px-4 py-3 font-medium text-gray-500 text-end text-amber-700 bg-amber-50/50">Nakit G/D ($)</th>
+              <th className="px-4 py-3 font-medium text-gray-500 text-end text-emerald-700 bg-emerald-50/50">Depozit ($)</th>
               <th className="px-4 py-3 font-medium text-gray-500">İşlem</th>
             </tr>
           </thead>
@@ -125,7 +125,7 @@ export default function PricingManager({
                   type="number" step="0.01" min="0"
                   value={value ?? ""}
                   onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value ? parseFloat(e.target.value) : null })}
-                  className="w-20 border border-gray-200 rounded px-2 py-1 text-sm text-right"
+                  className="w-20 border border-gray-200 rounded px-2 py-1 text-sm text-end"
                 />
               );
               return (
@@ -135,23 +135,23 @@ export default function PricingManager({
                   {row.regions?.name_en ?? row.region_id}
                 </td>
                 {/* Online one-way */}
-                <td className="px-4 py-3 text-right bg-blue-50/20">
+                <td className="px-4 py-3 text-end bg-blue-50/20">
                   {isEditing ? numInput("one_way_price", editValues.one_way_price) : <span className="font-medium text-blue-700">${row.one_way_price.toFixed(0)}</span>}
                 </td>
                 {/* Online round-trip */}
-                <td className="px-4 py-3 text-right bg-blue-50/20">
+                <td className="px-4 py-3 text-end bg-blue-50/20">
                   {isEditing ? numInput("round_trip_price", editValues.round_trip_price) : <span className="font-medium text-blue-700">{row.round_trip_price ? `$${row.round_trip_price.toFixed(0)}` : "—"}</span>}
                 </td>
                 {/* Cash one-way */}
-                <td className="px-4 py-3 text-right bg-amber-50/20">
+                <td className="px-4 py-3 text-end bg-amber-50/20">
                   {isEditing ? numInput("one_way_cash_price", editValues.one_way_cash_price) : <span className="font-medium text-amber-700">{row.one_way_cash_price ? `$${row.one_way_cash_price.toFixed(0)}` : "—"}</span>}
                 </td>
                 {/* Cash round-trip */}
-                <td className="px-4 py-3 text-right bg-amber-50/20">
+                <td className="px-4 py-3 text-end bg-amber-50/20">
                   {isEditing ? numInput("round_trip_cash_price", editValues.round_trip_cash_price) : <span className="font-medium text-amber-700">{row.round_trip_cash_price ? `$${row.round_trip_cash_price.toFixed(0)}` : "—"}</span>}
                 </td>
                 {/* Deposit */}
-                <td className="px-4 py-3 text-right bg-emerald-50/20">
+                <td className="px-4 py-3 text-end bg-emerald-50/20">
                   {isEditing ? numInput("cash_deposit_amount", editValues.cash_deposit_amount) : <span className="font-medium text-emerald-700">{row.cash_deposit_amount ? `$${row.cash_deposit_amount.toFixed(0)}` : "—"}</span>}
                 </td>
                 <td className="px-4 py-3">

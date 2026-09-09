@@ -392,7 +392,7 @@ export default async function LandOfLegendsPage({
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
+                <div className="absolute bottom-4 start-4 text-white">
                   <div className="text-sm font-medium">Land of Legends · Belek</div>
                   <div className="text-xs opacity-80">Antalya Airport · {c.distance} · {c.duration}</div>
                 </div>

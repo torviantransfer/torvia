@@ -38,7 +38,7 @@ export default function AdminShell({
 
       <div className="flex">
         <AdminSidebar userEmail={userEmail} open={open} onClose={() => setOpen(false)} />
-        <main className="flex-1 min-h-screen lg:ml-64 min-w-0">
+        <main className="flex-1 min-h-screen lg:ms-64 min-w-0">
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl">{children}</div>
         </main>
       </div>

@@ -84,7 +84,7 @@ export default function AdminSidebar({
       )}
 
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-64 flex flex-col z-40 transition-transform duration-200 ease-out ${
+        className={`fixed start-0 top-0 bottom-0 w-64 flex flex-col z-40 transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
         style={{ backgroundColor: "#0F172A" }}
@@ -102,7 +102,7 @@ export default function AdminSidebar({
               <span className="text-white font-bold text-base tracking-tight">
                 TORVIAN
               </span>
-              <span className="text-slate-500 text-[10px] font-medium ml-1.5 uppercase tracking-widest">
+              <span className="text-slate-500 text-[10px] font-medium ms-1.5 uppercase tracking-widest">
                 Admin
               </span>
             </div>

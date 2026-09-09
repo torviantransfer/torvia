@@ -297,7 +297,7 @@ export default function AdminCalendarAvailability() {
             <div className="grid grid-cols-7">
               {cells.map((day, i) => {
                 if (day === null) {
-                  return <div key={`e-${i}`} className="min-h-[90px] border-b border-r border-slate-50 bg-slate-50/30" />;
+                  return <div key={`e-${i}`} className="min-h-[90px] border-b border-e border-slate-50 bg-slate-50/30" />;
                 }
                 const ds       = dateStr(day);
                 const dayEv    = eventsForDay(day);
@@ -320,7 +320,7 @@ export default function AdminCalendarAvailability() {
                   <div
                     key={day}
                     onClick={() => selectDay(sel ? null : day)}
-                    className={`min-h-[90px] cursor-pointer border-b border-r border-slate-100 p-1.5 transition-colors ${cellBg} ${isPast ? "opacity-50" : ""}`}
+                    className={`min-h-[90px] cursor-pointer border-b border-e border-slate-100 p-1.5 transition-colors ${cellBg} ${isPast ? "opacity-50" : ""}`}
                   >
                     <div className="mb-1 flex items-center justify-between">
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${today ? "bg-orange-500 text-white" : sel ? "bg-orange-200 text-orange-800" : "text-slate-600"}`}>
@@ -347,7 +347,7 @@ export default function AdminCalendarAvailability() {
                             <button
                               key={ev.id}
                               onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); selectDay(day); }}
-                              className={`flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-left text-[9px] font-medium ${cfg.bg} ${cfg.text}`}
+                              className={`flex w-full items-center gap-1 truncate rounded px-1 py-0.5 text-start text-[9px] font-medium ${cfg.bg} ${cfg.text}`}
                             >
                               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cfg.dot}`} />
                               <span className="truncate">
@@ -358,7 +358,7 @@ export default function AdminCalendarAvailability() {
                           );
                         })}
                         {dayEv.length > 2 && (
-                          <p className="pl-1 text-[9px] text-slate-400">+{dayEv.length - 2} daha</p>
+                          <p className="ps-1 text-[9px] text-slate-400">+{dayEv.length - 2} daha</p>
                         )}
                       </div>
                     )}
@@ -403,7 +403,7 @@ export default function AdminCalendarAvailability() {
                     <>
                       <p className="mt-1 text-sm font-bold text-slate-900">
                         {selectedBooked} / {selectedCapacity} rezervasyon
-                        <span className="ml-1.5 text-xs font-medium text-slate-500">
+                        <span className="ms-1.5 text-xs font-medium text-slate-500">
                           ({Math.max(0, selectedCapacity - selectedBooked)} boş)
                         </span>
                       </p>
@@ -553,7 +553,7 @@ export default function AdminCalendarAvailability() {
                           <button
                             key={ev.id}
                             onClick={() => setSelectedEvent(ev)}
-                            className="w-full rounded-xl border border-slate-100 p-2.5 text-left transition-colors hover:border-slate-200"
+                            className="w-full rounded-xl border border-slate-100 p-2.5 text-start transition-colors hover:border-slate-200"
                           >
                             <div className="mb-1 flex items-center gap-2">
                               <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${cfg.bg} ${cfg.text}`}>
@@ -565,7 +565,7 @@ export default function AdminCalendarAvailability() {
                             <p className="flex items-center gap-1 text-[11px] font-medium text-slate-700">
                               <Clock size={10} className="shrink-0 text-slate-400" />
                               {formatBookingTime(ev.pickup)}
-                              <span className={`ml-1 rounded px-1 py-0.5 text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
+                              <span className={`ms-1 rounded px-1 py-0.5 text-[9px] font-bold ${ev.leg === "return" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
                                 {ev.leg === "return" ? "Dönüş" : "Gidiş"}
                               </span>
                             </p>

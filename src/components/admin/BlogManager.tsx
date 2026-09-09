@@ -368,7 +368,7 @@ export default function BlogManager({ initialPosts }: Props) {
                     <button
                       type="button"
                       onClick={() => { updateField("image_url", ""); setImageBroken(false); }}
-                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
+                      className="absolute top-1 end-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
                       aria-label="Görseli kaldır"
                     >
                       <X size={11} />
@@ -425,7 +425,7 @@ export default function BlogManager({ initialPosts }: Props) {
                     }`}
                   >
                     {LOCALE_LABELS[lang]}
-                    {hasContent && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 align-middle" />}
+                    {hasContent && <span className="ms-1.5 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 align-middle" />}
                   </button>
                 );
               })}
@@ -578,12 +578,12 @@ export default function BlogManager({ initialPosts }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-3 font-medium text-gray-700">Yazı</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-700">Slug</th>
+                <th className="text-start px-4 py-3 font-medium text-gray-700">Yazı</th>
+                <th className="text-start px-4 py-3 font-medium text-gray-700">Slug</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-700">SEO</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-700">Durum</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-700">Tarih</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-700">İşlemler</th>
+                <th className="text-end px-4 py-3 font-medium text-gray-700">İşlemler</th>
               </tr>
             </thead>
             <tbody>
@@ -624,7 +624,7 @@ export default function BlogManager({ initialPosts }: Props) {
                   <td className="px-4 py-3 text-center text-gray-500 whitespace-nowrap">
                     {new Date(post.created_at).toLocaleDateString("tr-TR")}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-end">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => handleToggle(post.id)}

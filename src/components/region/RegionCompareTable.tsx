@@ -160,7 +160,7 @@ export default function RegionCompareTable({ regionName, torvianPrice }: Compare
               <div className={`text-sm font-bold mb-3 ${h.highlight ? "text-blue-700" : "text-gray-900"}`}>
                 {h.name}
                 {h.highlight && (
-                  <span className="ml-2 text-[10px] uppercase tracking-wide bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                  <span className="ms-2 text-[10px] uppercase tracking-wide bg-blue-600 text-white px-2 py-0.5 rounded-full">
                     {t("recommended")}
                   </span>
                 )}
@@ -169,7 +169,7 @@ export default function RegionCompareTable({ regionName, torvianPrice }: Compare
                 {rows.map((row) => (
                   <li key={row.label} className="flex items-start justify-between gap-3 text-xs">
                     <span className="text-gray-500">{row.label}</span>
-                    <span className="flex items-center gap-1 text-right text-gray-800 font-medium">
+                    <span className="flex items-center gap-1 text-end text-gray-800 font-medium">
                       <ToneIcon tone={row.cells[i].tone} />
                       {row.cells[i].value}
                     </span>

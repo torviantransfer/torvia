@@ -239,7 +239,7 @@ export default async function BookingPage({
                   {t("subtitle")}
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
-                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-[#6B7280] lg:text-white/80 mr-1">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-[#6B7280] lg:text-white/80 me-1">
                     {intentLabel[locale] ?? intentLabel.en}
                   </span>
                   {(intentKeywords[locale] ?? intentKeywords.en).map(({ label, href }) => (

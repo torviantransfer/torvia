@@ -178,7 +178,7 @@ export default async function LandingPageView({
         >
           <div className="absolute inset-0">
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
+              className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
               style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
             />
           </div>

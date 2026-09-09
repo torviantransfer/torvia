@@ -25,7 +25,7 @@ export default function ExportButton() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl border border-slate-100 shadow-lg py-1 w-44">
+          <div className="absolute end-0 top-full mt-1 z-50 bg-white rounded-xl border border-slate-100 shadow-lg py-1 w-44">
             <button
               onClick={() => doExport("csv")}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"

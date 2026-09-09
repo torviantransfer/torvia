@@ -110,7 +110,7 @@ export default async function BookingSuccessPage({
           </div>
 
           {/* What happens next */}
-          <div className="rounded-2xl border border-gray-100 p-6 mb-8 text-left" style={{ background: "rgba(0,0,0,0.02)" }}>
+          <div className="rounded-2xl border border-gray-100 p-6 mb-8 text-start" style={{ background: "rgba(0,0,0,0.02)" }}>
             <h2 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide">
               {t("whatNext")}
             </h2>

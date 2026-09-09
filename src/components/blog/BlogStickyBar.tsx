@@ -41,7 +41,7 @@ export default function BlogStickyBar({ regionSlug, price }: BlogStickyBarProps)
         style={{ height: "calc(72px + env(safe-area-inset-bottom))" }}
       />
       <div
-        className="fixed bottom-0 left-0 right-0 z-40 sm:hidden border-t border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85"
+        className="fixed bottom-0 start-0 end-0 z-40 sm:hidden border-t border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="px-3 py-2.5">

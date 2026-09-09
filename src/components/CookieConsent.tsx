@@ -30,7 +30,7 @@ export default function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-500">
+    <div className="fixed bottom-0 start-0 end-0 z-50 p-4 animate-in slide-in-from-bottom duration-500">
       <div
         className="max-w-4xl mx-auto rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
         style={{

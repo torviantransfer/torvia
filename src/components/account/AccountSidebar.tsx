@@ -67,7 +67,7 @@ export default function AccountSidebar({ locale, userEmail, userName }: Props) {
             <a
               key={item.key}
               href={fullPath}
-              className={`flex items-center gap-3 px-5 py-3.5 text-sm transition-all border-l-2 ${
+              className={`flex items-center gap-3 px-5 py-3.5 text-sm transition-all border-s-2 ${
                 isActive
                   ? "bg-blue-50 text-blue-600 font-semibold border-blue-600"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 border-transparent"
@@ -81,7 +81,7 @@ export default function AccountSidebar({ locale, userEmail, userName }: Props) {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50/50 transition-all border-l-2 border-transparent"
+          className="w-full flex items-center gap-3 px-5 py-3.5 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50/50 transition-all border-s-2 border-transparent"
           style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
         >
           <LogOut size={17} />

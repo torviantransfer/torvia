@@ -309,7 +309,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
             setDateScope("all");
             setOnlyUnassigned(false);
           }}
-          className="mb-4 flex w-full items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-left text-sm font-medium text-rose-700 hover:bg-rose-100"
+          className="mb-4 flex w-full items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-start text-sm font-medium text-rose-700 hover:bg-rose-100"
         >
           <AlertTriangle size={15} />
           {stats.cancelRequests} iptal talebi yanıt bekliyor — görüntülemek için tıklayın
@@ -322,13 +322,13 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
           <div className="relative min-w-[220px] flex-1">
             <Search
               size={15}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400"
             />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Kod, müşteri, telefon, uçuş, otel, bölge veya şoför ara..."
-              className="w-full rounded-lg border border-slate-200 py-2 pl-9 pr-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
+              className="w-full rounded-lg border border-slate-200 py-2 ps-9 pe-3 text-sm outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-900/10"
             />
           </div>
           <select
@@ -383,7 +383,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
             <UserPlus size={13} />
             Sadece şoför bekleyenler
           </button>
-          <span className="ml-auto text-xs text-slate-400">
+          <span className="ms-auto text-xs text-slate-400">
             {filtered.length} kayıt gösteriliyor
           </span>
         </div>
@@ -432,12 +432,12 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
-                    <span className={`absolute inset-y-0 left-0 w-1 ${meta.rail}`} />
+                    <span className={`absolute inset-y-0 start-0 w-1 ${meta.rail}`} />
 
                     {/* Summary */}
                     <button
                       onClick={() => setExpandedId(expanded ? null : r.id)}
-                      className="w-full pl-5 pr-4 py-3.5 text-left hover:bg-slate-50/70"
+                      className="w-full ps-5 pe-4 py-3.5 text-start hover:bg-slate-50/70"
                     >
                       <div className="flex items-start gap-4">
                         {/* Time block */}
@@ -530,7 +530,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                         </div>
 
                         {/* Price */}
-                        <div className="shrink-0 text-right">
+                        <div className="shrink-0 text-end">
                           <p className="text-lg font-bold text-slate-900">
                             {money(r.total_price)}
                           </p>
@@ -545,7 +545,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
                           )}
                           <ChevronDown
                             size={16}
-                            className={`ml-auto mt-1.5 text-slate-400 transition-transform ${
+                            className={`ms-auto mt-1.5 text-slate-400 transition-transform ${
                               expanded ? "rotate-180" : ""
                             }`}
                           />
@@ -555,7 +555,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
 
                     {/* Expanded */}
                     {expanded && (
-                      <div className="border-t border-slate-100 pl-5 pr-4 pb-4 pt-4">
+                      <div className="border-t border-slate-100 ps-5 pe-4 pb-4 pt-4">
                         {r.status === "cancel_requested" && (
                           <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
                             <p className="mb-1 text-sm font-bold text-rose-800">
@@ -969,7 +969,7 @@ export default function ReservationList({ reservations, drivers, vehicles }: Pro
       {/* ─── Toast ─── */}
       {toast && (
         <div
-          className={`fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-lg ${
+          className={`fixed bottom-5 start-1/2 z-[60] -translate-x-1/2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-lg ${
             toast.tone === "error" ? "bg-rose-600 text-white" : "bg-slate-900 text-white"
           }`}
         >
@@ -1030,7 +1030,7 @@ function StatTile({
   return (
     <Tag
       onClick={onClick}
-      className={`rounded-xl border border-slate-200 bg-white p-3.5 text-left shadow-sm ${
+      className={`rounded-xl border border-slate-200 bg-white p-3.5 text-start shadow-sm ${
         onClick ? "transition hover:border-slate-300 hover:shadow" : ""
       }`}
     >
@@ -1099,7 +1099,7 @@ function Row({
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-xs text-slate-400">{label}</dt>
       <dd
-        className={`text-right text-xs ${
+        className={`text-end text-xs ${
           tone === "orange"
             ? "text-orange-600"
             : strong

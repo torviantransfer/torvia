@@ -28,7 +28,7 @@ export default function WhatsAppButton({ aboveStickyBar = false }: WhatsAppButto
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contact us on WhatsApp"
-      className={`fixed right-4 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white rounded-2xl shadow-lg flex items-center justify-center transition-all hover:scale-105 hover:shadow-xl ${
+      className={`fixed end-4 sm:end-6 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white rounded-2xl shadow-lg flex items-center justify-center transition-all hover:scale-105 hover:shadow-xl ${
         aboveStickyBar
           ? "bottom-[calc(84px+env(safe-area-inset-bottom))] sm:bottom-6"
           : "bottom-5 sm:bottom-6"

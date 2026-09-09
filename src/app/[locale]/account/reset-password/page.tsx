@@ -135,13 +135,13 @@ export default function ResetPasswordPage() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Minimum 8 characters"
                         required
-                        className="w-full px-4 py-3 pr-11 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 pe-11 rounded-xl text-sm text-gray-900 outline-none focus:ring-2 focus:ring-blue-500"
                         style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPw(!showPw)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors"
+                        className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors"
                         aria-label={showPw ? "Hide password" : "Show password"}
                       >
                         {showPw ? <EyeOff size={16} /> : <Eye size={16} />}

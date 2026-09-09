@@ -345,11 +345,11 @@ export default function SettingsManager({
                       (f) => integrations.find((i) => i.key === f.key)?.hasValue
                     );
                     return allSet ? (
-                      <span className="ml-auto flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
                         <CheckCircle2 size={12} /> Bağlı
                       </span>
                     ) : (
-                      <span className="ml-auto flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
                         <XCircle size={12} /> Yapılandırılmadı
                       </span>
                     );
@@ -386,7 +386,7 @@ export default function SettingsManager({
                                 onChange={(e) =>
                                   setIntValues({ ...intValues, [field.key]: e.target.value })
                                 }
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pr-10 font-mono"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pe-10 font-mono"
                               />
                               {field.sensitive && (
                                 <button
@@ -394,7 +394,7 @@ export default function SettingsManager({
                                   onClick={() =>
                                     setIntVisible({ ...intVisible, [field.key]: !isVisible })
                                   }
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                  className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                 >
                                   {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
@@ -578,7 +578,7 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
           <p className="text-xs text-indigo-700">
             <strong>{values.night_tariff_start ?? "00:00"} – {values.night_tariff_end ?? "07:00"}</strong> saatleri arasındaki rezervasyonlara{" "}
             <strong>%{values.night_tariff_percent ?? "0"}</strong> gece tarifesi uygulanır.
-            {isSavingAny && <span className="ml-2 text-indigo-400">Kaydediliyor...</span>}
+            {isSavingAny && <span className="ms-2 text-indigo-400">Kaydediliyor...</span>}
           </p>
         </div>
       )}

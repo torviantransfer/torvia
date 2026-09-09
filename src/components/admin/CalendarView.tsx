@@ -160,7 +160,7 @@ export default function CalendarView() {
           <div className="grid grid-cols-7">
             {cells.map((day, i) => {
               if (day === null) {
-                return <div key={`empty-${i}`} className="min-h-[100px] border-b border-r border-slate-50 bg-slate-50/30" />;
+                return <div key={`empty-${i}`} className="min-h-[100px] border-b border-e border-slate-50 bg-slate-50/30" />;
               }
               const dayEv = getEventsForDay(day);
               const today = isToday(day);
@@ -170,7 +170,7 @@ export default function CalendarView() {
                 <div
                   key={day}
                   onClick={() => setSelectedDay(selected ? null : day)}
-                  className={`min-h-[100px] border-b border-r border-slate-50 p-1.5 cursor-pointer transition-colors ${
+                  className={`min-h-[100px] border-b border-e border-slate-50 p-1.5 cursor-pointer transition-colors ${
                     selected ? "bg-orange-50/60" : "hover:bg-slate-50/80"
                   }`}
                 >
@@ -197,7 +197,7 @@ export default function CalendarView() {
                         <button
                           key={ev.id}
                           onClick={(e) => { e.stopPropagation(); setSelectedEvent(ev); setSelectedDay(day); }}
-                          className={`w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate flex items-center gap-1 ${cfg.bg} ${cfg.text}`}
+                          className={`w-full text-start px-1.5 py-0.5 rounded text-[10px] font-medium truncate flex items-center gap-1 ${cfg.bg} ${cfg.text}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
                           <span className="truncate">
@@ -207,7 +207,7 @@ export default function CalendarView() {
                       );
                     })}
                     {dayEv.length > 3 && (
-                      <p className="text-[10px] text-slate-400 pl-1">+{dayEv.length - 3} daha</p>
+                      <p className="text-[10px] text-slate-400 ps-1">+{dayEv.length - 3} daha</p>
                     )}
                   </div>
                 </div>
@@ -242,7 +242,7 @@ export default function CalendarView() {
                 <button
                   key={ev.id}
                   onClick={() => setSelectedEvent(ev)}
-                  className="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
+                  className="w-full text-start p-3 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
                 >
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cfg.bg} ${cfg.text}`}>

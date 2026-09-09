@@ -154,7 +154,7 @@ export default function Header() {
   const allNav = [...primaryNav, ...secondaryNav];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1100]">
+    <header className="fixed top-0 start-0 end-0 z-[1100]">
       <nav
         className="transition-all duration-500"
         style={{
@@ -172,7 +172,7 @@ export default function Header() {
             </Link>
 
             {/* Desktop primary nav - next to logo */}
-            <div className="hidden lg:flex items-center gap-1 ml-8">
+            <div className="hidden lg:flex items-center gap-1 ms-8">
               {primaryNav.map((item) => (
                 <Link
                   key={item.href}
@@ -217,7 +217,7 @@ export default function Header() {
                   <ChevronDown size={10} className={`transition-transform ${langOpen ? "rotate-180" : ""}`} />
                 </button>
                 {langOpen && (
-                  <div className="absolute right-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[150px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className="absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[150px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
                     {(Object.keys(localeNames) as Locale[]).map((loc) => {
                       const qs = searchParams.toString();
                       const hrefWithParams = qs ? `${pathname}?${qs}` : pathname;
@@ -265,7 +265,7 @@ export default function Header() {
                     <ChevronDown size={10} className={`hidden sm:inline transition-transform ${showDarkNav ? 'text-gray-500' : 'text-white/70'} ${userMenuOpen ? "rotate-180" : ""}`} />
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                    <div className="absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
                       <div className="px-4 py-3 border-b border-gray-100">
                         {displayName && (
                           <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
@@ -323,7 +323,7 @@ export default function Header() {
 
                 {/* Desktop dropdown menu */}
                 {menuOpen && (
-                  <div className="hidden lg:block absolute right-0 top-full mt-2 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className="hidden lg:block absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
                     {secondaryNav.map((item) => (
                       <Link
                         key={item.href}

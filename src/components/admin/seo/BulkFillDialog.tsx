@@ -334,7 +334,7 @@ export default function BulkFillDialog({
 
         <div className="sticky bottom-0 flex items-center justify-end gap-2 px-5 py-3.5 border-t border-slate-200 bg-white">
           {running && (
-            <span className="mr-auto text-[12px] text-slate-500 tabular-nums">
+            <span className="me-auto text-[12px] text-slate-500 tabular-nums">
               {progress} / {willChange.length}
             </span>
           )}

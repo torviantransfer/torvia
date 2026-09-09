@@ -189,7 +189,7 @@ select option {
 }
 .phone-input-dark .PhoneInputCountry {
   position: relative;
-  margin-right: 10px;
+  margin-inline-end: 10px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -221,7 +221,7 @@ select option {
 .phone-input-dark .PhoneInputCountrySelectArrow {
   color: #86868b;
   opacity: 0.6;
-  margin-left: 2px;
+  margin-inline-start: 2px;
   width: 0.4em;
   height: 0.4em;
   border-color: #86868b;
@@ -233,7 +233,7 @@ select option {
   opacity: 0;
   width: 100%;
   height: 100%;
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   cursor: pointer;
   z-index: 1;
@@ -331,7 +331,7 @@ select option {
 .sidebar-active {
   background: rgba(0, 122, 255, 0.08);
   color: #007AFF;
-  border-left: 3px solid #007AFF;
+  border-inline-start: 3px solid #007AFF;
 }
 
 /* Focus */
@@ -367,4 +367,35 @@ input:focus, textarea:focus, select:focus {
   right: 0;
   height: 3px;
   border-radius: 999px;
+}
+
+
+/* ─── Right-to-left ─────────────────────────────────────────────────────────
+ * Layout mirrors itself: every spacing, inset, border and alignment utility in
+ * the app is a logical property, so dir="rtl" on <html> is all it takes.
+ *
+ * Glyph-shaped icons are the exception. An arrow drawn pointing right still
+ * points right in a mirrored layout, where it now means "back". Lucide stamps
+ * each icon with its own class, so the directional ones can be flipped here in
+ * one place rather than in the 30 files that use them.
+ */
+[dir="rtl"] .lucide-arrow-right,
+[dir="rtl"] .lucide-arrow-left,
+[dir="rtl"] .lucide-chevron-right,
+[dir="rtl"] .lucide-chevron-left,
+[dir="rtl"] .lucide-chevrons-right,
+[dir="rtl"] .lucide-chevrons-left,
+[dir="rtl"] .lucide-arrow-up-right,
+[dir="rtl"] .lucide-move-right,
+[dir="rtl"] .lucide-move-left,
+[dir="rtl"] .lucide-corner-down-right,
+[dir="rtl"] .lucide-send {
+  transform: scaleX(-1);
+}
+
+/* Numbers, codes, prices, dates and phone numbers stay left-to-right inside
+ * Arabic text. Without this a reservation code reads back to front. */
+[dir="rtl"] .ltr-nums {
+  direction: ltr;
+  unicode-bidi: isolate;
 }

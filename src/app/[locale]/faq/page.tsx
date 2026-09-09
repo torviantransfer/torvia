@@ -48,7 +48,7 @@ export default async function FAQPage({
       <main className="flex-1">
         <section className="relative pb-14 sm:pb-18 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
           <div className="absolute inset-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
+            <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("title")}</p>
@@ -72,13 +72,13 @@ export default async function FAQPage({
                 <summary className="px-5 sm:px-6 py-4 sm:py-5 cursor-pointer font-semibold text-gray-900 text-sm flex items-center gap-3 transition-colors">
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ backgroundColor: i <= 4 ? "#007AFF" : i <= 8 ? "#FF9500" : "#34C759" }}>{i}</span>
                   <span className="flex-1">{t(`q${i}`)}</span>
-                  <span className="text-gray-400 group-open:rotate-180 transition-transform ml-4 flex-shrink-0">
+                  <span className="text-gray-400 group-open:rotate-180 transition-transform ms-4 flex-shrink-0">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </span>
                 </summary>
-                <div className="px-5 sm:px-6 pb-5 text-sm text-gray-600 leading-relaxed pt-2 ml-10" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
+                <div className="px-5 sm:px-6 pb-5 text-sm text-gray-600 leading-relaxed pt-2 ms-10" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
                   {t(`a${i}`)}
                 </div>
               </details>

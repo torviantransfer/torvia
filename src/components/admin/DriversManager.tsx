@@ -193,7 +193,7 @@ export default function DriversManager({ initialDrivers, vehicles }: Props) {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-left">
+            <tr className="bg-gray-50 text-start">
               <th className="px-5 py-3 font-medium text-gray-500">Ad</th>
               <th className="px-5 py-3 font-medium text-gray-500">Telefon</th>
               <th className="px-5 py-3 font-medium text-gray-500">E-posta</th>

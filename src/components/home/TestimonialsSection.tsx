@@ -64,7 +64,7 @@ export default function TestimonialsSection() {
             type="button"
             aria-label={t("prevReview")}
             onClick={() => scrollTo((current - 1 + testimonials.length) % testimonials.length)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
+            className="absolute start-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
           >
             <ChevronLeft size={18} />
           </button>
@@ -72,7 +72,7 @@ export default function TestimonialsSection() {
             type="button"
             aria-label={t("nextReview")}
             onClick={() => scrollTo((current + 1) % testimonials.length)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
+            className="absolute end-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-100 items-center justify-center text-gray-600 hover:text-gray-900 transition-colors hidden md:flex"
           >
             <ChevronRight size={18} />
           </button>

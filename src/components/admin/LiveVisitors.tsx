@@ -237,7 +237,7 @@ export default function LiveVisitors() {
                   <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
                     <div className="h-full bg-orange-400" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs font-semibold text-slate-500 w-8 text-right">{p.count}</span>
+                  <span className="text-xs font-semibold text-slate-500 w-8 text-end">{p.count}</span>
                 </div>
               );
             })}
@@ -267,7 +267,7 @@ export default function LiveVisitors() {
                   <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
                     <div className="h-full bg-indigo-400" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs font-semibold text-slate-500 w-8 text-right">{s.count}</span>
+                  <span className="text-xs font-semibold text-slate-500 w-8 text-end">{s.count}</span>
                 </div>
               );
             })}
@@ -288,11 +288,11 @@ export default function LiveVisitors() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-50">
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Sayfa</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kaynak</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ülke</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Durum</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Son Görülme</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Sayfa</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kaynak</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ülke</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Durum</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Son Görülme</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -345,10 +345,10 @@ export default function LiveVisitors() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-50">
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Son Sayfa</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kaynak</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Durum</th>
-                <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ayrılma</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Son Sayfa</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Kaynak</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Durum</th>
+                <th className="px-6 py-3 text-start text-[11px] font-semibold uppercase tracking-wider text-slate-400">Ayrılma</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">

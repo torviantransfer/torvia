@@ -54,13 +54,13 @@ export const ARTICLE_PROSE_CLASSES = `
   [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-3
   [&_h4]:text-base [&_h4]:font-semibold [&_h4]:text-gray-900 [&_h4]:mt-6 [&_h4]:mb-2
   [&_p]:text-gray-600 [&_p]:leading-[1.85] [&_p]:mb-5
-  [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-gray-600 [&_li]:leading-relaxed [&_li]:pl-5 [&_li]:relative [&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-[10px] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-blue-500
-  [&_ol]:my-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol_li]:marker:text-blue-600 [&_ol_li]:marker:font-semibold
-  [&_blockquote]:my-6 [&_blockquote]:pl-5 [&_blockquote]:border-l-2 [&_blockquote]:border-blue-500/40 [&_blockquote]:text-gray-500 [&_blockquote]:italic
+  [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-gray-600 [&_li]:leading-relaxed [&_li]:ps-5 [&_li]:relative [&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:start-0 [&_li]:before:top-[10px] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-blue-500
+  [&_ol]:my-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:ps-5 [&_ol_li]:marker:text-blue-600 [&_ol_li]:marker:font-semibold
+  [&_blockquote]:my-6 [&_blockquote]:ps-5 [&_blockquote]:border-s-2 [&_blockquote]:border-blue-500/40 [&_blockquote]:text-gray-500 [&_blockquote]:italic
   [&_strong]:text-gray-900 [&_b]:text-gray-900
   [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2
   [&_hr]:my-10 [&_hr]:border-gray-200
-  [&_table]:w-full [&_table]:my-6 [&_table]:text-sm [&_th]:text-left [&_th]:text-gray-900 [&_th]:pb-3 [&_th]:border-b [&_th]:border-gray-200 [&_td]:text-gray-600 [&_td]:py-2.5 [&_td]:border-b [&_td]:border-gray-200
+  [&_table]:w-full [&_table]:my-6 [&_table]:text-sm [&_th]:text-start [&_th]:text-gray-900 [&_th]:pb-3 [&_th]:border-b [&_th]:border-gray-200 [&_td]:text-gray-600 [&_td]:py-2.5 [&_td]:border-b [&_td]:border-gray-200
   [&_img]:rounded-xl [&_img]:my-6
 `;
 

@@ -91,7 +91,7 @@ export function TechnicalChecks({
                   type="button"
                   disabled={!clickable}
                   onClick={() => finding.field && onFieldClick?.(finding.field)}
-                  className="w-full flex items-start gap-2.5 px-4 py-2.5 text-left enabled:hover:bg-slate-50 enabled:cursor-pointer"
+                  className="w-full flex items-start gap-2.5 px-4 py-2.5 text-start enabled:hover:bg-slate-50 enabled:cursor-pointer"
                 >
                   <Icon size={15} style={{ color: LEVEL_COLOR[finding.level] }} className="mt-0.5 shrink-0" />
                   <span className="min-w-0 flex-1">
