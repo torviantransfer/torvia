@@ -57,12 +57,13 @@ function whatsappUrl(r: Reservation, da: DriverAssignment) {
 }
 
 /**
- * Secondary actions are icons with tooltips rather than labelled buttons.
+ * Icons with tooltips, for everything that is not one of the two sends.
  *
- * There are six things you can do to an assignment and only one of them —
- * handing the job to the driver — is the point. Six labelled buttons in three
- * captioned groups made them all look equally urgent and took four lines to
- * say so.
+ * Six things can be done to an assignment, and two of them leave the building:
+ * handing the job to the driver, and telling the passenger who is coming. Those
+ * two are labelled. The rest — the sheet, the panel link, swapping the driver,
+ * removing them — are reversible and local, and as six equally weighted buttons
+ * in three captioned groups they made the whole card read as urgent.
  */
 const ICON_BTN =
   "inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40";
@@ -77,6 +78,7 @@ export default function AssignmentCard({
 }: Props) {
   const [copied, setCopied] = useState(false);
   const [emailing, setEmailing] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [editingFee, setEditingFee] = useState(false);
   const [feeInput, setFeeInput] = useState(
     da.driver_fee != null ? String(da.driver_fee) : ""
@@ -157,6 +159,8 @@ export default function AssignmentCard({
       body: JSON.stringify({ assignmentId: da.id }),
     });
     if (res.ok) {
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 4000);
       onToast("Şoför bilgisi müşteriye e-posta ile gönderildi.");
     } else {
       const d = await res.json().catch(() => null);
@@ -298,6 +302,24 @@ export default function AssignmentCard({
             </a>
           )}
 
+          <button
+            onClick={sendEmail}
+            disabled={emailing}
+            title="Şoför ve araç bilgisini müşteriye e-postala. Son dakika şoför değişebildiği için otomatik gönderilmez."
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          >
+            {emailSent ? (
+              <Check size={13} className="text-emerald-600" />
+            ) : (
+              <Mail size={13} className="text-slate-400" />
+            )}
+            {emailing
+              ? "Gönderiliyor…"
+              : emailSent
+              ? "Gönderildi"
+              : "Müşteriye mail gönder"}
+          </button>
+
           <a
             href={`/api/driver-voucher?token=${da.link_token}`}
             target="_blank"
@@ -310,15 +332,6 @@ export default function AssignmentCard({
 
           <button onClick={copyLink} className={ICON_BTN} title="Şoför paneli linkini kopyala">
             {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-          </button>
-
-          <button
-            onClick={sendEmail}
-            disabled={emailing}
-            className={ICON_BTN}
-            title="Müşteriye şoför bilgisini e-postala"
-          >
-            <Mail size={14} />
           </button>
 
           <span className="mx-1 h-4 w-px bg-slate-200" />

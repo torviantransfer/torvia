@@ -1,10 +1,8 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import crypto from "crypto";
-import { notifyDriverAssigned } from "@/lib/telegram";
 import { requireAdmin } from "@/lib/admin-auth";
 import { assignDriverSchema } from "@/lib/validations";
-import { formatBookingDateTime } from "@/lib/datetime";
 import { syncAssignmentLedger } from "@/lib/driverLedger";
 
 export async function POST(request: NextRequest) {
@@ -151,13 +149,18 @@ export async function POST(request: NextRequest) {
 
     const whatsappUrl = `https://wa.me/${driver?.phone?.replace(/[^0-9]/g, "")}?text=${waMessage}`;
 
-    // Send Telegram notification to admin
-    notifyDriverAssigned({
-      code: reservation.reservation_code,
-      driver: driver?.full_name ?? "?",
-      destination: region?.name_en ?? "?",
-      date: formatBookingDateTime(pickupDate),
-    }).catch(() => {});
+    /* No Telegram message from here.
+     *
+     * Assigning a driver used to fire one automatically, so the group saw a
+     * job the moment it was booked to someone -- including the reassignments
+     * and corrections that never reached a driver, and a second message when
+     * the return leg followed. The group is the pool the work is offered to,
+     * not a log of admin activity.
+     *
+     * Telegram now has exactly two senders: a booking arriving (the webhook),
+     * and the "Telegram'a gönder" action on the reservation, pressed
+     * deliberately when the job is actually ready to be handed out.
+     */
 
     return NextResponse.json({
       assignment,
