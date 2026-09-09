@@ -1,4 +1,7 @@
-import { Link } from "@/i18n/routing";
+// next/link, not the one from @/i18n/routing: this is the root 404, which
+// renders its own <html> outside the locale layout and so has no next-intl
+// provider above it. The locale is written into the href instead.
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -34,7 +37,7 @@ export default function NotFound() {
           <p style={{ color: "#86868b", marginBottom: "2rem" }}>
             The page you are looking for does not exist.
           </p>
-          <a
+          <Link
             href="/en"
             style={{
               display: "inline-block",
@@ -48,7 +51,7 @@ export default function NotFound() {
             }}
           >
             Go Home
-          </a>
+          </Link>
         </div>
       </body>
     </html>
