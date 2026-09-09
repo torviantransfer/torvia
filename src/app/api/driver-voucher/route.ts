@@ -133,6 +133,18 @@ export async function GET(request: NextRequest) {
   // What the driver has to collect. Absent from the sheet until now, so a cash
   // job arrived with no amount attached to it.
   const isCash = res.payment_method === "cash";
+
+  /**
+   * On a cash booking the passenger settles up once, at the airport pickup,
+   * and reservations.driver_amount is one figure for the whole booking — not
+   * per leg. This sheet is printed per leg, so telling the return driver to
+   * collect it too was asking for the fare to be taken twice.
+   *
+   * The return sheet therefore says the money is already in, and the outbound
+   * one keeps the instruction. A one-way job has only the one sheet and is
+   * unaffected.
+   */
+  const collectsCash = isCash && leg !== "return";
   const rate = Number(res.exchange_rate_eur) || 0;
   const asMoney = (usd: unknown) => {
     const dollars = Number(usd) || 0;
@@ -142,11 +154,16 @@ export async function GET(request: NextRequest) {
       : dollarText;
   };
 
-  const paymentBlock = isCash
+  const paymentBlock = collectsCash
     ? `<div class="sec cash">
         <div class="sec-t">Araçta nakit tahsilat</div>
         <div class="row">${icon("cash")}<div class="rt"><span class="lbl">Şoför tahsil edecek</span><span class="val big">${asMoney(res.driver_amount)}</span></div></div>
         ${Number(res.deposit_amount) > 0 ? `<div class="row" style="padding-top:0">${icon("check")}<div class="rt"><span class="lbl">Alınan kapora</span><span class="val">${asMoney(res.deposit_amount)}</span></div></div>` : ""}
+      </div>`
+    : isCash
+    ? `<div class="sec">
+        <div class="sec-t">Ödeme</div>
+        <div class="row">${icon("check")}<div class="rt"><span class="lbl">Ücret gidişte tahsil edildi</span><span class="val">Bu yolculukta tahsilat yok</span></div></div>
       </div>`
     : `<div class="sec">
         <div class="sec-t">Ödeme</div>
@@ -320,8 +337,10 @@ export async function GET(request: NextRequest) {
       res.hotel_address ? `Adres: ${res.hotel_address}` : "",
       res.notes ? `Not: ${res.notes}` : "",
       vehicle ? `Araç: ${vehicle.brand} ${vehicle.model} — ${vehicle.plate_number}` : "",
-      isCash
+      collectsCash
         ? `ARAÇTA NAKİT TAHSİLAT: ${rate ? formatEUR(convertFromUSD(Number(res.driver_amount) || 0, rate)) : ""} ($${(Number(res.driver_amount) || 0).toFixed(2)})`
+        : isCash
+        ? `Ödeme: Ücret gidişte tahsil edildi — bu yolculukta tahsilat yok.`
         : `Ödeme: Online alındı — araçta tahsilat yok.`,
     ]
       .filter((line) => line !== "" || true)
