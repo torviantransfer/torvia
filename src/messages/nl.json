@@ -236,7 +236,8 @@
     "allInclusiveNote": "Meet & greet en vluchtmonitoring zijn bij elke prijs inbegrepen.",
     "selectedVehicleLabel": "Gekozen voertuig",
     "changeVehicle": "Wijzig",
-    "continueStep": "Doorgaan"
+    "continueStep": "Doorgaan",
+    "routeNeedsAirport": "Een van beide punten moet de luchthaven Antalya zijn."
   },
   "trust": {
     "heading": "Waarom reizigers voor TORVIAN kiezen.",

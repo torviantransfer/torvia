@@ -236,7 +236,8 @@
     "allInclusiveNote": "الاستقبال بلافتة ومتابعة الرحلة مشمولان في كل سعر.",
     "selectedVehicleLabel": "المركبة المختارة",
     "changeVehicle": "تغيير",
-    "continueStep": "متابعة"
+    "continueStep": "متابعة",
+    "routeNeedsAirport": "يجب أن تكون إحدى نقطتَي الرحلة مطار أنطاليا."
   },
   "trust": {
     "heading": "لماذا يختار المسافرون TORVIAN.",

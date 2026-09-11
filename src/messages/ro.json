@@ -236,7 +236,8 @@
     "allInclusiveNote": "Întâmpinarea și urmărirea zborului sunt incluse în fiecare preț.",
     "selectedVehicleLabel": "Vehicul ales",
     "changeVehicle": "Schimbă",
-    "continueStep": "Continuă"
+    "continueStep": "Continuă",
+    "routeNeedsAirport": "Unul dintre capetele traseului trebuie să fie aeroportul Antalya."
   },
   "trust": {
     "heading": "De ce aleg călătorii TORVIAN.",

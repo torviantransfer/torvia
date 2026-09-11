@@ -236,7 +236,8 @@
     "allInclusiveNote": "Tüm fiyatlara karşılama ve uçuş takibi dahildir.",
     "selectedVehicleLabel": "Seçilen Araç",
     "changeVehicle": "Değiştir",
-    "continueStep": "Devam Et"
+    "continueStep": "Devam Et",
+    "routeNeedsAirport": "Yolculuğun bir ucu Antalya Havalimanı olmalı."
   },
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",
