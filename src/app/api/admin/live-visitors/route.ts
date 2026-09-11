@@ -6,38 +6,64 @@ const WINDOW_MS = 30 * 60 * 1000; // look back 30 min to catch "just left" sessi
 const ACTIVE_NOW_MS = 90 * 1000; // heartbeat cadence is 25s, 90s covers a couple of missed beats
 const LIVE_MS = 5 * 60 * 1000;
 
-interface EventRow {
-  session_id: string | null;
-  event_type: string;
-  page: string | null;
-  step: string | null;
+/**
+ * One row per visit, already merged by the database.
+ *
+ * This used to read raw events and fold them into sessions here, which meant
+ * pulling every heartbeat of the last half hour across the wire and hoping the
+ * row cap did not cut the window short. The rollup happens on write now.
+ */
+interface SessionRow {
+  session_id: string;
+  visitor_id: string | null;
+  first_seen: string;
+  last_seen: string;
+  last_page: string | null;
   region: string | null;
   locale: string | null;
   country: string | null;
-  referrer: string | null;
+  city: string | null;
+  device: string | null;
+  os: string | null;
+  browser: string | null;
   source: string | null;
   medium: string | null;
-  created_at: string;
+  campaign: string | null;
+  selected_vehicle: boolean;
+  form_started: boolean;
+  reached_checkout: boolean;
+  purchased: boolean;
+  vehicle_slug: string | null;
+  vehicle_price: number | null;
+  page_views: number;
 }
 
-interface SessionAgg {
-  sessionId: string;
-  lastPage: string | null;
-  lastSeen: string;
-  firstSeen: string;
-  source: string;
-  medium: string | null;
-  region: string | null;
-  locale: string | null;
-  country: string | null;
-  selectedVehicle: boolean;
-  reachedCheckout: boolean;
-  purchased: boolean;
+/**
+ * Where this visitor has got to, as one value rather than four booleans the
+ * client has to unpick. The order is the funnel's own, so the first match
+ * walking down is always the furthest point reached.
+ */
+type Stage = "browsing" | "vehicle" | "form" | "payment" | "purchased";
+
+function stageOf(s: SessionRow): Stage {
+  if (s.purchased) return "purchased";
+  if (s.reached_checkout) return "payment";
+  if (s.form_started) return "form";
+  if (s.selected_vehicle) return "vehicle";
+  return "browsing";
 }
 
 function classifySource(source: string | null): string {
-  const s = (source || "").trim().toLowerCase();
-  return s || "direct";
+  return (source || "").trim().toLowerCase() || "direct";
+}
+
+function countBy<T>(rows: T[], key: (row: T) => string) {
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const value = key(row);
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
 }
 
 export async function GET() {
@@ -51,107 +77,76 @@ export async function GET() {
   const since = new Date(Date.now() - WINDOW_MS).toISOString();
 
   const { data, error } = await admin
-    .from("analytics_events")
-    .select("session_id, event_type, page, step, region, locale, country, referrer, source, medium, created_at")
-    .gte("created_at", since)
-    .order("created_at", { ascending: false })
-    .limit(3000);
+    .from("analytics_sessions")
+    .select(
+      "session_id, visitor_id, first_seen, last_seen, last_page, region, locale, country, city, device, os, browser, source, medium, campaign, selected_vehicle, form_started, reached_checkout, purchased, vehicle_slug, vehicle_price, page_views"
+    )
+    // Automated traffic keeps its rows but stays out of the live view, so a
+    // crawler cannot show up as somebody standing on the payment page.
+    .or("device.is.null,device.neq.bot")
+    .gte("last_seen", since)
+    .order("last_seen", { ascending: false })
+    .limit(1000);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const rows = (data ?? []) as EventRow[];
-  const sessions = new Map<string, SessionAgg>();
-
-  // Rows are newest-first, so the first time we see a session_id it gives us
-  // its current page / last-seen time; every later occurrence pushes firstSeen
-  // further back and lets us pick up funnel milestones (vehicle_selected, etc).
-  for (const row of rows) {
-    if (!row.session_id) continue;
-    let agg = sessions.get(row.session_id);
-    if (!agg) {
-      agg = {
-        sessionId: row.session_id,
-        lastPage: row.page,
-        lastSeen: row.created_at,
-        firstSeen: row.created_at,
-        source: classifySource(row.source),
-        medium: row.medium,
-        region: row.region,
-        locale: row.locale,
-        country: row.country,
-        selectedVehicle: false,
-        reachedCheckout: false,
-        purchased: false,
-      };
-      sessions.set(row.session_id, agg);
-    } else {
-      agg.firstSeen = row.created_at;
-    }
-
-    if (row.event_type === "booking_step" && row.step === "vehicle_selected") agg.selectedVehicle = true;
-    if (row.event_type === "booking_step" && row.step === "checkout_initiated") agg.reachedCheckout = true;
-    if (row.event_type === "payment_success") agg.purchased = true;
-  }
-
   const now = Date.now();
-  const all = Array.from(sessions.values());
-  const withAge = all.map((s) => ({ ...s, ageMs: now - new Date(s.lastSeen).getTime() }));
+  const rows = ((data ?? []) as SessionRow[]).map((s) => ({
+    ...s,
+    ageMs: now - new Date(s.last_seen).getTime(),
+  }));
 
-  const activeNow = withAge.filter((s) => s.ageMs < ACTIVE_NOW_MS);
-  const live = withAge.filter((s) => s.ageMs < LIVE_MS);
-  const recentlyExited = withAge
-    .filter((s) => s.ageMs >= LIVE_MS)
-    .sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime())
-    .slice(0, 25);
+  const activeNow = rows.filter((s) => s.ageMs < ACTIVE_NOW_MS);
+  const live = rows.filter((s) => s.ageMs < LIVE_MS);
+  const recentlyExited = rows.filter((s) => s.ageMs >= LIVE_MS).slice(0, 25);
 
-  const pageCounts = new Map<string, number>();
-  for (const s of live) {
-    const key = s.lastPage || "(bilinmiyor)";
-    pageCounts.set(key, (pageCounts.get(key) ?? 0) + 1);
-  }
-
-  const sourceCounts = new Map<string, number>();
-  for (const s of live) {
-    sourceCounts.set(s.source, (sourceCounts.get(s.source) ?? 0) + 1);
-  }
+  const shape = (s: SessionRow) => ({
+    sessionId: s.session_id,
+    page: s.last_page,
+    source: classifySource(s.source),
+    campaign: s.campaign,
+    region: s.region,
+    locale: s.locale,
+    country: s.country,
+    city: s.city,
+    device: s.device,
+    browser: s.browser,
+    pageViews: s.page_views,
+    firstSeen: s.first_seen,
+    lastSeen: s.last_seen,
+    selectedVehicle: s.selected_vehicle,
+    formStarted: s.form_started,
+    reachedCheckout: s.reached_checkout,
+    purchased: s.purchased,
+    vehicleName: s.vehicle_slug,
+    vehiclePrice: s.vehicle_price,
+    stage: stageOf(s),
+  });
 
   return NextResponse.json({
     activeNowCount: activeNow.length,
     liveCount: live.length,
-    vehicleSelectedCount: live.filter((s) => s.selectedVehicle).length,
-    checkoutCount: live.filter((s) => s.reachedCheckout).length,
+    vehicleSelectedCount: live.filter((s) => s.selected_vehicle).length,
+    formStartedCount: live.filter((s) => s.form_started).length,
+    checkoutCount: live.filter((s) => s.reached_checkout).length,
     purchasedCount: live.filter((s) => s.purchased).length,
     visitors: live
+      .slice()
       .sort((a, b) => a.ageMs - b.ageMs)
-      .map((s) => ({
-        sessionId: s.sessionId,
-        page: s.lastPage,
-        source: s.source,
-        region: s.region,
-        locale: s.locale,
-        country: s.country,
-        lastSeen: s.lastSeen,
-        firstSeen: s.firstSeen,
-        selectedVehicle: s.selectedVehicle,
-        reachedCheckout: s.reachedCheckout,
-        purchased: s.purchased,
-      })),
-    pageDistribution: Array.from(pageCounts.entries())
-      .map(([page, count]) => ({ page, count }))
-      .sort((a, b) => b.count - a.count),
-    sourceDistribution: Array.from(sourceCounts.entries())
-      .map(([source, count]) => ({ source, count }))
-      .sort((a, b) => b.count - a.count),
+      .map(shape),
+    pageDistribution: countBy(live, (s) => s.last_page || "(bilinmiyor)")
+      .map(([page, count]) => ({ page, count })),
+    sourceDistribution: countBy(live, (s) => classifySource(s.source))
+      .map(([source, count]) => ({ source, count })),
+    countryDistribution: countBy(live, (s) => s.country || "unknown")
+      .map(([country, count]) => ({ country, count })),
+    deviceDistribution: countBy(live, (s) => s.device || "unknown")
+      .map(([device, count]) => ({ device, count })),
     recentlyExited: recentlyExited.map((s) => ({
-      sessionId: s.sessionId,
-      lastPage: s.lastPage,
-      source: s.source,
-      lastSeen: s.lastSeen,
-      selectedVehicle: s.selectedVehicle,
-      reachedCheckout: s.reachedCheckout,
-      purchased: s.purchased,
+      ...shape(s),
+      lastPage: s.last_page,
     })),
   });
 }

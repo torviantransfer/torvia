@@ -76,7 +76,11 @@ export default function PixelPurchaseFire({
       chargedCurrency,
       reservationCode
     );
-    trackPaymentSuccess({ metadata: { reservationCode } });
+    // The amount rides along so the reports can attribute revenue to the
+    // source that brought this visit in, rather than only counting the sale.
+    trackPaymentSuccess({
+      metadata: { reservationCode, revenue: chargedAmount > 0 ? chargedAmount : totalPrice },
+    });
   }, [reservationCode, totalPrice, isPaid, chargedAmount, chargedCurrency, router]);
 
   return null;
