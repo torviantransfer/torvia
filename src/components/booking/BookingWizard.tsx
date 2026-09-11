@@ -24,6 +24,8 @@ import { trackPageView, trackBookingStep } from "@/lib/analytics";
 
 interface Props {
   initialRegion?: string;
+  /** Which way the outbound leg runs; see lib/transfer-route. */
+  initialDirection?: Direction;
   initialTrip?: "one_way" | "round_trip";
   initialDate?: string;
   initialTime?: string;
@@ -36,6 +38,9 @@ interface Props {
 }
 
 import type { Locale } from "@/i18n/config";
+// The airport's label and the order of the two stops live in one place, so the
+// wizard, the voucher, the emails and the driver panel cannot disagree.
+import { airportLabel, normalizeDirection, type Direction } from "@/lib/transfer-route";
 
 interface VehicleOption {
   categoryId: string;
@@ -93,6 +98,8 @@ function BookingWizardInner(props: Props) {
   const { format: fmt, formatBilling, isConverted } = useCurrency();
 
   const regionSlug = props.initialRegion!;
+  const direction = normalizeDirection(props.initialDirection);
+  const startsAtAirport = direction === "airport_to_region";
   const tripType = props.initialTrip ?? "one_way";
   const pickupDate = props.initialDate ?? "";
   const pickupTime = props.initialTime ?? "12:00";
@@ -490,7 +497,7 @@ function BookingWizardInner(props: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          regionSlug, categorySlug: selectedVehicle.slug, tripType, pickupDate, pickupTime,
+          regionSlug, categorySlug: selectedVehicle.slug, tripType, direction, pickupDate, pickupTime,
           returnDate: tripType === "round_trip" ? returnDate : undefined,
           returnTime: tripType === "round_trip" ? returnTime : undefined,
           flightCode: flightCode.trim(),
@@ -715,13 +722,20 @@ function BookingWizardInner(props: Props) {
               <span className="w-px flex-1 min-h-[18px] my-1 bg-gray-200" />
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
             </div>
+            {/* Read in travel order, so a guest being taken to the airport
+                sees their hotel first. The date and time belong to whichever
+                stop the journey actually starts from. */}
             <div className="flex-1 min-w-0 flex flex-col gap-2.5">
               <div>
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">Antalya Airport</p>
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
+                  {startsAtAirport ? airportLabel(locale) : getRegionName(regionData)}
+                </p>
                 <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(pickupDate)} · {pickupTime}</p>
               </div>
               <div>
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">{getRegionName(regionData)}</p>
+                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
+                  {startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}
+                </p>
               </div>
             </div>
           </div>
@@ -1410,8 +1424,12 @@ function BookingWizardInner(props: Props) {
                           <div className="w-2 h-2 rounded-full bg-emerald-500" />
                         </div>
                         <div className="min-w-0 space-y-1.5">
-                          <p className="text-xs font-semibold text-gray-700 truncate">Antalya Airport (AYT)</p>
-                          <p className="text-xs font-semibold text-gray-700 truncate">{getRegionName(regionData)}</p>
+                          <p className="text-xs font-semibold text-gray-700 truncate">
+                            {startsAtAirport ? airportLabel(locale) : getRegionName(regionData)}
+                          </p>
+                          <p className="text-xs font-semibold text-gray-700 truncate">
+                            {startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}
+                          </p>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>

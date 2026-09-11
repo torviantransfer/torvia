@@ -4,6 +4,11 @@ export const reservationSchema = z.object({
   regionSlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
   categorySlug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
   tripType: z.enum(["one_way", "round_trip"]).default("one_way"),
+  /* Which way the outbound leg runs. The column and every screen that prints a
+     route have understood this since migration 060, but the booking form never
+     sent it, so a customer who asked to be taken from their hotel to the
+     airport was booked, vouchered and driven the other way. */
+  direction: z.enum(["airport_to_region", "region_to_airport"]).default("airport_to_region"),
   pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
   returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),

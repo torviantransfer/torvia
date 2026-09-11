@@ -181,18 +181,36 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
   const [kids, setKids] = useState(0);
   const [open, setOpen] = useState<string | null>(null);
   const [dateError, setDateError] = useState(false);
+  /* Only airport-to-region and region-to-airport are sold. Two destinations
+     used to submit anyway, and the booking came out as a transfer from the
+     airport to the second one. */
+  const [routeError, setRouteError] = useState(false);
   const [calMonth, setCalMonth] = useState(new Date());
   const [calFor, setCalFor] = useState<"dep" | "ret">("dep");
 
-  // Restore from sessionStorage on mount
+  /**
+   * Pick up where the visitor left off, and obey a destination they just asked
+   * for.
+   *
+   * `presetRegion` arrives as `?region=` — from a region page's "Book Now", or
+   * from tapping a destination card under this form. It used to yield to
+   * anything already in sessionStorage, which meant that once a visitor had
+   * touched the route even once, every card they tapped afterwards changed the
+   * address bar and nothing else. A tap on a named destination is a newer and
+   * more explicit instruction than a half-finished route, so it wins.
+   *
+   * Only the route is overridden. The date, time and passenger count they
+   * already entered are theirs and survive.
+   */
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("TORVIAN_booking_form");
-      let restoredRoute = false;
       if (saved) {
         const d = JSON.parse(saved);
-        if (d.from) { setFrom(d.from); restoredRoute = true; }
-        if (d.to) { setTo(d.to); restoredRoute = true; }
+        if (!presetRegion) {
+          if (d.from) setFrom(d.from);
+          if (d.to) setTo(d.to);
+        }
         if (d.depDate) setDepDate(new Date(d.depDate));
         if (typeof d.depH === "number") setDepH(d.depH);
         if (typeof d.depM === "number") setDepM(d.depM);
@@ -203,12 +221,10 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         if (typeof d.adults === "number") setAdults(d.adults);
         if (typeof d.kids === "number") setKids(d.kids);
       }
-      // Coming from a region page's "Book Now" CTA: pre-fill the route so the
-      // visitor only has to pick a date, unless they already have a route
-      // in progress from a previous visit.
-      if (!restoredRoute && presetRegion) {
+      if (presetRegion) {
         setFrom("antalya-airport");
         setTo(presetRegion);
+        setRouteError(false);
       }
     } catch {}
   }, [presetRegion]);
@@ -309,6 +325,14 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     // Determine actual region: use whichever is NOT the airport
     const region = to === "antalya-airport" ? from : to;
     if (!region || region === "antalya-airport") return;
+    // Neither end is the airport, so there is no leg to price. Silently
+    // returning here would leave the button looking broken, and letting it
+    // through booked a journey nobody asked for.
+    if (from && to && from !== "antalya-airport" && to !== "antalya-airport") {
+      setRouteError(true);
+      return;
+    }
+    setRouteError(false);
     if (!depDate) { setDateError(true); setOpen("cal"); setCalFor("dep"); setCalMonth(new Date()); return; }
     setDateError(false);
     const p = new URLSearchParams();
@@ -361,7 +385,11 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         <button
           key={l.value}
           type="button"
-          onClick={() => { field === "from" ? setFrom(l.value) : setTo(l.value); setOpen(null); }}
+          onClick={() => {
+            setRouteError(false);
+            field === "from" ? setFrom(l.value) : setTo(l.value);
+            setOpen(null);
+          }}
           className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 text-start text-[15px] lg:text-sm hover:bg-[#EDF8F4] lg:hover:bg-blue-50 transition-colors ${
             (field === "from" ? from : to) === l.value ? "text-[#0e8a61] lg:text-blue-600 font-semibold bg-[#EDF8F4]/60 lg:bg-blue-50/50" : "text-gray-700"
           }`}
@@ -972,6 +1000,19 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
           ))}
         </ul>
       </div>
+
+      {/* Shared by both layouts: on desktop it sits under the bar, on a phone
+          under the card, in each case directly below the two route fields it
+          is about. */}
+      {routeError && (
+        <p
+          role="alert"
+          className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-center text-[12px] font-semibold text-red-600"
+          style={{ border: "1px solid rgba(239,68,68,0.25)" }}
+        >
+          {t("routeNeedsAirport")}
+        </p>
+      )}
     </div>
   );
 }

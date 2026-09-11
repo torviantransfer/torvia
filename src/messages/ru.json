@@ -236,7 +236,8 @@
     "allInclusiveNote": "Встреча и отслеживание рейса включены во все цены.",
     "selectedVehicleLabel": "Выбранный автомобиль",
     "changeVehicle": "Изменить",
-    "continueStep": "Продолжить"
+    "continueStep": "Продолжить",
+    "routeNeedsAirport": "Одной из точек маршрута должен быть аэропорт Антальи."
   },
   "trust": {
     "heading": "Почему путешественники выбирают TORVIAN.",

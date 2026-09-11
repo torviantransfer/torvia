@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import RegionPriceGrid, { type RegionPrice } from "@/components/booking/RegionPriceGrid";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
@@ -102,6 +104,57 @@ export default async function BookingPage({
   // (arriving via a region page's "Book Now" CTA) still falls back to the
   // hero + mini form below, just with the destination pre-filled.
   const hasDate = !!sp.region && !!sp.date;
+
+  /* Which way round the transfer runs.
+     The search form has always written its pickup into `from`, and this page
+     has always ignored it, so a guest in Alanya asking to be taken to the
+     airport was booked, vouchered and driven from the airport to Alanya. The
+     column and every screen that prints a route have understood direction
+     since migration 060; only the booking path was dropping it. */
+  const direction: "airport_to_region" | "region_to_airport" =
+    sp.from && sp.from !== "antalya-airport" ? "region_to_airport" : "airport_to_region";
+
+  /* Every destination with its online fare, for the grid under the form.
+     Read here rather than in the component so the prices are in the HTML the
+     crawler and the first paint both see. */
+  const supabase = createAdminClient();
+  const { data: regionRows } = await supabase
+    .from("regions")
+    .select(
+      "slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, distance_km, duration_minutes, sort_order, pricing(one_way_price, round_trip_price, is_active)"
+    )
+    .eq("is_active", true)
+    .order("sort_order");
+
+  const regionPrices: RegionPrice[] = (regionRows ?? [])
+    .map((row): RegionPrice | null => {
+      const r = row as Record<string, unknown>;
+      const fares = ((r.pricing ?? []) as {
+        one_way_price: number;
+        round_trip_price: number | null;
+        is_active: boolean | null;
+      }[]).filter((p) => p.is_active !== false && Number(p.one_way_price) > 0);
+
+      if (fares.length === 0) return null;
+
+      // The entry-level vehicle sets the headline. Its own return fare comes
+      // with it rather than the cheapest return of any vehicle, or the two
+      // lines on a card would describe different cars.
+      const cheapest = fares.reduce((low, p) =>
+        Number(p.one_way_price) < Number(low.one_way_price) ? p : low
+      );
+
+      return {
+        slug: r.slug as string,
+        name: (r[`name_${locale}`] as string) || (r.name_en as string),
+        distanceKm: (r.distance_km as number | null) ?? null,
+        durationMin: (r.duration_minutes as number | null) ?? null,
+        oneWay: Number(cheapest.one_way_price),
+        roundTrip:
+          cheapest.round_trip_price != null ? Number(cheapest.round_trip_price) : null,
+      };
+    })
+    .filter((r): r is RegionPrice => r !== null);
 
   const intentKeywords: Record<string, { label: string; href: string }[]> = {
     tr: [
@@ -200,7 +253,7 @@ export default async function BookingPage({
               on the boundary with nothing showing a hard edge. Desktop keeps
               the original full-bleed image and its single wash. */}
           <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
-            <div className="absolute inset-x-0 top-0 h-[240px] lg:h-full overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[240px] lg:h-[560px] overflow-hidden">
               <Image
                 src="/images/havaalani-vip-transfer.jpg"
                 alt={heroAlt[locale] ?? heroAlt.en}
@@ -219,7 +272,7 @@ export default async function BookingPage({
                   landing without hazing the strip of photograph above the
                   card. Same curve as the home hero, onto white. */}
               <div
-                className="absolute inset-x-0 bottom-0 h-36 lg:hidden"
+                className="absolute inset-x-0 bottom-0 h-36 lg:h-44"
                 style={{ backgroundImage: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.45) 72%, rgba(255,255,255,0.85) 90%, #FFFFFF 100%)" }}
               />
             </div>
@@ -231,7 +284,7 @@ export default async function BookingPage({
               {/* Below the card on phones, so it reads on the white side of
                   the dissolve rather than on the photograph — hence the dark
                   variants, which `lg:` puts straight back to white. */}
-              <div className="order-2 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
+              <div className="order-3 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#111827] lg:text-white mb-3 lg:drop-shadow-lg">
                   {t("title")}
                 </h1>
@@ -255,6 +308,12 @@ export default async function BookingPage({
               </div>
               <div className="order-1 lg:order-2 w-full max-w-5xl mx-auto">
                 <BookingWizardClient initialRegion={sp.region} />
+              </div>
+              {/* Directly under the form on a phone, where the thumb already
+                  is; on desktop it keeps its place after the headline and the
+                  form, below where the photograph ends. */}
+              <div className="order-2 lg:order-3 w-full max-w-5xl mx-auto mt-6 lg:mt-10">
+                <RegionPriceGrid regions={regionPrices} />
               </div>
             </div>
           </section>
@@ -322,6 +381,7 @@ export default async function BookingPage({
               <h1 className="sr-only">{t("title")}</h1>
               <BookingWizardClient
                 initialRegion={sp.region}
+                initialDirection={direction}
                 initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}
                 initialDate={sp.date}
                 initialTime={sp.time}

@@ -236,7 +236,8 @@
     "allInclusiveNote": "Meet & greet and flight tracking are included in every price.",
     "selectedVehicleLabel": "Selected Vehicle",
     "changeVehicle": "Change",
-    "continueStep": "Continue"
+    "continueStep": "Continue",
+    "routeNeedsAirport": "One end of the journey has to be Antalya Airport."
   },
   "trust": {
     "heading": "Why travelers choose TORVIAN.",
