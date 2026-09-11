@@ -106,6 +106,11 @@ function BookingWizardInner(props: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isSubmittingRef = useRef(false);
+  /* Guards the one-shot `form_started` event. Selecting a vehicle now lands
+     the customer on this form immediately, so "reached step 2" no longer says
+     anything about intent — only the first keystroke does. The admin live view
+     uses it to separate "just arrived at the form" from "actually filling it". */
+  const formStartedRef = useRef(false);
 
   const [vehicles, setVehicles] = useState<VehicleOption[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleOption | null>(null);
@@ -431,8 +436,21 @@ function BookingWizardInner(props: Props) {
       region: regionSlug,
       metadata: { vehicle: vehicle.slug, price: vehicle.oneWayPrice },
     });
-    // Deliberately does not advance. The card turns green and the list stays
-    // put so the three can be compared; the sticky bar carries the booking on.
+    // Choosing is committing: the list gives way to the form straight away.
+    // Nothing is lost by leaving it — the summary card on step 2 repeats the
+    // vehicle and the price, and the back arrow returns here with the card
+    // still marked, so a customer who wants to compare can.
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const markFormStarted = () => {
+    if (formStartedRef.current) return;
+    formStartedRef.current = true;
+    trackBookingStep("form_started", {
+      region: regionSlug,
+      metadata: { vehicle: selectedVehicle?.slug, price: selectedVehicle?.oneWayPrice },
+    });
   };
 
   const handleSubmit = async () => {
@@ -980,64 +998,6 @@ function BookingWizardInner(props: Props) {
         </div>
       )}
 
-      {/* The bar that carries the booking forward.
-          Choosing a vehicle no longer jumps to the next step — the card turns
-          green and stays put, so the three can be compared without losing the
-          list. That makes an explicit way onward necessary, and it doubles as
-          the running total. Fixed at z-40, which is the convention this
-          codebase already uses for its phone bars; /booking passes
-          `aboveStickyBar` so the floating WhatsApp button clears it. */}
-      {step === 1 && selectedVehicle && (
-        <div
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-black/[0.07] bg-white/95 backdrop-blur"
-          style={{ paddingBottom: "max(0px, env(safe-area-inset-bottom))" }}
-        >
-          {/* Three zones, each its own, separated by hairlines: what was
-              chosen, what it costs, and the way on. The total keeps a zone of
-              its own at every width rather than folding into the button —
-              the figure is the thing being confirmed, so it should not have to
-              share a control with the action. */}
-          <div className="mx-auto flex max-w-5xl items-stretch px-2 py-1.5 sm:px-4">
-            <div className="flex min-w-0 flex-1 flex-col justify-center py-1 ps-1 pe-3">
-              <span className="block text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
-                {t("selectedVehicleLabel")}
-              </span>
-              <span className="mt-1 truncate text-[12.5px] font-semibold leading-tight text-gray-900">
-                {selectedVehicle.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => { setSelectedVehicle(null); }}
-                className="mt-0.5 w-fit text-[10.5px] font-medium text-[#0e8a61] underline underline-offset-2"
-              >
-                {t("changeVehicle")}
-              </button>
-            </div>
-
-            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
-
-            <div className="flex shrink-0 flex-col justify-center px-3 text-end">
-              <span className="block whitespace-nowrap text-[9px] uppercase leading-none tracking-[0.11em] text-gray-400">
-                {t("totalPrice")}
-              </span>
-              <span className="mt-1.5 block text-[17px] font-extrabold leading-none tracking-tight text-gray-900 tabular-nums">
-                {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-              </span>
-            </div>
-
-            <div className="my-2 w-px shrink-0 bg-black/[0.09]" aria-hidden="true" />
-
-            <button
-              type="button"
-              onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              className="my-1 ms-2 flex h-[42px] shrink-0 items-center gap-1.5 self-center whitespace-nowrap rounded-xl bg-[#0e8a61] px-3.5 text-[13.5px] font-bold text-white shadow-[0_8px_18px_-8px_rgba(14,138,97,0.75)] transition-transform active:scale-[0.98] sm:px-6"
-            >
-              {t("continueStep")}
-              <ArrowRight size={15} className="shrink-0" />
-            </button>
-          </div>
-        </div>
-      )}
       {/* STEP 2: Passenger Info + Extras
            Order swap on mobile: the summary card comes FIRST so the customer
            sees vehicle + price before deciding to fill in the form. On desktop
@@ -1057,6 +1017,7 @@ function BookingWizardInner(props: Props) {
               <form
                 className="space-y-5"
                 noValidate
+                onFocusCapture={markFormStarted}
                 onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
               >
                 <div className="flex items-center gap-2.5 pb-1">
