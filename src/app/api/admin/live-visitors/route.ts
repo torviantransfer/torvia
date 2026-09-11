@@ -23,12 +23,9 @@ interface SessionRow {
   locale: string | null;
   country: string | null;
   city: string | null;
+  /** Only ever read to keep crawlers out of the live view. */
   device: string | null;
-  os: string | null;
-  browser: string | null;
   source: string | null;
-  medium: string | null;
-  campaign: string | null;
   selected_vehicle: boolean;
   form_started: boolean;
   reached_checkout: boolean;
@@ -79,7 +76,7 @@ export async function GET() {
   const { data, error } = await admin
     .from("analytics_sessions")
     .select(
-      "session_id, visitor_id, first_seen, last_seen, last_page, region, locale, country, city, device, os, browser, source, medium, campaign, selected_vehicle, form_started, reached_checkout, purchased, vehicle_slug, vehicle_price, page_views"
+      "session_id, visitor_id, first_seen, last_seen, last_page, region, locale, country, city, device, source, selected_vehicle, form_started, reached_checkout, purchased, vehicle_slug, vehicle_price, page_views"
     )
     // Automated traffic keeps its rows but stays out of the live view, so a
     // crawler cannot show up as somebody standing on the payment page.
@@ -106,13 +103,10 @@ export async function GET() {
     sessionId: s.session_id,
     page: s.last_page,
     source: classifySource(s.source),
-    campaign: s.campaign,
     region: s.region,
     locale: s.locale,
     country: s.country,
     city: s.city,
-    device: s.device,
-    browser: s.browser,
     pageViews: s.page_views,
     firstSeen: s.first_seen,
     lastSeen: s.last_seen,
@@ -142,8 +136,6 @@ export async function GET() {
       .map(([source, count]) => ({ source, count })),
     countryDistribution: countBy(live, (s) => s.country || "unknown")
       .map(([country, count]) => ({ country, count })),
-    deviceDistribution: countBy(live, (s) => s.device || "unknown")
-      .map(([device, count]) => ({ device, count })),
     recentlyExited: recentlyExited.map((s) => ({
       ...shape(s),
       lastPage: s.last_page,

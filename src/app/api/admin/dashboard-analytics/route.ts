@@ -46,11 +46,7 @@ interface SessionRow {
   entry_page: string | null;
   country: string | null;
   device: string | null;
-  os: string | null;
-  browser: string | null;
   source: string | null;
-  medium: string | null;
-  campaign: string | null;
   selected_vehicle: boolean;
   form_started: boolean;
   reached_checkout: boolean;
@@ -59,7 +55,7 @@ interface SessionRow {
 }
 
 const COLUMNS =
-  "session_id, visitor_id, first_seen, entry_page, country, device, os, browser, source, medium, campaign, selected_vehicle, form_started, reached_checkout, purchased, revenue";
+  "session_id, visitor_id, first_seen, country, device, source, selected_vehicle, form_started, reached_checkout, purchased, revenue";
 
 const PAGE_SIZE = 1000;
 /** Enough for a very busy quarter; past this the panel says so rather than lying. */
@@ -175,6 +171,25 @@ export async function GET(request: Request) {
     { name: "Satın Aldı", value: purchasedSessions },
   ];
 
+  // Page popularity is the one figure sessions cannot answer — a visit knows
+  // only where it began and where it ended — so it is grouped in SQL instead
+  // of dragging every page_view of the range back here to be counted.
+  const { data: pageData, error: pageError } = await admin.rpc("analytics_page_counts", {
+    p_since: since.toISOString(),
+    p_limit: 12,
+  });
+
+  // An empty page list is not worth failing the whole panel over — most likely
+  // cause is migration 082 not having run yet — but it should not be silent.
+  if (pageError) {
+    console.error("[analytics] page counts unavailable:", pageError.message);
+  }
+
+  const pages = ((pageData ?? []) as { page: string; visitors: number }[]).map((p) => ({
+    name: p.page,
+    visitors: Number(p.visitors),
+  }));
+
   return NextResponse.json({
     range,
     since: since.toISOString(),
@@ -182,12 +197,7 @@ export async function GET(request: Request) {
     funnel,
     countries: breakdown(rows, (r) => r.country ?? "unknown"),
     sources: breakdown(rows, (r) => (r.source || "direct").toLowerCase()),
-    // An empty campaign is the overwhelming majority of organic traffic and
-    // would bury the paid ones it exists to compare.
-    campaigns: breakdown(rows, (r) => r.campaign?.trim() || null),
-    devices: breakdown(rows, (r) => r.device ?? "unknown", 6),
-    browsers: breakdown(rows, (r) => r.browser ?? "unknown", 6),
-    landingPages: breakdown(rows, (r) => r.entry_page ?? "(bilinmiyor)"),
+    pages,
     summary: {
       visitors,
       uniqueVisitors,

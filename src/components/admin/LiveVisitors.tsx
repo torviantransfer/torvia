@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Radio,
   Users,
@@ -13,7 +13,6 @@ import {
   BarChart3,
   ClipboardList,
   MapPin,
-  Smartphone,
 } from "lucide-react";
 import VisitorAnalyticsHistory from "./VisitorAnalyticsHistory";
 
@@ -27,8 +26,6 @@ interface Visitor {
   locale: string | null;
   country: string | null;
   city: string | null;
-  device: string | null;
-  browser: string | null;
   lastSeen: string;
   firstSeen: string;
   selectedVehicle: boolean;
@@ -65,7 +62,6 @@ interface LiveVisitorsResponse {
   pageDistribution: { page: string; count: number }[];
   sourceDistribution: { source: string; count: number }[];
   countryDistribution: { country: string; count: number }[];
-  deviceDistribution: { device: string; count: number }[];
   recentlyExited: ExitedVisitor[];
 }
 
@@ -86,14 +82,6 @@ const SOURCE_LABELS: Record<string, string> = {
 function sourceLabel(source: string) {
   return SOURCE_LABELS[source] ?? source;
 }
-
-const DEVICE_LABELS: Record<string, string> = {
-  mobile: "Telefon",
-  tablet: "Tablet",
-  desktop: "Masaüstü",
-  bot: "Bot",
-  unknown: "Bilinmiyor",
-};
 
 /* Only the countries Antalya actually sells to are named; anything else falls
    back to its ISO code, which is still more use than a blank. */
@@ -135,77 +123,49 @@ function timeAgo(iso: string) {
   return `${hours}sa önce`;
 }
 
-/* The funnel, in the order a customer walks it. Everything downstream indexes
-   into this, so adding a step means adding it here and nowhere else. */
-const STAGE_ORDER: Stage[] = ["browsing", "vehicle", "form", "payment", "purchased"];
-
-/* "browsing" and "purchased" are the two ends and get no chip of their own:
-   the first is the absence of progress, the second turns the whole track
-   green. What is left are the three milestones worth watching live. */
-const STAGE_STEPS: { key: Stage; label: string }[] = [
-  { key: "vehicle", label: "Araç" },
-  { key: "form", label: "Form" },
-  { key: "payment", label: "Ödeme" },
-];
-
 /**
- * Where one visitor has got to, as three chips filling left to right.
+ * Where this visitor is right now, as one badge.
  *
- * A single badge could only ever name the furthest point reached, which reads
- * the same whether someone jumped straight to payment or crawled there over
- * ten minutes. The track shows the shape of the visit instead: what is behind
- * them is solid, where they are now pulses, what is ahead stays grey.
+ * Only the stage they are actually on is named. A track of every step would
+ * spend most of its width on milestones that have not happened, and the
+ * question the live view answers is "who is on the payment page", not "which
+ * of the five stages has each of forty people passed".
  *
- * `dropped` is the same track for someone who has already left: the live pulse
- * would be a lie, so the furthest step turns amber and simply marks where the
- * visit ended.
+ * `dropped` is the same badge for someone who has already left, where the live
+ * pulse would be a lie: it marks where the visit ended instead.
  */
-function StageTrack({ stage, dropped = false }: { stage: Stage; dropped?: boolean }) {
-  const reachedIndex = STAGE_ORDER.indexOf(stage);
-  const done = stage === "purchased";
+const STAGE_LABELS: Record<Stage, string> = {
+  browsing: "Geziniyor",
+  vehicle: "Araç Seçti",
+  form: "Form Dolduruyor",
+  payment: "Ödemede",
+  purchased: "Satın Aldı",
+};
+
+const STAGE_STYLES: Record<Stage, string> = {
+  browsing: "bg-slate-100 text-slate-500",
+  vehicle: "bg-violet-50 text-violet-700",
+  form: "bg-sky-50 text-sky-700",
+  payment: "bg-amber-50 text-amber-700",
+  purchased: "bg-emerald-500 text-white",
+};
+
+function StageBadge({ stage, dropped = false }: { stage: Stage; dropped?: boolean }) {
+  const live = !dropped && stage !== "browsing" && stage !== "purchased";
 
   return (
-    <div className="flex items-center">
-      {STAGE_STEPS.map((step, i) => {
-        const reached = reachedIndex >= STAGE_ORDER.indexOf(step.key);
-        const current = !done && stage === step.key;
-        return (
-          <Fragment key={step.key}>
-            {i > 0 && (
-              <span
-                aria-hidden="true"
-                className={`h-px w-2.5 ${reached ? "bg-emerald-300" : "bg-slate-200"}`}
-              />
-            )}
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${
-                current
-                  ? dropped
-                    ? "bg-amber-500 text-white"
-                    : "bg-emerald-500 text-white"
-                  : reached
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-slate-100 text-slate-400"
-              }`}
-            >
-              {current && !dropped && (
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
-                </span>
-              )}
-              {step.label}
-            </span>
-          </Fragment>
-        );
-      })}
-      {done && (
-        <span className="ms-2 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-semibold text-white whitespace-nowrap">
-          <CheckCircle2 size={11} />
-          Satın aldı
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap ${STAGE_STYLES[stage]}`}
+    >
+      {stage === "purchased" && <CheckCircle2 size={11} />}
+      {live && (
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
         </span>
       )}
-    </div>
+      {STAGE_LABELS[stage]}
+    </span>
   );
 }
 
@@ -419,7 +379,7 @@ export default function LiveVisitors() {
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid lg:grid-cols-3 gap-6 mb-8">
         <DistributionCard
           icon={Globe}
           title="Sayfa Bazlı Dağılım"
@@ -470,19 +430,6 @@ export default function LiveVisitors() {
           ready={Boolean(data)}
         />
 
-        <DistributionCard
-          icon={Smartphone}
-          title="Cihazlar"
-          subtitle="Telefon, tablet, masaüstü"
-          accent="bg-sky-400"
-          total={data?.liveCount ?? 0}
-          rows={(data?.deviceDistribution ?? []).map((d) => ({
-            key: d.device,
-            label: <span>{DEVICE_LABELS[d.device] ?? d.device}</span>,
-            count: d.count,
-          }))}
-          ready={Boolean(data)}
-        />
       </div>
 
       {/* Live visitor list */}
@@ -527,7 +474,7 @@ export default function LiveVisitors() {
                       <span className="text-slate-300">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-3.5"><StageTrack stage={v.stage} /></td>
+                  <td className="px-6 py-3.5"><StageBadge stage={v.stage} /></td>
                   <td className="px-6 py-3.5 text-[13px] text-slate-500">{timeAgo(v.lastSeen)}</td>
                 </tr>
               ))}
@@ -585,7 +532,7 @@ export default function LiveVisitors() {
                       <span className="text-slate-300">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-3.5"><StageTrack stage={v.stage} dropped /></td>
+                  <td className="px-6 py-3.5"><StageBadge stage={v.stage} dropped /></td>
                   <td className="px-6 py-3.5 text-[13px] text-slate-500">{timeAgo(v.lastSeen)}</td>
                 </tr>
               ))}
