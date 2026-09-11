@@ -155,6 +155,13 @@ export async function GET(request: Request) {
   const uniqueVisitors = new Set(rows.map((r) => r.visitor_id ?? r.session_id)).size;
   const returning = visitors - uniqueVisitors;
 
+  // Visits rebuilt from the old event log by migration 083 carry a '#' in
+  // their id. They have no form_started milestone and mostly no country,
+  // because neither was being recorded at the time. Saying how many there are
+  // is the difference between a panel that looks wrong and one that explains
+  // itself.
+  const recoveredVisits = rows.filter((r) => r.session_id.includes("#")).length;
+
   const vehicleSessions = rows.filter((r) => r.selected_vehicle).length;
   const formSessions = rows.filter((r) => r.form_started).length;
   const checkoutSessions = rows.filter((r) => r.reached_checkout).length;
@@ -194,6 +201,7 @@ export async function GET(request: Request) {
     range,
     since: since.toISOString(),
     truncated,
+    recoveredVisits,
     funnel,
     countries: breakdown(rows, (r) => r.country ?? "unknown"),
     sources: breakdown(rows, (r) => (r.source || "direct").toLowerCase()),

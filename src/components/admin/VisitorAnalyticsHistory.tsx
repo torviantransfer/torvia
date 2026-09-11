@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Activity, Globe, CheckCircle2, MapPin, Search, Users, BarChart2,
   ExternalLink, ChevronRight, ShoppingCart, CreditCard, ArrowDownRight,
-  Megaphone, ClipboardList, AlertTriangle,
+  Megaphone, ClipboardList, AlertTriangle, Info,
 } from "lucide-react";
 
 const RANGES = [
@@ -26,6 +26,8 @@ interface Row {
 interface AnalyticsData {
   range: RangeKey;
   truncated: boolean;
+  /** Visits rebuilt from the old event log, which carry no form or country data. */
+  recoveredVisits: number;
   funnel: { name: string; value: number }[];
   countries: Row[];
   sources: Row[];
@@ -201,6 +203,18 @@ export default function VisitorAnalyticsHistory() {
           )}
 
           <FunnelSteps funnel={data.funnel} subtitle={subtitle} />
+
+          {data.recoveredVisits > 0 && (
+            <p className="flex items-start gap-2 px-1 text-[11px] leading-relaxed text-slate-400">
+              <Info size={13} className="mt-px shrink-0" />
+              <span>
+                Bu aralıktaki {data.recoveredVisits.toLocaleString("tr-TR")} ziyaret eski
+                kayıtlardan geri getirildi. O dönemde form adımı ve gerçek ülke bilgisi
+                toplanmıyordu, bu yüzden onlar &quot;Form Doldurdu&quot; sayısına girmez ve
+                çoğu &quot;Bilinmiyor&quot; ülkesinde görünür.
+              </span>
+            </p>
+          )}
 
           <div className="grid lg:grid-cols-3 gap-4">
             <Panel icon={MapPin} title="Ülkeler" subtitle="Nereden geliyorlar">
