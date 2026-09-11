@@ -188,15 +188,29 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
   const [calMonth, setCalMonth] = useState(new Date());
   const [calFor, setCalFor] = useState<"dep" | "ret">("dep");
 
-  // Restore from sessionStorage on mount
+  /**
+   * Pick up where the visitor left off, and obey a destination they just asked
+   * for.
+   *
+   * `presetRegion` arrives as `?region=` — from a region page's "Book Now", or
+   * from tapping a destination card under this form. It used to yield to
+   * anything already in sessionStorage, which meant that once a visitor had
+   * touched the route even once, every card they tapped afterwards changed the
+   * address bar and nothing else. A tap on a named destination is a newer and
+   * more explicit instruction than a half-finished route, so it wins.
+   *
+   * Only the route is overridden. The date, time and passenger count they
+   * already entered are theirs and survive.
+   */
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("TORVIAN_booking_form");
-      let restoredRoute = false;
       if (saved) {
         const d = JSON.parse(saved);
-        if (d.from) { setFrom(d.from); restoredRoute = true; }
-        if (d.to) { setTo(d.to); restoredRoute = true; }
+        if (!presetRegion) {
+          if (d.from) setFrom(d.from);
+          if (d.to) setTo(d.to);
+        }
         if (d.depDate) setDepDate(new Date(d.depDate));
         if (typeof d.depH === "number") setDepH(d.depH);
         if (typeof d.depM === "number") setDepM(d.depM);
@@ -207,12 +221,10 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
         if (typeof d.adults === "number") setAdults(d.adults);
         if (typeof d.kids === "number") setKids(d.kids);
       }
-      // Coming from a region page's "Book Now" CTA: pre-fill the route so the
-      // visitor only has to pick a date, unless they already have a route
-      // in progress from a previous visit.
-      if (!restoredRoute && presetRegion) {
+      if (presetRegion) {
         setFrom("antalya-airport");
         setTo(presetRegion);
+        setRouteError(false);
       }
     } catch {}
   }, [presetRegion]);
