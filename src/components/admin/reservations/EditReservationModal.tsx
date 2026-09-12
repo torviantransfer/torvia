@@ -15,6 +15,7 @@ import {
 const EDITABLE_STATUSES = [
   "pending",
   "paid",
+  "deposit_paid",
   "driver_assigned",
   "passenger_picked_up",
   "completed",

@@ -49,6 +49,7 @@ interface DashboardData {
 const STATUS_COLORS: Record<string, string> = {
   pending: "#f59e0b",
   paid: "#3b82f6",
+  deposit_paid: "#14b8a6",
   driver_assigned: "#8b5cf6",
   passenger_picked_up: "#6366f1",
   completed: "#10b981",

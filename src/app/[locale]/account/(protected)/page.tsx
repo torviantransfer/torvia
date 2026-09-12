@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { CalendarCheck, Clock, CheckCircle, XCircle, ArrowRight, MapPin } from "lucide-react";
 import { legRoute } from "@/lib/transfer-route";
 import { formatBookingDate, formatBookingTime } from "@/lib/datetime";
+import { IN_PROGRESS_STATUSES } from "@/lib/reservation-status";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "Overview", tr: "Genel Bakış", de: "Übersicht", pl: "Przegląd", ru: "Обзор" },
@@ -51,7 +52,7 @@ export default async function AccountDashboard({
 
     const all = reservations ?? [];
     totalCount = all.length;
-    activeCount = all.filter(r => ["paid", "driver_assigned", "passenger_picked_up"].includes(r.status)).length;
+    activeCount = all.filter(r => IN_PROGRESS_STATUSES.includes(r.status)).length;
     completedCount = all.filter(r => r.status === "completed").length;
     cancelledCount = all.filter(r => r.status === "cancelled").length;
 

@@ -3,10 +3,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { buildVoucherHTML, generateQRUrlForDownload } from "@/lib/email";
 import { buildVoucherData, VOUCHER_SELECT } from "@/lib/voucher-data";
 import { verifyAdmin } from "@/lib/admin-auth";
+import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
 
 // Statuses a customer may pull their own voucher for. Admins bypass this list so
 // they can reprint a voucher for a completed or cancelled transfer.
-const PUBLIC_STATUSES = ["paid", "driver_assigned", "passenger_picked_up", "completed"];
+const PUBLIC_STATUSES = CONFIRMED_STATUSES;
 
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();

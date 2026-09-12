@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { legRoute } from "@/lib/transfer-route";
 
-const ACTIVE_STATUSES = ["pending", "paid", "driver_assigned", "passenger_picked_up", "completed", "cancel_requested"];
+const ACTIVE_STATUSES = ["pending", "paid", "deposit_paid", "driver_assigned", "passenger_picked_up", "completed", "cancel_requested"];
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();

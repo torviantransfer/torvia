@@ -46,6 +46,7 @@ import {
   routeFor,
   statusMeta,
 } from "./types";
+import { ASSIGNABLE_STATUSES } from "@/lib/reservation-status";
 
 interface Props {
   reservation: Reservation;
@@ -110,7 +111,7 @@ export default function ReservationDetailView({
     );
   const outbound = live("outbound");
   const ret = live("return");
-  const assignable = ["paid", "driver_assigned"].includes(r.status);
+  const assignable = ASSIGNABLE_STATUSES.includes(r.status);
   const profit = reservationProfit(r);
 
   const driverStatus = (() => {

@@ -24,12 +24,14 @@ import QRCodeCanvas from "@/components/QRCodeCanvas";
 import { legRoute } from "@/lib/transfer-route";
 import { convertFromUSD, formatMoney } from "@/lib/currency";
 import { formatBookingTime } from "@/lib/datetime";
+import { CANCELLABLE_STATUSES, IN_PROGRESS_STATUSES } from "@/lib/reservation-status";
 
 const t: Record<string, Record<string, string>> = {
   title: { en: "My Reservations", tr: "Rezervasyonlarım", de: "Meine Buchungen", pl: "Moje rezerwacje", ru: "Мои бронирования" },
   search: { en: "Search by code or hotel…", tr: "Kod veya otel ara…", de: "Suche nach Code oder Hotel…", pl: "Szukaj po kodzie lub hotelu…", ru: "Поиск по коду или отелю…" },
   all: { en: "All", tr: "Tümü", de: "Alle", pl: "Wszystkie", ru: "Все" },
   paid: { en: "Paid", tr: "Ödendi", de: "Bezahlt", pl: "Opłacone", ru: "Оплачено" },
+  deposit_paid: { en: "Deposit Paid", tr: "Depozito Ödendi", de: "Anzahlung bezahlt", pl: "Zadatek opłacony", ru: "Депозит оплачен", nl: "Aanbetaling betaald" },
   driver_assigned: { en: "Driver Assigned", tr: "Şoför Atandı", de: "Fahrer zugewiesen", pl: "Kierowca przypisany", ru: "Водитель назначен" },
   passenger_picked_up: { en: "Picked Up", tr: "Alındı", de: "Abgeholt", pl: "Odebrano", ru: "Подобран" },
   completed: { en: "Completed", tr: "Tamamlandı", de: "Abgeschlossen", pl: "Zakończone", ru: "Завершено" },
@@ -63,6 +65,7 @@ const t: Record<string, Record<string, string>> = {
 
 const STATUS_BADGE: Record<string, string> = {
   paid: "bg-green-50 text-green-600 border-green-200",
+  deposit_paid: "bg-teal-50 text-teal-600 border-teal-200",
   driver_assigned: "bg-blue-50 text-blue-600 border-blue-200",
   passenger_picked_up: "bg-purple-50 text-purple-600 border-purple-200",
   completed: "bg-gray-100 text-gray-500 border-gray-200",
@@ -71,9 +74,9 @@ const STATUS_BADGE: Record<string, string> = {
   pending: "bg-yellow-50 text-yellow-600 border-yellow-200",
 };
 
-const CANCELLABLE = ["pending", "paid", "driver_assigned"];
+const CANCELLABLE = CANCELLABLE_STATUSES;
 
-const FILTER_STATUSES = ["all", "paid", "driver_assigned", "passenger_picked_up", "completed", "cancelled"];
+const FILTER_STATUSES = ["all", "paid", "deposit_paid", "driver_assigned", "passenger_picked_up", "completed", "cancelled"];
 
 interface Reservation {
   id: string;
@@ -425,7 +428,7 @@ export default function ReservationsList({
                       </div>
                     )}
 
-                    {r.qr_code_token && ["paid", "driver_assigned", "passenger_picked_up"].includes(r.status) && (
+                    {r.qr_code_token && IN_PROGRESS_STATUSES.includes(r.status) && (
                       <div className="rounded-2xl border border-gray-200 bg-white p-4">
                         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-950">
                           <QrCode size={16} />
@@ -445,7 +448,7 @@ export default function ReservationsList({
                     {/* Actions */}
                     <div className="flex flex-wrap items-center gap-2">
                       {/* Download voucher */}
-                      {(r.status === "paid" || r.status === "driver_assigned" || r.status === "passenger_picked_up") && (
+                      {IN_PROGRESS_STATUSES.includes(r.status) && (
                         <a
                           href={`/api/voucher?code=${r.reservation_code}&locale=${locale}`}
                           target="_blank"

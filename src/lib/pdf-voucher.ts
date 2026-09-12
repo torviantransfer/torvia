@@ -47,6 +47,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "This document serves as your official transfer voucher.",
     contact: "24/7 Support: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "PAID & CONFIRMED",
+    depositPaid: "DEPOSIT PAID & CONFIRMED",
   },
   tr: {
     title: "TRANSFER VOUCHER",
@@ -87,6 +88,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Bu belge resmi transfer voucherınız olarak geçerlidir.",
     contact: "7/24 Destek: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "ÖDENDİ & ONAYLANDI",
+    depositPaid: "KAPORA ÖDENDİ & ONAYLANDI",
   },
   de: {
     title: "TRANSFER VOUCHER",
@@ -127,6 +129,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Dieses Dokument dient als Ihr offizieller Transfer-Voucher.",
     contact: "24/7 Support: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "BEZAHLT & BESTÄTIGT",
+    depositPaid: "ANZAHLUNG BEZAHLT & BESTÄTIGT",
   },
   pl: {
     title: "VOUCHER TRANSFEROWY",
@@ -167,6 +170,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Ten dokument służy jako oficjalny voucher transferowy.",
     contact: "24/7 Wsparcie: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "OPŁACONO I POTWIERDZONE",
+    depositPaid: "ZADATEK OPŁACONY I POTWIERDZONY",
   },
   ru: {
     title: "ВАУЧЕР НА ТРАНСФЕР",
@@ -207,6 +211,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Этот документ является вашим официальным ваучером на трансфер.",
     contact: "24/7 Поддержка: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "ОПЛАЧЕНО И ПОДТВЕРЖДЕНО",
+    depositPaid: "ДЕПОЗИТ ОПЛАЧЕН И ПОДТВЕРЖДЁН",
   },
   nl: {
     title: "TRANSFERVOUCHER",
@@ -247,6 +252,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Dit document geldt als uw officiële transfervoucher.",
     contact: "24/7 Support: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "BETAALD & BEVESTIGD",
+    depositPaid: "AANBETALING VOLDAAN & BEVESTIGD",
   },
   ro: {
     title: "VOUCHER DE TRANSFER",
@@ -287,6 +293,7 @@ const labels: Record<string, Record<string, string>> = {
     footer: "Acest document constituie voucherul dumneavoastră oficial de transfer.",
     contact: "Suport 24/7: 0242 606 07 63 | torviantransfer@gmail.com",
     paid: "PLĂTIT ȘI CONFIRMAT",
+    depositPaid: "AVANS ACHITAT ȘI CONFIRMAT",
   },
 };
 
@@ -340,8 +347,11 @@ export async function generatePDFVoucher(data: ReservationEmailData): Promise<Bu
   doc.setFont("Inter", "normal");
   doc.text("VIP AIRPORT TRANSFER", margin, y + 6);
 
-  // Status badge (right side)
-  const statusText = t(loc, "paid");
+  /* Status badge (right side).
+     A cash booking has only paid its deposit, so stamping PAID on that voucher
+     tells the passenger the fare is settled and invites an argument with the
+     driver who still has to collect the balance. */
+  const statusText = t(loc, data.paymentMethod === "cash" ? "depositPaid" : "paid");
   doc.setFillColor(240, 253, 244);
   doc.roundedRect(rightEdge - 50, y - 8, 50, 10, 2, 2, "F");
   doc.setDrawColor(187, 247, 208);

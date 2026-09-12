@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
 
 export async function GET() {
   // Auth check
@@ -34,7 +35,7 @@ export async function GET() {
       return rd.getMonth() === month && rd.getFullYear() === year;
     });
     const paidInMonth = inMonth.filter((r) =>
-      ["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status)
+      CONFIRMED_STATUSES.includes(r.status)
     );
     monthlyRevenue.push({
       month: label,
@@ -57,7 +58,7 @@ export async function GET() {
     const name = (rn as { name_en: string } | null)?.name_en ?? "Unknown";
     if (!regionMap[name]) regionMap[name] = { name, count: 0, revenue: 0 };
     regionMap[name].count++;
-    if (["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status)) {
+    if (CONFIRMED_STATUSES.includes(r.status)) {
       regionMap[name].revenue += r.total_price;
     }
   }
@@ -87,7 +88,7 @@ export async function GET() {
 
   // --- Summary stats ---
   const totalRevenue = all
-    .filter((r) => ["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status))
+    .filter((r) => CONFIRMED_STATUSES.includes(r.status))
     .reduce((s, r) => s + r.total_price, 0);
 
   const thisMonth = all.filter((r) => {
@@ -95,12 +96,12 @@ export async function GET() {
     return rd.getMonth() === now.getMonth() && rd.getFullYear() === now.getFullYear();
   });
   const thisMonthRevenue = thisMonth
-    .filter((r) => ["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status))
+    .filter((r) => CONFIRMED_STATUSES.includes(r.status))
     .reduce((s, r) => s + r.total_price, 0);
 
   const cancelRequested = all.filter((r) => r.status === "cancel_requested").length;
   const paymentInitiated = all.filter((r) => r.stripe_payment_intent_id !== null).length;
-  const paymentCompleted = all.filter((r) => ["paid", "driver_assigned", "passenger_picked_up", "completed"].includes(r.status)).length;
+  const paymentCompleted = all.filter((r) => CONFIRMED_STATUSES.includes(r.status)).length;
   const paymentPending = all.filter((r) => r.status === "pending" && r.stripe_payment_intent_id !== null).length;
   const paymentConversion = paymentInitiated > 0 ? Math.round((paymentCompleted / paymentInitiated) * 100) : 0;
 

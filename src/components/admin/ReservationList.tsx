@@ -24,6 +24,7 @@ import {
   statusMeta,
   todayKey,
 } from "./reservations/types";
+import { ASSIGNABLE_STATUSES } from "@/lib/reservation-status";
 
 interface Props {
   reservations: Reservation[];
@@ -43,7 +44,7 @@ const DATE_SCOPES: Array<{ key: DateScope; label: string }> = [
 
 /** A paid transfer with any leg still missing a driver needs operator attention. */
 function missingDriver(r: Reservation) {
-  if (!["paid", "driver_assigned"].includes(r.status)) return false;
+  if (!ASSIGNABLE_STATUSES.includes(r.status)) return false;
   if (!liveAssignment(r, "outbound")) return true;
   return r.trip_type === "round_trip" && !liveAssignment(r, "return");
 }
@@ -205,6 +206,7 @@ export default function ReservationList({ reservations, adminBase }: Props) {
             <option value="all">Tüm durumlar</option>
             <option value="pending">Ödeme bekliyor</option>
             <option value="paid">Ödendi</option>
+            <option value="deposit_paid">Depozito ödendi</option>
             <option value="driver_assigned">Şoför atandı</option>
             <option value="passenger_picked_up">Yolcu alındı</option>
             <option value="completed">Tamamlandı</option>

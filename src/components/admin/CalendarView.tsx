@@ -34,6 +34,7 @@ interface CalendarEvent {
 const STATUS_COLOR: Record<string, { bg: string; dot: string; text: string }> = {
   pending: { bg: "bg-amber-50", dot: "bg-amber-400", text: "text-amber-700" },
   paid: { bg: "bg-blue-50", dot: "bg-blue-400", text: "text-blue-700" },
+  deposit_paid: { bg: "bg-teal-50", dot: "bg-teal-400", text: "text-teal-700" },
   driver_assigned: { bg: "bg-violet-50", dot: "bg-violet-400", text: "text-violet-700" },
   passenger_picked_up: { bg: "bg-indigo-50", dot: "bg-indigo-400", text: "text-indigo-700" },
   completed: { bg: "bg-emerald-50", dot: "bg-emerald-400", text: "text-emerald-700" },

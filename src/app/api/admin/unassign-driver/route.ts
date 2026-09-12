@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { settledStatusFor } from "@/lib/reservation-status";
 
 export async function POST(request: NextRequest) {
   const { error: authError } = await requireAdmin();
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const { data: assignment, error: fetchError } = await supabase
       .from("driver_assignments")
-      .select("id, reservation_id, status")
+      .select("id, reservation_id, status, reservations(payment_method)")
       .eq("id", assignmentId)
       .single();
 
@@ -43,7 +44,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Atama kaldırılamadı." }, { status: 500 });
     }
 
-    // Revert reservation to 'paid' if no active assignments remain
+    // Back to the paid state if no active assignments remain. Which paid state
+    // depends on how the fare is being settled: writing `paid` on a cash
+    // booking would say the whole fare is in, when the driver has yet to
+    // collect the balance from the passenger.
     const { data: remaining } = await supabase
       .from("driver_assignments")
       .select("id")
@@ -51,9 +55,15 @@ export async function POST(request: NextRequest) {
       .in("status", ["assigned", "accepted", "picked_up"]);
 
     if (!remaining || remaining.length === 0) {
+      /* PostgREST hands a to-one join back as an object, while the generated
+         types describe it as an array. Unwrap either shape. */
+      const reservation = Array.isArray(assignment.reservations)
+        ? assignment.reservations[0]
+        : assignment.reservations;
+
       await supabase
         .from("reservations")
-        .update({ status: "paid" })
+        .update({ status: settledStatusFor(reservation?.payment_method) })
         .eq("id", assignment.reservation_id);
     }
 

@@ -3,8 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCancelRequest } from "@/lib/telegram";
 import { legRoute } from "@/lib/transfer-route";
 import { formatBookingDateTime } from "@/lib/datetime";
+import { CANCELLABLE_STATUSES } from "@/lib/reservation-status";
 
-const CANCELLABLE = ["pending", "paid", "driver_assigned"];
+const CANCELLABLE = CANCELLABLE_STATUSES;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

@@ -109,6 +109,15 @@ export const STATUS_META: Record<
     rail: "bg-sky-500",
     dot: "bg-sky-500",
   },
+  // A cash booking: the deposit is in, the driver collects the rest. Its own
+  // colour because the two are not the same money and the operator has to be
+  // able to tell them apart at a glance in the list.
+  deposit_paid: {
+    label: "Depozito Ödendi",
+    chip: "bg-teal-50 text-teal-700 ring-1 ring-teal-200",
+    rail: "bg-teal-500",
+    dot: "bg-teal-500",
+  },
   driver_assigned: {
     label: "Şoför Atandı",
     chip: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",

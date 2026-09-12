@@ -24,6 +24,7 @@ import {
   Shield,
 } from "lucide-react";
 import { convertFromUSD, formatMoney } from "@/lib/currency";
+import { CANCELLABLE_STATUSES } from "@/lib/reservation-status";
 
 interface Reservation {
   id: string;
@@ -83,6 +84,7 @@ const statusConfig: Record<
 > = {
   pending: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", textColor: "text-amber-600" },
   paid: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-600" },
+  deposit_paid: { icon: CheckCircle, color: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/30", textColor: "text-teal-600" },
   driver_assigned: { icon: Truck, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/30", textColor: "text-blue-600" },
   passenger_picked_up: { icon: Car, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30", textColor: "text-violet-300" },
   completed: { icon: CheckCircle, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", textColor: "text-emerald-600" },
@@ -90,7 +92,7 @@ const statusConfig: Record<
   cancelled: { icon: XCircle, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/30", textColor: "text-red-500" },
 };
 
-const CANCELLABLE = ["pending", "paid", "driver_assigned"];
+const CANCELLABLE = CANCELLABLE_STATUSES;
 
 export default function TrackReservation() {
   const t = useTranslations("track");
@@ -240,9 +242,13 @@ export default function TrackReservation() {
   const sc = statusConfig[reservation?.status ?? ""] ?? statusConfig.pending;
   const StatusIcon = sc.icon;
 
-  // Status timeline steps
+  // Status timeline steps. A cash booking's `deposit_paid` sits on the paid
+  // step: the customer has paid what was asked of them online, and the timeline
+  // would otherwise light nothing up at all for those bookings.
   const statusSteps = ["pending", "paid", "driver_assigned", "completed"];
-  const currentStepIdx = statusSteps.indexOf(reservation?.status ?? "");
+  const timelineStatus =
+    reservation?.status === "deposit_paid" ? "paid" : reservation?.status ?? "";
+  const currentStepIdx = statusSteps.indexOf(timelineStatus);
 
   return (
     <div className="max-w-3xl mx-auto">

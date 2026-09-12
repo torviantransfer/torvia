@@ -3,6 +3,7 @@ import DriverPayments from "@/components/admin/DriverPayments";
 import DriverEarnings, {
   type EarningsReservation,
 } from "@/components/admin/DriverEarnings";
+import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
 
 // Fees are edited on the reservations screen and the numbers here have to move
 // with them, so this must never come back from a prerender.
@@ -13,14 +14,10 @@ export const dynamic = "force-dynamic";
  *
  * `pending` has not been paid for and `cancelled` was refunded — counting
  * either as revenue would inflate the earnings figure with fares that never
- * arrived.
+ * arrived. `deposit_paid` does belong: a cash booking's deposit has cleared and
+ * the driver is owed for the job, which is the whole point of this screen.
  */
-const EARNING_STATUSES = [
-  "paid",
-  "driver_assigned",
-  "passenger_picked_up",
-  "completed",
-];
+const EARNING_STATUSES = CONFIRMED_STATUSES;
 
 export default async function AdminDriverPaymentsPage() {
   const supabase = createAdminClient();

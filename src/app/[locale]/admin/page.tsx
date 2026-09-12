@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts";
+import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
 
 export default async function AdminDashboard({
   params,
@@ -48,12 +49,7 @@ export default async function AdminDashboard({
   const { data: paidReservations } = await supabase
     .from("reservations")
     .select("total_price")
-    .in("status", [
-      "paid",
-      "driver_assigned",
-      "passenger_picked_up",
-      "completed",
-    ]);
+    .in("status", CONFIRMED_STATUSES);
 
   const totalRevenue =
     paidReservations?.reduce((sum, r) => sum + r.total_price, 0) ?? 0;
@@ -96,6 +92,7 @@ export default async function AdminDashboard({
   const statusConfig: Record<string, { bg: string; dot: string }> = {
     pending: { bg: "bg-amber-50 text-amber-700", dot: "bg-amber-400" },
     paid: { bg: "bg-blue-50 text-blue-700", dot: "bg-blue-400" },
+    deposit_paid: { bg: "bg-teal-50 text-teal-700", dot: "bg-teal-400" },
     driver_assigned: {
       bg: "bg-violet-50 text-violet-700",
       dot: "bg-violet-400",

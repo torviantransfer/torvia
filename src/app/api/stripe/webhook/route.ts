@@ -68,14 +68,43 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true, duplicate: true });
       }
 
-      // Update reservation status: deposit_paid for cash bookings, paid for online
-      await supabase
+      /* Update reservation status: deposit_paid for cash bookings, paid for
+         online.
+
+         This error used to be discarded, and it was the one that mattered: the
+         status CHECK constraint did not list `deposit_paid`, so every cash
+         booking's write was rejected while the handler carried on sending the
+         confirmation mail and the Telegram. The booking looked confirmed
+         everywhere except in the one place the rest of the panel reads.
+         Migration 084 widened the constraint; this makes sure the next such
+         mismatch is visible instead of silent. */
+      const { error: statusError } = await supabase
         .from("reservations")
         .update({
           status: newStatus,
           stripe_payment_intent_id: paymentIntent.id,
         })
         .eq("id", reservationId);
+
+      if (statusError) {
+        console.error(
+          `[stripe-webhook] ${reservationCode}: could not set status ${newStatus}:`,
+          statusError.message
+        );
+        await supabase.from("notification_log").insert({
+          reservation_id: reservationId,
+          type: "status_write_failed",
+          channel: "system",
+          recipient: "admin",
+          content: `Payment succeeded for ${reservationCode ?? "?"} but the status could not be set to ${newStatus}: ${statusError.message}`,
+          status: "failed",
+          metadata: {
+            reservation_id: reservationId,
+            payment_intent_id: paymentIntent.id,
+            attempted_status: newStatus,
+          },
+        });
+      }
 
       // Log notification
       await supabase.from("notification_log").insert({

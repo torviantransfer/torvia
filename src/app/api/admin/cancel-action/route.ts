@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCancelAction } from "@/lib/telegram";
+import { settledStatusFor } from "@/lib/reservation-status";
 
 export async function POST(req: NextRequest) {
   // Verify admin auth
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   const { data: reservation } = await admin
     .from("reservations")
-    .select("id, reservation_code, status, customer_id, customers(email, first_name, last_name)")
+    .select("id, reservation_code, status, payment_method, customer_id, customers(email, first_name, last_name)")
     .eq("id", reservation_id)
     .single();
 
@@ -31,7 +32,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Reservation not found or not in cancel_requested state" }, { status: 400 });
   }
 
-  const newStatus = action === "approve" ? "cancelled" : "paid";
+  // Rejecting puts the booking back where it was. A cash booking goes back to
+  // `deposit_paid`, not `paid`: only the deposit has reached us, and the driver
+  // still collects the balance.
+  const newStatus =
+    action === "approve" ? "cancelled" : settledStatusFor(reservation.payment_method);
 
   if (action === "approve") {
     // Close active driver assignments for this reservation so drivers become free again.
