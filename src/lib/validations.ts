@@ -13,12 +13,28 @@ export const reservationSchema = z.object({
   pickupTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
   returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   returnTime: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
-  // Required, both of them: the driver needs somewhere to take the customer,
-  // and the flight is what tells the office a 3am arrival is running late
-  // rather than a no-show. Optional here meant a paid booking could arrive
-  // with neither, and the office chased it down by hand afterwards.
-  flightCode: z.string().trim().min(2, "Flight code is required").max(20),
-  returnFlightCode: z.string().trim().max(20).optional().nullable(),
+  /* Both were required. The driver does need somewhere to take the customer and
+     the flight number is what tells the office a 3am arrival is running late
+     rather than a no-show — but demanding them at checkout asks for answers the
+     customer often does not have yet. The flight is usually booked after the
+     transfer is priced, and the hotel can still be undecided. Requiring them
+     bought clean records at the price of the booking itself.
+     Empty strings are normalised to null so a blank field is stored as "not
+     given" rather than as "". */
+  flightCode: z
+    .string()
+    .trim()
+    .max(20)
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null)),
+  returnFlightCode: z
+    .string()
+    .trim()
+    .max(20)
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null)),
   adults: z.number().int().min(1).max(20).default(1),
   children: z.number().int().min(0).max(10).default(0),
   luggage: z.number().int().min(0).max(20).default(0),
@@ -29,7 +45,13 @@ export const reservationSchema = z.object({
   lastName: z.string().trim().min(1).max(100),
   email: z.string().trim().toLowerCase().email("Invalid email address").max(255),
   phone: z.string().trim().min(7).max(20).regex(/^[+]?[0-9\s()-]+$/, "Invalid phone number"),
-  hotelName: z.string().trim().min(2, "Hotel or address is required").max(200),
+  hotelName: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .nullable()
+    .transform((v) => (v ? v : null)),
   hotelAddress: z.string().max(500).optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
   couponCode: z.string().max(50).optional().nullable(),
@@ -52,16 +74,6 @@ export const reservationSchema = z.object({
     return true;
   },
   { message: "Return date/time required for round trip", path: ["returnDate"] }
-).refine(
-  (data) => {
-    // Only a round trip has a second flight. Requiring it of a one-way booking
-    // would be asking for a number that does not exist.
-    if (data.tripType === "round_trip") {
-      return !!data.returnFlightCode && data.returnFlightCode.trim().length >= 2;
-    }
-    return true;
-  },
-  { message: "Return flight code is required for round trip", path: ["returnFlightCode"] }
 );
 
 export const trackReservationSchema = z.object({

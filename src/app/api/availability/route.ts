@@ -6,6 +6,7 @@ import {
   getDateOverrides,
   getGlobalMaxDaily,
 } from "@/lib/availability";
+import { CAPACITY_STATUSES } from "@/lib/reservation-status";
 
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
@@ -96,24 +97,28 @@ export async function GET(request: NextRequest) {
         if (suggestedDates.length > 0 && regionSlug) {
           const { data: cats } = await supabase
             .from("vehicle_categories")
-            .select("name, slug, image_url, max_passengers")
+            .select("id, name, slug, image_url, max_passengers")
             .eq("is_active", true)
             .order("sort_order");
 
           if (cats && cats.length > 0) {
             for (const sd of suggestedDates) {
+              /* By category_id. This read asked for `category_slug`, a column
+                 reservations has never had, so it errored on every call and the
+                 filter below silently kept every vehicle — including one already
+                 out on that date. */
               const { data: dateReservations } = await supabase
                 .from("reservations")
-                .select("category_slug")
+                .select("category_id")
                 .gte("pickup_datetime", `${sd}T00:00:00`)
                 .lte("pickup_datetime", `${sd}T23:59:59`)
-                .not("status", "in", '("cancelled")');
+                .in("status", CAPACITY_STATUSES);
 
-              const bookedSlugs = new Set(
-                (dateReservations ?? []).map((r) => r.category_slug)
+              const bookedIds = new Set(
+                (dateReservations ?? []).map((r) => r.category_id)
               );
               suggestedVehicles[sd] = cats
-                .filter((c) => !bookedSlugs.has(c.slug))
+                .filter((c) => !bookedIds.has(c.id))
                 .map((c) => ({
                   name: c.name,
                   slug: c.slug,

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { CAPACITY_STATUSES } from "./reservation-status";
 
 /**
  * Capacity rules live here so the customer-facing calendar (/api/availability)
@@ -108,6 +109,9 @@ export function capacityFor(
 /**
  * Transfers already booked per date across [from, to]. A round trip occupies a
  * slot on both its outbound day and its return day.
+ *
+ * Only bookings that have actually been paid for count — see CAPACITY_STATUSES
+ * for why an abandoned checkout must not hold a seat.
  */
 export async function countBookingsByDate(
   supabase: Client,
@@ -122,14 +126,14 @@ export async function countBookingsByDate(
       .select("pickup_datetime")
       .gte("pickup_datetime", `${from}T00:00:00`)
       .lte("pickup_datetime", `${to}T23:59:59`)
-      .not("status", "in", '("cancelled")'),
+      .in("status", CAPACITY_STATUSES),
     supabase
       .from("reservations")
       .select("return_datetime")
       .not("return_datetime", "is", null)
       .gte("return_datetime", `${from}T00:00:00`)
       .lte("return_datetime", `${to}T23:59:59`)
-      .not("status", "in", '("cancelled")'),
+      .in("status", CAPACITY_STATUSES),
   ]);
 
   for (const r of outbound ?? []) {

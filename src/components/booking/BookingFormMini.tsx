@@ -26,7 +26,14 @@ import {
   Headphones,
 } from "lucide-react";
 
-interface Region {
+/**
+ * A destination as this form needs it: an id, a slug, and a name per locale.
+ *
+ * `name_ro` and `name_ar` were missing, so Romanian and Arabic visitors read
+ * the English name for every destination even though the column holds their
+ * own — `getRegionLabel` falls back to English for anything not listed here.
+ */
+export interface MiniRegion {
   id: string;
   slug: string;
   name_tr: string;
@@ -35,6 +42,8 @@ interface Region {
   name_pl: string;
   name_ru: string;
   name_nl: string;
+  name_ro?: string;
+  name_ar?: string;
 }
 
 function getCalDays(year: number, month: number) {
@@ -159,15 +168,26 @@ interface BookingFormMiniProps {
   /** Pre-fills the destination (from a region page's "Book Now" CTA) so the
    * visitor only has to pick a date/time instead of re-selecting the route. */
   presetRegion?: string;
+  /**
+   * The destination list, when the page that renders this form already read it
+   * on the server.
+   *
+   * Without it the form mounts with an empty route picker and fetches
+   * /api/regions — a round trip that only starts after the form's own
+   * JavaScript has arrived, so on the booking page a visitor could reach the
+   * route field before it had anything in it. The page holds these rows
+   * already, for the price cards underneath.
+   */
+  initialRegions?: MiniRegion[];
 }
 
-export default function BookingFormMini({ presetRegion }: BookingFormMiniProps = {}) {
+export default function BookingFormMini({ presetRegion, initialRegions }: BookingFormMiniProps = {}) {
   const t = useTranslations("booking");
   const locale = useLocale();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [regions, setRegions] = useState<Region[]>([]);
+  const [regions, setRegions] = useState<MiniRegion[]>(initialRegions ?? []);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [depDate, setDepDate] = useState<Date | null>(null);
@@ -239,12 +259,16 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     } catch {}
   }, [from, to, depDate, depH, depM, hasRet, retDate, retH, retM, adults, kids]);
 
+  // Only when the page did not hand them over. The list changes when a region
+  // is added in the admin panel, not between one visit and the next, so a page
+  // that already read it has nothing to gain from asking again.
   useEffect(() => {
+    if (initialRegions && initialRegions.length > 0) return;
     fetch("/api/regions")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setRegions(d); })
       .catch(() => {});
-  }, []);
+  }, [initialRegions]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -262,13 +286,13 @@ export default function BookingFormMini({ presetRegion }: BookingFormMiniProps =
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const nameKey = `name_${locale}` as keyof Region;
+  const nameKey = `name_${locale}` as keyof MiniRegion;
   const airportName = ({ tr: "Antalya Havalimanı (AYT)", en: "Antalya Airport (AYT)", de: "Flughafen Antalya (AYT)", pl: "Lotnisko Antalya (AYT)", ru: "Аэропорт Анталья (AYT)" } as Record<string, string>)[locale] ?? "Antalya Airport (AYT)";
   const swapLabel = ({ tr: "Kalkış ve varış yerini değiştir", de: "Start und Ziel tauschen", pl: "Zamień miejsce startu i celu", ru: "Поменять местами пункты отправления и назначения", nl: "Vertrek en bestemming omwisselen" } as Record<string, string>)[locale] ?? "Swap pickup and dropoff";
   const removeReturnLabel = ({ tr: "Dönüş tarihini kaldır", de: "Rückreisedatum entfernen", pl: "Usuń datę powrotu", ru: "Удалить дату возврата", nl: "Retourdatum verwijderen" } as Record<string, string>)[locale] ?? "Remove return date";
   const bookingHint = t("bookNow");
   const REGION_NAME_OVERRIDES: Record<string, string> = { "kundu-lara": "Kundu" };
-  const getRegionLabel = (r: Region) => REGION_NAME_OVERRIDES[r.slug] ?? ((r[nameKey] as string) || r.name_en);
+  const getRegionLabel = (r: MiniRegion) => REGION_NAME_OVERRIDES[r.slug] ?? ((r[nameKey] as string) || r.name_en);
   const getName = (slug: string) => {
     if (slug === "antalya-airport") return airportName;
     const r = regions.find((r) => r.slug === slug);

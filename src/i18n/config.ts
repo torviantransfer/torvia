@@ -102,3 +102,33 @@ export const localeCurrencies: Record<Locale, Currency> = {
   // there are dollar-pegged.
   ar: "USD",
 };
+
+/**
+ * Country the phone field opens on, per locale.
+ *
+ * It used to open on Turkey for everyone, which is the one country almost none
+ * of our customers are phoning from. A Polish visitor on /pl met a Turkish flag
+ * and a +90 prefix on the field right before payment: either they hunt through
+ * the country list, or they type their own number under +90 and we end up with
+ * a number nobody can reach them on. The visitor's own country is the only
+ * sensible starting guess, and the language they chose to read the page in is
+ * the best signal we have for it.
+ *
+ * Still a guess, and still changeable in the field's own country list — a Pole
+ * holidaying with a German number switches it in one tap.
+ *
+ * ISO 3166-1 alpha-2, as react-phone-number-input expects.
+ */
+export const localePhoneCountries: Record<Locale, string> = {
+  tr: "TR",
+  pl: "PL",
+  de: "DE",
+  ru: "RU",
+  nl: "NL",
+  ro: "RO",
+  // English is read by every market; the UK is the largest English-speaking
+  // source of Antalya arrivals, so it is the least wrong default.
+  en: "GB",
+  // Saudi Arabia is the biggest Arabic-speaking market flying into Antalya.
+  ar: "SA",
+};

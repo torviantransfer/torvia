@@ -4,12 +4,18 @@ import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import PhoneInput from "react-phone-number-input";
+import PhoneInput, { type Country } from "react-phone-number-input";
 import * as flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
+/* Imported outright, not through another dynamic().
+   This whole module is already client-only, and the no-date branch below hands
+   straight over to this form — so lazily loading it meant the booking page
+   fetched one chunk, ran it, and only then discovered it needed a second chunk
+   before anything appeared. Two waterfalls to draw the first thing on the page.
+   Together they are one import. */
+import BookingFormMini, { type MiniRegion } from "./BookingFormMini";
 
 const StripeCheckoutEmbed = dynamic(() => import("./StripeCheckoutEmbed"), { ssr: false });
-const BookingFormMini = dynamic(() => import("./BookingFormMini"), { ssr: false });
 
 import {
   Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
@@ -35,9 +41,12 @@ interface Props {
   initialAdults?: number;
   initialChildren?: number;
   initialLuggage?: number;
+  /** Destinations read on the server, so the route picker is filled on arrival
+   * rather than after a fetch. Only reaches the no-date mini form. */
+  initialRegions?: MiniRegion[];
 }
 
-import type { Locale } from "@/i18n/config";
+import { localePhoneCountries, type Locale } from "@/i18n/config";
 // The airport's label and the order of the two stops live in one place, so the
 // wizard, the voucher, the emails and the driver panel cannot disagree.
 import { airportLabel, normalizeDirection, type Direction } from "@/lib/transfer-route";
@@ -87,7 +96,12 @@ export default function BookingWizard(props: Props) {
   // homepage, destination pre-filled — so they can pick a date before the
   // full wizard (which requires one) takes over.
   if (!props.initialRegion || !props.initialDate) {
-    return <BookingFormMini presetRegion={props.initialRegion} />;
+    return (
+      <BookingFormMini
+        presetRegion={props.initialRegion}
+        initialRegions={props.initialRegions}
+      />
+    );
   }
 
   return <BookingWizardInner {...props} />;
@@ -96,6 +110,12 @@ function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
   const locale = useLocale() as Locale;
   const { format: fmt, formatBilling, isConverted } = useCurrency();
+
+  /* The phone field's starting country. Cast because the library names its own
+     union for these; the map holds ISO 3166-1 alpha-2 codes, which is exactly
+     that union's domain, and keeping the locale config free of a library type
+     is worth the cast. */
+  const phoneCountry = (localePhoneCountries[locale] ?? "TR") as Country;
 
   const regionSlug = props.initialRegion!;
   const direction = normalizeDirection(props.initialDirection);
@@ -430,9 +450,30 @@ function BookingWizardInner(props: Props) {
 
   const anyVehicleFits = vehicles.some((v) => vehicleFit(v).fits);
 
+  /**
+   * Is the pickup already behind us? Same rule the server applies: the stored
+   * time is an Antalya wall clock, and an hour of grace covers the customer who
+   * books a transfer for a flight that has just landed.
+   *
+   * Worth asking here because the search form lets a visitor pick today with a
+   * time that has passed — and Turkey runs an hour ahead of most of the markets
+   * we advertise in, so "today at noon" can already be gone for someone whose
+   * own clock says eleven.
+   */
+  const pickupIsPast = () => {
+    if (!pickupDate) return false;
+    const pickup = new Date(`${pickupDate}T${pickupTime}:00+03:00`);
+    if (Number.isNaN(pickup.getTime())) return false;
+    return pickup.getTime() <= Date.now() - 60 * 60 * 1000;
+  };
+
   const selectVehicle = (vehicle: VehicleOption) => {
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!dateAvailable) { setError(t("dateUnavailable")); return; }
+    /* Said here rather than after the form. The server refuses this booking
+       either way, and it used to do so only once the customer had filled in
+       every field — which is the most expensive possible moment to find out. */
+    if (pickupIsPast()) { setError(t("errorPastDate")); return; }
     // The card for a vehicle that cannot take the party is rendered disabled,
     // but guard here too so a stale click or a keyboard activation cannot slip
     // an over-capacity booking through.
@@ -465,6 +506,10 @@ function BookingWizardInner(props: Props) {
     setError(null);
     if (!pickupDate) { setError(t("errorSelectDate")); return; }
     if (!selectedVehicle) return;
+    /* A restored session can sit on this step long enough for its own pickup
+       time to pass. Caught before the request so the answer is instant and in
+       the customer's language, rather than a rejection to be translated back. */
+    if (pickupIsPast()) { setError(t("errorPastDate")); return; }
 
     const errors: Record<string, string> = {};
     if (!firstName.trim()) errors.firstName = t("fieldRequired");
@@ -475,10 +520,12 @@ function BookingWizardInner(props: Props) {
     // missing @ or a bare domain — not to adjudicate RFC 5322.
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) errors.email = t("errorInvalidEmail");
     if (!phone.trim()) errors.phone = t("fieldRequired");
-    if (!flightCode.trim()) errors.flightCode = t("fieldRequired");
-    // Only where there is a return leg — a one-way booking has no second flight.
-    if (tripType === "round_trip" && !returnFlightCode.trim()) errors.returnFlightCode = t("fieldRequired");
-    if (!hotelName.trim()) errors.hotelName = t("fieldRequired");
+    /* Flight number and hotel are asked for but no longer demanded. Both were
+       required, and both are answers a customer comparing prices often does not
+       have yet: the flight is booked after the transfer is priced, and the hotel
+       may still be undecided. A required field they cannot fill is a customer
+       who leaves and does not come back. The office collects both later from a
+       booking that exists, which is the trade that pays. */
     // Reachable even with the counters clamped: a restored session or a URL
     // carrying ?adults= can seat more people than the vehicle holds.
     if (adults + children > selectedVehicle.max_passengers) {
@@ -516,6 +563,17 @@ function BookingWizardInner(props: Props) {
            Russian customer was shown "email: Invalid email" — and `data.error`
            is English prose. Each case is mapped to a translated message, on
            the field itself wherever the server names one. */
+
+        /* A date that filled up, or was closed, between the calendar and this
+           submit. It used to land on "Something went wrong", which tells the
+           customer nothing they can act on; the date message at least sends
+           them back to pick another day, and marking the date unavailable means
+           step 1 offers them the alternatives when they get there. */
+        if (data.code === "date_full" || data.code === "date_unavailable") {
+          setError(t("dateUnavailable"));
+          setDateAvailable(false);
+          return;
+        }
         if (data.code === "capacity_exceeded") {
           const capacityError = {
             party: t("errorCapacityExceeded", { max: data.maxPassengers ?? selectedVehicle.max_passengers }),
@@ -587,6 +645,34 @@ function BookingWizardInner(props: Props) {
     (el as HTMLElement).focus?.({ preventScroll: true });
     el.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+
+  /**
+   * The whole-form error, rendered wherever the customer is looking.
+   *
+   * It used to exist once, at the very top of the wizard. On step 2 the pay
+   * button sits at the bottom of a long form, so a refusal from the server — a
+   * date gone full while they typed, a pickup time now in the past — was
+   * announced a screenful or more above where they had just tapped. What the
+   * customer saw was the spinner stop and nothing happen, which is
+   * indistinguishable from a broken button, and they left. Step 2 now draws it
+   * directly above the buttons instead.
+   */
+  const errorBanner = (className: string) =>
+    error ? (
+      <div
+        role="alert"
+        aria-live="assertive"
+        className={`p-4 rounded-lg text-red-600 flex items-center gap-2 text-sm ${className}`}
+        style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+      >
+        <AlertCircle size={16} className="flex-shrink-0" />
+        <span>{error}</span>
+        {/* type="button": inside the step 2 form, a bare button submits it. */}
+        <button type="button" onClick={() => setError(null)} className="ms-auto flex-shrink-0">
+          <X size={14} />
+        </button>
+      </div>
+    ) : null;
 
   const clearFieldError = (name: string) =>
     setFieldErrors((prev) => {
@@ -755,13 +841,9 @@ function BookingWizardInner(props: Props) {
         </div>
       )}
 
-      {/* Error */}
-      {error && (
-        <div className="mb-6 p-4 rounded-lg text-red-600 flex items-center gap-2 text-sm" style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-          <AlertCircle size={16} />{error}
-          <button onClick={() => setError(null)} className="ms-auto"><X size={14} /></button>
-        </div>
-      )}
+      {/* Error — on step 2 it is rendered down beside the pay button instead.
+          See errorBanner. */}
+      {step !== 2 && errorBanner("mb-6")}
       {/* STEP 1: Vehicle Selection */}
       {/* The bottom padding clears the sticky bar, so the last card can still
           be scrolled into full view once a vehicle is chosen. */}
@@ -1013,12 +1095,60 @@ function BookingWizardInner(props: Props) {
       )}
 
       {/* STEP 2: Passenger Info + Extras
-           Order swap on mobile: the summary card comes FIRST so the customer
-           sees vehicle + price before deciding to fill in the form. On desktop
-           we restore the historical form-left / summary-right layout. */}
+           Form left, summary right on desktop. On a phone the form leads and the
+           summary follows it, with the price kept in view by a one-line strip
+           above the form. */}
       {step === 2 && selectedVehicle && (
         <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
-          <div className="lg:col-span-2 order-2 lg:order-1">
+          {/* The form comes first on a phone. The summary card used to, and it
+              is tall enough that the first field was a screen and a half down —
+              the customer's first impression of the step was a price recap they
+              had already agreed to on step 1, not the thing they came to do. The
+              price still travels with them, as the compact strip below. */}
+          <div className="lg:col-span-2 order-1">
+            {/* Phone-only recap. One line, the two things a customer checks
+                before they start typing: what they are buying and what it
+                costs. The full card is still below, and on desktop it is
+                beside them the whole time, so this is hidden there. */}
+            <div
+              className="lg:hidden mb-3 flex items-center gap-3 rounded-xl px-4 py-3"
+              style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)" }}
+            >
+              <div className="relative w-12 h-9 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
+                <Image
+                  src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
+                  alt=""
+                  fill
+                  className="object-contain p-0.5"
+                  sizes="48px"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-bold text-gray-900 leading-tight truncate">
+                  {selectedVehicle.name}
+                </p>
+                <p className="text-[11px] text-gray-400 leading-tight mt-0.5 truncate">
+                  {formatDate(pickupDate)} · {pickupTime}
+                </p>
+              </div>
+              <div className="text-end flex-shrink-0">
+                {/* On a cash booking the figure that matters here is what the
+                    card is about to be charged, not the fare. */}
+                <p className="text-[10px] text-gray-400 leading-none mb-1">
+                  {paymentMethod === "cash" && selectedVehicle.cashDeposit != null
+                    ? t("depositNow")
+                    : t("totalPrice")}
+                </p>
+                <p className={`text-base font-black leading-none ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>
+                  {fmt(
+                    paymentMethod === "cash" && selectedVehicle.cashDeposit != null
+                      ? selectedVehicle.cashDeposit
+                      : totalPrice,
+                    exchangeRates
+                  )}
+                </p>
+              </div>
+            </div>
             <div className="rounded-2xl p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
               {/* Grouped into contact / trip / extras. Everything used to run
                   together as one flat list of eight unrelated fields, so there
@@ -1093,11 +1223,17 @@ function BookingWizardInner(props: Props) {
                   </div>
                   <div>
                     <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
-                    <PhoneInput international defaultCountry="TR" value={phone}
+                    {/* Opens on the visitor's own country, guessed from the
+                        language they are reading in. See localePhoneCountries.
+
+                        No placeholder either: it held our own Antalya landline,
+                        so the customer's phone field suggested they type a
+                        Turkish office number. The flag and the dialling code
+                        already say what belongs here. */}
+                    <PhoneInput international defaultCountry={phoneCountry} value={phone}
                       id="booking-phone"
                       autoComplete="tel"
                       onChange={(val) => { setPhone(val ?? ""); clearFieldError("phone"); }}
-                      placeholder={t("placeholderPhone")}
                       className={`phone-input-dark ${fieldClass("phone")}`}
                       style={fieldStyle("phone")}
                       flagComponent={({ country, countryName }) => {
@@ -1164,7 +1300,7 @@ function BookingWizardInner(props: Props) {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="booking-flightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} *</label>
+                    <label htmlFor="booking-flightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
                     <div className="relative">
                       <Plane size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
@@ -1185,12 +1321,18 @@ function BookingWizardInner(props: Props) {
                       />
                     </div>
                     {fieldMessage("flightCode")}
+                    {/* Says outright that leaving it empty is allowed. An
+                        optional field a customer believes is required stops
+                        them just as dead as a required one. */}
+                    {!flightCode.trim() && (
+                      <p className="mt-1.5 text-[11.5px] text-gray-400">{t("canSendLater")}</p>
+                    )}
                   </div>
 
                   {/* Only for a round trip. A one-way customer has no second
-                      flight, and asking for one would be a required field with
-                      no answer. Where it does appear the customer already has
-                      the number — a return leg is bought on the same ticket.
+                      flight, so there is nothing to ask. Where it does appear
+                      the customer usually has the number already, since a
+                      return leg is bought on the same ticket.
 
                       Its worth is not the same as the arrival flight's. That
                       one is the schedule the driver watches. This one checks a
@@ -1199,7 +1341,7 @@ function BookingWizardInner(props: Props) {
                       see coming, once the number is on record. */}
                   {tripType === "round_trip" && (
                     <div>
-                      <label htmlFor="booking-returnFlightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("returnFlightCode")} *</label>
+                      <label htmlFor="booking-returnFlightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("returnFlightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
                       <div className="relative">
                         <ArrowLeftRight size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
@@ -1220,7 +1362,7 @@ function BookingWizardInner(props: Props) {
                   )}
 
                   <div>
-                    <label htmlFor="booking-hotelName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} *</label>
+                    <label htmlFor="booking-hotelName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
                     <input
                       id="booking-hotelName"
                       type="text"
@@ -1232,6 +1374,9 @@ function BookingWizardInner(props: Props) {
                       style={fieldStyle("hotelName")}
                     />
                     {fieldMessage("hotelName")}
+                    {!hotelName.trim() && (
+                      <p className="mt-1.5 text-[11.5px] text-gray-400">{t("canSendLater")}</p>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -1366,6 +1511,12 @@ function BookingWizardInner(props: Props) {
                   </div>
                 )}
 
+                {/* Whatever went wrong, said where the customer is about to
+                    press — not at the top of the page. No margin of its own:
+                    the form's space-y already sets the gap, and a margin
+                    utility here would fight it. */}
+                {errorBanner("")}
+
                 {/* Navigation */}
                 <div className="flex flex-row gap-3 pt-4">
                   <button type="button" onClick={goBack} className="px-4 py-3 font-medium rounded-xl text-gray-600 transition-colors flex items-center justify-center gap-1.5 text-sm whitespace-nowrap shrink-0" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
@@ -1391,13 +1542,16 @@ function BookingWizardInner(props: Props) {
             </div>
           </div>
           {/* Sidebar */}
-          <div className="lg:col-span-1 order-1 lg:order-2">
+          <div className="lg:col-span-1 order-2">
             <div className="sticky top-24 z-10">
               <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-                {/* Header */}
-                <div className="px-5 py-3.5" style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
-                  <p className="text-[10px] font-semibold text-blue-200 uppercase tracking-widest mb-0.5">{t("orderSummary")}</p>
-                  <h3 className="text-sm font-bold text-white">{t("step1")}</h3>
+                {/* Header.
+                    One line. It used to stack two headings — "Order Summary"
+                    above "Transfer Details" — which said nothing, twice, in the
+                    most prominent place on the card. Everything the customer
+                    needs is already below it, each fact exactly once. */}
+                <div className="px-5 py-3" style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
+                  <h3 className="text-[13px] font-bold text-white tracking-wide">{t("orderSummary")}</h3>
                 </div>
 
                 <div className="p-5 space-y-4">
@@ -1406,11 +1560,16 @@ function BookingWizardInner(props: Props) {
                     <div className="relative w-16 h-11 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
                       <Image src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={selectedVehicle.name} fill className="object-contain p-1" sizes="64px" />
                     </div>
+                    {/* The vehicle's name, and nothing else.
+                        Under it used to sit "6 Passengers · 6 Luggage" — the
+                        seats the Vito has — directly above a line reading
+                        "2 Adult + 4 Child", which is the booking. Two passenger
+                        counts on one card, one of them not about this customer.
+                        Capacity did its job on step 1, where it decided which
+                        vehicles could be picked at all; everything about the
+                        trip itself is stated once, in the block below. */}
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-gray-900 leading-tight">{selectedVehicle.name}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        {selectedVehicle.max_passengers} {t("passengers")} &middot; {selectedVehicle.max_luggage} {t("luggageCapacity")}
-                      </p>
                     </div>
                   </div>
 
@@ -1438,6 +1597,10 @@ function BookingWizardInner(props: Props) {
                           <span className="text-[11px] text-blue-500 font-medium">↔ {formatDate(returnDate)} · {returnTime}</span>
                         )}
                         <span className="text-[11px] text-gray-500">{adults} {t("adult")}{children > 0 ? ` + ${children} ${t("child")}` : ""}</span>
+                        {/* Luggage moved down here, beside the passengers it
+                            belongs with, so the vehicle line above is not a
+                            second place where counts appear. */}
+                        <span className="text-[11px] text-gray-500">{luggage} {t("luggageCapacity")}</span>
                         {/* Carried over from the route bar, which only shows on
                             step 1 now that this card repeats the same trip. */}
                         <span className="text-[11px] text-gray-500">{regionData.distance_km} km · ~{regionData.duration_minutes} min</span>
@@ -1458,10 +1621,39 @@ function BookingWizardInner(props: Props) {
                     || childSeat
                     || (couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0)) && (
                   <div className="space-y-1.5 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-400">{tripType === "round_trip" ? `2 × ${t("oneWay")}` : t("oneWay")}</span>
-                      <span className="font-medium text-gray-700">{fmt(tripType === "round_trip" ? selectedVehicle.oneWayPrice * 2 : selectedVehicle.calculation.basePrice, exchangeRates)}</span>
-                    </div>
+                    {/* "2 × one way" is only worth showing when a discount is
+                        coming off it. Where the return fare is not cheaper than
+                        two singles — three destinations are priced that way, one
+                        of them dearer — this row showed 2 × the single fare and
+                        the total box below showed the real, higher figure, with
+                        nothing accounting for the gap. An unexplained few
+                        dollars appearing between a subtotal and a total is read
+                        as a hidden fee, on the screen where the customer decides
+                        whether to trust us with a card. */}
+                    {(() => {
+                      const showsTwoSingles =
+                        tripType === "round_trip" &&
+                        selectedVehicle.calculation.roundTripDiscount > 0;
+                      return (
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-400">
+                            {showsTwoSingles
+                              ? `2 × ${t("oneWay")}`
+                              : tripType === "round_trip"
+                                ? t("roundTrip")
+                                : t("oneWay")}
+                          </span>
+                          <span className="font-medium text-gray-700">
+                            {fmt(
+                              showsTwoSingles
+                                ? selectedVehicle.oneWayPrice * 2
+                                : selectedVehicle.calculation.basePrice,
+                              exchangeRates
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })()}
                     {selectedVehicle.calculation.roundTripDiscount > 0 && (
                       <div className="flex justify-between text-xs">
                         <span className="text-gray-400">{t("roundTripDiscount")}</span>

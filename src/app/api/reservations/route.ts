@@ -112,14 +112,14 @@ export async function POST(request: NextRequest) {
     const pickupCapacity = capacityFor(pickupOverride, globalMax);
     if (pickupCapacity === 0) {
       return NextResponse.json(
-        { error: "This date is not available for booking" },
+        { error: "This date is not available for booking", code: "date_unavailable" },
         { status: 400 }
       );
     }
 
     if ((await countBookingsOnDate(supabase, pickupDate)) >= pickupCapacity) {
       return NextResponse.json(
-        { error: "This date is fully booked" },
+        { error: "This date is fully booked", code: "date_full" },
         { status: 400 }
       );
     }
