@@ -6,8 +6,8 @@ import { Shield, Clock, CheckCircle2, Phone, MessageCircle } from "lucide-react"
 import { Link } from "@/i18n/routing";
 import BookingFormMini from "@/components/booking/BookingFormMini";
 
-const CONTACT_PHONE = "905469407955";
-const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+const CONTACT_PHONE = "+902426060763";
+const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
 
 /* The section below the hero (TrustBadges) paints #FAFAFA. The phone hero
    dissolves into exactly that value so the two meet with no visible seam. */

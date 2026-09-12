@@ -581,7 +581,7 @@ export function buildVoucherHTML(data: ReservationEmailData, qrDataUrl: string):
   const outbound = legEndpoints(data.direction, "outbound", data.regionName, loc);
   const voucherRoute = `${outbound.from} &rarr; ${outbound.to}`;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
 
   const passengerParts: string[] = [];
   if (data.adults > 0) passengerParts.push(`${data.adults} ${data.adults === 1 ? t(loc, "adult") : t(loc, "adults")}`);
@@ -854,7 +854,7 @@ export async function sendDriverAssignmentEmail(data: DriverAssignmentEmailData)
       </tr>`
     : "";
 
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+  const wa = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://torviantransfer.com";
 
   const html = `

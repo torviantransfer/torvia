@@ -316,7 +316,7 @@ export default async function LandOfLegendsPage({
     "@type": "TaxiService",
     name: "Antalya Airport to Land of Legends Transfer — TORVIAN",
     description: c.metaDesc,
-    provider: { "@type": "Organization", name: "TORVIAN Transfer", url: "https://torviantransfer.com", telephone: "+90-546-940-79-55" },
+    provider: { "@type": "Organization", name: "TORVIAN Transfer", url: "https://torviantransfer.com", telephone: "+90-242-606-07-63" },
     areaServed: { "@type": "Place", name: "Land of Legends, Belek, Antalya, Turkey" },
     serviceType: "Airport Transfer",
   };

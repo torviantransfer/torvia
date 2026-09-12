@@ -307,7 +307,7 @@ export async function GET(request: NextRequest) {
   </div>
 
   <div class="foot">
-    7/24 Destek: 0546 940 79 55<br>torviantransfer@gmail.com
+    7/24 Destek: 0242 606 07 63<br>torviantransfer@gmail.com
   </div>
 </div>
 

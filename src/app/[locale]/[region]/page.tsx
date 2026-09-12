@@ -683,7 +683,7 @@ export default async function RegionPage({
       "@type": "Organization",
       name: "TORVIAN Transfer",
       url: "https://torviantransfer.com",
-      telephone: "+90-546-940-79-55",
+      telephone: "+90-242-606-07-63",
       logo: `${BASE_URL}/images/logo.png`,
       image: `${BASE_URL}/images/logo.png`,
     },
@@ -696,7 +696,7 @@ export default async function RegionPage({
     availableChannel: {
       "@type": "ServiceChannel",
       serviceUrl: `https://torviantransfer.com/${locale}/${regionPath}`,
-      servicePhone: "+90-546-940-79-55",
+      servicePhone: "+90-242-606-07-63",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
     offers: pricing

@@ -595,14 +595,14 @@ export default async function AntalyaAirportTransferPage({
       "@type": "Organization",
       name: "TORVIAN Transfer",
       url: BASE_URL,
-      telephone: "+90-546-940-79-55",
+      telephone: "+90-242-606-07-63",
     },
     serviceType: "Airport Transfer",
     areaServed: { "@type": "Place", name: "Antalya, Turkey" },
     availableChannel: {
       "@type": "ServiceChannel",
       serviceUrl: pageUrl,
-      servicePhone: "+90-546-940-79-55",
+      servicePhone: "+90-242-606-07-63",
       availableLanguage: ["Turkish", "English", "German", "Russian", "Polish", "Dutch", "Romanian"],
     },
   };

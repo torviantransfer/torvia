@@ -19,7 +19,7 @@ interface WhatsAppButtonProps {
 
 export default function WhatsAppButton({ aboveStickyBar = false }: WhatsAppButtonProps = {}) {
   const t = useTranslations("common");
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
   const message = encodeURIComponent(t("whatsappMessage"));
 
   return (

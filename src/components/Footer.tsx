@@ -6,7 +6,7 @@ import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 
 import type { Locale } from "@/i18n/config";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "905469407955";
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
 
 export default async function Footer() {
   const t = await getTranslations("footer");
@@ -149,9 +149,9 @@ export default async function Footer() {
             <h3 className="text-sm font-semibold text-gray-900 mb-5">{t("support")}</h3>
             <ul className="space-y-3">
               <li>
-                <a href="tel:+905469407955" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
+                <a href="tel:+902426060763" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 text-sm transition-colors">
                   <Phone size={14} />
-                  0546 940 79 55
+                  0242 606 07 63
                 </a>
               </li>
               <li>
