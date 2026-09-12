@@ -32,7 +32,20 @@ export interface RegionPrice {
  * destination, so tapping one fills the form in instead of only answering the
  * question.
  */
-export default function RegionPriceGrid({ regions }: { regions: RegionPrice[] }) {
+export default function RegionPriceGrid({
+  regions,
+  initialRates,
+}: {
+  regions: RegionPrice[];
+  /**
+   * Today's rates, read on the server. Without them this grid paints dollars
+   * first and swaps to euros a moment later, once the browser has fetched them
+   * — so a Polish visitor's first sight of the page was 25 prices in a currency
+   * the header says we are not quoting in, and then every one of them changing.
+   * Prices that move while you read them are the fastest way to lose the sale.
+   */
+  initialRates?: Record<string, number>;
+}) {
   const t = useTranslations("booking");
   const tr = useTranslations("regions");
   const { format } = useCurrency();
@@ -40,7 +53,9 @@ export default function RegionPriceGrid({ regions }: { regions: RegionPrice[] })
   // Fares are keyed and charged in USD; anything else on screen is a display
   // conversion. `format` applies the same rounding the checkout and the
   // voucher use, so a euro figure here matches the one quoted later.
-  const [rates, setRates] = useState<Record<string, number>>({ USD: 1 });
+  const [rates, setRates] = useState<Record<string, number>>(
+    initialRates ? { USD: 1, ...initialRates } : { USD: 1 }
+  );
 
   useEffect(() => {
     let cancelled = false;

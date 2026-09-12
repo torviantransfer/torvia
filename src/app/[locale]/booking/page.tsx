@@ -7,6 +7,9 @@ import Footer from "@/components/Footer";
 import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import RegionPriceGrid, { type RegionPrice } from "@/components/booking/RegionPriceGrid";
+import type { MiniRegion } from "@/components/booking/BookingFormMini";
+import SocialProofStrip from "@/components/booking/SocialProofStrip";
+import { type ReviewRow } from "@/lib/reviews";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
@@ -118,13 +121,60 @@ export default async function BookingPage({
      Read here rather than in the component so the prices are in the HTML the
      crawler and the first paint both see. */
   const supabase = createAdminClient();
-  const { data: regionRows } = await supabase
-    .from("regions")
-    .select(
-      "slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, distance_km, duration_minutes, sort_order, pricing(one_way_price, round_trip_price, is_active)"
-    )
-    .eq("is_active", true)
-    .order("sort_order");
+  const [{ data: regionRows }, { data: rateRows }, { data: reviewRows }] = await Promise.all([
+    supabase
+      .from("regions")
+      .select(
+        "id, slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, distance_km, duration_minutes, sort_order, pricing(one_way_price, round_trip_price, is_active)"
+      )
+      .eq("is_active", true)
+      .order("sort_order"),
+    /* Read here for the same reason the fares are: so the first paint already
+       carries the price in the currency this locale quotes. Fetched in the
+       browser, it made every price on the page change once. */
+    supabase
+      .from("exchange_rates")
+      .select("target_currency, rate")
+      .eq("base_currency", "USD"),
+    /* Approved reviews, for the strip under the form. Read on the server with
+       everything else, so the one piece of reassurance on this page costs the
+       visitor no extra request and no extra wait. */
+    supabase
+      .from("reviews")
+      .select(
+        "id, rating, comment, created_at, published_at, author_name, author_country, locale, source, customers(first_name)"
+      )
+      .eq("is_approved", true)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(50),
+  ]);
+
+  const initialRates: Record<string, number> = { USD: 1 };
+  for (const r of (rateRows ?? []) as { target_currency: string; rate: number }[]) {
+    initialRates[r.target_currency] = Number(r.rate);
+  }
+
+  /* The route picker's own list, from the rows already read above.
+     Same filter and same order as /api/regions, which is what the form fetched
+     for itself — a request it could only start after its JavaScript had landed.
+     Not filtered by pricing the way the price cards are: a destination with no
+     fare set should still be pickable, and the vehicle step is where a missing
+     price is discovered. */
+  const initialRegions: MiniRegion[] = (regionRows ?? []).map((row) => {
+    const r = row as Record<string, unknown>;
+    return {
+      id: String(r.id),
+      slug: String(r.slug),
+      name_tr: String(r.name_tr ?? ""),
+      name_en: String(r.name_en ?? ""),
+      name_de: String(r.name_de ?? ""),
+      name_pl: String(r.name_pl ?? ""),
+      name_ru: String(r.name_ru ?? ""),
+      name_nl: String(r.name_nl ?? ""),
+      name_ro: r.name_ro ? String(r.name_ro) : undefined,
+      name_ar: r.name_ar ? String(r.name_ar) : undefined,
+    };
+  });
 
   const regionPrices: RegionPrice[] = (regionRows ?? [])
     .map((row): RegionPrice | null => {
@@ -284,7 +334,7 @@ export default async function BookingPage({
               {/* Below the card on phones, so it reads on the white side of
                   the dissolve rather than on the photograph — hence the dark
                   variants, which `lg:` puts straight back to white. */}
-              <div className="order-3 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
+              <div className="order-4 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
                 <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#111827] lg:text-white mb-3 lg:drop-shadow-lg">
                   {t("title")}
                 </h1>
@@ -307,13 +357,22 @@ export default async function BookingPage({
                 </div>
               </div>
               <div className="order-1 lg:order-2 w-full max-w-5xl mx-auto">
-                <BookingWizardClient initialRegion={sp.region} />
+                <BookingWizardClient initialRegion={sp.region} initialRegions={initialRegions} />
+              </div>
+              {/* Immediately under the form, both on a phone and on a desktop.
+                  This is where someone decides whether to trust us with a card,
+                  and until now the page gave them nothing to decide on. */}
+              <div className="order-2 lg:order-3 w-full max-w-5xl mx-auto mt-4 lg:mt-6">
+                <SocialProofStrip
+                  reviews={(reviewRows ?? []) as unknown as ReviewRow[]}
+                  locale={locale}
+                />
               </div>
               {/* Directly under the form on a phone, where the thumb already
                   is; on desktop it keeps its place after the headline and the
                   form, below where the photograph ends. */}
-              <div className="order-2 lg:order-3 w-full max-w-5xl mx-auto mt-6 lg:mt-10">
-                <RegionPriceGrid regions={regionPrices} />
+              <div className="order-3 lg:order-4 w-full max-w-5xl mx-auto mt-6 lg:mt-10">
+                <RegionPriceGrid regions={regionPrices} initialRates={initialRates} />
               </div>
             </div>
           </section>
