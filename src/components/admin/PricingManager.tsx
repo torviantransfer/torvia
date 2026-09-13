@@ -1,7 +1,33 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Edit2, Plus, Save, X } from "lucide-react";
+import { Edit2, Plus, Save, Wand2, X } from "lucide-react";
+import {
+  ADJUSTABLE_FIELDS,
+  adjustFields,
+  adjustProblem,
+  type AdjustField,
+  type AdjustMode,
+  type PriceFields,
+} from "@/lib/priceAdjust";
+
+const FIELD_LABELS: Record<AdjustField, string> = {
+  one_way_price: "Online tek yön",
+  round_trip_price: "Online gidiş/dönüş",
+  one_way_cash_price: "Nakit tek yön",
+  round_trip_cash_price: "Nakit gidiş/dönüş",
+  cash_deposit_amount: "Depozito",
+};
+
+// Everything a customer is quoted. The deposit is left out because it is a
+// fixed hold rather than a fare — marking a vehicle up by $20 should not also
+// raise what the passenger pays online before the trip.
+const DEFAULT_FIELDS: AdjustField[] = [
+  "one_way_price",
+  "round_trip_price",
+  "one_way_cash_price",
+  "round_trip_cash_price",
+];
 
 interface PricingRow {
   id: string;
@@ -63,6 +89,16 @@ export default function PricingManager({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Bulk adjustment ──
+  const [bulkOpen, setBulkOpen] = useState(false);
+  /** "" means "this vehicle's own current prices". */
+  const [bulkSource, setBulkSource] = useState("");
+  const [bulkSign, setBulkSign] = useState<1 | -1>(1);
+  const [bulkValue, setBulkValue] = useState("");
+  const [bulkMode, setBulkMode] = useState<AdjustMode>("amount");
+  const [bulkFields, setBulkFields] = useState<AdjustField[]>(DEFAULT_FIELDS);
+  const [bulkNotice, setBulkNotice] = useState<string | null>(null);
+
   const activeCategory = categories.find((c) => c.id === categoryId) ?? null;
 
   const lines = useMemo<Line[]>(() => {
@@ -91,6 +127,100 @@ export default function PricingManager({
   }, [pricing, regions, categoryId]);
 
   const missingCount = lines.filter((l) => !l.row).length;
+
+  const bulkNumber = bulkValue.trim() === "" ? NaN : Number(bulkValue) * bulkSign;
+  const bulkSourceId = bulkSource || categoryId;
+
+  /**
+   * What every row would become, keyed by region — or null while the form is
+   * incomplete. Rendered into the table rather than a separate dialog: a list
+   * of 24 prices is only checkable next to the prices it replaces.
+   *
+   * Computed with the same helpers the route uses, so this is a rendering of
+   * the pending write rather than a second opinion about it.
+   */
+  const preview = useMemo<Map<string, PriceFields> | null>(() => {
+    if (!bulkOpen || !Number.isFinite(bulkNumber) || bulkFields.length === 0) return null;
+    if (bulkNumber === 0 && bulkSourceId === categoryId) return null;
+    const out = new Map<string, PriceFields>();
+    for (const row of pricing) {
+      if (row.category_id !== bulkSourceId) continue;
+      out.set(
+        row.region_id,
+        adjustFields(row as PriceFields, { mode: bulkMode, value: bulkNumber, fields: bulkFields })
+      );
+    }
+    return out;
+  }, [bulkOpen, bulkNumber, bulkMode, bulkFields, bulkSourceId, categoryId, pricing]);
+
+  const previewProblem = useMemo(() => {
+    if (!preview) return null;
+    for (const fields of preview.values()) {
+      const problem = adjustProblem(fields, bulkFields);
+      if (problem) return problem;
+    }
+    return null;
+  }, [preview, bulkFields]);
+
+  const toggleField = (field: AdjustField) => {
+    setBulkFields((prev) =>
+      prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]
+    );
+  };
+
+  const applyBulk = async () => {
+    if (!preview || previewProblem) return;
+    setLoading(true);
+    setError(null);
+    setBulkNotice(null);
+    try {
+      const res = await fetch("/api/admin/pricing/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categoryId,
+          sourceCategoryId: bulkSourceId,
+          mode: bulkMode,
+          value: bulkNumber,
+          fields: bulkFields,
+        }),
+      });
+      const result = await res.json();
+      if (!Array.isArray(result.data)) {
+        setError(result.error ?? "Toplu güncelleme yapılamadı");
+        return;
+      }
+
+      // Swap in the rows that came back, keyed by region rather than by id:
+      // the write creates rows for regions this vehicle did not have, so
+      // patching by id would drop exactly the rows being added. Regions the
+      // write did not touch — ones the source vehicle has no price for — keep
+      // the row they already had instead of disappearing from the table.
+      const written = result.data as PricingRow[];
+      const writtenRegions = new Set(written.map((row) => row.region_id));
+      const regionName = (regionId: string) =>
+        regions.find((r) => r.id === regionId)?.name_en
+        ?? pricing.find((p) => p.region_id === regionId)?.regions?.name_en
+        ?? regionId;
+      setPricing((prev) => [
+        ...prev.filter((p) => p.category_id !== categoryId || !writtenRegions.has(p.region_id)),
+        ...written.map((row) => ({
+          ...row,
+          regions: { slug: "", name_en: regionName(row.region_id), name_tr: regionName(row.region_id) },
+          vehicle_categories: activeCategory
+            ? { name: activeCategory.name, slug: activeCategory.slug }
+            : null,
+        })),
+      ]);
+      setBulkNotice(`${result.count} güzergahın fiyatı güncellendi.`);
+      setBulkValue("");
+      setEditingKey(null);
+    } catch {
+      setError("Toplu güncelleme yapılamadı");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const startEdit = (line: Line) => {
     setError(null);
@@ -178,6 +308,10 @@ export default function PricingManager({
                 setCategoryId(cat.id);
                 setEditingKey(null);
                 setError(null);
+                setBulkNotice(null);
+                // The source only ever means another vehicle; kept pointing at
+                // the tab just left, it would silently become a self-copy.
+                if (cat.id === bulkSource) setBulkSource("");
               }}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 cat.id === categoryId
@@ -191,14 +325,133 @@ export default function PricingManager({
         </div>
       )}
 
-      <p className="text-sm text-gray-500 mb-4">
-        <span className="font-medium text-gray-700">{activeCategory?.name}</span>{" "}
-        fiyatları — tümü USD cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
-        {missingCount > 0 && (
-          <span className="text-amber-600">, {missingCount} güzergahta fiyat yok</span>
-        )}
-        .
-      </p>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <p className="text-sm text-gray-500">
+          <span className="font-medium text-gray-700">{activeCategory?.name}</span>{" "}
+          fiyatları — tümü USD cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
+          {missingCount > 0 && (
+            <span className="text-amber-600">, {missingCount} güzergahta fiyat yok</span>
+          )}
+          .
+        </p>
+        <button
+          onClick={() => {
+            setBulkOpen((open) => !open);
+            setBulkNotice(null);
+          }}
+          className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+            bulkOpen
+              ? "bg-gray-900 text-white border-gray-900"
+              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+          }`}
+        >
+          <Wand2 size={14} />
+          Toplu fiyat güncelle
+        </button>
+      </div>
+
+      {bulkOpen && (
+        <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-gray-500">Kaynak fiyatlar</span>
+              <select
+                value={bulkSource}
+                onChange={(e) => setBulkSource(e.target.value)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white min-w-56"
+              >
+                <option value="">{activeCategory?.name} (mevcut fiyatları)</option>
+                {categories
+                  .filter((c) => c.id !== categoryId)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} fiyatlarından
+                    </option>
+                  ))}
+              </select>
+            </label>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-gray-500">İşlem</span>
+              <div className="flex items-stretch">
+                <div className="flex gap-1 bg-gray-200 rounded-lg p-1 me-2">
+                  {([1, -1] as const).map((sign) => (
+                    <button
+                      key={sign}
+                      onClick={() => setBulkSign(sign)}
+                      className={`w-9 rounded-md text-sm font-semibold transition-colors ${
+                        bulkSign === sign ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+                      }`}
+                    >
+                      {sign === 1 ? "+" : "−"}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={bulkValue}
+                  onChange={(e) => setBulkValue(e.target.value)}
+                  placeholder="20"
+                  className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+                />
+                <select
+                  value={bulkMode}
+                  onChange={(e) => setBulkMode(e.target.value as AdjustMode)}
+                  className="ms-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+                >
+                  <option value="amount">$ (sabit tutar)</option>
+                  <option value="percent">% (yüzde)</option>
+                </select>
+              </div>
+            </div>
+
+            <button
+              onClick={applyBulk}
+              disabled={loading || !preview || !!previewProblem}
+              className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+            >
+              {loading ? "Uygulanıyor…" : "Uygula"}
+            </button>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="text-xs font-medium text-gray-500">Uygulanacak alanlar:</span>
+            {ADJUSTABLE_FIELDS.map((field) => (
+              <label key={field} className="flex items-center gap-1.5 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={bulkFields.includes(field)}
+                  onChange={() => toggleField(field)}
+                  className="rounded border-gray-300"
+                />
+                {FIELD_LABELS[field]}
+              </label>
+            ))}
+          </div>
+
+          <p className="mt-3 text-xs text-gray-500">
+            {previewProblem ? (
+              <span className="text-red-600">{previewProblem} — değeri düşürün.</span>
+            ) : preview ? (
+              <>
+                Tabloda <span className="text-emerald-700 font-medium">yeni fiyatlar</span> önizleniyor.
+                Uygula&apos;ya basana kadar hiçbir şey kaydedilmez.
+                {bulkMode === "percent" && " Yüzdeli sonuçlar tam dolara yuvarlanır."}
+              </>
+            ) : (
+              "Bir değer girin; yeni fiyatlar kaydedilmeden önce tabloda gösterilir."
+            )}
+          </p>
+        </div>
+      )}
+
+      {bulkNotice && (
+        <div className="mb-4 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+          {bulkNotice}
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">
@@ -232,12 +485,34 @@ export default function PricingManager({
                   className="w-20 border border-gray-200 rounded px-2 py-1 text-sm text-end"
                 />
               );
-              const money = (value: number | null | undefined, tone: string) =>
+              const amount = (value: number | null | undefined, tone: string) =>
                 value != null ? (
                   <span className={`font-medium ${tone}`}>${value.toFixed(0)}</span>
                 ) : (
                   <span className="text-gray-300">—</span>
                 );
+
+              const pending = preview?.get(line.regionId);
+              /**
+               * The stored price, or — while a bulk adjustment is being set up
+               * — the old price struck through next to what it would become.
+               * Only the fields the adjustment touches change; the rest render
+               * unchanged so the diff is the thing that stands out.
+               */
+              const money = (field: AdjustField, tone: string) => {
+                const current = row?.[field];
+                if (!pending || !(field in pending)) return amount(current, tone);
+                const next = pending[field];
+                if (next == null && current == null) return amount(null, tone);
+                return (
+                  <span className="inline-flex items-baseline gap-1.5 justify-end">
+                    {current != null && (
+                      <span className="text-gray-300 line-through text-xs">${current.toFixed(0)}</span>
+                    )}
+                    {amount(next, "text-emerald-700")}
+                  </span>
+                );
+              };
               return (
               <tr key={line.regionId} className={`hover:bg-gray-50 ${!row && !isEditing ? "bg-amber-50/30" : ""}`}>
                 <td className="px-4 py-3 text-gray-400 text-xs">{idx + 1}</td>
@@ -249,23 +524,23 @@ export default function PricingManager({
                 </td>
                 {/* Online one-way */}
                 <td className="px-4 py-3 text-end bg-blue-50/20">
-                  {isEditing ? numInput("one_way_price", editValues.one_way_price) : money(row?.one_way_price, "text-blue-700")}
+                  {isEditing ? numInput("one_way_price", editValues.one_way_price) : money("one_way_price", "text-blue-700")}
                 </td>
                 {/* Online round-trip */}
                 <td className="px-4 py-3 text-end bg-blue-50/20">
-                  {isEditing ? numInput("round_trip_price", editValues.round_trip_price) : money(row?.round_trip_price, "text-blue-700")}
+                  {isEditing ? numInput("round_trip_price", editValues.round_trip_price) : money("round_trip_price", "text-blue-700")}
                 </td>
                 {/* Cash one-way */}
                 <td className="px-4 py-3 text-end bg-amber-50/20">
-                  {isEditing ? numInput("one_way_cash_price", editValues.one_way_cash_price) : money(row?.one_way_cash_price, "text-amber-700")}
+                  {isEditing ? numInput("one_way_cash_price", editValues.one_way_cash_price) : money("one_way_cash_price", "text-amber-700")}
                 </td>
                 {/* Cash round-trip */}
                 <td className="px-4 py-3 text-end bg-amber-50/20">
-                  {isEditing ? numInput("round_trip_cash_price", editValues.round_trip_cash_price) : money(row?.round_trip_cash_price, "text-amber-700")}
+                  {isEditing ? numInput("round_trip_cash_price", editValues.round_trip_cash_price) : money("round_trip_cash_price", "text-amber-700")}
                 </td>
                 {/* Deposit */}
                 <td className="px-4 py-3 text-end bg-emerald-50/20">
-                  {isEditing ? numInput("cash_deposit_amount", editValues.cash_deposit_amount) : money(row?.cash_deposit_amount, "text-emerald-700")}
+                  {isEditing ? numInput("cash_deposit_amount", editValues.cash_deposit_amount) : money("cash_deposit_amount", "text-emerald-700")}
                 </td>
                 <td className="px-4 py-3">
                   {isEditing ? (
