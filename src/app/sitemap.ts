@@ -9,6 +9,17 @@ import { locales as ALL_LOCALES, inlineCopyLocales } from "@/i18n/config";
 const BASE_URL = "https://torviantransfer.com";
 const locales: readonly string[] = ALL_LOCALES;
 
+// sitemap.ts is a Route Handler that Next caches indefinitely by default, and
+// the revalidatePath("/sitemap.xml") the admin panel sends on every save does
+// not reach that cached copy: on 2026-09-14 Avsallar and Konaklı were
+// activated and re-saved from /admin/regions, and the live sitemap kept
+// serving the build from the day before (x-vercel-cache HIT, age still
+// climbing) without either region. Regions, blog posts and landing pages all
+// go live from the panel, so without a time limit none of them reached Search
+// Console until someone redeployed. An hour bounds that delay; the query is a
+// handful of small tables, so rebuilding it hourly costs nothing.
+export const revalidate = 3600;
+
 // Google's image sitemap spec requires <image:loc> to be a fully-qualified
 // absolute URL. image_url values stored in the DB are relative paths
 // (e.g. "/images/regions/alanya-castle.jpg"), so they must be resolved
