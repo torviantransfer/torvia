@@ -15,14 +15,21 @@ export default async function AdminPricingPage() {
     .eq("is_active", true)
     .order("sort_order");
 
+  // Ordered like the booking flow orders them, so the tabs here read in the
+  // same order as the cards the customer picks between.
   const { data: categories } = await supabase
     .from("vehicle_categories")
     .select("id, name, slug")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Fiyatlandırma</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Fiyatlandırma</h1>
+      <p className="text-sm text-gray-500 mb-6">
+        Fiyatlar her araç tipi için ayrı tutulur. Üstteki sekmeden aracı seçip o
+        aracın bölge fiyatlarını düzenleyin.
+      </p>
       <PricingManager
         initialPricing={pricing ?? []}
         regions={regions ?? []}

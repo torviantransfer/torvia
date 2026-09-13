@@ -29,32 +29,58 @@ export async function POST(req: NextRequest) {
     .single();
   if (rateData?.rate) tlRate = Number(rateData.rate);
 
-  // Fetch all active regions with pricing
+  // Every active region price, for every active vehicle. `pricing` is keyed
+  // (region_id, category_id), so this returns one row per region *per vehicle*
+  // — the rows have to be grouped by vehicle below or the same region is
+  // listed several times at different prices with nothing naming the vehicle.
   const { data: pricing, error } = await supabase
     .from("pricing")
-    .select("one_way_price, regions(name_en, name_tr, sort_order)")
+    .select("one_way_price, regions(name_en, name_tr, sort_order), vehicle_categories!inner(name, sort_order, is_active)")
     .eq("is_active", true)
+    .eq("vehicle_categories.is_active", true)
     .order("sort_order", { referencedTable: "regions", ascending: true });
 
   if (error || !pricing) {
     return NextResponse.json({ error: "Failed to fetch pricing" }, { status: 500 });
   }
 
-  const regions = pricing
-    .filter((p) => p.regions)
-    .map((p) => {
-      const region = p.regions as unknown as { name_en: string; name_tr: string; sort_order: number };
-      const usd = Number(p.one_way_price);
-      return {
-        name: (region.name_tr || region.name_en).toUpperCase(),
-        costTL: Math.round(usd * tlRate * 100) / 100,
-        costUSD: usd,
-        sortOrder: region.sort_order,
-      };
-    })
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  type VehicleJoin = { name: string; sort_order: number };
+  const byVehicle = new Map<
+    string,
+    { vehicle: string; sortOrder: number; regions: { name: string; costTL: number; costUSD: number; sortOrder: number }[] }
+  >();
 
-  await sendPriceListToTelegram(regions, driverName, vehiclePlate);
+  for (const p of pricing) {
+    if (!p.regions) continue;
+    const region = p.regions as unknown as { name_en: string; name_tr: string; sort_order: number };
+    const vehicle = p.vehicle_categories as unknown as VehicleJoin;
+    const usd = Number(p.one_way_price);
 
-  return NextResponse.json({ ok: true, count: regions.length });
+    let group = byVehicle.get(vehicle.name);
+    if (!group) {
+      group = { vehicle: vehicle.name, sortOrder: vehicle.sort_order ?? 0, regions: [] };
+      byVehicle.set(vehicle.name, group);
+    }
+    group.regions.push({
+      name: (region.name_tr || region.name_en).toUpperCase(),
+      costTL: Math.round(usd * tlRate * 100) / 100,
+      costUSD: usd,
+      sortOrder: region.sort_order,
+    });
+  }
+
+  // Vehicles in panel order, regions in their own order inside each vehicle.
+  const groups = [...byVehicle.values()]
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((g) => ({
+      vehicle: g.vehicle,
+      regions: [...g.regions].sort((a, b) => a.sortOrder - b.sortOrder),
+    }));
+
+  await sendPriceListToTelegram(groups, driverName, vehiclePlate);
+
+  return NextResponse.json({
+    ok: true,
+    count: groups.reduce((sum, g) => sum + g.regions.length, 0),
+  });
 }

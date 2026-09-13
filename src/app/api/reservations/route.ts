@@ -156,7 +156,15 @@ export async function POST(request: NextRequest) {
       pricingQuery = pricingQuery.eq("vehicle_categories.slug", categorySlug);
     }
 
-    const { data: pricing } = await pricingQuery.limit(1).single();
+    // The wizard always names a vehicle, but a request that omits one still has
+    // to land somewhere. With several vehicles priced per region, `limit(1)`
+    // alone would pick an arbitrary one; the cheapest is the price the region
+    // pages advertise as "from", and category_id below is taken from the same
+    // row, so the booking stays consistent with what was charged.
+    const { data: pricing } = await pricingQuery
+      .order("one_way_price", { ascending: true })
+      .limit(1)
+      .single();
 
     if (!pricing) {
       return NextResponse.json({ error: "Pricing not found" }, { status: 404 });

@@ -468,8 +468,14 @@ export async function sendDriverVoucherToTelegram(data: DriverVoucherData): Prom
 
 // ────────── Send price list table to Telegram ──────────
 
+/**
+ * Takes one table per vehicle rather than a flat region list: prices are keyed
+ * (region, vehicle), so with a second vehicle on the fleet a flat list repeats
+ * every region once per vehicle with no way to tell the rows apart. A single
+ * vehicle renders exactly as it always did, with no heading.
+ */
 export async function sendPriceListToTelegram(
-  regions: { name: string; costTL: number; costUSD: number }[],
+  groups: { vehicle: string; regions: { name: string; costTL: number; costUSD: number }[] }[],
   driverName?: string,
   vehiclePlate?: string,
 ): Promise<void> {
@@ -482,18 +488,21 @@ export async function sendPriceListToTelegram(
   const lines: string[] = [];
   lines.push(`<b>TORVIAN TRANSFER — MALIYET LISTESI</b>`);
   if (driverName) lines.push(`<b>SOFOR ${esc(driverName).toUpperCase()}</b>${vehiclePlate ? ` | ${esc(vehiclePlate)}` : ""}`);
-  lines.push("");
-  lines.push("<pre>");
-  lines.push(`${'BOLGE'.padEnd(16)} ${'TL'.padStart(8)} ${'USD'.padStart(8)}`);
-  lines.push("─".repeat(34));
-  for (const r of regions) {
-    const name = esc(r.name).length > 14 ? esc(r.name).slice(0, 13) + "…" : esc(r.name);
-    const tl = r.costTL.toLocaleString("tr-TR");
-    const usd = r.costUSD.toFixed(2);
-    lines.push(`${name.padEnd(16)} ${tl.padStart(8)} ${usd.padStart(8)}`);
+  for (const group of groups) {
+    lines.push("");
+    if (groups.length > 1) lines.push(`<b>${esc(group.vehicle).toUpperCase()}</b>`);
+    lines.push("<pre>");
+    lines.push(`${'BOLGE'.padEnd(16)} ${'TL'.padStart(8)} ${'USD'.padStart(8)}`);
+    lines.push("─".repeat(34));
+    for (const r of group.regions) {
+      const name = esc(r.name).length > 14 ? esc(r.name).slice(0, 13) + "…" : esc(r.name);
+      const tl = r.costTL.toLocaleString("tr-TR");
+      const usd = r.costUSD.toFixed(2);
+      lines.push(`${name.padEnd(16)} ${tl.padStart(8)} ${usd.padStart(8)}`);
+    }
+    lines.push("─".repeat(34));
+    lines.push("</pre>");
   }
-  lines.push("─".repeat(34));
-  lines.push("</pre>");
   lines.push(`${new Date().toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })}`);
 
   const text = lines.join("\n");
