@@ -180,7 +180,7 @@ export default function Header() {
                 src="/images/logo.png"
                 alt="TORVIAN Transfer"
                 width={720}
-                height={191}
+                height={170}
                 priority
                 className={`h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-100" : "opacity-0"}`}
               />
@@ -189,7 +189,7 @@ export default function Header() {
                 alt=""
                 aria-hidden="true"
                 width={720}
-                height={190}
+                height={172}
                 priority
                 className={`absolute inset-y-0 start-0 h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-0" : "opacity-100"}`}
               />

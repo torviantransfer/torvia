@@ -40,7 +40,7 @@ export default async function Footer() {
               src="/images/logo.png"
               alt="TORVIAN Transfer"
               width={720}
-              height={191}
+              height={170}
               className="h-10 w-auto mb-3"
             />
             <p className="text-gray-500 text-sm leading-relaxed">{t("description")}</p>
