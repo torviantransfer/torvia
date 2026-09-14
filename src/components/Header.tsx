@@ -165,7 +165,13 @@ export default function Header() {
           borderBottom: showDarkNav ? "1px solid rgba(0,0,0,0.08)" : "none",
         }}
       >
-        <div className="max-w-6xl mx-auto px-6">
+        {/* Tighter than px-6 on a phone, where the page below the header —
+            the hero headline, the booking card — starts at 12px and px-6 left
+            the whole nav row standing 12px inside it. The row settles at 16px
+            so the controls on the other end are not against the screen edge;
+            the logo alone takes the last 4px back (see its -ms-1) so the stem
+            of the T lands on the headline's own margin. */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo.
 
@@ -175,24 +181,42 @@ export default function Header() {
                 would fetch the other file at the moment it has to appear and
                 flash an empty box on a slow connection. Two images, one opacity
                 transition, no request in the middle of a scroll. */}
-            <Link href="/" className="relative flex items-center shrink-0 h-8 sm:h-9" aria-label="TORVIAN Transfer">
+            <Link href="/" className="relative flex items-center shrink-0 h-8 sm:h-9 -ms-1 sm:ms-0" aria-label="TORVIAN Transfer">
+              {/* The mark is raised by a tenth of its own height because the
+                  aeroplane overhangs the wordmark: measured, the letters sit
+                  10.7% of the box below the box's centre, so centring the box
+                  leaves the word reading low against the currency, language
+                  and menu controls beside it. A percentage, not a pixel count,
+                  so it holds at both the phone and desktop sizes.
+
+                  `sizes` is what stops the optimiser guessing. Without it Next
+                  assumes these are viewport-wide and serves a 750px variant of
+                  a mark that draws 136px, twice over — ~48KB of a phone's
+                  first megabyte spent on the logo. And neither is `priority`:
+                  that preloads them ahead of the hero photograph, which is the
+                  LCP element and the one thing worth the head start. */}
               <Image
                 src="/images/logo.png"
                 alt="TORVIAN Transfer"
                 width={720}
                 height={170}
-                priority
-                className={`h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-100" : "opacity-0"}`}
+                sizes="(min-width: 640px) 152px, 136px"
+                className={`h-full w-auto -translate-y-[10.7%] transition-opacity duration-300 ${showDarkNav ? "opacity-100" : "opacity-0"}`}
               />
-              <Image
-                src="/images/logo-light.png"
-                alt=""
-                aria-hidden="true"
-                width={720}
-                height={172}
-                priority
-                className={`absolute inset-y-0 start-0 h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-0" : "opacity-100"}`}
-              />
+              {/* Only where the nav is ever transparent. Everywhere else the
+                  dark mark is the only one that shows, and rendering this as
+                  well downloaded a second logo no visitor would ever see. */}
+              {isHeroPage && (
+                <Image
+                  src="/images/logo-light.png"
+                  alt=""
+                  aria-hidden="true"
+                  width={720}
+                  height={172}
+                  sizes="(min-width: 640px) 152px, 136px"
+                  className={`absolute inset-y-0 start-0 h-full w-auto -translate-y-[10.7%] transition-opacity duration-300 ${showDarkNav ? "opacity-0" : "opacity-100"}`}
+                />
+              )}
             </Link>
 
             {/* Desktop primary nav - next to logo */}
