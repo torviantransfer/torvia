@@ -679,7 +679,10 @@
     "hours": "godz.",
     "km": "km",
     "free": "BEZPŁATNIE",
-    "whatsappMessage": "Cześć! Chciałbym zarezerwować transfer VIP z lotniska w Antalyi."
+    "whatsappMessage": "Cześć! Chciałbym zarezerwować transfer VIP z lotniska w Antalyi.",
+    "whatsappNudgeTitle": "Potrzebujesz pomocy?",
+    "whatsappNudgeBody": "Napisz do nas na WhatsAppie, 24/7",
+    "whatsappNudgeClose": "Zamknij"
   },
   "blog": {
     "title": "Blog Antalya Transfer",

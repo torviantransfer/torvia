@@ -679,7 +679,10 @@
     "hours": "ساعات",
     "km": "كم",
     "free": "مجاناً",
-    "whatsappMessage": "مرحباً! أرغب في حجز نقل VIP من مطار أنطاليا."
+    "whatsappMessage": "مرحباً! أرغب في حجز نقل VIP من مطار أنطاليا.",
+    "whatsappNudgeTitle": "هل تحتاج مساعدة؟",
+    "whatsappNudgeBody": "راسلنا على واتساب، على مدار الساعة",
+    "whatsappNudgeClose": "إغلاق"
   },
   "blog": {
     "title": "مدونة النقل في أنطاليا",

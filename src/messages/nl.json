@@ -679,7 +679,10 @@
     "hours": "uur",
     "km": "km",
     "free": "GRATIS",
-    "whatsappMessage": "Hallo! Ik wil graag een VIP-transfer boeken vanaf de luchthaven Antalya."
+    "whatsappMessage": "Hallo! Ik wil graag een VIP-transfer boeken vanaf de luchthaven Antalya.",
+    "whatsappNudgeTitle": "Kunnen we helpen?",
+    "whatsappNudgeBody": "Stuur ons een bericht op WhatsApp, 24/7",
+    "whatsappNudgeClose": "Sluiten"
   },
   "blog": {
     "title": "Antalya Transfer Blog",

@@ -679,7 +679,10 @@
     "hours": "saat",
     "km": "km",
     "free": "ÜCRETSİZ",
-    "whatsappMessage": "Merhaba! Antalya Havalimanı'ndan VIP transfer rezervasyonu yapmak istiyorum."
+    "whatsappMessage": "Merhaba! Antalya Havalimanı'ndan VIP transfer rezervasyonu yapmak istiyorum.",
+    "whatsappNudgeTitle": "Yardımcı olalım mı?",
+    "whatsappNudgeBody": "7/24 WhatsApp'tan yazın",
+    "whatsappNudgeClose": "Kapat"
   },
   "blog": {
     "title": "Antalya Transfer Blog",

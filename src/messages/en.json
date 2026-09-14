@@ -679,7 +679,10 @@
     "hours": "hours",
     "km": "km",
     "free": "FREE",
-    "whatsappMessage": "Hello! I would like to book a VIP transfer from Antalya Airport."
+    "whatsappMessage": "Hello! I would like to book a VIP transfer from Antalya Airport.",
+    "whatsappNudgeTitle": "Need any help?",
+    "whatsappNudgeBody": "Message us on WhatsApp, 24/7",
+    "whatsappNudgeClose": "Close"
   },
   "blog": {
     "title": "Antalya Transfer Blog",

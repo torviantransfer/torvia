@@ -679,7 +679,10 @@
     "hours": "ore",
     "km": "km",
     "free": "GRATUIT",
-    "whatsappMessage": "Bună ziua! Aș dori să rezerv un transfer VIP de la Aeroportul Antalya."
+    "whatsappMessage": "Bună ziua! Aș dori să rezerv un transfer VIP de la Aeroportul Antalya.",
+    "whatsappNudgeTitle": "Te putem ajuta?",
+    "whatsappNudgeBody": "Scrie-ne pe WhatsApp, 24/7",
+    "whatsappNudgeClose": "Închide"
   },
   "blog": {
     "title": "Blog transfer Antalya",
