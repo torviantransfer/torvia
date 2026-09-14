@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { usePathname } from "@/i18n/routing";
 
 interface WhatsAppButtonProps {
   /**
@@ -62,6 +63,7 @@ function markNudgeSeen(): void {
 
 export default function WhatsAppButton({ aboveStickyBar = false }: WhatsAppButtonProps = {}) {
   const t = useTranslations("common");
+  const pathname = usePathname();
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "902426060763";
   const message = encodeURIComponent(t("whatsappMessage"));
   const href = `https://wa.me/${phone}?text=${message}`;
@@ -79,7 +81,18 @@ export default function WhatsAppButton({ aboveStickyBar = false }: WhatsAppButto
     setTimeout(() => setMounted(false), 300);
   }, []);
 
+  /* Never over the booking flow.
+
+     Two reasons, and either alone would be enough. The card lands on the
+     passenger counters at the customer-details step, so it covers controls
+     the visitor is being asked to use. And this is checkout: someone who is
+     filling the form has already decided, and inviting them out to WhatsApp
+     at that moment costs a booking rather than saving one. The button itself
+     stays — it is the offer to interrupt them that goes. */
+  const inBookingFlow = pathname.startsWith("/booking");
+
   useEffect(() => {
+    if (inBookingFlow) return;
     const startedAt = Date.now();
     let openTimer: ReturnType<typeof setTimeout> | undefined;
     let hideTimer: ReturnType<typeof setTimeout> | undefined;
@@ -105,7 +118,7 @@ export default function WhatsAppButton({ aboveStickyBar = false }: WhatsAppButto
       clearTimeout(openTimer);
       clearTimeout(hideTimer);
     };
-  }, [closeNudge]);
+  }, [closeNudge, inBookingFlow]);
 
   return (
     /* One fixed box holding both, so the nudge is placed by the button rather
