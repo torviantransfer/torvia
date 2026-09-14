@@ -39,6 +39,7 @@ const regionImages: Record<string, string> = {
 };
 
 import type { Locale } from "@/i18n/config";
+import { vehicleIsActive, type VehicleFlag } from "@/lib/vehicleFlag";
 
 function normalizeRegionPath(slug: string) {
   return slug.endsWith("-transfer") ? slug : `${slug}-transfer`;
@@ -181,7 +182,7 @@ export default async function RegionsPage({
                 ) as {
                   one_way_price?: number;
                   is_active?: boolean | null;
-                  vehicle_categories?: { is_active: boolean | null } | null;
+                  vehicle_categories?: VehicleFlag;
                 }[];
                 // Only rows anyone can actually book. A price outlives its
                 // vehicle being switched off, and a retired vehicle's figure
@@ -191,7 +192,7 @@ export default async function RegionsPage({
                   (min, row) =>
                     typeof row.one_way_price === "number" &&
                     row.is_active !== false &&
-                    row.vehicle_categories?.is_active !== false &&
+                    vehicleIsActive(row.vehicle_categories) &&
                     (min === null || row.one_way_price < min)
                       ? row.one_way_price
                       : min,

@@ -14,6 +14,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
+import { vehicleIsActive, type VehicleFlag } from "@/lib/vehicleFlag";
 
 /**
  * Which `seoFaqNQ`/`seoFaqNA` pairs to render and to mark up.
@@ -182,12 +183,12 @@ export default async function BookingPage({
         (r.pricing ?? []) as {
           round_trip_price: number | null;
           is_active: boolean | null;
-          vehicle_categories: { is_active: boolean | null } | null;
+          vehicle_categories?: VehicleFlag;
         }[]
       ).some(
         (p) =>
           p.is_active !== false &&
-          p.vehicle_categories?.is_active !== false &&
+          vehicleIsActive(p.vehicle_categories) &&
           p.round_trip_price != null
       ),
     };
@@ -205,11 +206,11 @@ export default async function BookingPage({
         one_way_price: number;
         round_trip_price: number | null;
         is_active: boolean | null;
-        vehicle_categories: { is_active: boolean | null } | null;
+        vehicle_categories?: VehicleFlag;
       }[]).filter(
         (p) =>
           p.is_active !== false &&
-          p.vehicle_categories?.is_active !== false &&
+          vehicleIsActive(p.vehicle_categories) &&
           Number(p.one_way_price) > 0
       );
 
