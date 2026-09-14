@@ -125,7 +125,7 @@ export default async function BookingPage({
     supabase
       .from("regions")
       .select(
-        "id, slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, distance_km, duration_minutes, sort_order, pricing(one_way_price, round_trip_price, is_active)"
+        "id, slug, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro, name_ar, distance_km, duration_minutes, sort_order, pricing(one_way_price, round_trip_price, is_active, vehicle_categories(is_active))"
       )
       .eq("is_active", true)
       .order("sort_order"),
@@ -182,19 +182,36 @@ export default async function BookingPage({
         (r.pricing ?? []) as {
           round_trip_price: number | null;
           is_active: boolean | null;
+          vehicle_categories: { is_active: boolean | null } | null;
         }[]
-      ).some((p) => p.is_active !== false && p.round_trip_price != null),
+      ).some(
+        (p) =>
+          p.is_active !== false &&
+          p.vehicle_categories?.is_active !== false &&
+          p.round_trip_price != null
+      ),
     };
   });
 
   const regionPrices: RegionPrice[] = (regionRows ?? [])
     .map((row): RegionPrice | null => {
       const r = row as Record<string, unknown>;
+      /* A price row outlives its vehicle being switched off, so the cheapest
+         row in the table is not necessarily one anyone can book. Filtering on
+         the row's own flag alone let a retired vehicle set the headline — and
+         when the fares moved to euro, only the active category was converted,
+         so that retired figure was a dollar amount being shown as euro. */
       const fares = ((r.pricing ?? []) as {
         one_way_price: number;
         round_trip_price: number | null;
         is_active: boolean | null;
-      }[]).filter((p) => p.is_active !== false && Number(p.one_way_price) > 0);
+        vehicle_categories: { is_active: boolean | null } | null;
+      }[]).filter(
+        (p) =>
+          p.is_active !== false &&
+          p.vehicle_categories?.is_active !== false &&
+          Number(p.one_way_price) > 0
+      );
 
       if (fares.length === 0) return null;
 

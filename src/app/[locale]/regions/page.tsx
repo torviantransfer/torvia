@@ -113,7 +113,7 @@ export default async function RegionsPage({
 
   const { data: regions } = await supabase
     .from("regions")
-    .select("*, pricing(one_way_price, round_trip_price)")
+    .select("*, pricing(one_way_price, round_trip_price, is_active, vehicle_categories(is_active))")
     .eq("is_active", true)
     .order("sort_order");
 
@@ -178,10 +178,20 @@ export default async function RegionsPage({
                     : region.pricing
                       ? [region.pricing]
                       : []
-                ) as { one_way_price?: number }[];
+                ) as {
+                  one_way_price?: number;
+                  is_active?: boolean | null;
+                  vehicle_categories?: { is_active: boolean | null } | null;
+                }[];
+                // Only rows anyone can actually book. A price outlives its
+                // vehicle being switched off, and a retired vehicle's figure
+                // undercuts the real one — which after the move to euro meant
+                // advertising a dollar amount with a euro sign on it.
                 const lowestOneWay = pricingRows.reduce<number | null>(
                   (min, row) =>
                     typeof row.one_way_price === "number" &&
+                    row.is_active !== false &&
+                    row.vehicle_categories?.is_active !== false &&
                     (min === null || row.one_way_price < min)
                       ? row.one_way_price
                       : min,

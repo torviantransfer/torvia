@@ -485,8 +485,10 @@ export async function generateMetadata({
   // silently vanishes from all 144 region titles.
   const { data: pricingMeta } = await supabase
     .from("pricing")
-    .select("one_way_price")
+    .select("one_way_price, vehicle_categories!inner(is_active)")
     .eq("region_id", region.id)
+    .eq("is_active", true)
+    .eq("vehicle_categories.is_active", true)
     .order("one_way_price", { ascending: true })
     .limit(1)
     .maybeSingle();
@@ -555,13 +557,26 @@ export default async function RegionPage({
   const regionPath = normalizeRegionPath(region.slug);
   const slug = stripTransferSuffix(regionPath);
 
-  // Cheapest vehicle for this region — same reasoning as in generateMetadata.
-  // Region pages show a single "from" price rather than a per-vehicle list;
-  // the vehicle choice belongs to the booking flow.
+  /**
+   * Cheapest bookable vehicle for this region — same reasoning as in
+   * generateMetadata. Region pages show a single "from" price rather than a
+   * per-vehicle list; the vehicle choice belongs to the booking flow.
+   *
+   * "Bookable" is the whole filter, and it was missing. A price row survives
+   * its vehicle being switched off, so the cheapest row in the table is not
+   * necessarily one anyone can buy: on the day the fares moved to euro, only
+   * the active category was converted, and this query went on quoting a
+   * retired vehicle's dollar figure — Marmaris advertised 280 and a round trip
+   * of 530 that we no longer run, both of them labelled as euro, in the
+   * schema.org offers Google reads. /api/pricing has always filtered on the
+   * category being active; this is the same condition.
+   */
   const { data: pricing } = await supabase
     .from("pricing")
-    .select("one_way_price, round_trip_price")
+    .select("one_way_price, round_trip_price, vehicle_categories!inner(is_active)")
     .eq("region_id", region.id)
+    .eq("is_active", true)
+    .eq("vehicle_categories.is_active", true)
     .order("one_way_price", { ascending: true })
     .limit(1)
     .maybeSingle();
