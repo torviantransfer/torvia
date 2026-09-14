@@ -233,7 +233,21 @@ export async function POST(request: NextRequest) {
     const cashBasePrice = tripType === "round_trip"
       ? (pricingRow.round_trip_cash_price as number | null)
       : (pricingRow.one_way_cash_price as number | null);
-    const cashDepositAmt = pricingRow.cash_deposit_amount as number | null;
+    /**
+     * The deposit follows the trip type the same way the fare does.
+     *
+     * There is a second column for it because one figure cannot serve both: a
+     * €145 return journey taking the €35 deposit set against a €78 one-way
+     * collects a quarter of the job, where the ladder the deposits are built on
+     * asks for about half. Falling back to the one-way figure keeps a region
+     * that has a round-trip fare but no round-trip deposit bookable instead of
+     * rejecting the booking outright.
+     */
+    const cashDepositAmt =
+      tripType === "round_trip"
+        ? ((pricingRow.round_trip_cash_deposit_amount as number | null) ??
+           (pricingRow.cash_deposit_amount as number | null))
+        : (pricingRow.cash_deposit_amount as number | null);
     const nightEnabled = settingsMap.night_tariff_enabled === true || settingsMap.night_tariff_enabled === "true";
     const nightPercent = numSetting("night_tariff_percent");
     const parseHour = (v: unknown) => {
@@ -300,7 +314,7 @@ export async function POST(request: NextRequest) {
     const { data: rates } = await supabase
       .from("exchange_rates")
       .select("target_currency, rate")
-      .eq("base_currency", "USD");
+      .eq("base_currency", "EUR");
 
     const rateMap: Record<string, number> = {};
     for (const r of rates ?? []) {
@@ -407,8 +421,23 @@ export async function POST(request: NextRequest) {
         driver_amount: finalDriverAmount,
         coupon_id: couponId,
         total_price: finalTotalPrice,
-        currency: "USD",
-        exchange_rate_eur: rateMap.EUR ?? null,
+        /**
+         * The currency this row is denominated in, and the only thing that
+         * tells a reader which it is. Rows taken before the euro switch say
+         * "USD" and carry `exchange_rate_eur`; everything written from here on
+         * says "EUR" and carries no euro rate, because none is needed to show
+         * a euro figure. `reservationMoney` in lib/currency is what reads this.
+         */
+        currency: "EUR",
+        exchange_rate_eur: null,
+        /**
+         * Dollars per one euro on the day of booking. Not used for display —
+         * the driver ledger needs it. We pay drivers in USD while the passenger
+         * now hands them euro on a cash job, and that cash has to be recorded
+         * against the driver's dollar fee at the rate of the day it happened,
+         * not whatever the rate is when the ledger is next read.
+         */
+        exchange_rate_usd: rateMap.USD ?? null,
         exchange_rate_try: rateMap.TRY ?? null,
         status: initialStatus,
         payment_method: isCash ? "cash" : "online",
@@ -472,9 +501,16 @@ export async function POST(request: NextRequest) {
     // user agent of its own.
     const metaIdentity = identityFromRequest(request);
 
+    /**
+     * Charged in euro, which is what fares are stored in and what the page
+     * quoted. This is the one place the billing currency is decided; the "you
+     * are charged as …" line on the checkout reads BILLING_CURRENCY in
+     * hooks/useCurrency, and the two have to name the same currency or the
+     * customer is told one thing and billed another.
+     */
     const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(stripeAmount * 100),
-      currency: "usd",
+      currency: "eur",
       payment_method_types: ["card"],
       description: stripeDescription,
       receipt_email: email,
@@ -497,10 +533,12 @@ export async function POST(request: NextRequest) {
       .update({ stripe_payment_intent_id: paymentIntent.id })
       .eq("id", reservation.id);
 
-    // Server-side InitiateCheckout to Meta Conversions API
+    // Server-side InitiateCheckout to Meta Conversions API. The currency must
+    // match what the fare is actually in, or Meta reads a euro figure as
+    // dollars and every optimisation target drifts by the exchange rate.
     capiInitiateCheckout(
       finalTotalPrice,
-      "USD",
+      "EUR",
       { email, phone, firstName, lastName, ...metaIdentity },
       request.headers.get("referer") || undefined,
       `checkout_${reservationCode}`

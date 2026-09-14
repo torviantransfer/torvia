@@ -55,9 +55,9 @@ export function pixelPageView(eventId?: string) {
 /**
  * Araç seçimi yapılıp booking formu (step 2) açıldığında tetiklenir.
  * @param value    Tahmini fiyat (USD)
- * @param currency Para birimi (default "USD")
+ * @param currency Para birimi (default "EUR")
  */
-export function pixelInitiateCheckout(value: number, currency = "USD") {
+export function pixelInitiateCheckout(value: number, currency = "EUR") {
   fbq("track", "InitiateCheckout", {
     value,
     currency,
@@ -69,9 +69,9 @@ export function pixelInitiateCheckout(value: number, currency = "USD") {
 /**
  * Müşteri bilgileri doldurulup ödeme adımına (step 3) geçildiğinde tetiklenir.
  * @param value    Toplam fiyat (USD)
- * @param currency Para birimi (default "USD")
+ * @param currency Para birimi (default "EUR")
  */
-export function pixelAddPaymentInfo(value: number, currency = "USD") {
+export function pixelAddPaymentInfo(value: number, currency = "EUR") {
   fbq("track", "AddPaymentInfo", {
     value,
     currency,
@@ -84,13 +84,13 @@ export function pixelAddPaymentInfo(value: number, currency = "USD") {
  * Ödeme başarıyla tamamlandığında tetiklenir.
  * @param reservationCode Rezervasyon kodu
  * @param value           Ödenen toplam (USD)
- * @param currency        Para birimi (default "USD")
+ * @param currency        Para birimi (default "EUR")
  * @param regionName      Güzergah adı
  */
 export function pixelPurchase(
   reservationCode: string,
   value: number,
-  currency = "USD",
+  currency = "EUR",
   regionName?: string
 ) {
   // Meta only. The Google Ads conversion used to be fired from here too, which
@@ -165,7 +165,7 @@ export function pixelViewContent(regionName: string, value?: number) {
     content_name: regionName,
     content_type: "product",
     content_ids: ["transfer"],
-    ...(value !== undefined && { value, currency: "USD" }),
+    ...(value !== undefined && { value, currency: "EUR" }),
   });
 }
 

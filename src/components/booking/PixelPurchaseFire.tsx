@@ -39,7 +39,7 @@ export default function PixelPurchaseFire({
   totalPrice = 0,
   isPaid = false,
   chargedAmount = 0,
-  chargedCurrency = "USD",
+  chargedCurrency = "EUR",
 }: Props) {
   const router = useRouter();
   const retries = useRef(0);
@@ -66,9 +66,13 @@ export default function PixelPurchaseFire({
     // Claim it before sending, so a re-render mid-flight cannot send twice.
     markPurchaseTracked(reservationCode);
 
-    // Meta keeps receiving the full fare in USD, matching what the server-side
-    // CAPI event sends, so the two continue to de-duplicate on event_id.
-    pixelPurchase(reservationCode, totalPrice, "USD");
+    // Meta keeps receiving the full fare, matching what the server-side CAPI
+    // event sends, so the two continue to de-duplicate on event_id. The
+    // currency is read off the PaymentIntent rather than hard-coded: fares are
+    // charged in euro now, and a figure sent under the wrong currency label is
+    // not rejected — it is quietly believed, and every optimisation target
+    // drifts by the exchange rate.
+    pixelPurchase(reservationCode, totalPrice, chargedCurrency);
     // Google Ads gets what was really captured, so a cash booking reports the
     // deposit rather than the full fare.
     gAdsConversionPurchase(

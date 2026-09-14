@@ -135,8 +135,16 @@ export interface Reservation {
   coupon_discount: number;
   coupon_id: string | null;
   total_price: number;
+  /**
+   * What `total_price` and the other amounts on this row are denominated in:
+   * "EUR" since the euro switch, "USD" on everything taken before it. Read it
+   * before converting anything — see reservationMoney in lib/currency.
+   */
   currency: string;
+  /** EUR per one USD, on the booking day. Null on euro rows. */
   exchange_rate_eur: number | null;
+  /** USD per one euro, on the booking day. Null on pre-switch dollar rows. */
+  exchange_rate_usd: number | null;
   exchange_rate_try: number | null;
   status: ReservationStatus;
   stripe_payment_intent_id: string | null;

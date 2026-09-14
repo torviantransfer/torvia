@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { useLocale } from "next-intl";
@@ -10,23 +10,27 @@ import {
 } from "@/i18n/config";
 // The conversion direction and the rounding rule live in lib/currency so the
 // voucher, the PDF and the emails apply exactly what the site shows.
-import { convertFromUSD, displayAmount } from "@/lib/currency";
+import { convertFromEUR, displayAmount } from "@/lib/currency";
 
 /**
- * Every Stripe PaymentIntent is created in USD (see /api/reservations), so
+ * Every Stripe PaymentIntent is created in EUR (see /api/reservations), so
  * prices in any other currency are a display conversion. Screens showing a
  * converted price should say what is actually charged, or the amount on the
  * card statement won't match what the customer agreed to.
+ *
+ * Changing this constant is what moves the "charged as …" line: it disappears
+ * for everyone already looking at the billing currency, and stays for everyone
+ * who is not. Do not hard-code the currency anywhere else.
  */
-export const BILLING_CURRENCY: Currency = "USD";
+export const BILLING_CURRENCY: Currency = "EUR";
 
 export function useCurrency() {
   const locale = useLocale() as Locale;
-  // Start from the locale's own currency rather than USD for everyone. This is
+  // Start from the locale's own currency rather than EUR for everyone. This is
   // derived from the URL, so it matches between server and client render; the
   // visitor's explicit pick is applied below once localStorage is readable.
   const [currency, setCurrency] = useState<Currency>(
-    localeCurrencies[locale] ?? "USD"
+    localeCurrencies[locale] ?? BILLING_CURRENCY
   );
 
   useEffect(() => {
@@ -44,22 +48,24 @@ export function useCurrency() {
   }, []);
 
   const format = useCallback(
-    (usdAmount: number, exchangeRates: Record<string, number>): string => {
+    (eurAmount: number, exchangeRates: Record<string, number>): string => {
       const symbol = currencySymbols[currency];
-      if (currency === "USD") {
-        return `${symbol}${displayAmount(usdAmount, "USD")}`;
+      if (currency === BILLING_CURRENCY) {
+        return `${symbol}${displayAmount(eurAmount, BILLING_CURRENCY)}`;
       }
       const rate = exchangeRates[currency];
-      // No rate yet — fall back to the dollar figure rather than a wrong one.
-      if (!rate) return `${currencySymbols.USD}${displayAmount(usdAmount, "USD")}`;
-      return `${symbol}${displayAmount(convertFromUSD(usdAmount, rate), currency)}`;
+      // No rate yet — fall back to the euro figure rather than a wrong one.
+      if (!rate) {
+        return `${currencySymbols[BILLING_CURRENCY]}${displayAmount(eurAmount, BILLING_CURRENCY)}`;
+      }
+      return `${symbol}${displayAmount(convertFromEUR(eurAmount, rate), currency)}`;
     },
     [currency]
   );
 
   const otherCurrencies = useCallback(
     (
-      usdAmount: number,
+      eurAmount: number,
       exchangeRates: Record<string, number>
     ): string[] => {
       const others: Currency[] = (["USD", "EUR", "TRY"] as Currency[]).filter(
@@ -68,10 +74,12 @@ export function useCurrency() {
       return others
         .map((c) => {
           const symbol = currencySymbols[c];
-          if (c === "USD") return `${symbol}${displayAmount(usdAmount, "USD")}`;
+          if (c === BILLING_CURRENCY) {
+            return `${symbol}${displayAmount(eurAmount, BILLING_CURRENCY)}`;
+          }
           const rate = exchangeRates[c];
           if (!rate) return "";
-          return `${symbol}${displayAmount(convertFromUSD(usdAmount, rate), c)}`;
+          return `${symbol}${displayAmount(convertFromEUR(eurAmount, rate), c)}`;
         })
         .filter(Boolean);
     },
@@ -83,7 +91,7 @@ export function useCurrency() {
    * price so the card statement can't surprise the customer.
    */
   const formatBilling = useCallback(
-    (usdAmount: number) => `${currencySymbols[BILLING_CURRENCY]}${usdAmount.toFixed(2)}`,
+    (eurAmount: number) => `${currencySymbols[BILLING_CURRENCY]}${eurAmount.toFixed(2)}`,
     []
   );
 

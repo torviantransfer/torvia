@@ -106,7 +106,7 @@
     "dateConfirm": "Klaar",
     "cardDetails": "Kaartgegevens",
     "stepProgress": "Stap {current} van {total}",
-    "chargedInUsd": "Wordt afgeschreven als {amount}",
+    "chargedIn": "Wordt afgeschreven als {amount}",
     "payAtVehicle": "Betalen in het voertuig",
     "payAtVehicleDesc": "U ontvangt een bevestigingsbericht",
     "payAtVehicleTag": "Te betalen in het voertuig",

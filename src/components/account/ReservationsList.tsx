@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import QRCodeCanvas from "@/components/QRCodeCanvas";
 import { legRoute } from "@/lib/transfer-route";
-import { convertFromUSD, formatMoney } from "@/lib/currency";
+import { formatReservationMoney } from "@/lib/currency";
 import { formatBookingTime } from "@/lib/datetime";
 import { CANCELLABLE_STATUSES, IN_PROGRESS_STATUSES } from "@/lib/reservation-status";
 
@@ -87,6 +87,8 @@ interface Reservation {
   return_datetime: string | null;
   status: string;
   total_price: number;
+  /** "EUR" since the euro switch, "USD" on everything taken before it. */
+  currency?: string | null;
   exchange_rate_eur: number | null;
   payment_method?: string | null;
   driver_amount?: number | null;
@@ -170,14 +172,14 @@ export default function ReservationsList({
     formatBookingTime(d);
 
   /**
-   * The stored rate is EUR per ONE dollar, so converting multiplies. The
-   * fallback shows dollars — the amount actually charged — rather than
-   * printing the dollar figure behind a lira sign.
+   * Each row is printed in the currency it was taken in: euro since the switch,
+   * and older dollar rows converted at the rate captured on their booking day.
+   * Branching on the stored rate alone was what this used to do, and it breaks
+   * the moment a row is genuinely in euro — those carry no euro rate, so a €65
+   * booking printed as "$65".
    */
   const priceLabel = (r: Reservation) =>
-    r.exchange_rate_eur
-      ? formatMoney(convertFromUSD(r.total_price, r.exchange_rate_eur), "EUR")
-      : formatMoney(r.total_price, "USD");
+    formatReservationMoney(r.total_price, r.currency, r.exchange_rate_eur);
 
   /**
    * A cash booking still owes money at the vehicle. Showing only the total made
@@ -185,9 +187,11 @@ export default function ReservationsList({
    */
   const paymentNote = (r: Reservation) => {
     if (r.payment_method !== "cash") return null;
-    const due = r.exchange_rate_eur
-      ? formatMoney(convertFromUSD(r.driver_amount ?? 0, r.exchange_rate_eur), "EUR")
-      : formatMoney(r.driver_amount ?? 0, "USD");
+    const due = formatReservationMoney(
+      r.driver_amount ?? 0,
+      r.currency,
+      r.exchange_rate_eur
+    );
     return `${t.payAtVehicle[locale] ?? t.payAtVehicle.en}: ${due}`;
   };
 

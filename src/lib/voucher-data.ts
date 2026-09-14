@@ -20,8 +20,9 @@ type Row = Record<string, unknown> & {
 
 /**
  * Maps a reservation row (with regions/customers/vehicle_categories joined) onto
- * the shape both the HTML voucher and the PDF voucher expect. Prices are stored
- * in USD; the voucher is presented in EUR via the rate captured at booking time.
+ * the shape both the HTML voucher and the PDF voucher expect. The voucher is
+ * presented in EUR: rows taken since the euro switch are already in it, and
+ * older dollar rows are converted with the rate captured at booking time.
  */
 export function buildVoucherData(res: Row, locale: string): ReservationEmailData {
   const num = (v: unknown) => (typeof v === "number" ? v : Number(v ?? 0)) || 0;
@@ -31,10 +32,17 @@ export function buildVoucherData(res: Row, locale: string): ReservationEmailData
     (res.regions?.name_en as string | undefined) ??
     "";
 
-  // exchange_rate_eur is EUR per ONE dollar, so converting multiplies. This
-  // used to divide, which inverted the rate: $85 was vouchered as €98.41.
+  /**
+   * The voucher quotes euro. A reservation taken after the euro switch already
+   * holds euro and is printed as it stands; one taken before it holds dollars
+   * and is converted with the `exchange_rate_eur` of its own booking day — EUR
+   * per ONE dollar, so converting multiplies. This used to divide, which
+   * inverted the rate: $85 was vouchered as €98.41.
+   */
+  const isEurRow = res.currency === "EUR";
   const eurRate = num(res.exchange_rate_eur) || 1;
-  const toEur = (usd: unknown) => convertFromUSD(num(usd), eurRate);
+  const toEur = (amount: unknown) =>
+    isEurRow ? num(amount) : convertFromUSD(num(amount), eurRate);
 
   const paymentMethod = res.payment_method === "cash" ? "cash" : "online";
   const depositAmount = num(res.deposit_amount);

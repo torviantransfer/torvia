@@ -106,7 +106,7 @@
     "dateConfirm": "Tamam",
     "cardDetails": "Kart Bilgileri",
     "stepProgress": "Adım {current}/{total}",
-    "chargedInUsd": "Ödeme {amount} olarak tahsil edilir",
+    "chargedIn": "Ödeme {amount} olarak tahsil edilir",
     "payAtVehicle": "Araçta Ödeme",
     "payAtVehicleDesc": "Onay mesajı gönderilecek",
     "payAtVehicleTag": "Araçta ödenecek",

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { reservationId, driverId, vehicleId, leg, pickupTime, driverFee } = parsed.data;
+    const { reservationId, driverId, vehicleId, leg, pickupTime, driverFee, driverFeeCurrency } = parsed.data;
 
     // Verify reservation exists and is paid
     const { data: reservation } = await supabase
@@ -89,6 +89,7 @@ export async function POST(request: NextRequest) {
         leg,
         pickup_time: pickupTime || null,
         driver_fee: driverFee ?? null,
+        driver_fee_currency: driverFeeCurrency,
       })
       .select()
       .single();

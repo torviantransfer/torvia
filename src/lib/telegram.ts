@@ -4,7 +4,7 @@
  */
 import { formatBookingDate, formatBookingTime } from "@/lib/datetime";
 import { legEndpoints } from "@/lib/transfer-route";
-import { convertFromUSD, formatEUR } from "@/lib/currency";
+import { convertFromUSD, formatEUR, formatMoney } from "@/lib/currency";
 
 const TELEGRAM_API = "https://api.telegram.org/bot";
 
@@ -317,10 +317,12 @@ export interface DriverVoucherData {
   notes?: string;
   /** "cash" means the driver collects the balance in the vehicle. */
   paymentMethod?: string | null;
-  /** USD, as stored. Only meaningful for a cash booking. */
+  /** As stored, in the reservation's own currency. Only for a cash booking. */
   depositAmountUsd?: number | null;
   driverAmountUsd?: number | null;
-  /** EUR per one USD, captured at booking time. */
+  /** "EUR" since the euro switch, "USD" on everything taken before it. */
+  currency?: string | null;
+  /** EUR per one USD, captured at booking time. Null on euro rows. */
   exchangeRateEur?: number | null;
 }
 
@@ -345,14 +347,26 @@ function longDay(value: string): string {
 
 /**
  * Cash is quoted the way the customer was quoted it — the voucher they hold is
- * in euro — with the stored dollar amount alongside, since that is the figure
- * the panel and the books carry.
+ * in euro — which is what the driver has to collect.
+ *
+ * A reservation taken since the euro switch is already in euro and is printed
+ * as it stands. An older one is in dollars, and then both figures are shown:
+ * the euro the passenger hands over, and the dollar amount the panel and the
+ * books carry. Reading the row's currency is what keeps the two apart —
+ * printing a dollar sign whenever no euro rate was stored would have labelled
+ * every new euro fare as dollars, on the message the driver collects from.
  */
-function amountPair(usd: number | null | undefined, ratePerUsd: number | null | undefined): string {
-  const dollars = Number(usd) || 0;
-  const dollarText = `$${dollars.toFixed(2)}`;
+function amountPair(
+  amount: number | null | undefined,
+  currency: string | null | undefined,
+  ratePerUsd: number | null | undefined
+): string {
+  const value = Number(amount) || 0;
+  if (currency === "EUR") return formatMoney(value, "EUR");
+
+  const dollarText = `$${value.toFixed(2)}`;
   if (!ratePerUsd) return dollarText;
-  return `${formatEUR(convertFromUSD(dollars, ratePerUsd))} (${dollarText})`;
+  return `${formatEUR(convertFromUSD(value, ratePerUsd))} (${dollarText})`;
 }
 
 /**
@@ -450,10 +464,10 @@ export function buildTransferMessage(data: DriverVoucherData): string {
   L.push("", RULE, `<b>ÖDEME</b>`, "");
   if (data.paymentMethod === "cash") {
     L.push(
-      `💵 Araçta tahsil edilecek: <b>${amountPair(data.driverAmountUsd, data.exchangeRateEur)}</b>`
+      `💵 Araçta tahsil edilecek: <b>${amountPair(data.driverAmountUsd, data.currency, data.exchangeRateEur)}</b>`
     );
     if ((data.depositAmountUsd ?? 0) > 0) {
-      L.push(`✔️ Kapora alındı: ${amountPair(data.depositAmountUsd, data.exchangeRateEur)}`);
+      L.push(`✔️ Kapora alındı: ${amountPair(data.depositAmountUsd, data.currency, data.exchangeRateEur)}`);
     }
   } else {
     L.push(`💳 Online ödendi — <b>araçta tahsilat yok</b>.`);
@@ -475,7 +489,7 @@ export async function sendDriverVoucherToTelegram(data: DriverVoucherData): Prom
  * vehicle renders exactly as it always did, with no heading.
  */
 export async function sendPriceListToTelegram(
-  groups: { vehicle: string; regions: { name: string; costTL: number; costUSD: number }[] }[],
+  groups: { vehicle: string; regions: { name: string; costTL: number; costEUR: number }[] }[],
   driverName?: string,
   vehiclePlate?: string,
 ): Promise<void> {
@@ -492,13 +506,13 @@ export async function sendPriceListToTelegram(
     lines.push("");
     if (groups.length > 1) lines.push(`<b>${esc(group.vehicle).toUpperCase()}</b>`);
     lines.push("<pre>");
-    lines.push(`${'BOLGE'.padEnd(16)} ${'TL'.padStart(8)} ${'USD'.padStart(8)}`);
+    lines.push(`${'BOLGE'.padEnd(16)} ${'TL'.padStart(8)} ${'EUR'.padStart(8)}`);
     lines.push("─".repeat(34));
     for (const r of group.regions) {
       const name = esc(r.name).length > 14 ? esc(r.name).slice(0, 13) + "…" : esc(r.name);
       const tl = r.costTL.toLocaleString("tr-TR");
-      const usd = r.costUSD.toFixed(2);
-      lines.push(`${name.padEnd(16)} ${tl.padStart(8)} ${usd.padStart(8)}`);
+      const eur = r.costEUR.toFixed(2);
+      lines.push(`${name.padEnd(16)} ${tl.padStart(8)} ${eur.padStart(8)}`);
     }
     lines.push("─".repeat(34));
     lines.push("</pre>");

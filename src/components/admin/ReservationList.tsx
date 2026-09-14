@@ -18,6 +18,7 @@ import {
   isCash,
   liveAssignment,
   money,
+  fareInEur,
   offsetDayKey,
   regionName,
   shortRouteFor,
@@ -80,7 +81,7 @@ export default function ReservationList({ reservations, adminBase }: Props) {
       unassigned: reservations.filter(missingDriver).length,
       pending: reservations.filter((r) => r.status === "pending").length,
       cancelRequests: reservations.filter((r) => r.status === "cancel_requested").length,
-      revenue: active.reduce((sum, r) => sum + (Number(r.total_price) || 0), 0),
+      revenue: active.reduce((sum, r) => sum + fareInEur(r), 0),
     };
   }, [reservations]);
 
@@ -272,7 +273,7 @@ export default function ReservationList({ reservations, adminBase }: Props) {
                 <span className="text-xs text-slate-400">
                   {group.items.length} transfer ·{" "}
                   {money(
-                    group.items.reduce((s, r) => s + (Number(r.total_price) || 0), 0)
+                    group.items.reduce((s, r) => s + fareInEur(r), 0)
                   )}
                 </span>
                 <span className="h-px flex-1 bg-slate-200" />

@@ -106,7 +106,7 @@
     "dateConfirm": "Fertig",
     "cardDetails": "Kartendaten",
     "stepProgress": "Schritt {current} von {total}",
-    "chargedInUsd": "Abbuchung erfolgt als {amount}",
+    "chargedIn": "Abbuchung erfolgt als {amount}",
     "payAtVehicle": "Im Fahrzeug Zahlen",
     "payAtVehicleDesc": "Bestätigungsnachricht wird gesendet",
     "payAtVehicleTag": "Im Fahrzeug zu zahlen",

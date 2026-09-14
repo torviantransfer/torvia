@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
          reservation_code, trip_type, direction, pickup_datetime, return_datetime,
          flight_code, return_flight_code, adults, children, luggage_count, child_seat,
          hotel_name, hotel_address, notes,
-         status, payment_method, deposit_amount, driver_amount, exchange_rate_eur,
+         status, payment_method, deposit_amount, driver_amount, currency, exchange_rate_eur,
          customers(first_name, last_name, phone, email),
          regions(name_en, name_tr, distance_km, duration_minutes)
        )`
@@ -145,12 +145,27 @@ export async function GET(request: NextRequest) {
    * unaffected.
    */
   const collectsCash = isCash && leg !== "return";
+
+  /**
+   * What the driver collects, in the currency the passenger was quoted — this
+   * sheet is what the money is counted against at the roadside.
+   *
+   * A reservation taken since the euro switch is already in euro and is printed
+   * as it stands. An older one is in dollars, and both are shown: the euro the
+   * passenger hands over and the dollar figure the books carry. The row's own
+   * currency is what separates them — printing a dollar sign whenever no euro
+   * rate was stored, which is the case for every euro row, would have told the
+   * driver to collect "$45.00" for a €45 fare.
+   */
+  const isEurRow = res.currency === "EUR";
   const rate = Number(res.exchange_rate_eur) || 0;
-  const asMoney = (usd: unknown) => {
-    const dollars = Number(usd) || 0;
-    const dollarText = `$${dollars.toFixed(2)}`;
+  const asMoney = (amount: unknown) => {
+    const value = Number(amount) || 0;
+    if (isEurRow) return formatEUR(value);
+
+    const dollarText = `$${value.toFixed(2)}`;
     return rate
-      ? `${formatEUR(convertFromUSD(dollars, rate))} <span class="sub" style="display:inline">(${dollarText})</span>`
+      ? `${formatEUR(convertFromUSD(value, rate))} <span class="sub" style="display:inline">(${dollarText})</span>`
       : dollarText;
   };
 

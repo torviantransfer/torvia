@@ -44,6 +44,12 @@ export interface MiniRegion {
   name_nl: string;
   name_ro?: string;
   name_ar?: string;
+  /**
+   * Whether a return leg is sold for this region. Absent is treated as true,
+   * so a caller that has not been updated keeps today's behaviour rather than
+   * silently hiding the return toggle everywhere.
+   */
+  has_round_trip?: boolean;
 }
 
 function getCalDays(year: number, month: number) {
@@ -345,6 +351,38 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
     }
   };
 
+  /**
+   * The leg's region is whichever end is not the airport, and some regions are
+   * not sold as a round trip at all — we run no return legs on the long routes.
+   *
+   * The form has to know before it offers a return date. /api/reservations only
+   * refuses the booking at the very last step, and lib/pricing quietly quotes
+   * the one-way fare in the meantime, so without this the customer picks a
+   * return, is shown a price that is not for the journey they asked for, fills
+   * in every field and is turned away at payment.
+   *
+   * An unknown region — the list is still loading, or a caller has not been
+   * updated — keeps the toggle, so it does not flicker away and back.
+   */
+  const legRegionSlug = to === "antalya-airport" ? from : to;
+  const roundTripAvailable =
+    !legRegionSlug ||
+    legRegionSlug === "antalya-airport" ||
+    regions.find((r) => r.slug === legRegionSlug)?.has_round_trip !== false;
+
+  /**
+   * What the form actually books. `hasRet` is only what the visitor last
+   * switched on: switching afterwards to a region with no return leg has to
+   * drop it, or the form submits `trip=round_trip` for a one-way-only route
+   * and fails at payment exactly as before.
+   *
+   * Derived rather than synchronised through an effect, so there is no render
+   * in between where the toggle is already hidden but the submitted value still
+   * says round trip. The raw `hasRet` is left alone so switching back to a
+   * region that does sell returns restores the choice.
+   */
+  const bookingIsRoundTrip = hasRet && roundTripAvailable;
+
   const submit = () => {
     // Determine actual region: use whichever is NOT the airport
     const region = to === "antalya-airport" ? from : to;
@@ -362,13 +400,13 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
     const p = new URLSearchParams();
     if (from) p.set("from", from);
     p.set("region", region);
-    p.set("trip", hasRet ? "round_trip" : "one_way");
+    p.set("trip", bookingIsRoundTrip ? "round_trip" : "one_way");
     if (depDate) {
       const dep = `${depDate.getFullYear()}-${String(depDate.getMonth() + 1).padStart(2, "0")}-${String(depDate.getDate()).padStart(2, "0")}`;
       p.set("date", dep);
       p.set("time", `${String(depH).padStart(2, "0")}:${String(depM).padStart(2, "0")}`);
     }
-    if (hasRet && retDate) {
+    if (bookingIsRoundTrip && retDate) {
       const ret = `${retDate.getFullYear()}-${String(retDate.getMonth() + 1).padStart(2, "0")}-${String(retDate.getDate()).padStart(2, "0")}`;
       p.set("returnDate", ret);
       p.set("returnTime", `${String(retH).padStart(2, "0")}:${String(retM).padStart(2, "0")}`);
@@ -732,9 +770,12 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
           {open === "cal" && calFor === "dep" && renderCalendar()}
         </div>
 
-        {/* Return */}
+        {/* Return — absent where no return leg is sold, the same as the
+            compact layout's toggle. Both entry points have to be closed or the
+            wide bar still books a round trip the route cannot serve. */}
+        {roundTripAvailable && (
         <div className="relative h-full shrink-0">
-          {!hasRet ? (
+          {!bookingIsRoundTrip ? (
             <button type="button" onClick={() => { if (!depDate) return; setHasRet(true); openCal("ret"); }} className={`flex items-center gap-1.5 px-4 h-full transition-colors border-e border-gray-200/60 ${depDate ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"}`}>
               <CornerDownLeft size={14} className="text-white" />
               <span className="text-[13px] font-semibold text-white whitespace-nowrap">{t("addReturn")}</span>
@@ -754,6 +795,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
           )}
           {open === "cal" && calFor === "ret" && renderCalendar()}
         </div>
+        )}
 
         {/* Passengers */}
         <div className="relative h-full shrink-0">
@@ -900,6 +942,10 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             pair the form always had. The switch stays dimmed until there is an
             outbound date, because a return can only be picked relative to
             one. */}
+        {/* Hidden outright where no return leg is sold, rather than shown
+            dimmed: a switch that cannot be flipped reads as a fault and earns
+            a support message, while its absence matches what is on offer. */}
+        {roundTripAvailable && (
         <div className={`mt-2 flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
           <span className="flex min-w-0 items-center gap-2.5">
             <RefreshCw size={18} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
@@ -925,10 +971,11 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             </span>
           </button>
         </div>
+        )}
 
         {/* Return date + time — the same pair as the outbound, shown only
-            once the switch is on. */}
-        {hasRet && (
+            once the switch is on and only where a return leg is sold. */}
+        {bookingIsRoundTrip && (
           <div className="mt-2 grid grid-cols-2 gap-2">
             <div className="relative">
               <button

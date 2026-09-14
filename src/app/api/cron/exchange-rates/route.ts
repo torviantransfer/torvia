@@ -1,12 +1,24 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// Called by Vercel CRON or manually to refresh exchange rates
+/**
+ * Refreshes the rates the site quotes in, called by Vercel CRON or by hand.
+ *
+ * The base is EUR because that is what fares are stored and charged in. It used
+ * to be USD; the rows written under that base are left in place rather than
+ * deleted, because they are what reservations taken before the switch were
+ * converted with, and `exchange_rates` is the only record of those days' rates
+ * outside the reservations themselves. Nothing reads them any more — every
+ * caller now filters on `base_currency = 'EUR'`.
+ *
+ * A failed fetch writes nothing at all. Half-updating the pair would leave the
+ * site quoting a fresh dollar price next to a stale lira one.
+ */
 export async function GET() {
   const supabase = createAdminClient();
   try {
     const res = await fetch(
-      "https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,TRY"
+      "https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD,TRY"
     );
     if (!res.ok) {
       return NextResponse.json(
@@ -17,27 +29,37 @@ export async function GET() {
     const data = await res.json();
     const rates = data.rates as Record<string, number>;
 
+    // A missing or zero rate would be written as-is and then divide the site's
+    // prices to nothing, so it is rejected before it reaches the table.
+    if (!rates?.USD || !rates?.TRY) {
+      console.error("Exchange rate response missing USD or TRY:", rates);
+      return NextResponse.json(
+        { error: "Incomplete rates from Frankfurter API" },
+        { status: 502 }
+      );
+    }
+
     const now = new Date().toISOString();
 
-    // Upsert EUR rate
+    // Upsert USD rate (dollars per one euro, ≈ 1.16)
     await supabase
       .from("exchange_rates")
       .upsert(
         {
-          base_currency: "USD",
-          target_currency: "EUR",
-          rate: rates.EUR,
+          base_currency: "EUR",
+          target_currency: "USD",
+          rate: rates.USD,
           last_updated: now,
         },
         { onConflict: "base_currency,target_currency" }
       );
 
-    // Upsert TRY rate
+    // Upsert TRY rate (lira per one euro)
     await supabase
       .from("exchange_rates")
       .upsert(
         {
-          base_currency: "USD",
+          base_currency: "EUR",
           target_currency: "TRY",
           rate: rates.TRY,
           last_updated: now,
@@ -47,7 +69,8 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      rates: { EUR: rates.EUR, TRY: rates.TRY },
+      base: "EUR",
+      rates: { USD: rates.USD, TRY: rates.TRY },
       updatedAt: now,
     });
   } catch (err) {

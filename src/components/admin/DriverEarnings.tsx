@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertTriangle, ArrowRight, TrendingUp } from "lucide-react";
 import { formatBookingDateShort } from "@/lib/datetime";
+// Fares are euro, drivers are paid dollars — convert before subtracting.
+import { convertSettlement, reservationMoney, settlementOf } from "@/lib/currency";
 
 /** Assignment statuses that represent a job still standing. */
 const LIVE = ["assigned", "accepted", "picked_up", "completed"];
@@ -14,6 +16,8 @@ export interface EarningsAssignment {
   leg: string;
   status: string;
   driver_fee: number | null;
+  /** "USD" unless this driver is settled in euro. See convertSettlement. */
+  driver_fee_currency?: string | null;
   drivers: { full_name: string } | null;
 }
 
@@ -22,6 +26,10 @@ export interface EarningsReservation {
   reservation_code: string;
   pickup_datetime: string;
   total_price: number;
+  /** "EUR" since the euro switch, "USD" before it. */
+  currency?: string | null;
+  exchange_rate_usd?: number | null;
+  exchange_rate_eur?: number | null;
   trip_type: string;
   payment_method: string | null;
   regions: { name_tr: string | null; name_en: string | null } | null;
@@ -58,13 +66,30 @@ function periodRange(key: PeriodKey): { from: Date | null; to: Date | null } {
   }
 }
 
-const usd = (v: number) =>
-  `$${v.toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+const fmt = (v: number) =>
+  v.toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+/**
+ * Everything totalled on this screen is in euro, because that is what the fares
+ * are in and what a margin across bookings has to be expressed in.
+ */
+const eur = (v: number) => `€${fmt(v)}`;
+
+/** A driver's own fee, in the money he is actually paid. */
+const inCurrency = (v: number, c: "USD" | "EUR") =>
+  `${c === "USD" ? "$" : "€"}${fmt(v)}`;
 
 interface Row {
   r: EarningsReservation;
   region: string;
-  drivers: { name: string; fee: number | null }[];
+  drivers: {
+    name: string;
+    /** As agreed, in the driver's own currency. */
+    fee: number | null;
+    /** The same fee in euro, or null when no rate was stored to convert with. */
+    feeEur: number | null;
+    feeCurrency: "USD" | "EUR";
+  }[];
   fare: number;
   driverCost: number;
   /** null while any leg on the booking still has no agreed rate. */
@@ -106,17 +131,46 @@ export default function DriverEarnings({
 
     const built: Row[] = inPeriod.map((r) => {
       const live = (r.driver_assignments ?? []).filter((da) => LIVE.includes(da.status));
+
+      /**
+       * Every figure on this screen is in euro, which means the drivers' fees
+       * have to be brought into it first: they are paid in dollars while the
+       * fare is charged in euro, and subtracting one from the other as stored
+       * reported a €65 job against a $40 fee as €25 earned when it is nearer
+       * €31. Converted at each booking's own rate, not today's — the month
+       * being reported is closed, and its margin should not move afterwards.
+       */
       const drivers = live
         .slice()
         .sort((a, b) => (a.leg === "return" ? 1 : 0) - (b.leg === "return" ? 1 : 0))
         .map((da) => ({
           name: da.drivers?.full_name ?? "Şoför silinmiş",
           fee: da.driver_fee == null ? null : Number(da.driver_fee),
+          feeEur:
+            da.driver_fee == null
+              ? null
+              : convertSettlement(
+                  Number(da.driver_fee),
+                  settlementOf(da.driver_fee_currency),
+                  "EUR",
+                  r.exchange_rate_usd,
+                  r.exchange_rate_eur
+                ),
+          feeCurrency: settlementOf(da.driver_fee_currency),
         }));
 
-      const anyUnpriced = drivers.length === 0 || drivers.some((d) => d.fee == null);
-      const driverCost = drivers.reduce((sum, d) => sum + (d.fee ?? 0), 0);
-      const fare = Number(r.total_price) || 0;
+      /* A fee that exists but cannot be converted counts as unpriced: the row
+         drops out of the totals rather than entering them wrong by the
+         exchange rate, the same way a fee nobody has agreed yet does. */
+      const anyUnpriced =
+        drivers.length === 0 ||
+        drivers.some((d) => d.fee == null || d.feeEur == null);
+      const driverCost = drivers.reduce((sum, d) => sum + (d.feeEur ?? 0), 0);
+      const fare = reservationMoney(
+        Number(r.total_price) || 0,
+        r.currency,
+        r.exchange_rate_eur
+      ).value;
 
       return {
         r,
@@ -178,11 +232,11 @@ export default function DriverEarnings({
       {/* Summary */}
       <div className="grid gap-px bg-slate-100 sm:grid-cols-4">
         <Tile label="Transfer" value={String(totals.count)} />
-        <Tile label="Ciro (müşteriden)" value={usd(totals.fare)} />
-        <Tile label="Şoföre giden" value={usd(totals.driverCost)} tone="cost" />
+        <Tile label="Ciro (müşteriden)" value={eur(totals.fare)} />
+        <Tile label="Şoföre giden" value={eur(totals.driverCost)} tone="cost" />
         <Tile
           label="Sana kalan"
-          value={usd(totals.profit)}
+          value={eur(totals.profit)}
           hint={marginPct !== null ? `%${marginPct}` : undefined}
           tone={totals.profit < 0 ? "loss" : "profit"}
         />
@@ -240,7 +294,7 @@ export default function DriverEarnings({
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-end tabular-nums text-slate-700">
-                    {usd(row.fare)}
+                    {eur(row.fare)}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-slate-500">
                     {row.drivers.length === 0 ? (
@@ -251,7 +305,7 @@ export default function DriverEarnings({
                           {i > 0 && <span className="text-slate-300"> / </span>}
                           {d.name}
                           {d.fee !== null && (
-                            <span className="text-slate-400"> {usd(d.fee)}</span>
+                            <span className="text-slate-400"> {inCurrency(d.fee, d.feeCurrency)}</span>
                           )}
                         </span>
                       ))
@@ -261,7 +315,7 @@ export default function DriverEarnings({
                     {row.profit === null ? (
                       <span className="text-slate-300">—</span>
                     ) : (
-                      usd(row.driverCost)
+                      eur(row.driverCost)
                     )}
                   </td>
                   <td className="px-5 py-2.5 text-end">
@@ -276,7 +330,7 @@ export default function DriverEarnings({
                           row.profit < 0 ? "text-rose-600" : "text-emerald-700"
                         }`}
                       >
-                        {usd(row.profit)}
+                        {eur(row.profit)}
                       </span>
                     )}
                   </td>
@@ -288,15 +342,15 @@ export default function DriverEarnings({
                 <td className="px-5 py-3" colSpan={3}>
                   {totals.count} transfer
                 </td>
-                <td className="px-3 py-3 text-end tabular-nums">{usd(totals.fare)}</td>
+                <td className="px-3 py-3 text-end tabular-nums">{eur(totals.fare)}</td>
                 <td />
-                <td className="px-3 py-3 text-end tabular-nums">{usd(totals.driverCost)}</td>
+                <td className="px-3 py-3 text-end tabular-nums">{eur(totals.driverCost)}</td>
                 <td
                   className={`px-5 py-3 text-end tabular-nums ${
                     totals.profit < 0 ? "text-rose-600" : "text-emerald-700"
                   }`}
                 >
-                  {usd(totals.profit)}
+                  {eur(totals.profit)}
                 </td>
               </tr>
             </tfoot>

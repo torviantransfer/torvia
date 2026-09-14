@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       `reservation_code, trip_type, direction, pickup_datetime, return_datetime,
        flight_code, adults, children, luggage_count, child_seat,
        hotel_name, hotel_address, notes,
-       payment_method, deposit_amount, driver_amount, exchange_rate_eur,
+       payment_method, deposit_amount, driver_amount, currency, exchange_rate_eur,
        customers(first_name, last_name, phone),
        regions(name_en, name_tr, distance_km, duration_minutes),
        driver_assignments(leg, pickup_time, status)`
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       paymentMethod: r.payment_method,
       depositAmountUsd: r.deposit_amount,
       driverAmountUsd: r.driver_amount,
+      currency: r.currency,
       exchangeRateEur: r.exchange_rate_eur,
     });
   } catch (err) {

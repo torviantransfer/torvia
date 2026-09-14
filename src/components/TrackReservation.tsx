@@ -47,6 +47,8 @@ interface Reservation {
   child_seat_fee: number;
   round_trip_discount: number;
   coupon_discount: number;
+  /** "EUR" since the euro switch, "USD" on everything taken before it. */
+  currency?: string | null;
   exchange_rate_eur: number | null;
   payment_method?: string | null;
   deposit_amount?: number | null;
@@ -213,12 +215,20 @@ export default function TrackReservation() {
       `name_${locale}` as keyof typeof reservation.regions
     ] ?? reservation?.regions?.name_en;
 
-  // EUR per ONE dollar: convert by multiplying, then apply the display rule.
+  /**
+   * Shown in euro. Rows taken since the euro switch already hold euro; older
+   * ones hold dollars and are converted with the `exchange_rate_eur` captured
+   * at booking — EUR per ONE dollar, so converting multiplies.
+   */
+  const isEurRow = reservation?.currency === "EUR";
   const eurRate = reservation?.exchange_rate_eur ?? 1;
-  const totalEur = convertFromUSD(reservation?.total_price ?? 0, eurRate);
+  const toEur = (amount: number | null | undefined) =>
+    isEurRow ? Number(amount) || 0 : convertFromUSD(Number(amount) || 0, eurRate);
+
+  const totalEur = toEur(reservation?.total_price);
   const isCashBooking = reservation?.payment_method === "cash";
-  const depositEur = convertFromUSD(reservation?.deposit_amount ?? 0, eurRate);
-  const driverDueEur = convertFromUSD(reservation?.driver_amount ?? 0, eurRate);
+  const depositEur = toEur(reservation?.deposit_amount);
+  const driverDueEur = toEur(reservation?.driver_amount);
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(locale, {

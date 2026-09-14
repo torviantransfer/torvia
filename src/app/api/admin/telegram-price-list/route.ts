@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
   // Read optional body for driver info and TL exchange rate
   let driverName: string | undefined;
   let vehiclePlate: string | undefined;
-  let tlRate = 45; // default USD->TRY rate
+  // Fallback only; the stored EUR->TRY rate below replaces it when present.
+  let tlRate = 56; // default EUR->TRY rate
   try {
     const body = await req.json();
     driverName = body.driverName;
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   const { data: rateData } = await supabase
     .from("exchange_rates")
     .select("rate")
-    .eq("base_currency", "USD")
+    .eq("base_currency", "EUR")
     .eq("target_currency", "TRY")
     .single();
   if (rateData?.rate) tlRate = Number(rateData.rate);
@@ -47,14 +48,14 @@ export async function POST(req: NextRequest) {
   type VehicleJoin = { name: string; sort_order: number };
   const byVehicle = new Map<
     string,
-    { vehicle: string; sortOrder: number; regions: { name: string; costTL: number; costUSD: number; sortOrder: number }[] }
+    { vehicle: string; sortOrder: number; regions: { name: string; costTL: number; costEUR: number; sortOrder: number }[] }
   >();
 
   for (const p of pricing) {
     if (!p.regions) continue;
     const region = p.regions as unknown as { name_en: string; name_tr: string; sort_order: number };
     const vehicle = p.vehicle_categories as unknown as VehicleJoin;
-    const usd = Number(p.one_way_price);
+    const eur = Number(p.one_way_price);
 
     let group = byVehicle.get(vehicle.name);
     if (!group) {
@@ -63,8 +64,8 @@ export async function POST(req: NextRequest) {
     }
     group.regions.push({
       name: (region.name_tr || region.name_en).toUpperCase(),
-      costTL: Math.round(usd * tlRate * 100) / 100,
-      costUSD: usd,
+      costTL: Math.round(eur * tlRate * 100) / 100,
+      costEUR: eur,
       sortOrder: region.sort_order,
     });
   }

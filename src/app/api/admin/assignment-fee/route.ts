@@ -35,11 +35,30 @@ export async function POST(request: NextRequest) {
       driverFee = Math.round(driverFee * 100) / 100;
     }
 
+    /**
+     * The currency of that rate. Drivers are paid in dollars while the fare is
+     * charged in euro, so this is not decoration: the ledger and the profit
+     * line both convert by it, and a euro fee stored as dollars is out by the
+     * exchange rate everywhere at once with nothing on screen looking wrong.
+     *
+     * Anything unrecognised is refused rather than defaulted — a silent fall
+     * back to USD is exactly how a wrong currency would get in.
+     */
+    const rawCurrency = body?.driverFeeCurrency;
+    const driverFeeCurrency =
+      rawCurrency === undefined || rawCurrency === null ? "USD" : rawCurrency;
+    if (driverFeeCurrency !== "USD" && driverFeeCurrency !== "EUR") {
+      return NextResponse.json(
+        { error: "Para birimi USD ya da EUR olmalı." },
+        { status: 400 }
+      );
+    }
+
     const supabase = createAdminClient();
 
     const { data: assignment, error: updateError } = await supabase
       .from("driver_assignments")
-      .update({ driver_fee: driverFee })
+      .update({ driver_fee: driverFee, driver_fee_currency: driverFeeCurrency })
       .eq("id", assignmentId)
       .select("id")
       .single();
@@ -51,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     await syncAssignmentLedger(supabase, assignmentId);
 
-    return NextResponse.json({ ok: true, driverFee });
+    return NextResponse.json({ ok: true, driverFee, driverFeeCurrency });
   } catch (err) {
     console.error("Assignment fee exception:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
