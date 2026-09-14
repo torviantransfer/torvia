@@ -27,26 +27,38 @@ export default function HeroSection() {
           and nothing has a hard edge. Desktop keeps the original full-height
           image and its single wash. */}
       <div className="absolute inset-x-0 top-0 h-[300px] lg:h-full overflow-hidden">
-        {/* One picture on both sides, framed differently.
+        {/* One picture on both sides, framed the same way.
 
-            5312.jpg is a 2.37:1 panorama, so in a phone-width band `cover`
-            scales it to the band's height and crops the sides. Centred, that
-            window lands on open water and empty sky; the subject — the
-            bungalows and the palms — sits in the left third of the frame.
-            Pulling the focal point to 35% brings them into the strip the
-            visitor actually sees. Desktop is wide enough to keep the frame
-            centred, as it was. */}
+            The 2.37:1 panorama this replaced lost its subject to the sides
+            in a phone-width band and had to be pulled off-centre to keep it.
+            This frame is 16:9, so the same band crops far less, and what it
+            does crop is the outer edges of a view whose subject — the bay,
+            the headland, the mountain behind them — runs through the middle.
+            Centred on both, therefore, with nothing to correct for. */}
         <Image
-          src="/images/5312.jpg"
-          alt="Antalya airport VIP transfer service - luxury vehicle on highway"
+          src="/images/antalya-coast-hero.jpg"
+          alt="Turquoise bay on the Antalya coast, seen from a shaded terrace above the sea"
           fill
-          className="object-cover object-[35%_50%] lg:object-center"
+          className="object-cover"
           sizes="100vw"
           priority
           quality={80}
         />
         {/* Legibility wash. */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/15 lg:from-black/50 lg:via-black/30 lg:to-black/70" />
+        {/* And a second one, only as deep as the header and only on phones.
+            This view opens on bright sky and lit water, which took the white
+            nav — logo, currency, language, menu — under 3:1 against it. The
+            wash above cannot fix that without darkening the whole picture,
+            so the header gets its own ground and the photograph keeps its
+            light. Desktop needs none of it: the wash there is already twice
+            as strong and the nav measures better than 8:1.
+
+            top-16, not top-0: the section is pulled up under the fixed header
+            by -mt-16, so this box's own top edge sits 64px above the screen.
+            Offsetting by the same 64px lands the dark end of the gradient on
+            the header instead of off-screen. */}
+        <div className="absolute inset-x-0 top-16 h-24 bg-gradient-to-b from-black/60 via-black/30 to-transparent lg:hidden" />
         {/* The dissolve, run long and weighted late. Its stops matter as much
             as its height: most of the whitening is packed into the last third,
             so the extra length buys a softer landing without hazing over the
