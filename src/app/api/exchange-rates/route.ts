@@ -6,7 +6,7 @@ export async function GET() {
   const { data: rates, error } = await supabase
     .from("exchange_rates")
     .select("target_currency, rate, last_updated")
-    .eq("base_currency", "USD");
+    .eq("base_currency", "EUR");
 
   if (error) {
     return NextResponse.json({ error: "Failed to fetch rates" }, { status: 500 });
@@ -18,7 +18,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    base: "USD",
+    base: "EUR",
     rates: rateMap,
     lastUpdated: rates?.[0]?.last_updated ?? null,
   });

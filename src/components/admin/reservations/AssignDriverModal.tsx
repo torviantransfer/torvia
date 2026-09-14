@@ -16,6 +16,8 @@ import {
   formatBookingDateShort,
   formatBookingTime,
 } from "@/lib/datetime";
+// Fare in euro, driver paid in dollars — never subtract without converting.
+import { convertSettlement, settlementOf } from "@/lib/currency";
 import {
   type Driver,
   type Leg,
@@ -28,6 +30,7 @@ import {
   regionName,
   isCash,
   LIVE_ASSIGNMENT_STATUSES,
+  money,
 } from "./types";
 
 interface Conflict {
@@ -119,6 +122,9 @@ export default function AssignDriverModal({
   // modal books a driver, and an already-agreed rate is edited on the
   // assignment card instead, where it belongs to one leg unambiguously.
   const [driverFee, setDriverFee] = useState("");
+  // Drivers are paid in dollars; the fare is charged in euro. Kept apart on
+  // purpose — see convertSettlement in lib/currency.
+  const [driverFeeCurrency, setDriverFeeCurrency] = useState<"USD" | "EUR">("USD");
   /**
    * Both lists collapse to their answer once one is picked.
    *
@@ -149,29 +155,57 @@ export default function AssignDriverModal({
    */
   const feeMath = useMemo(() => {
     const fare = Number(r.total_price) || 0;
+    const fareCurrency = settlementOf(r.currency);
     const entered = driverFee.trim() === "" ? null : Number(driverFee);
     const thisLeg =
       entered !== null && Number.isFinite(entered) && entered >= 0 ? entered : null;
 
+    /* Into the fare's currency before anything is added up. The fare is euro
+       and the driver is paid dollars, so every one of these subtractions
+       crosses currencies; on the raw numbers a €125 fare against a $60 fee
+       previewed "€65 left" when the fee is really about €52. */
+    const inFare = (amount: number, currency: string | null | undefined) =>
+      convertSettlement(
+        amount,
+        settlementOf(currency),
+        fareCurrency,
+        r.exchange_rate_usd,
+        r.exchange_rate_eur
+      );
+
     let othersTotal = 0;
     let othersUnpriced = 0;
+    /* True when a fee exists but cannot be brought into the fare's currency,
+       because that booking stored no rate. The profit line is withheld rather
+       than shown wrong by the exchange rate. */
+    let unconvertible = false;
+
     for (const da of r.driver_assignments ?? []) {
       if (da.leg === leg) continue;
       if (!LIVE_ASSIGNMENT_STATUSES.includes(da.status)) continue;
-      if (da.driver_fee == null) othersUnpriced += 1;
-      else othersTotal += Number(da.driver_fee) || 0;
+      if (da.driver_fee == null) {
+        othersUnpriced += 1;
+        continue;
+      }
+      const converted = inFare(Number(da.driver_fee) || 0, da.driver_fee_currency);
+      if (converted === null) unconvertible = true;
+      else othersTotal += converted;
     }
 
-    const driversTotal = (thisLeg ?? 0) + othersTotal;
+    const thisLegInFare = thisLeg === null ? 0 : inFare(thisLeg, driverFeeCurrency);
+    if (thisLegInFare === null) unconvertible = true;
+
+    const driversTotal = (thisLegInFare ?? 0) + othersTotal;
     return {
       fare,
+      fareCurrency,
       thisLeg,
       othersTotal,
       driversTotal,
       othersUnpriced,
-      profit: fare - driversTotal,
+      profit: unconvertible ? null : fare - driversTotal,
     };
-  }, [r, leg, driverFee]);
+  }, [r, leg, driverFee, driverFeeCurrency]);
 
   const filteredDrivers = useMemo(() => {
     const target = new Date(targetIso);
@@ -248,6 +282,7 @@ export default function AssignDriverModal({
             ? { pickupTime: returnPickupTime }
             : {}),
           driverFee: driverFee.trim() === "" ? null : driverFee.trim(),
+          driverFeeCurrency,
         }),
       });
       const text = await res.text();
@@ -569,19 +604,35 @@ export default function AssignDriverModal({
               className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400"
             >
               <Step n={4} done={feeMath.thisLeg !== null} />
-              Şoföre ödenecek ($)
+              Şoföre ödenecek
             </label>
-            <input
-              id="driver-fee"
-              type="number"
-              min="0"
-              step="1"
-              inputMode="decimal"
-              value={driverFee}
-              onChange={(e) => setDriverFee(e.target.value)}
-              placeholder="örn. 110"
-              className="mt-2 w-36 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
-            />
+            {/* The currency belongs beside the amount, not in a settings page:
+                it is agreed per job, and a rate typed under the wrong one
+                cannot be recovered from the number alone afterwards. */}
+            <div className="mt-2 flex items-center gap-2">
+              <select
+                value={driverFeeCurrency}
+                onChange={(e) =>
+                  setDriverFeeCurrency(e.target.value === "EUR" ? "EUR" : "USD")
+                }
+                aria-label="Şoför ücretinin para birimi"
+                className="rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+              >
+                <option value="USD">$ USD</option>
+                <option value="EUR">€ EUR</option>
+              </select>
+              <input
+                id="driver-fee"
+                type="number"
+                min="0"
+                step="1"
+                inputMode="decimal"
+                value={driverFee}
+                onChange={(e) => setDriverFee(e.target.value)}
+                placeholder="örn. 110"
+                className="w-36 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10"
+              />
+            </div>
 
             {feeMath.thisLeg === null ? (
               <p className="mt-1.5 text-[11px] text-slate-500">
@@ -590,36 +641,47 @@ export default function AssignDriverModal({
                 &quot;ücreti girilmemiş&quot; sayılır.
               </p>
             ) : (
+              /* Every figure on this line is in the fare's currency, including
+                 the driver totals, which are converted from what the driver is
+                 actually paid. Showing a dollar fee beside a euro fare and a
+                 subtraction of the two is how the preview came out wrong by the
+                 exchange rate while reading as a tidy sum. */
               <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
                 <span className="text-slate-500">
                   Müşteri{" "}
                   <span className="font-semibold text-slate-700">
-                    ${feeMath.fare.toFixed(0)}
+                    {money(feeMath.fare, feeMath.fareCurrency)}
                   </span>
                 </span>
                 <span className="text-slate-300">·</span>
                 <span className="text-slate-500">
                   Şoför{feeMath.othersTotal > 0 ? "ler" : ""}{" "}
                   <span className="font-semibold text-slate-700">
-                    ${feeMath.driversTotal.toFixed(0)}
+                    {money(feeMath.driversTotal, feeMath.fareCurrency)}
                   </span>
-                  {feeMath.othersTotal > 0 && (
+                  {driverFeeCurrency !== feeMath.fareCurrency && (
                     <span className="text-slate-400">
                       {" "}
-                      ({feeMath.thisLeg.toFixed(0)} + {feeMath.othersTotal.toFixed(0)})
+                      (girilen {money(feeMath.thisLeg, driverFeeCurrency)})
                     </span>
                   )}
                 </span>
                 <span className="text-slate-300">·</span>
-                <span
-                  className={
-                    feeMath.profit < 0
-                      ? "font-bold text-rose-600"
-                      : "font-bold text-emerald-700"
-                  }
-                >
-                  Sana kalan ${feeMath.profit.toFixed(0)}
-                </span>
+                {feeMath.profit === null ? (
+                  <span className="font-bold text-amber-600">
+                    Kur kaydı yok — kalan hesaplanamıyor
+                  </span>
+                ) : (
+                  <span
+                    className={
+                      feeMath.profit < 0
+                        ? "font-bold text-rose-600"
+                        : "font-bold text-emerald-700"
+                    }
+                  >
+                    Sana kalan {money(feeMath.profit, feeMath.fareCurrency)}
+                  </span>
+                )}
                 {feeMath.othersUnpriced > 0 && (
                   <span className="text-amber-600">
                     · diğer bacağın ücreti henüz girilmedi

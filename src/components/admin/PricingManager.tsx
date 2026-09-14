@@ -328,7 +328,7 @@ export default function PricingManager({
       <div className="flex items-start justify-between gap-4 mb-4">
         <p className="text-sm text-gray-500">
           <span className="font-medium text-gray-700">{activeCategory?.name}</span>{" "}
-          fiyatları — tümü USD cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
+          fiyatları — tümü EUR cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
           {missingCount > 0 && (
             <span className="text-amber-600">, {missingCount} güzergahta fiyat yok</span>
           )}
@@ -487,7 +487,7 @@ export default function PricingManager({
               );
               const amount = (value: number | null | undefined, tone: string) =>
                 value != null ? (
-                  <span className={`font-medium ${tone}`}>${value.toFixed(0)}</span>
+                  <span className={`font-medium ${tone}`}>€{value.toFixed(0)}</span>
                 ) : (
                   <span className="text-gray-300">—</span>
                 );

@@ -45,7 +45,9 @@ export default async function BookingSuccessPage({
   // booking only the deposit is taken online, so reporting total_price as the
   // conversion value would overstate revenue by the driver's share.
   let chargedAmount = 0;
-  let chargedCurrency = "USD";
+  // The billing currency, used only until the PaymentIntent is read below.
+  // It has to match what /api/reservations creates intents in.
+  let chargedCurrency = "EUR";
 
   if (code && code !== "—") {
     try {

@@ -50,8 +50,9 @@ export default async function AdminDriverPaymentsPage() {
     .from("reservations")
     .select(
       `id, reservation_code, pickup_datetime, total_price, trip_type, payment_method,
+       currency, exchange_rate_usd, exchange_rate_eur,
        regions(name_tr, name_en),
-       driver_assignments(id, leg, status, driver_fee, drivers(full_name))`
+       driver_assignments(id, leg, status, driver_fee, driver_fee_currency, drivers(full_name))`
     )
     .in("status", EARNING_STATUSES)
     .gte("pickup_datetime", since.toISOString())

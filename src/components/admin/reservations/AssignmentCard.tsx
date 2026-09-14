@@ -13,6 +13,9 @@ import {
   UserMinus,
 } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
+// The passenger pays in euro, the driver is owed dollars — anything that puts
+// the two in one sum converts first, through the same helper as the ledger.
+import { convertSettlement, settlementOf } from "@/lib/currency";
 import {
   type DriverAssignment,
   type Reservation,
@@ -84,6 +87,14 @@ export default function AssignmentCard({
     da.driver_fee != null ? String(da.driver_fee) : ""
   );
   const [savingFee, setSavingFee] = useState(false);
+  /**
+   * The money this driver is settled in. Dollars unless someone has said
+   * otherwise — that is what we pay, and it is deliberately independent of the
+   * fare, which the passenger pays in euro.
+   */
+  const [feeCurrency, setFeeCurrency] = useState<"USD" | "EUR">(
+    da.driver_fee_currency === "EUR" ? "EUR" : "USD"
+  );
   const router = useRouter();
 
   const meta = assignmentMeta(da.status);
@@ -112,8 +123,30 @@ export default function AssignmentCard({
    * The fare this driver takes off the passenger in cash, which comes off what
    * we owe him. Outbound only: the passenger pays once, at the airport pickup,
    * and driver_amount is one figure for the whole booking.
+   *
+   * The passenger pays it in euro and the driver is owed dollars, so it is
+   * converted into his currency before it can be subtracted from the fee — at
+   * the rate captured when the booking was taken, the same one the ledger uses,
+   * so the card and the driver's balance cannot disagree.
+   *
+   * null means the conversion is needed but that booking stored no rate for it.
+   * The balance line is dropped rather than shown wrong by the exchange rate.
    */
-  const cashOffset = isCash(r) && !isReturn ? Number(r.driver_amount) || 0 : 0;
+  const cashInFeeCurrency =
+    isCash(r) && !isReturn && (Number(r.driver_amount) || 0) > 0
+      ? convertSettlement(
+          Number(r.driver_amount) || 0,
+          settlementOf(r.currency),
+          feeCurrency,
+          r.exchange_rate_usd,
+          r.exchange_rate_eur
+        )
+      : 0;
+
+  /** What the passenger hands over, in the currency they actually pay it in. */
+  const cashFromPassenger =
+    isCash(r) && !isReturn ? Number(r.driver_amount) || 0 : 0;
+  const fareCurrency = settlementOf(r.currency);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(driverPanel);
@@ -132,6 +165,7 @@ export default function AssignmentCard({
         // Empty clears the rate back to "not agreed yet", which the earnings
         // summary counts as unpriced rather than as a free transfer.
         driverFee: feeInput.trim() === "" ? null : feeInput.trim(),
+        driverFeeCurrency: feeCurrency,
       }),
     });
     setSavingFee(false);
@@ -215,7 +249,19 @@ export default function AssignmentCard({
 
         {editingFee ? (
           <span className="inline-flex items-center gap-1.5">
-            <span className="text-slate-400">Şoföre $</span>
+            <span className="text-slate-400">Şoföre</span>
+            {/* The currency sits next to the amount, not in a settings screen:
+                it is agreed per job with the driver, and a rate typed under the
+                wrong currency is not recoverable from the number alone. */}
+            <select
+              value={feeCurrency}
+              onChange={(e) => setFeeCurrency(e.target.value === "EUR" ? "EUR" : "USD")}
+              aria-label="Şoför ücretinin para birimi"
+              className="rounded-md border border-slate-200 bg-white px-1.5 py-1 text-xs outline-none focus:ring-2 focus:ring-slate-900/10"
+            >
+              <option value="USD">$</option>
+              <option value="EUR">€</option>
+            </select>
             <input
               type="number"
               min="0"
@@ -241,6 +287,7 @@ export default function AssignmentCard({
             <button
               onClick={() => {
                 setFeeInput(da.driver_fee != null ? String(da.driver_fee) : "");
+                setFeeCurrency(da.driver_fee_currency === "EUR" ? "EUR" : "USD");
                 setEditingFee(false);
               }}
               className="text-[11px] font-semibold text-slate-400 hover:text-slate-700"
@@ -257,7 +304,10 @@ export default function AssignmentCard({
           </button>
         ) : (
           <span className="inline-flex items-center gap-1">
-            Şoföre <strong className="text-slate-900">{money(da.driver_fee)}</strong>
+            Şoföre{" "}
+            <strong className="text-slate-900">
+              {money(da.driver_fee, da.driver_fee_currency === "EUR" ? "EUR" : "USD")}
+            </strong>
             <button
               onClick={() => setEditingFee(true)}
               className="text-slate-400 hover:text-slate-700"
@@ -272,15 +322,23 @@ export default function AssignmentCard({
           <span>
             Kalan{" "}
             <strong className={profit < 0 ? "text-rose-600" : "text-emerald-700"}>
-              {money(profit)}
+              {money(profit, fareCurrency)}
             </strong>
           </span>
         )}
 
-        {da.driver_fee != null && cashOffset > 0 && (
+        {/* What the driver collects is in the passenger's currency and what he
+            is owed is in his own, so the balance is struck in his: the amount
+            he actually takes is shown as the passenger pays it, and the
+            remainder in what we settle. Dropped entirely when the booking
+            stored no rate to convert with — a balance wrong by the exchange
+            rate is worse than none. */}
+        {da.driver_fee != null && cashFromPassenger > 0 && cashInFeeCurrency !== null && (
           <span className="text-amber-700">
-            Müşteriden {money(cashOffset)} alacak · borç{" "}
-            <strong>{money(Number(da.driver_fee) - cashOffset)}</strong>
+            Müşteriden {money(cashFromPassenger, fareCurrency)} alacak · borç{" "}
+            <strong>
+              {money(Number(da.driver_fee) - cashInFeeCurrency, feeCurrency)}
+            </strong>
           </span>
         )}
 

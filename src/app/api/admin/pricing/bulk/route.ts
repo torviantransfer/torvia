@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     updates.push({
       region_id: row.region_id,
       category_id: categoryId,
-      currency: row.currency ?? "USD",
+      currency: row.currency ?? "EUR",
       ...adjusted,
     });
   }

@@ -106,7 +106,7 @@
     "dateConfirm": "تم",
     "cardDetails": "بيانات البطاقة",
     "stepProgress": "الخطوة {current} من {total}",
-    "chargedInUsd": "يُخصم بمبلغ {amount}",
+    "chargedIn": "يُخصم بمبلغ {amount}",
     "payAtVehicle": "الدفع عند المركبة",
     "payAtVehicleDesc": "ستصلك رسالة تأكيد",
     "payAtVehicleTag": "يُدفع عند المركبة",

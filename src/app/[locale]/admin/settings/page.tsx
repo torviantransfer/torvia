@@ -12,7 +12,7 @@ export default async function AdminSettingsPage() {
   const { data: rates } = await supabase
     .from("exchange_rates")
     .select("*")
-    .eq("base_currency", "USD");
+    .eq("base_currency", "EUR");
 
   return (
     <div>

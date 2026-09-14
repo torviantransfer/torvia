@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+// One implementation of "move this amount between euro and dollars", shared
+// with the admin screens — the ledger and the profit line must not be able to
+// disagree about what a job is worth.
+import { convertSettlement, settlementOf, type Settlement } from "@/lib/currency";
 
 /**
  * Keeps the driver ledger in step with one assignment's agreed fee.
@@ -20,7 +24,7 @@ export async function syncAssignmentLedger(
 ): Promise<void> {
   const { data: assignment } = await supabase
     .from("driver_assignments")
-    .select("id, leg, driver_id, driver_fee, reservation_id")
+    .select("id, leg, driver_id, driver_fee, driver_fee_currency, reservation_id")
     .eq("id", assignmentId)
     .single();
 
@@ -35,7 +39,9 @@ export async function syncAssignmentLedger(
 
   const { data: reservation } = await supabase
     .from("reservations")
-    .select("reservation_code, payment_method, driver_amount, trip_type")
+    .select(
+      "reservation_code, payment_method, driver_amount, trip_type, currency, exchange_rate_usd, exchange_rate_eur"
+    )
     .eq("id", assignment.reservation_id)
     .single();
 
@@ -44,6 +50,16 @@ export async function syncAssignmentLedger(
   const legLabel =
     reservation?.trip_type === "round_trip" ? (isReturn ? "dönüş" : "gidiş") : "tek yön";
 
+  /**
+   * Every row of one assignment is written in the currency that assignment is
+   * settled in, which is the currency of the agreed fee — dollars, unless
+   * someone has set this driver to euro. A ledger holding two currencies has no
+   * balance at all: a $70 fee against a €60 collection nets to "$10 owed" when
+   * the truth is about fifty cents.
+   */
+  const feeCurrency: Settlement =
+    assignment.driver_fee_currency === "EUR" ? "EUR" : "USD";
+
   const rows: Record<string, unknown>[] = [
     {
       driver_id: assignment.driver_id,
@@ -51,6 +67,7 @@ export async function syncAssignmentLedger(
       assignment_id: assignmentId,
       type: "earning",
       amount: fee,
+      currency: feeCurrency,
       description: `${code} · ${legLabel} — şoför ücreti`,
     },
   ];
@@ -67,17 +84,44 @@ export async function syncAssignmentLedger(
    * that is genuinely owed. (The driver voucher prints this amount on both
    * legs' sheets, which is a separate problem with the voucher, not a reason
    * to double-count it here.)
+   *
+   * The fare is in the reservation's own currency — euro since the switch —
+   * while the driver is settled in dollars, so it is converted first, at the
+   * rate stored on the reservation rather than today's. The job was priced,
+   * agreed and collected on its own day; re-reading it months later at a moved
+   * rate would change what the driver is owed after the fact.
    */
   const cashFromPassenger = Number(reservation?.driver_amount ?? 0);
   if (reservation?.payment_method === "cash" && !isReturn && cashFromPassenger > 0) {
-    rows.push({
-      driver_id: assignment.driver_id,
-      reservation_id: assignment.reservation_id,
-      assignment_id: assignmentId,
-      type: "payment",
-      amount: cashFromPassenger,
-      description: `${code} · ${legLabel} — müşteriden nakit tahsil etti`,
-    });
+    const settled = convertSettlement(
+      cashFromPassenger,
+      settlementOf(reservation.currency),
+      feeCurrency,
+      reservation.exchange_rate_usd,
+      reservation.exchange_rate_eur
+    );
+
+    if (settled === null) {
+      // Writing the unconverted figure would look plausible and stay wrong by
+      // the exchange rate for ever. Leaving the row out overstates what the
+      // driver is owed, which is caught at payout — the louder failure is the
+      // safer one.
+      console.error(
+        `[driverLedger] ${assignmentId}: ${code} tahsilatı ${reservation.currency} ` +
+          `ama şoför ${feeCurrency} ile hesaplaşıyor ve rezervasyonda kur yok. ` +
+          `Nakit satırı yazılmadı — bakiye olduğundan yüksek görünecek.`
+      );
+    } else {
+      rows.push({
+        driver_id: assignment.driver_id,
+        reservation_id: assignment.reservation_id,
+        assignment_id: assignmentId,
+        type: "payment",
+        amount: settled,
+        currency: feeCurrency,
+        description: `${code} · ${legLabel} — müşteriden nakit tahsil etti`,
+      });
+    }
   }
 
   const { error } = await supabase.from("driver_payments").insert(rows);

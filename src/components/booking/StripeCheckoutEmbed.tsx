@@ -259,7 +259,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             rendered when the two actually differ. */}
         {isConverted && (
           <p className="text-center text-[11.5px] text-gray-500">
-            {t("chargedInUsd", {
+            {t("chargedIn", {
               amount: formatBilling(isDeposit && depositAmount != null ? depositAmount : totalPrice),
             })}
           </p>

@@ -463,7 +463,7 @@ export default async function HotelTransferAntalyaPage({
       "@type": "AggregateOffer",
       lowPrice: "35",
       highPrice: "180",
-      priceCurrency: "USD",
+      priceCurrency: "EUR",
       availability: "https://schema.org/InStock",
     },
   };

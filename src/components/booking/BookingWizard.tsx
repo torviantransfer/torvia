@@ -1725,7 +1725,7 @@ function BookingWizardInner(props: Props) {
                       the card form that the amount is a conversion is late. */}
                   {isConverted && (
                     <p className="text-center text-[10.5px] text-gray-400">
-                      {t("chargedInUsd", {
+                      {t("chargedIn", {
                         amount: formatBilling(
                           paymentMethod === "cash" && selectedVehicle.cashDeposit != null
                             ? selectedVehicle.cashDeposit

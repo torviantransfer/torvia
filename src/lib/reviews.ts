@@ -132,7 +132,7 @@ export function productSchema({
   url,
   image,
   price,
-  currency = "USD",
+  currency = "EUR",
   reviews,
 }: {
   name: string;

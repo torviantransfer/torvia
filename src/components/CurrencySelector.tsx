@@ -33,7 +33,7 @@ export default function CurrencySelector({
   // Mirrors useCurrency: the locale's currency is the starting point, a stored
   // pick replaces it below. Without this the button would read "$ USD" while
   // the page showed lira.
-  const [currency, setCurrency] = useState<Currency>(localeCurrencies[locale] ?? "USD");
+  const [currency, setCurrency] = useState<Currency>(localeCurrencies[locale] ?? "EUR");
 
   useEffect(() => {
     const stored = localStorage.getItem("TORVIAN_currency") as Currency | null;

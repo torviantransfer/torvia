@@ -106,7 +106,7 @@
     "dateConfirm": "Gata",
     "cardDetails": "Datele cardului",
     "stepProgress": "Pasul {current} din {total}",
-    "chargedInUsd": "Se încasează ca {amount}",
+    "chargedIn": "Se încasează ca {amount}",
     "payAtVehicle": "Plata în vehicul",
     "payAtVehicleDesc": "Vei primi un mesaj de confirmare",
     "payAtVehicleTag": "De plătit în vehicul",

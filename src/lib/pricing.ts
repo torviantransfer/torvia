@@ -99,24 +99,12 @@ export function isNightTime(time: string): boolean {
   return hour >= 22 || hour < 6;
 }
 
-export function formatPrice(
-  amount: number,
-  currency: "USD" | "EUR" | "TRY"
-): string {
-  const symbols: Record<string, string> = {
-    USD: "$",
-    EUR: "€",
-    TRY: "₺",
-  };
-  const formatted = amount.toFixed(2);
-  return `${symbols[currency]}${formatted}`;
-}
-
-export function convertPrice(
-  amountUSD: number,
-  targetCurrency: "USD" | "EUR" | "TRY",
-  rates: { EUR: number; TRY: number }
-): number {
-  if (targetCurrency === "USD") return amountUSD;
-  return Math.round(amountUSD * rates[targetCurrency] * 100) / 100;
-}
+/*
+ * `formatPrice` and `convertPrice` used to sit here and were removed with the
+ * euro switch. Nothing called either of them — lib/currency has held the one
+ * copy of both jobs since the voucher and the site disagreed about what a fare
+ * was — and `convertPrice(amountUSD, …)` reading the old base would have been
+ * a working, plausible-looking way to get every converted figure wrong for
+ * whoever found it next. Money formatting and conversion belong in
+ * lib/currency; there is no second implementation on purpose.
+ */

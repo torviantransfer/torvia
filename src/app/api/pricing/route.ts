@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
   const { data: rates } = await supabase
     .from("exchange_rates")
     .select("target_currency, rate")
-    .eq("base_currency", "USD");
+    .eq("base_currency", "EUR");
 
   const exchangeRates: Record<string, number> = { USD: 1 };
   for (const r of rates ?? []) {

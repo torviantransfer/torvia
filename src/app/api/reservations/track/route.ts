@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       welcome_sign_fee,
       round_trip_discount,
       coupon_discount,
+      currency,
       exchange_rate_eur,
       payment_method,
       deposit_amount,

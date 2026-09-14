@@ -29,10 +29,23 @@ interface Props {
   exchangeRates: ExchangeRate[];
 }
 
+/**
+ * Only the currencies the site quotes in. Falling back to the code itself keeps
+ * a currency added later readable instead of printing the wrong symbol, which
+ * is what the old `=== "EUR" ? "€" : "₺"` did the moment the base moved and the
+ * dollar row started showing a lira sign.
+ */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  TRY: "₺",
+};
+
 const SETTING_LABELS: Record<string, { label: string; type: "number" | "text" | "toggle"; hint?: string }> = {
   night_surcharge_percent: { label: "Gece Ek Ücreti (%)", type: "number" },
-  child_seat_fee: { label: "Çocuk Koltuğu Ücreti (USD)", type: "number" },
-  welcome_sign_fee: { label: "Karşılama Tabelası Ücreti (USD)", type: "number" },
+  // These ride on top of the fare, so they are in the fare's currency.
+  child_seat_fee: { label: "Çocuk Koltuğu Ücreti (EUR)", type: "number" },
+  welcome_sign_fee: { label: "Karşılama Tabelası Ücreti (EUR)", type: "number" },
   cancellation_free_hours: { label: "Ücretsiz İptal Süresi (saat önce)", type: "number" },
   company_name: { label: "Şirket Adı", type: "text" },
   contact_email: { label: "İletişim E-postası", type: "text" },
@@ -284,7 +297,7 @@ export default function SettingsManager({
           {/* Exchange Rates */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900">Döviz Kurları (USD baz)</h2>
+              <h2 className="font-bold text-gray-900">Döviz Kurları (EUR baz)</h2>
               <button
                 onClick={handleRefreshRates}
                 disabled={refreshing}
@@ -301,8 +314,11 @@ export default function SettingsManager({
                   className="flex items-center justify-between border border-gray-100 rounded-lg p-4"
                 >
                   <div>
+                    {/* The base is read from the row rather than written in, so
+                        this line cannot drift from what the rate actually means
+                        the next time the base currency moves. */}
                     <p className="font-mono font-bold text-lg">
-                      1 USD = {rate.rate} {rate.target_currency}
+                      1 {rate.base_currency} = {rate.rate} {rate.target_currency}
                     </p>
                     <p className="text-xs text-gray-400">
                       Güncelleme:{" "}
@@ -310,7 +326,7 @@ export default function SettingsManager({
                     </p>
                   </div>
                   <span className="text-2xl">
-                    {rate.target_currency === "EUR" ? "€" : "₺"}
+                    {CURRENCY_SYMBOLS[rate.target_currency] ?? rate.target_currency}
                   </span>
                 </div>
               ))}

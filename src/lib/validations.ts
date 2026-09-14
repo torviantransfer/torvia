@@ -101,6 +101,11 @@ export const assignDriverSchema = z.object({
   // What we pay this driver for this leg. Optional because the rate is often
   // agreed after the driver is booked; null and absent both mean "not yet".
   driverFee: z.coerce.number().min(0).nullable().optional(),
+  // The currency of that rate. Drivers are paid in dollars while the fare is
+  // charged in euro, so the two are not interchangeable: the ledger and the
+  // profit line both convert by this, and a euro fee recorded as dollars is
+  // wrong by the exchange rate everywhere at once. Defaults to what we pay in.
+  driverFeeCurrency: z.enum(["USD", "EUR"]).default("USD"),
 });
 
 export type ReservationInput = z.infer<typeof reservationSchema>;

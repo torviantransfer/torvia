@@ -106,7 +106,7 @@
     "dateConfirm": "Done",
     "cardDetails": "Card Details",
     "stepProgress": "Step {current} of {total}",
-    "chargedInUsd": "Charged as {amount}",
+    "chargedIn": "Charged as {amount}",
     "payAtVehicle": "Pay at Vehicle",
     "payAtVehicleDesc": "A confirmation message will be sent",
     "payAtVehicleTag": "To be paid at vehicle",

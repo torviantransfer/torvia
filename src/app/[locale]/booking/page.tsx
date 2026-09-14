@@ -135,7 +135,7 @@ export default async function BookingPage({
     supabase
       .from("exchange_rates")
       .select("target_currency, rate")
-      .eq("base_currency", "USD"),
+      .eq("base_currency", "EUR"),
     /* Approved reviews, for the strip under the form. Read on the server with
        everything else, so the one piece of reassurance on this page costs the
        visitor no extra request and no extra wait. */
@@ -173,6 +173,17 @@ export default async function BookingPage({
       name_nl: String(r.name_nl ?? ""),
       name_ro: r.name_ro ? String(r.name_ro) : undefined,
       name_ar: r.name_ar ? String(r.name_ar) : undefined,
+      /* Whether a return leg is sold here. The long routes carry no
+         round_trip_price because we do not run them, and the form has to know
+         that before it offers a return date — otherwise the booking is only
+         refused at payment. Any active vehicle that can do the return is
+         enough: the question is asked before a vehicle is chosen. */
+      has_round_trip: (
+        (r.pricing ?? []) as {
+          round_trip_price: number | null;
+          is_active: boolean | null;
+        }[]
+      ).some((p) => p.is_active !== false && p.round_trip_price != null),
     };
   });
 

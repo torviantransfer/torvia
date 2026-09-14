@@ -162,11 +162,24 @@ export async function POST(request: NextRequest) {
           resData.regions?.[`name_${locale}` as keyof typeof resData.regions] ??
           resData.regions?.name_en ??
           "";
-        // EUR per ONE dollar — convert by multiplying. Dividing inverted every
-        // figure in the confirmation email ($85 became €98.41).
+        /**
+         * The email quotes euro. A reservation taken after the euro switch is
+         * already in euro and must be printed as it stands; one taken before it
+         * holds dollars and is converted with the `exchange_rate_eur` of its own
+         * booking day — EUR per ONE dollar, so converting multiplies. Dividing
+         * inverted every figure in the confirmation email ($85 became €98.41).
+         *
+         * The currency column is what separates the two. Converting every row
+         * unconditionally happened to keep working after the switch only because
+         * a missing rate falls back to 1; leaning on that would have made the
+         * first euro row with a stray rate silently wrong.
+         */
+        const isEurRow = resData.currency === "EUR";
         const eurRate = resData.exchange_rate_eur ?? 1;
-        const toEur = (usd: number | null | undefined) =>
-          convertFromUSD(Number(usd) || 0, eurRate);
+        const toEur = (amount: number | null | undefined) =>
+          isEurRow
+            ? Number(amount) || 0
+            : convertFromUSD(Number(amount) || 0, eurRate);
 
         const totalEur = toEur(resData.total_price);
         const basePriceEur = toEur(resData.base_price);
@@ -234,7 +247,10 @@ export async function POST(request: NextRequest) {
       if (resData?.customers?.email && reservationCode && (resData.total_price ?? 0) > 0) {
         capiPurchase(
           resData.total_price!,
-          "USD",
+          // The row's own currency, not a constant: total_price is euro since
+          // the switch and dollars before it, and Meta reads the value at face
+          // value in whatever currency it is told.
+          resData.currency === "EUR" ? "EUR" : "USD",
           reservationCode,
           {
             email: resData.customers.email,
@@ -277,6 +293,7 @@ export async function POST(request: NextRequest) {
           paymentMethod: resData.payment_method,
           depositAmountUsd: resData.deposit_amount,
           driverAmountUsd: resData.driver_amount,
+          currency: resData.currency,
           exchangeRateEur: resData.exchange_rate_eur,
         }).catch(() => {});
       }

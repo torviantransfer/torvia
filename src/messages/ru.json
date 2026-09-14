@@ -106,7 +106,7 @@
     "dateConfirm": "Готово",
     "cardDetails": "Данные карты",
     "stepProgress": "Шаг {current} из {total}",
-    "chargedInUsd": "Списание составит {amount}",
+    "chargedIn": "Списание составит {amount}",
     "payAtVehicle": "Оплата в транспорте",
     "payAtVehicleDesc": "Сообщение с подтверждением будет отправлено",
     "payAtVehicleTag": "Оплата в транспорте",

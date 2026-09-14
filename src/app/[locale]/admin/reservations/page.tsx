@@ -24,6 +24,7 @@ export const dynamic = "force-dynamic";
 const LIST_COLUMNS = `
   id, reservation_code, status, trip_type, direction, created_at,
   pickup_datetime, total_price, payment_method,
+  currency, exchange_rate_eur, exchange_rate_usd,
   adults, children, flight_code, return_flight_code, hotel_name,
   customers(first_name, last_name, email, phone),
   regions(name_en, name_tr, slug),

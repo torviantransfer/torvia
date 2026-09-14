@@ -1,4 +1,7 @@
 import { legEndpoints, legRoute } from "@/lib/transfer-route";
+// Fares are euro and drivers are paid in dollars, so anything that puts the two
+// in one sum has to convert first. One implementation, shared with the ledger.
+import { convertSettlement, reservationMoney, settlementOf } from "@/lib/currency";
 import {
   bookingDayKey,
   bookingDayOffset,
@@ -23,11 +26,17 @@ export interface DriverAssignment {
   picked_up_at?: string | null;
   completed_at?: string | null;
   /**
-   * What we pay this driver for this leg, in USD. null means the rate has not
-   * been agreed yet — which is not the same as free, and is why the earnings
-   * summary counts such a transfer as unpriced rather than as pure profit.
+   * What we pay this driver for this leg. null means the rate has not been
+   * agreed yet — which is not the same as free, and is why the earnings summary
+   * counts such a transfer as unpriced rather than as pure profit.
    */
   driver_fee?: number | null;
+  /**
+   * The currency that fee is in — "USD" by default, because drivers are paid in
+   * dollars while the fare is charged in euro. Never subtract it from a fare
+   * without passing through convertSettlement in lib/currency.
+   */
+  driver_fee_currency?: string | null;
   drivers: { full_name: string; phone: string } | null;
   vehicles?: { plate_number: string; brand: string; model: string } | null;
 }
@@ -55,6 +64,16 @@ export interface Reservation {
   locale?: string | null;
   /** Outbound leg direction; the return leg runs the opposite way (migration 060). */
   direction?: string | null;
+  /**
+   * What every amount on this row is in: "EUR" since the euro switch, "USD"
+   * before it. The two rates below are that day's, and are the only honest way
+   * to put a fare and a driver's dollar fee into the same currency.
+   */
+  currency?: string | null;
+  /** USD per one euro, on the booking day. Null on pre-switch dollar rows. */
+  exchange_rate_usd?: number | null;
+  /** EUR per one USD, on the booking day. Null on euro rows. */
+  exchange_rate_eur?: number | null;
   // Present once the cash-payment migration has been applied.
   payment_method?: string | null;
   deposit_amount?: number | null;
@@ -241,25 +260,74 @@ export const liveAssignment = (r: Reservation, leg: Leg) =>
 
 export const isCash = (r: Reservation) => r.payment_method === "cash";
 
-export const money = (v: number | null | undefined) =>
-  `${(Number(v) || 0).toFixed(2)}`;
+/**
+ * An amount with the sign of the money it is in.
+ *
+ * The symbol is not decoration: since fares moved to euro while drivers are
+ * still paid in dollars, two numbers on the same card can be in two currencies,
+ * and a bare "40.00" next to a bare "65.00" invites exactly the subtraction
+ * that produces a wrong answer. Euro is the default because almost everything
+ * on these screens is a fare.
+ */
+export const money = (
+  v: number | null | undefined,
+  currency: "EUR" | "USD" = "EUR"
+) => `${currency === "USD" ? "$" : "€"}${(Number(v) || 0).toFixed(2)}`;
 
 /**
- * What a booking leaves us once every driver on it has been paid.
+ * What a booking leaves us once every driver on it has been paid, in the
+ * currency the booking itself is in.
  *
  * null while any live leg still has no agreed rate. A round trip priced on the
  * outbound alone is not 70% profit — the return driver is owed too — and
  * treating a missing rate as zero is exactly how a summary reports money that
  * was never earned. The caller shows "not priced yet" instead.
+ *
+ * Also null when a driver's fee cannot be brought into the fare's currency.
+ * Fares are euro and drivers are paid in dollars, so this subtraction crosses
+ * currencies on every job: doing it on the raw numbers reported a €65 fare
+ * against a $40 fee as "€25 left" when the fee is really about €34. A figure
+ * that is wrong by the exchange rate and looks perfectly sensible is worse than
+ * no figure, so a missing rate withholds it.
  */
 export const reservationProfit = (r: Reservation): number | null => {
   const live = (r.driver_assignments ?? []).filter((da) =>
     LIVE_ASSIGNMENT_STATUSES.includes(da.status)
   );
   if (live.length === 0 || live.some((da) => da.driver_fee == null)) return null;
-  const drivers = live.reduce((sum, da) => sum + (Number(da.driver_fee) || 0), 0);
+
+  const fareCurrency = settlementOf(r.currency);
+  let drivers = 0;
+
+  for (const da of live) {
+    const inFareCurrency = convertSettlement(
+      Number(da.driver_fee) || 0,
+      settlementOf(da.driver_fee_currency),
+      fareCurrency,
+      r.exchange_rate_usd,
+      r.exchange_rate_eur
+    );
+    if (inFareCurrency === null) return null;
+    drivers += inFareCurrency;
+  }
+
   return (Number(r.total_price) || 0) - drivers;
 };
+
+/**
+ * One booking's fare in euro, whatever currency its row is in.
+ *
+ * Totals across several bookings have to go through this. The table now holds
+ * both: euro since the switch and dollars before it, and adding those together
+ * produces a number that is not money in any currency — the revenue tile would
+ * have drifted further from the truth with every old booking still in range.
+ *
+ * A pre-switch row with no stored rate contributes its own figure unconverted,
+ * which is what it did before this existed; there is nothing better available
+ * for it, and such rows only exist where the rate table was empty at booking.
+ */
+export const fareInEur = (r: Reservation): number =>
+  reservationMoney(Number(r.total_price) || 0, r.currency, r.exchange_rate_eur).value;
 
 export const customerName = (r: Reservation) =>
   `${r.customers?.first_name ?? ""} ${r.customers?.last_name ?? ""}`.trim() ||

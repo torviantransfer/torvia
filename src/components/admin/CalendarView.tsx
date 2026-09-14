@@ -305,7 +305,7 @@ export default function CalendarView() {
                 <span className="text-xs text-slate-400">
                   {selectedEvent.tripType === "round_trip" ? "Gidiş-Dönüş" : "Tek Yön"}
                 </span>
-                <span className="font-bold text-slate-900">${selectedEvent.price.toFixed(2)}</span>
+                <span className="font-bold text-slate-900">€{selectedEvent.price.toFixed(2)}</span>
               </div>
             </div>
           </div>
