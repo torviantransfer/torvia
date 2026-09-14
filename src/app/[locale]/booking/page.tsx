@@ -320,6 +320,19 @@ export default async function BookingPage({
   const heroIsRtl = localeDirection(locale) === "rtl";
   const heroScrimTo = heroIsRtl ? "left" : "right";
 
+  /* The headline doubles as the SEO title, so every locale hands it over as
+     "<offer> | <promise>". Desktop prints the one line it has always been.
+     The phone sets the two halves apart, because at this width the whole
+     string in one weight is a block of bold text rather than a headline —
+     nothing in it is louder than anything else. Split, never shortened: the
+     full string stays inside the h1. */
+  const [heroTitleLead, heroTitleTail] = (() => {
+    const raw = t("title");
+    const at = raw.indexOf("|");
+    if (at === -1) return [raw, ""] as const;
+    return [raw.slice(0, at).trim(), raw.slice(at + 1).trim()] as const;
+  })();
+
   const intentLabel: Record<string, string> = {
     tr: "Sık aranan transferler",
     de: "Häufige Suchanfragen",
@@ -365,7 +378,12 @@ export default async function BookingPage({
                 // that lands directly on Core Web Vitals.
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
+              {/* Barely there on a phone. It used to carry the headline as
+                  well, which meant darkening the whole frame — and the car
+                  with it, until the thing the photograph is for looked washed
+                  out. The side scrim below carries the headline now, so this
+                  is left to do nothing but settle the top edge. */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/5 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
               {/* Phones only, and only across the side the headline sits on.
                   The photograph opens on a lit sunset that white type cannot
                   survive, but darkening the whole frame to fix that also
@@ -374,7 +392,10 @@ export default async function BookingPage({
                   lit. Mirrored for Arabic, where the headline is on the right. */}
               <div
                 className="absolute inset-0 lg:hidden"
-                style={{ backgroundImage: `linear-gradient(to ${heroScrimTo}, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.55) 32%, rgba(0,0,0,0.20) 58%, rgba(0,0,0,0) 82%)` }}
+                // Spent by 42% of the width, which is where the front of the
+                // car sits once the crop is pinned right — so the headline
+                // gets its dark ground and the car keeps its own light.
+                style={{ backgroundImage: `linear-gradient(to ${heroScrimTo}, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.70) 24%, rgba(0,0,0,0.34) 40%, rgba(0,0,0,0.08) 56%, rgba(0,0,0,0) 70%)` }}
               />
               {/* Run long and weighted late, so the extra length softens the
                   landing without hazing the strip of photograph above the
@@ -391,8 +412,12 @@ export default async function BookingPage({
 
                 The phone padding is what clears the fixed header and sets the
                 headline against the car; the card follows the headline down
-                rather than being pushed to a fixed offset of its own. */}
-            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-3 sm:px-4 pt-7 lg:pt-20 pb-10">
+                rather than being pushed to a fixed offset of its own — which
+                is why the headline is raised by moving its breathing room
+                below it (see its mb) rather than by trimming this, and the
+                two have to be changed together or the card walks up with it
+                and covers the car again. */}
+            <div className="relative z-10 flex flex-col w-full max-w-6xl mx-auto px-3 sm:px-4 pt-2 lg:pt-20 pb-10">
               {/* The headline is its own flex child so the phone can lift it
                   out of the block at the bottom and stand it beside the car,
                   in the half of the frame the scrim darkens, while the
@@ -402,8 +427,18 @@ export default async function BookingPage({
                   headline doubles as the SEO title and the Polish and Russian
                   ones are half again as long as the English.
                   Desktop is unchanged — full width, centred, above the card. */}
-              <h1 className="order-1 lg:order-1 max-w-[42%] lg:max-w-none text-[16px] leading-[1.25] sm:text-xl lg:text-5xl font-bold text-white lg:text-center mb-4 lg:mb-3 drop-shadow-lg">
-                {t("title")}
+              <h1 className="order-1 lg:order-1 max-w-[42%] lg:max-w-none text-[15px] leading-[1.28] sm:text-xl lg:text-5xl font-bold text-white lg:text-center mb-9 lg:mb-3 drop-shadow-lg">
+                <span className="block lg:inline">{heroTitleLead}</span>
+                {heroTitleTail && (
+                  <>
+                    <span className="hidden lg:inline"> | </span>
+                    {/* em-sized, so the step down holds at every breakpoint,
+                        and folded back into the line on desktop. */}
+                    <span className="mt-1.5 block text-[0.8em] font-medium text-white/75 lg:mt-0 lg:inline lg:text-[1em] lg:font-bold lg:text-white">
+                      {heroTitleTail}
+                    </span>
+                  </>
+                )}
               </h1>
               {/* Below the card on phones, so it reads on the white side of
                   the dissolve rather than on the photograph — hence the dark
