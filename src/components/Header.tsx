@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   LogOut,
 } from "lucide-react";
+import Image from "next/image";
 import { localeNames, type Locale } from "@/i18n/config";
 import CurrencySelector from "./CurrencySelector";
 import FlagIcon from "./FlagIcon";
@@ -166,9 +167,32 @@ export default function Header() {
       >
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center shrink-0">
-              <span className="text-[22px] sm:text-2xl font-black tracking-tight transition-colors duration-300" style={{ fontFamily: "var(--font-montserrat), sans-serif", color: "#10B981" }}>TORVIAN</span>
+            {/* Logo.
+
+                Both artworks are rendered and cross-faded rather than swapping
+                one `src`: over the hero the nav is transparent and the dark
+                wordmark would be unreadable, but switching the source on scroll
+                would fetch the other file at the moment it has to appear and
+                flash an empty box on a slow connection. Two images, one opacity
+                transition, no request in the middle of a scroll. */}
+            <Link href="/" className="relative flex items-center shrink-0 h-8 sm:h-9" aria-label="TORVIAN Transfer">
+              <Image
+                src="/images/logo.png"
+                alt="TORVIAN Transfer"
+                width={720}
+                height={191}
+                priority
+                className={`h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-100" : "opacity-0"}`}
+              />
+              <Image
+                src="/images/logo-light.png"
+                alt=""
+                aria-hidden="true"
+                width={720}
+                height={190}
+                priority
+                className={`absolute inset-y-0 start-0 h-full w-auto transition-opacity duration-300 ${showDarkNav ? "opacity-0" : "opacity-100"}`}
+              />
             </Link>
 
             {/* Desktop primary nav - next to logo */}

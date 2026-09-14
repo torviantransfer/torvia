@@ -15,6 +15,7 @@ import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
 import { vehicleIsActive, type VehicleFlag } from "@/lib/vehicleFlag";
+import { localeDirection } from "@/i18n/config";
 
 /**
  * Which `seoFaqNQ`/`seoFaqNA` pairs to render and to mark up.
@@ -310,6 +311,14 @@ export default async function BookingPage({
     nl: "VIP-transfervoertuig op de luchthaven Antalya",
   };
 
+  /* Arabic lays the page out right-to-left, which moves the headline to the
+     right — the side the car is parked on. The darkening follows the copy,
+     and the photograph is mirrored so the car moves out from under it and
+     the two stay on opposite sides in both directions. Nothing in the frame
+     reads as text, so there is nothing for the flip to spoil. */
+  const heroIsRtl = localeDirection(locale) === "rtl";
+  const heroScrimTo = heroIsRtl ? "left" : "right";
+
   const intentLabel: Record<string, string> = {
     tr: "Sık aranan transferler",
     de: "Häufige Suchanfragen",
@@ -334,10 +343,10 @@ export default async function BookingPage({
           <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
             <div className="absolute inset-x-0 top-0 h-[240px] lg:h-[560px] overflow-hidden">
               <Image
-                src="/images/havaalani-vip-transfer.jpg"
+                src="/images/antalya-airport-vip-transfer-hero.jpg"
                 alt={heroAlt[locale] ?? heroAlt.en}
                 fill
-                className="object-cover"
+                className={`object-cover ${heroIsRtl ? "-scale-x-100" : ""}`}
                 priority
                 quality={80}
                 // `fill` without `sizes` makes Next assume the image is as wide
@@ -346,7 +355,17 @@ export default async function BookingPage({
                 // that lands directly on Core Web Vitals.
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/50 lg:via-black/40 lg:to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/25 to-black/15 lg:from-black/35 lg:via-black/25 lg:to-black/45" />
+              {/* Desktop only, and only across the half the headline occupies.
+                  The photograph opens on a lit sunset, which white type cannot
+                  survive, but darkening the whole frame to fix that also buries
+                  the car the picture was chosen for. This runs out well before
+                  the car, so the copy reads and the subject stays lit.
+                  Mirrored for Arabic, where the copy sits on the other side. */}
+              <div
+                className="absolute inset-0 hidden lg:block"
+                style={{ backgroundImage: `linear-gradient(to ${heroScrimTo}, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.58) 28%, rgba(0,0,0,0.26) 54%, rgba(0,0,0,0.04) 78%, rgba(0,0,0,0) 100%)` }}
+              />
               {/* Run long and weighted late, so the extra length softens the
                   landing without hazing the strip of photograph above the
                   card. Same curve as the home hero, onto white. */}
@@ -363,14 +382,21 @@ export default async function BookingPage({
               {/* Below the card on phones, so it reads on the white side of
                   the dissolve rather than on the photograph — hence the dark
                   variants, which `lg:` puts straight back to white. */}
-              <div className="order-4 lg:order-1 text-center mt-8 lg:mt-0 lg:mb-8">
-                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#111827] lg:text-white mb-3 lg:drop-shadow-lg">
+              {/* Desktop puts the copy in the left half and leaves the right to
+                  the car, which is where the photograph already has it. Capped
+                  at 52% so the longest headline — Polish and Russian both run
+                  well past the English one — still stops short of the bonnet.
+                  Phones keep the centred stack: there the photo is a band above
+                  the card and the copy reads on white below it, with nothing
+                  beside it to balance against. */}
+              <div className="order-4 lg:order-1 text-center lg:text-start mt-8 lg:mt-0 lg:mb-8 lg:max-w-[52%]">
+                <h1 className="text-2xl sm:text-3xl lg:text-[2.75rem] lg:leading-[1.12] font-bold text-[#111827] lg:text-white mb-3 lg:drop-shadow-lg">
                   {t("title")}
                 </h1>
-                <p className="text-[15px] sm:text-lg text-[#4B5563] lg:text-white/85 max-w-2xl mx-auto lg:drop-shadow">
+                <p className="text-[15px] sm:text-lg text-[#4B5563] lg:text-white/85 max-w-2xl mx-auto lg:mx-0 lg:drop-shadow">
                   {t("subtitle")}
                 </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-4xl mx-auto">
+                <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-2 max-w-4xl mx-auto lg:mx-0">
                   <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-[#6B7280] lg:text-white/80 me-1">
                     {intentLabel[locale] ?? intentLabel.en}
                   </span>

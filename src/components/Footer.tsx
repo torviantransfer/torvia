@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import NewsletterForm from "@/components/NewsletterForm";
+import Image from "next/image";
 import { Mail, MessageCircle, Phone, MapPin } from "lucide-react";
 
 import type { Locale } from "@/i18n/config";
@@ -35,7 +36,13 @@ export default async function Footer() {
         {/* Top: Logo + description */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 mb-10 md:mb-12 pb-8 md:pb-10" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
           <div className="max-w-sm">
-            <span className="text-2xl font-black tracking-tight mb-3 inline-block" style={{ fontFamily: "var(--font-montserrat), sans-serif", color: "#10B981" }}>TORVIAN</span>
+            <Image
+              src="/images/logo.png"
+              alt="TORVIAN Transfer"
+              width={720}
+              height={191}
+              className="h-10 w-auto mb-3"
+            />
             <p className="text-gray-500 text-sm leading-relaxed">{t("description")}</p>
           </div>
           <div className="flex items-center gap-4">
