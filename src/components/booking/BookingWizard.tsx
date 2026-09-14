@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
-import { pixelInitiateCheckout, pixelAddPaymentInfo } from "@/lib/pixel";
+import { pixelInitiateCheckout, pixelAddPaymentInfo, setPixelUserData } from "@/lib/pixel";
 import { trackPageView, trackBookingStep } from "@/lib/analytics";
 
 interface Props {
@@ -607,6 +607,11 @@ function BookingWizardInner(props: Props) {
         setReservationTotalPrice(data.reservation?.totalPrice ?? 0);
         setReservationDepositAmount(data.reservation?.depositAmount ?? 0);
         setReservationDriverAmount(data.reservation?.driverAmount ?? 0);
+        // The first point in the wizard where we know who the customer is.
+        // Awaited because advanced matching only reaches events sent after the
+        // pixel is re-initialised — AddPaymentInfo and the Purchase that
+        // follows it are the two events worth matching.
+        await setPixelUserData({ firstName, lastName, email, phone });
         pixelAddPaymentInfo(selectedVehicle.oneWayPrice);
         trackBookingStep("checkout_initiated", {
           region: regionSlug,

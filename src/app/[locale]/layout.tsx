@@ -8,7 +8,12 @@ import CookieConsent from "@/components/CookieConsent";
 import PresenceTracker from "@/components/analytics/PresenceTracker";
 import MetaPageView from "@/components/analytics/MetaPageView";
 import Script from "next/script";
-import { PIXEL_ID, GOOGLE_ADS_ID } from "@/lib/pixel";
+import {
+  ACTIVE_PIXEL_ID,
+  GOOGLE_ADS_ID,
+  ADVANCED_MATCHING_KEY,
+  ADVANCED_MATCHING_TTL_MS,
+} from "@/lib/pixel";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -56,7 +61,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const fbPixelId = process.env.NEXT_PUBLIC_FB_PIXEL_ID || PIXEL_ID;
+  const fbPixelId = ACTIVE_PIXEL_ID;
 
   return (
     <html
@@ -88,10 +93,16 @@ export default async function LocaleLayout({
         {/* The pageview is sent with an event id so the Conversions API can
             report the same pageview from the server and have Meta merge the
             two — see MetaPageView, which picks the id up from the window and
-            takes over for client-side navigations. */}
+            takes over for client-side navigations.
+
+            init reads back the hashed contact details a previous booking or
+            enquiry left behind, so a returning visitor is matched from their
+            very first pageview. Manual advanced matching has to be part of the
+            base init or Meta ignores it — hence the inline read here rather
+            than a tidier call after hydration. See lib/pixel.ts. */}
         {fbPixelId && (
           <Script id="facebook-pixel" strategy="afterInteractive">
-            {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${fbPixelId}');var i=(window.crypto&&window.crypto.randomUUID)?window.crypto.randomUUID():'pv_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);window.__fbPageViewId=i;fbq('track','PageView',{},{eventID:i});`}
+            {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');var am=null;try{var r=window.localStorage.getItem('${ADVANCED_MATCHING_KEY}');if(r){var p=JSON.parse(r);if(p&&typeof p.t==='number'&&p.d&&Date.now()-p.t<${ADVANCED_MATCHING_TTL_MS})am=p.d;}}catch(e){}am?fbq('init','${fbPixelId}',am):fbq('init','${fbPixelId}');var i=(window.crypto&&window.crypto.randomUUID)?window.crypto.randomUUID():'pv_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);window.__fbPageViewId=i;fbq('track','PageView',{},{eventID:i});`}
           </Script>
         )}
       </head>

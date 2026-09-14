@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { newPixelEventId, pixelContact } from "@/lib/pixel";
+import { newPixelEventId, pixelContact, setPixelUserData } from "@/lib/pixel";
 
 export default function ContactForm() {
   const t = useTranslations("contact");
@@ -39,6 +39,13 @@ export default function ContactForm() {
         throw new Error(body.error || t("errorSendFailed"));
       }
 
+      // Awaited so the Contact event carries the enquirer's hashed details,
+      // and remembered for the booking they may come back to make.
+      await setPixelUserData({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+      });
       pixelContact(eventId);
       setStatus("success");
       (e.target as HTMLFormElement).reset();

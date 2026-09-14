@@ -7,6 +7,7 @@ import {
   gAdsConversionPurchase,
   hasTrackedPurchase,
   markPurchaseTracked,
+  applyStoredPixelUserData,
 } from "@/lib/pixel";
 import { trackPaymentSuccess } from "@/lib/analytics";
 
@@ -65,6 +66,13 @@ export default function PixelPurchaseFire({
 
     // Claim it before sending, so a re-render mid-flight cannot send twice.
     markPurchaseTracked(reservationCode);
+
+    // Stripe's 3-D Secure return is a full page load, so the init snippet has
+    // already attached the customer's details. A card that clears without a
+    // redirect reaches this page through a client-side navigation instead,
+    // which never re-runs that snippet — so re-apply them here, before the
+    // event that most needs to be matched goes out.
+    applyStoredPixelUserData();
 
     // Meta keeps receiving the full fare, matching what the server-side CAPI
     // event sends, so the two continue to de-duplicate on event_id. The
