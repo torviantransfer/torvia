@@ -35,7 +35,7 @@ export async function GET() {
       .from("reservations")
       .select("trip_type, pickup_datetime, return_datetime, driver_assignments(leg, status)")
       .in("status", ASSIGNABLE_STATUSES)
-      .or(`pickup_datetime.gte.${midnight},return_datetime.gte.${midnight}`),
+      .or(`pickup_datetime.gte."${midnight}",return_datetime.gte."${midnight}"`),
     db.from("reservations").select("id", { count: "exact", head: true }).eq("status", "cancel_requested"),
     db.from("reviews").select("id", { count: "exact", head: true }).eq("is_approved", false),
     db

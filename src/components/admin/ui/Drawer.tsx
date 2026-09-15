@@ -41,7 +41,8 @@ export function Drawer({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      // A dialog opened from inside the drawer takes Escape for itself.
+      if (e.key === "Escape" && !document.querySelector("[data-adm-dialog]")) onClose();
     };
     window.addEventListener("keydown", onKey);
     panel.current?.focus();
@@ -98,6 +99,7 @@ export function QuickAction({
   icon: Icon,
   label,
   href,
+  newTab,
   onClick,
   disabled,
   loading,
@@ -105,15 +107,15 @@ export function QuickAction({
   icon: LucideIcon;
   label: string;
   href?: string;
+  newTab?: boolean;
   onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
 }) {
   const cls = buttonClass({ variant: "outline", size: "tile" });
   if (href && !disabled) {
-    const external = /^(https?:|tel:|mailto:)/.test(href);
     return (
-      <a href={href} className={cls} {...(external && href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+      <a href={href} className={cls} {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
         <Icon size={17} aria-hidden="true" />
         {label}
       </a>

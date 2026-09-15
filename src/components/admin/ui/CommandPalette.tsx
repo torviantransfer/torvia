@@ -134,7 +134,7 @@ function Palette({ onClose, base, locale }: { onClose: () => void; base: string;
           </span>
         ),
         hint: <ReservationStatusChip status={h.status} />,
-        run: () => go(`${base}/reservations/${encodeURIComponent(h.code)}`),
+        run: () => go(`${base}/reservations?open=${encodeURIComponent(h.code)}`),
       }))
     : [];
 

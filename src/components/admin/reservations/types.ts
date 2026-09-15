@@ -1,4 +1,6 @@
-import { legEndpoints, legRoute } from "@/lib/transfer-route";
+import { legEndpoints, legRoute, legStartsAtAirport } from "@/lib/transfer-route";
+import { ASSIGNABLE_STATUSES } from "@/lib/reservation-status";
+import type { ReservationTab } from "@/lib/reservationQuery";
 // Fares are euro and drivers are paid in dollars, so anything that puts the two
 // in one sum has to convert first. One implementation, shared with the ledger.
 import { convertSettlement, reservationMoney, settlementOf } from "@/lib/currency";
@@ -54,6 +56,7 @@ export interface Reservation {
   adults: number;
   children: number;
   luggage_count?: number | null;
+  region_id?: string | null;
   child_seat: boolean;
   welcome_sign: boolean;
   welcome_name?: string | null;
@@ -346,3 +349,87 @@ export const shortRouteFor = (r: Reservation, leg: Leg = "outbound") => {
   const short = (s: string) => (s.startsWith("Antalya Havalimanı") ? "Havalimanı" : s);
   return { from: short(from), to: short(to) };
 };
+
+// ─── legs ───
+
+export const legsOf = (r: Reservation): Leg[] =>
+  r.trip_type === "round_trip" ? ["outbound", "return"] : ["outbound"];
+
+/** Legs whose day is today or later, in the order they run. */
+export const upcomingLegs = (r: Reservation, today: string): Leg[] =>
+  legsOf(r).filter((leg) => dayKey(legDateTime(r, leg)) >= today);
+
+/**
+ * Legs still ahead of us on a paid booking that nobody is driving yet. A leg
+ * that has already happened is not waiting for anyone, which is why the count
+ * in the sidebar and the "Şoför bekleyen" tab look forward only.
+ */
+export const legsWithoutDriver = (r: Reservation, today: string): Leg[] =>
+  ASSIGNABLE_STATUSES.includes(r.status)
+    ? upcomingLegs(r, today).filter((leg) => !liveAssignment(r, leg))
+    : [];
+
+/** Karşılama when the leg starts at the airport, çıkış when it ends there. */
+export const isArrivalLeg = (r: Reservation, leg: Leg) => legStartsAtAirport(r.direction, leg);
+
+export const legFlight = (r: Reservation, leg: Leg) =>
+  (leg === "return" ? r.return_flight_code : r.flight_code) || null;
+
+/**
+ * The leg a row stands for on a given tab. A round trip whose outbound ran last
+ * week and whose return is tomorrow belongs under tomorrow in the upcoming
+ * list, with tomorrow's time and direction — not under last week.
+ */
+export function focusLeg(r: Reservation, tab: ReservationTab, today: string): Leg {
+  if (tab === "today") return legsOf(r).find((leg) => dayKey(legDateTime(r, leg)) === today) ?? "outbound";
+  if (tab === "driver") return legsWithoutDriver(r, today)[0] ?? "outbound";
+  if (tab === "past" || tab === "all") return "outbound";
+  return upcomingLegs(r, today)[0] ?? "outbound";
+}
+
+/** "Bugün · Sal 15 Eylül", or just "Çar 23 Eylül" further out. */
+export function dayHeading(key: string) {
+  const [y, m, d] = key.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  // Weekday first, as it is read aloud: tr-TR on its own puts it last.
+  const weekday = date.toLocaleDateString("tr-TR", { timeZone: "UTC", weekday: "short" });
+  const full = `${weekday} ${date.toLocaleDateString("tr-TR", { timeZone: "UTC", day: "numeric", month: "long" })}`;
+  const relative =
+    key === todayKey() ? "Bugün" : key === offsetDayKey(1) ? "Yarın" : key === offsetDayKey(-1) ? "Dün" : null;
+  return relative ? `${relative} · ${full}` : full;
+}
+
+/** "€165", "€1.840", "$62,50" — whole amounts without the cents. */
+export function moneyText(value: number | string | null | undefined, currency: "EUR" | "USD" = "EUR") {
+  const n = Number(value) || 0;
+  const text = Math.abs(n).toLocaleString("tr-TR", {
+    minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return `${n < 0 ? "−" : ""}${currency === "USD" ? "$" : "€"}${text}`;
+}
+
+// ─── what the screens load ───
+
+export interface ReservationDetail {
+  reservation: Reservation;
+  /** Bookings around the same date, for each driver's load that day. */
+  nearby: Reservation[];
+  drivers: Driver[];
+  vehicles: Vehicle[];
+}
+
+export interface TabCounts {
+  today: number;
+  driver: number;
+  pending: number;
+  cancel: number;
+}
+
+export interface ReservationListResult {
+  rows: Reservation[];
+  counts: TabCounts;
+  nextOffset: number | null;
+  /** Antalya's date on the server when the list was read. */
+  today: string;
+}

@@ -3,7 +3,7 @@ import { Loader2, type LucideIcon } from "lucide-react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cx } from "./cx";
 
-export type ButtonVariant = "primary" | "brand" | "outline" | "ghost" | "warn" | "danger-ghost";
+export type ButtonVariant = "primary" | "brand" | "outline" | "ghost" | "warn" | "danger" | "danger-ghost";
 /** `tile` is the tall icon-over-label button of a drawer's quick actions. */
 export type ButtonSize = "md" | "sm" | "tile";
 
@@ -14,6 +14,7 @@ const VARIANT: Record<ButtonVariant, string> = {
     "bg-adm-surface text-adm-ink-2 shadow-adm-sm ring-1 ring-inset ring-adm-line hover:text-adm-ink hover:ring-adm-line-strong",
   ghost: "text-adm-ink-2 hover:bg-adm-line-2 hover:text-adm-ink",
   warn: "bg-adm-amber-soft text-adm-amber ring-1 ring-inset ring-adm-amber-line hover:bg-[#fbe8b8]",
+  danger: "bg-adm-rose text-white hover:bg-[#9b1c32]",
   "danger-ghost": "text-adm-rose hover:bg-adm-rose-soft",
 };
 
@@ -167,5 +168,40 @@ export function IconButton({
         <span className="absolute end-2 top-[7px] size-[7px] rounded-full border-2 border-adm-bg bg-[#e11d48]" />
       )}
     </button>
+  );
+}
+
+/** IconButton's twin for a link: a WhatsApp chat, a voucher, a full page. */
+export function IconLink({
+  icon: Icon,
+  label,
+  href,
+  size = "md",
+  newTab,
+  className,
+  ...rest
+}: {
+  icon: LucideIcon;
+  label: string;
+  href: string;
+  size?: "md" | "sm";
+  newTab?: boolean;
+} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href">) {
+  return (
+    <a
+      href={href}
+      aria-label={label}
+      title={label}
+      target={newTab ? "_blank" : undefined}
+      rel={newTab ? "noopener noreferrer" : undefined}
+      className={cx(
+        "relative grid shrink-0 place-items-center text-adm-ink-2 transition-colors hover:bg-adm-line-2 hover:text-adm-ink",
+        size === "md" ? "size-[34px] rounded-[9px]" : "size-7 rounded-adm-sm",
+        className
+      )}
+      {...rest}
+    >
+      <Icon size={size === "md" ? 16 : 15} aria-hidden="true" />
+    </a>
   );
 }

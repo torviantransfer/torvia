@@ -7,6 +7,7 @@ export {
   Button,
   ButtonLink,
   IconButton,
+  IconLink,
   buttonClass,
   buttonPrimary,
   buttonSecondary,
@@ -36,7 +37,8 @@ export {
 } from "./TimelineItem";
 export { Avatar } from "./Avatar";
 export { EmptyState } from "./EmptyState";
-export { Dialog } from "./Dialog";
+export { Dialog, ConfirmDialog } from "./Dialog";
+export { Popover, Menu, type MenuItem } from "./Menu";
 export { Field, Input, Select, Textarea, controlClass } from "./Field";
 export { PeriodBar } from "./PeriodBar";
 export { ToastProvider, useToast } from "./Toast";

@@ -6,6 +6,7 @@ export const controlClass =
   "w-full rounded-[9px] border border-adm-line bg-adm-surface text-adm-ink shadow-adm-sm outline-none transition-[border-color,box-shadow] placeholder:text-adm-faint focus:border-[#c9c8c2] focus:ring-[3px] focus:ring-adm-ink/[0.06] disabled:cursor-not-allowed disabled:opacity-60 aria-[invalid=true]:border-adm-rose aria-[invalid=true]:focus:ring-adm-rose/10";
 
 const HEIGHT = {
+  sm: "h-7 text-xs",
   md: "h-[34px] text-[13px]",
   lg: "h-10 text-sm",
 };

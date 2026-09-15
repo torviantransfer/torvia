@@ -2,7 +2,7 @@
 
 import { useEffect, useId, type ReactNode } from "react";
 import { X } from "lucide-react";
-import { IconButton } from "./Button";
+import { Button, IconButton } from "./Button";
 import { cx } from "./cx";
 
 /**
@@ -51,6 +51,8 @@ export function Dialog({
 
   return (
     <div
+      // A drawer underneath leaves Escape to the dialog on top.
+      data-adm-dialog=""
       className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(21,23,27,.28)] motion-safe:animate-[adm-fade_150ms_ease-out] sm:items-center sm:p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -82,5 +84,49 @@ export function Dialog({
         )}
       </div>
     </div>
+  );
+}
+
+/** "Are you sure?" for anything that removes, cancels or sends in bulk. */
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel = "Onayla",
+  cancelLabel = "Vazgeç",
+  danger,
+  busy,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  message: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  busy?: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog
+      open={open}
+      title={title}
+      onClose={busy ? () => {} : onClose}
+      width="sm:max-w-md"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            {cancelLabel}
+          </Button>
+          <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} loading={busy}>
+            {confirmLabel}
+          </Button>
+        </>
+      }
+    >
+      <div className="text-[13.5px] text-adm-ink-2">{message}</div>
+    </Dialog>
   );
 }

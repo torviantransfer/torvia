@@ -115,7 +115,7 @@ Her ekrandan açılır, Esc ile kapanır. Bölümler:
 Klavyeyle yukarı/aşağı gezilir, Enter açar.
 
 - Arama `/api/admin/search` ile yapılır: kod, uçuş (gidiş ve dönüş), otel, müşteri adı, soyadı, ad + soyad, e-posta, telefon. En fazla 8 sonuç; önce yaklaşan transferler (en yakını üstte), sonra geçmiş olanlar.
-- Rezervasyonun sağ paneli Aşama 2'de gelene kadar sonuç `/admin/reservations/[kod]` sayfasını açar.
+- Sonuca tıklayınca Rezervasyonlar ekranı o rezervasyonun sağ paneli açık gelir (`?open=KOD`).
 - **Şoföre ödeme yap** Şoför Ödemeleri'ni ödeme penceresi açık gelir (`?pay=1`), **Kasaya gider ekle** Kasa'yı gider penceresi açık getirir (`?add=expense`). Pencere kapanınca parametre adresten silinir, sayfa yenilenince tekrar açılmaz.
 
 ---
@@ -214,6 +214,17 @@ Eski kontrol panelindeki grafikler (aylık gelir, durum dağılımı, popüler b
 - **Geçmiş:** oluşturma, ödeme, şoför atama, voucher gönderimi zamanları.
 - Alt çubuk: Düzenle · İptal et / Kaydı sil (bekleyen ya da iptal edilmiş kayıtta).
 - “Tam sayfada aç” mevcut `/admin/reservations/[kod]` sayfasını aynı düzende açar; bu adres paylaşılabilir kalır.
+
+**Uygulamada:**
+- Sekme, arama, filtreler, sıralama ve açık panel adrese yazılır (`?tab=driver&region=…&open=TRV-24091`); link gönderilince aynı ekran açılır.
+- Liste `/api/admin/reservations` üzerinden sayfa sayfa gelir (60'ar kayıt), aşağı inildikçe devamı yüklenir. Yaklaşan, Bugün, Şoför bekleyen, Ödeme bekleyen ve İptal talebi sekmeleri takvimle sınırlı olduğu için bütün olarak okunur ve sunucuda sıralanır; Geçmiş ve Tümü veritabanında sayfalanır.
+- Gidiş-dönüşlerde satır sıradaki bacağı gösterir: gidişi geçmiş, dönüşü yarın olan transfer “Yarın” altında, dönüş saati ve yönüyle durur. Ödeme bekleyen sekmesi yalnızca tarihi gelmemiş kayıtları sayar; tarihi geçmiş ödenmemiş kayıtlar Tümü'nde kalır.
+- Satırda ülke yerine rezervasyonun dili görünür; ülke bilgisi kayıtta tutulmuyor.
+- Toplu Telegram, A8 hazır olana kadar seçilen her rezervasyonu ayrı mesaj olarak sırayla gönderir. Toplu şoför ata, seçilenler içinde şoför bekleyenlerin panelini sırayla açar (panelde “Seçim · 1/3”). Toplu voucher her rezervasyonun PDF'ini indirir.
+- Dışa aktar mevcut `/api/admin/export` uç noktasını kullanır; sekme ödeme bekleyen ya da iptal talebiyse durum, tarih filtresi varsa tarih aralığı aktarılır.
+- Liste/Takvim seçicisindeki Takvim, Aşama 4'e kadar mevcut `/admin/calendar` sayfasını açar.
+- Sayfa başlığında yalnızca Dışa aktar durur; Yeni rezervasyon her ekranda üst çubukta zaten olduğu için tekrarlanmaz.
+- Şoför atamada çakışma kontrolü mevcut şoför kaldırılmadan önce yapılır; çakışma görülüp vazgeçilirse eski atama yerinde kalır.
 
 ### 5.3 Takvim & Kapasite
 
@@ -325,7 +336,7 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 
 - [x] **Aşama 0 — Tasarım:** taslak (`admin-tasarim-taslak.html`) ve bu belge.
 - [x] **Aşama 1 — Temel:** renk ve ölçü değişkenleri · `ui/` bileşenleri (Bölüm 4) · yeni yan menü ve üst çubuk · komut paleti · telefon çekmecesi · giriş ekranı.
-- [ ] **Aşama 2 — Rezervasyonlar:** sekmeler ve filtreler · gruplu liste · sağ panel · panel içinde şoför atama · toplu işlemler · detay sayfasının yeni düzeni · sayfalama.
+- [x] **Aşama 2 — Rezervasyonlar:** sekmeler ve filtreler · gruplu liste · sağ panel · panel içinde şoför atama · toplu işlemler · detay sayfasının yeni düzeni · sayfalama.
 - [ ] **Aşama 3 — Bugün:** özet şeridi · dikkat gerektiriyor · günün akışı · şoför durumu · bu ay kutusu · eski grafiklerin taşınması.
 - [ ] **Aşama 4 — Operasyon:** Takvim & Kapasite · Canlı Ziyaretçiler (Canlı / Analitik).
 - [ ] **Aşama 5 — Filo & Ekip:** Şoförler · Araçlar · Araç Tipleri · Şoför Ödemeleri uyarlaması.
