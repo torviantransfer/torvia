@@ -42,12 +42,12 @@ export default function SocialPreview({
   const shownDesc = description || "Açıklama yok";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-adm-line-2 bg-adm-surface-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-adm-muted">
           Paylaşım önizleme
         </div>
-        <div className="flex items-center gap-0.5 rounded-lg bg-white border border-slate-200 p-0.5">
+        <div className="flex items-center gap-0.5 rounded-adm-sm bg-adm-surface border border-adm-line p-0.5">
           {NETWORKS.map((n) => (
             <button
               key={n.id}
@@ -67,39 +67,39 @@ export default function SocialPreview({
         </div>
       </div>
 
-      <div className="p-4 bg-slate-100">
+      <div className="p-4 bg-adm-line-2">
         {network === "whatsapp" && (
           <div className="max-w-[320px] ms-auto">
-            <div className="rounded-lg rounded-ee-sm bg-[#d9fdd3] p-1.5 shadow-sm">
+            <div className="rounded-adm-sm rounded-ee-sm bg-[#d9fdd3] p-1.5 shadow-sm">
               <div className="rounded-md bg-black/[0.06] overflow-hidden flex">
                 <Thumb src={imageUrl} className="w-[72px] h-[72px] shrink-0" />
                 <div className="px-2.5 py-2 min-w-0 flex-1">
-                  <p className="text-[12.5px] font-medium text-slate-900 leading-tight line-clamp-2">
+                  <p className="text-[12.5px] font-medium text-adm-ink leading-tight line-clamp-2">
                     {shownTitle}
                   </p>
-                  <p className="text-[11.5px] text-slate-600 leading-tight line-clamp-1 mt-0.5">
+                  <p className="text-[11.5px] text-adm-ink-2 leading-tight line-clamp-1 mt-0.5">
                     {shownDesc}
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-1 truncate">{url}</p>
+                  <p className="text-[11px] text-adm-muted mt-1 truncate">{url}</p>
                 </div>
               </div>
-              <p className="px-1 pt-1.5 text-[13px] text-slate-800 break-all">https://{url}</p>
+              <p className="px-1 pt-1.5 text-[13px] text-adm-ink break-all">https://{url}</p>
             </div>
-            <p className="mt-2 text-[10.5px] text-slate-500 text-end">
+            <p className="mt-2 text-[10.5px] text-adm-muted text-end">
               WhatsApp görseli kareye kırpar — kenarlardaki detaylar kaybolur.
             </p>
           </div>
         )}
 
         {network === "facebook" && (
-          <div className="max-w-[420px] mx-auto rounded-lg overflow-hidden border border-slate-300 bg-white shadow-sm">
+          <div className="max-w-[420px] mx-auto rounded-adm-sm overflow-hidden border border-adm-line-strong bg-adm-surface shadow-sm">
             <Thumb src={imageUrl} className="w-full aspect-[1.91/1]" />
-            <div className="px-3 py-2.5 bg-[#f2f3f5] border-t border-slate-200">
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">{SITE}</p>
-              <p className="text-[15px] font-semibold text-slate-900 leading-snug line-clamp-2 mt-0.5">
+            <div className="px-3 py-2.5 bg-[#f2f3f5] border-t border-adm-line">
+              <p className="text-[11px] uppercase tracking-wide text-adm-muted">{SITE}</p>
+              <p className="text-[15px] font-semibold text-adm-ink leading-snug line-clamp-2 mt-0.5">
                 {shownTitle}
               </p>
-              <p className="text-[12.5px] text-slate-600 leading-snug line-clamp-1 mt-0.5">
+              <p className="text-[12.5px] text-adm-ink-2 leading-snug line-clamp-1 mt-0.5">
                 {shownDesc}
               </p>
             </div>
@@ -107,16 +107,16 @@ export default function SocialPreview({
         )}
 
         {network === "x" && (
-          <div className="max-w-[420px] mx-auto rounded-2xl overflow-hidden border border-slate-300 bg-white shadow-sm relative">
+          <div className="max-w-[420px] mx-auto rounded-adm-lg overflow-hidden border border-adm-line-strong bg-adm-surface shadow-sm relative">
             <Thumb src={imageUrl} className="w-full aspect-[1.91/1]" />
             <div className="px-3 py-2.5">
-              <p className="text-[14px] font-semibold text-slate-900 leading-snug line-clamp-1">
+              <p className="text-[14px] font-semibold text-adm-ink leading-snug line-clamp-1">
                 {shownTitle}
               </p>
-              <p className="text-[13px] text-slate-600 leading-snug line-clamp-2 mt-0.5">
+              <p className="text-[13px] text-adm-ink-2 leading-snug line-clamp-2 mt-0.5">
                 {shownDesc}
               </p>
-              <p className="text-[13px] text-slate-500 mt-1">{SITE}</p>
+              <p className="text-[13px] text-adm-muted mt-1">{SITE}</p>
             </div>
           </div>
         )}
@@ -129,7 +129,7 @@ function Thumb({ src, className }: { src?: string | null; className: string }) {
   if (!src) {
     return (
       <div
-        className={`${className} bg-slate-200 flex flex-col items-center justify-center gap-1 text-slate-400`}
+        className={`${className} bg-adm-seg flex flex-col items-center justify-center gap-1 text-adm-muted`}
       >
         <ImageOff size={20} />
         <span className="text-[10px] font-medium">Görsel yok</span>
@@ -141,6 +141,6 @@ function Thumb({ src, className }: { src?: string | null; className: string }) {
     // output, so the preview deliberately uses the same raw URL the meta tag
     // will carry — a broken path shows as broken here too.
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" className={`${className} object-cover bg-slate-200`} />
+    <img src={src} alt="" className={`${className} object-cover bg-adm-seg`} />
   );
 }

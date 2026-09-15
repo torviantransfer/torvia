@@ -1,15 +1,10 @@
-import LiveVisitors from "@/components/admin/LiveVisitors";
-import AdminDashboardCharts from "@/components/admin/AdminDashboardCharts";
+import VisitorsScreen from "@/components/admin/visitors/VisitorsScreen";
 
-/**
- * The booking charts that used to open the panel sit under the live view until
- * this screen gets its Canlı / Analitik tabs.
- */
-export default function LiveVisitorsPage() {
-  return (
-    <>
-      <LiveVisitors />
-      <AdminDashboardCharts />
-    </>
-  );
+export default async function LiveVisitorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { tab } = await searchParams;
+  return <VisitorsScreen initialTab={tab === "analitik" ? "analytics" : "live"} />;
 }

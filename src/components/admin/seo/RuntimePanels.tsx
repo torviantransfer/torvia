@@ -49,11 +49,11 @@ export function TechnicalChecks({
   const warnings = findings.filter((x) => x.level === "warning").length;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-adm-line-2">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-slate-900">Teknik SEO kontrolleri</p>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-[13px] font-semibold text-adm-ink">Teknik SEO kontrolleri</p>
+          <p className="text-[11px] text-adm-muted mt-0.5">
             {loading
               ? "Sayfa okunuyor…"
               : errors === 0 && warnings === 0
@@ -65,7 +65,7 @@ export function TechnicalChecks({
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-300 text-[12px] font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-adm-sm border border-adm-line-strong text-[12px] font-medium text-adm-ink-2 hover:bg-adm-surface-2 disabled:opacity-50 cursor-pointer"
         >
           {loading ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
           Yeniden tara
@@ -73,15 +73,15 @@ export function TechnicalChecks({
       </div>
 
       {loading && findings.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[12.5px] text-slate-400">
+        <p className="px-4 py-6 text-center text-[12.5px] text-adm-muted">
           Sayfanın HTML çıktısı okunuyor…
         </p>
       ) : sorted.length === 0 ? (
-        <p className="flex items-center gap-2 px-4 py-6 text-[12.5px] text-green-700">
+        <p className="flex items-center gap-2 px-4 py-6 text-[12.5px] text-adm-green">
           <CheckCircle2 size={15} /> Teknik bir sorun tespit edilmedi.
         </p>
       ) : (
-        <ul className="divide-y divide-slate-100 max-h-[360px] overflow-y-auto">
+        <ul className="divide-y divide-adm-line-2 max-h-[360px] overflow-y-auto">
           {sorted.map((finding) => {
             const Icon = LEVEL_ICON[finding.level];
             const clickable = Boolean(finding.field && onFieldClick);
@@ -91,14 +91,14 @@ export function TechnicalChecks({
                   type="button"
                   disabled={!clickable}
                   onClick={() => finding.field && onFieldClick?.(finding.field)}
-                  className="w-full flex items-start gap-2.5 px-4 py-2.5 text-start enabled:hover:bg-slate-50 enabled:cursor-pointer"
+                  className="w-full flex items-start gap-2.5 px-4 py-2.5 text-start enabled:hover:bg-adm-surface-2 enabled:cursor-pointer"
                 >
                   <Icon size={15} style={{ color: LEVEL_COLOR[finding.level] }} className="mt-0.5 shrink-0" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[12.5px] font-medium text-slate-800">
+                    <span className="block text-[12.5px] font-medium text-adm-ink">
                       {finding.label}
                     </span>
-                    <span className="block text-[11.5px] text-slate-500 leading-snug mt-0.5">
+                    <span className="block text-[11.5px] text-adm-muted leading-snug mt-0.5">
                       {finding.detail}
                     </span>
                   </span>
@@ -124,17 +124,17 @@ export function HreflangPanel({
   const xDefault = map.get("x-default");
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-100">
-        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-900">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="px-4 py-3 border-b border-adm-line-2">
+        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-adm-ink">
           <Languages size={14} /> Hreflang
         </p>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="text-[11px] text-adm-muted mt-0.5">
           Otomatik üretiliyor — panelden düzenlenmez. Yanlış bir hreflang tüm dil kümesini
           Google&apos;a geçersiz kılar, bu yüzden elle override edilmiyor.
         </p>
       </div>
-      <ul className="divide-y divide-slate-100">
+      <ul className="divide-y divide-adm-line-2">
         {locales.map((l) => {
           const href = map.get(l);
           const isSelf = l === locale;
@@ -151,22 +151,22 @@ export function HreflangPanel({
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-w-0 flex-1 text-[11.5px] text-slate-600 hover:text-orange-600 truncate"
+                  className="min-w-0 flex-1 text-[11.5px] text-adm-ink-2 hover:text-adm-brand-ink truncate"
                 >
                   {href.replace("https://torviantransfer.com", "")}
                 </a>
               ) : (
-                <span className="flex-1 text-[11.5px] text-slate-400">— bildirilmemiş</span>
+                <span className="flex-1 text-[11.5px] text-adm-muted">— bildirilmemiş</span>
               )}
               {isSelf && (
-                <span className="shrink-0 text-[10px] font-semibold text-slate-500">bu sayfa</span>
+                <span className="shrink-0 text-[10px] font-semibold text-adm-muted">bu sayfa</span>
               )}
             </li>
           );
         })}
-        <li className="flex items-center gap-2 px-4 py-2 bg-slate-50">
-          <span className="w-8 shrink-0 text-[10px] font-bold uppercase text-slate-500">x-d</span>
-          <span className="min-w-0 flex-1 text-[11.5px] text-slate-600 truncate">
+        <li className="flex items-center gap-2 px-4 py-2 bg-adm-surface-2">
+          <span className="w-8 shrink-0 text-[10px] font-bold uppercase text-adm-muted">x-d</span>
+          <span className="min-w-0 flex-1 text-[11.5px] text-adm-ink-2 truncate">
             {xDefault?.replace("https://torviantransfer.com", "") ?? "— yok"}
           </span>
         </li>
@@ -185,21 +185,21 @@ export function SchemaPanel({ inspection }: { inspection: PageInspection | null 
   for (const s of schemas) for (const t of s.types) counts.set(t, (counts.get(t) ?? 0) + 1);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-100">
-        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-900">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="px-4 py-3 border-b border-adm-line-2">
+        <p className="flex items-center gap-1.5 text-[13px] font-semibold text-adm-ink">
           <Braces size={14} /> Structured data
         </p>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="text-[11px] text-adm-muted mt-0.5">
           {schemas.length} JSON-LD bloğu — sayfa kodundan üretiliyor.
         </p>
       </div>
 
       {schemas.length === 0 ? (
-        <p className="px-4 py-5 text-[12.5px] text-slate-400">Bu sayfada JSON-LD yok.</p>
+        <p className="px-4 py-5 text-[12.5px] text-adm-muted">Bu sayfada JSON-LD yok.</p>
       ) : (
         <>
-          <div className="px-4 py-3 flex flex-wrap gap-1.5 border-b border-slate-100">
+          <div className="px-4 py-3 flex flex-wrap gap-1.5 border-b border-adm-line-2">
             {[...counts.entries()]
               .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
               .map(([type, count]) => (
@@ -218,7 +218,7 @@ export function SchemaPanel({ inspection }: { inspection: PageInspection | null 
               ))}
           </div>
 
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-adm-line-2">
             {schemas.map((s, i) => (
               <li key={i} className="flex items-start gap-2 px-4 py-2">
                 <FileCode2
@@ -227,16 +227,16 @@ export function SchemaPanel({ inspection }: { inspection: PageInspection | null 
                   style={{ color: s.valid ? "#64748b" : "#dc2626" }}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[11.5px] font-medium text-slate-700">
+                  <span className="block text-[11.5px] font-medium text-adm-ink-2">
                     {s.types.length ? s.types.join(", ") : "tip yok"}
                   </span>
                   {!s.valid && (
-                    <span className="block text-[11px] text-red-600 mt-0.5">
+                    <span className="block text-[11px] text-adm-rose mt-0.5">
                       Geçersiz JSON: {s.error}
                     </span>
                   )}
                 </span>
-                <span className="shrink-0 text-[10.5px] text-slate-400 tabular-nums">
+                <span className="shrink-0 text-[10.5px] text-adm-muted tabular-nums">
                   {(s.size / 1024).toFixed(1)} KB
                 </span>
               </li>
@@ -258,7 +258,7 @@ export function RuntimeSummary({
 }) {
   if (loading && !inspection) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-5 text-[12.5px] text-slate-400">
+      <div className="rounded-adm border border-adm-line bg-adm-surface px-4 py-5 text-[12.5px] text-adm-muted">
         Sayfanın canlı SEO değerleri okunuyor…
       </div>
     );
@@ -270,14 +270,14 @@ export function RuntimeSummary({
   // seoInspect; this is the visible half of the same rule.
   if (inspection.blocked) {
     return (
-      <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
-        <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-amber-900">
+      <div className="rounded-adm border border-adm-amber-line bg-adm-amber-soft px-4 py-3">
+        <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-adm-amber">
           <ShieldAlert size={14} /> {inspection.blocked.message}
         </p>
-        <p className="text-[11.5px] text-amber-800 mt-1 leading-snug">
+        <p className="text-[11.5px] text-adm-amber mt-1 leading-snug">
           {inspection.blocked.detail}
         </p>
-        <p className="text-[11.5px] text-slate-600 mt-2 leading-snug">
+        <p className="text-[11.5px] text-adm-ink-2 mt-2 leading-snug">
           Panel bu sayfanın gerçek SEO değerlerini okuyamadı, bu yüzden hiçbir değer
           gösterilmiyor. Okuma kaynağı <code className="font-mono">SEO_INSPECT_BASE_URL</code>{" "}
           ile ayarlanır; varsayılan public production adresidir.
@@ -288,9 +288,9 @@ export function RuntimeSummary({
 
   if (inspection.error || inspection.status >= 400) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-        <p className="text-[12.5px] font-medium text-red-800">Sayfa okunamadı</p>
-        <p className="text-[11.5px] text-red-700 mt-0.5">
+      <div className="rounded-adm border border-[#f6c9d1] bg-adm-rose-soft px-4 py-3">
+        <p className="text-[12.5px] font-medium text-adm-rose">Sayfa okunamadı</p>
+        <p className="text-[11.5px] text-adm-rose mt-0.5">
           {inspection.error ?? `HTTP ${inspection.status}`} — {inspection.url}
         </p>
       </div>
@@ -314,12 +314,12 @@ export function RuntimeSummary({
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-adm-line-2">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-slate-900">Yayındaki HTML değerleri</p>
+          <p className="text-[13px] font-semibold text-adm-ink">Yayındaki HTML değerleri</p>
           {inspection.origin && (
-            <p className="text-[10.5px] text-slate-500 mt-0.5 truncate">
+            <p className="text-[10.5px] text-adm-muted mt-0.5 truncate">
               kaynak: {inspection.origin.replace(/^https?:\/\//, "")}
             </p>
           )}
@@ -328,25 +328,25 @@ export function RuntimeSummary({
           href={inspection.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-orange-600"
+          className="inline-flex items-center gap-1 text-[11px] text-adm-muted hover:text-adm-brand-ink"
         >
           Sayfayı aç <ExternalLink size={10} />
         </a>
       </div>
-      <dl className="divide-y divide-slate-100">
+      <dl className="divide-y divide-adm-line-2">
         {rows.map(([term, value]) => (
           <div key={term} className="grid grid-cols-[110px_1fr] gap-2 px-4 py-1.5">
-            <dt className="text-[11px] text-slate-500 font-mono">{term}</dt>
+            <dt className="text-[11px] text-adm-muted font-mono">{term}</dt>
             <dd
-              className={`text-[11.5px] break-words ${value ? "text-slate-800" : "text-slate-400"}`}
+              className={`text-[11.5px] break-words ${value ? "text-adm-ink" : "text-adm-muted"}`}
             >
               {value ?? "—"}
             </dd>
           </div>
         ))}
         <div className="grid grid-cols-[110px_1fr] gap-2 px-4 py-1.5">
-          <dt className="text-[11px] text-slate-500 font-mono">içerik</dt>
-          <dd className="text-[11.5px] text-slate-800">
+          <dt className="text-[11px] text-adm-muted font-mono">içerik</dt>
+          <dd className="text-[11.5px] text-adm-ink">
             {inspection.wordCount} kelime · {inspection.h2Count} H2 ·{" "}
             {inspection.images.length} görsel
             {inspection.images.filter((i) => i.alt === null).length > 0 &&
@@ -368,11 +368,11 @@ export function RuntimeSummary({
  */
 function Unreadable({ label, reason }: { label: string; reason: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-100">
-        <p className="text-[13px] font-semibold text-slate-900">{label}</p>
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="px-4 py-3 border-b border-adm-line-2">
+        <p className="text-[13px] font-semibold text-adm-ink">{label}</p>
       </div>
-      <p className="flex items-start gap-2 px-4 py-3 text-[12px] text-amber-800">
+      <p className="flex items-start gap-2 px-4 py-3 text-[12px] text-adm-amber">
         <ShieldAlert size={14} className="mt-0.5 shrink-0" />
         {reason}
       </p>

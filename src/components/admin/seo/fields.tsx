@@ -46,7 +46,7 @@ export function LocaleTabs({
 }) {
   const dot = { full: "#16a34a", partial: "#d97706", empty: "#cbd5e1" };
   return (
-    <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100">
+    <div className="flex flex-wrap gap-1 p-1 rounded-adm bg-adm-line-2">
       {LOCALES.map((l) => {
         const on = active === l;
         return (
@@ -54,7 +54,7 @@ export function LocaleTabs({
             key={l}
             type="button"
             onClick={() => onChange(l)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-adm-sm text-[12.5px] font-medium transition-all cursor-pointer"
             style={{
               backgroundColor: on ? "#fff" : "transparent",
               color: on ? "#0f172a" : "#64748b",
@@ -121,13 +121,13 @@ export function CountedField({
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange(e.target.value),
     className:
-      "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-shadow",
+      "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2] transition-shadow",
   };
 
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1.5">
-        <label htmlFor={id} className="text-[12.5px] font-medium text-slate-700">
+        <label htmlFor={id} className="text-[12.5px] font-medium text-adm-ink-2">
           {label}
         </label>
         <span className="text-[11px] font-medium tabular-nums" style={{ color }}>
@@ -135,13 +135,13 @@ export function CountedField({
         </span>
       </div>
       {multiline ? <textarea {...common} rows={rows} /> : <input type="text" {...common} />}
-      <div className="mt-1.5 h-1 rounded-full bg-slate-100 overflow-hidden">
+      <div className="mt-1.5 h-1 rounded-full bg-adm-line-2 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-200"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
-      {hint && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-adm-muted">{hint}</p>}
     </div>
   );
 }
@@ -172,15 +172,15 @@ export function TextField({
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange(e.target.value),
     className:
-      "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-shadow",
+      "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2] transition-shadow",
   };
   return (
     <div>
-      <label htmlFor={id} className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+      <label htmlFor={id} className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
         {label}
       </label>
       {multiline ? <textarea {...common} rows={rows} /> : <input type="text" {...common} />}
-      {hint && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-adm-muted">{hint}</p>}
     </div>
   );
 }
@@ -220,21 +220,21 @@ export function KeywordField({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+      <label htmlFor={id} className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
         {label}
       </label>
-      <div className="rounded-lg border border-slate-300 px-2 py-1.5 focus-within:ring-2 focus-within:ring-orange-500/30 focus-within:border-orange-500 transition-shadow">
+      <div className="rounded-adm-sm border border-adm-line-strong px-2 py-1.5 focus-within:ring-2 focus-within:ring-adm-ink/30 focus-within:border-adm-ink transition-shadow">
         <div className="flex flex-wrap gap-1.5">
           {items.map((kw) => (
             <span
               key={kw}
-              className="inline-flex items-center gap-1 ps-2 pe-1 py-0.5 rounded-md bg-slate-100 text-[12px] text-slate-700"
+              className="inline-flex items-center gap-1 ps-2 pe-1 py-0.5 rounded-md bg-adm-line-2 text-[12px] text-adm-ink-2"
             >
               {kw}
               <button
                 type="button"
                 onClick={() => onChange(items.filter((i) => i !== kw).join(", "))}
-                className="text-slate-400 hover:text-red-600 cursor-pointer"
+                className="text-adm-muted hover:text-adm-rose cursor-pointer"
                 aria-label={`${kw} kaldır`}
               >
                 <X size={12} />
@@ -262,11 +262,11 @@ export function KeywordField({
             }}
             onBlur={() => add(draft)}
             placeholder={items.length ? "" : "kelime yazıp Enter'a basın"}
-            className="flex-1 min-w-[140px] px-1 py-0.5 text-[13px] outline-none placeholder:text-slate-400"
+            className="flex-1 min-w-[140px] px-1 py-0.5 text-[13px] outline-none placeholder:text-adm-muted"
           />
         </div>
       </div>
-      {hint && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-adm-muted">{hint}</p>}
     </div>
   );
 }
@@ -321,11 +321,11 @@ export function ImageField({
 
   return (
     <div>
-      <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">{label}</label>
+      <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">{label}</label>
 
       <div className="flex gap-3">
         <div
-          className="w-28 shrink-0 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center"
+          className="w-28 shrink-0 rounded-adm-sm overflow-hidden border border-adm-line bg-adm-line-2 flex items-center justify-center"
           style={{ aspectRatio: aspect }}
         >
           {value && !broken ? (
@@ -338,7 +338,7 @@ export function ImageField({
               onLoad={() => setBroken(false)}
             />
           ) : (
-            <ImageOff size={18} className="text-slate-400" />
+            <ImageOff size={18} className="text-adm-muted" />
           )}
         </div>
 
@@ -346,7 +346,7 @@ export function ImageField({
           <div className="relative">
             <Link2
               size={13}
-              className="absolute start-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              className="absolute start-2.5 top-1/2 -translate-y-1/2 text-adm-muted pointer-events-none"
             />
             <input
               type="text"
@@ -356,7 +356,7 @@ export function ImageField({
                 setBroken(false);
               }}
               placeholder="/images/regions/ornek.jpg veya https://…"
-              className="w-full ps-8 pe-3 py-2 rounded-lg border border-slate-300 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+              className="w-full ps-8 pe-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]"
             />
           </div>
 
@@ -365,7 +365,7 @@ export function ImageField({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-300 text-[12px] font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-adm-sm border border-adm-line-strong text-[12px] font-medium text-adm-ink-2 hover:bg-adm-surface-2 disabled:opacity-50 cursor-pointer transition-colors"
             >
               {uploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
               {uploading ? "Yükleniyor…" : "Yükle"}
@@ -377,7 +377,7 @@ export function ImageField({
                   onChange("");
                   setBroken(false);
                 }}
-                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-[12px] text-slate-500 hover:text-red-600 cursor-pointer"
+                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-adm-sm text-[12px] text-adm-muted hover:text-adm-rose cursor-pointer"
               >
                 <X size={13} /> Kaldır
               </button>
@@ -398,16 +398,16 @@ export function ImageField({
       </div>
 
       {broken && value && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-red-600">
+        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-adm-rose">
           <AlertCircle size={12} /> Bu yol yüklenemedi — dosya adını kontrol edin.
         </p>
       )}
       {error && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-red-600">
+        <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-adm-rose">
           <AlertCircle size={12} /> {error}
         </p>
       )}
-      {hint && !error && <p className="mt-1.5 text-[11px] text-slate-500">{hint}</p>}
+      {hint && !error && <p className="mt-1.5 text-[11px] text-adm-muted">{hint}</p>}
     </div>
   );
 }
@@ -422,9 +422,9 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
-      <h3 className="text-[13px] font-semibold text-slate-900">{title}</h3>
-      {description && <p className="text-[11.5px] text-slate-500 mt-0.5 mb-3">{description}</p>}
+    <section className="rounded-adm border border-adm-line bg-adm-surface p-4">
+      <h3 className="text-[13px] font-semibold text-adm-ink">{title}</h3>
+      {description && <p className="text-[11.5px] text-adm-muted mt-0.5 mb-3">{description}</p>}
       <div className={description ? "space-y-3.5" : "space-y-3.5 mt-3"}>{children}</div>
     </section>
   );

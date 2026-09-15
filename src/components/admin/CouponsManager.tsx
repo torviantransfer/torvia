@@ -127,13 +127,13 @@ export default function CouponsManager({ initialCoupons }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{coupons.length} kupon</p>
+        <p className="text-sm text-adm-muted">{coupons.length} kupon</p>
         <button
           onClick={() => {
             resetForm();
             setShowForm(!showForm);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
+          className="flex items-center gap-2 px-4 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90"
         >
           <Plus size={16} />
           Kupon Ekle
@@ -143,14 +143,14 @@ export default function CouponsManager({ initialCoupons }: Props) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
+          className="bg-adm-surface rounded-adm border border-adm-line-2 p-5 mb-6 space-y-4"
         >
-          <h3 className="font-bold text-gray-900">
+          <h3 className="font-bold text-adm-ink">
             {editingId ? "Kupon Düzenle" : "Yeni Kupon"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Kod *
               </label>
               <input
@@ -160,11 +160,11 @@ export default function CouponsManager({ initialCoupons }: Props) {
                   setForm({ ...form, code: e.target.value.toUpperCase() })
                 }
                 placeholder="örn. SUMMER20"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Tür
               </label>
               <select
@@ -172,14 +172,14 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, discount_type: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               >
                 <option value="percent">Yüzde (%)</option>
                 <option value="fixed">Sabit ($)</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Değer
               </label>
               <input
@@ -189,11 +189,11 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, discount_value: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Min Sipariş ($)
               </label>
               <input
@@ -203,11 +203,11 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, min_order: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Max Kullanım
               </label>
               <input
@@ -216,11 +216,11 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, max_uses: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Geçerlilik Tarihi
               </label>
               <input
@@ -229,7 +229,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, valid_until: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -237,14 +237,14 @@ export default function CouponsManager({ initialCoupons }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
+              className="px-4 py-2 border border-adm-line rounded-adm-sm text-sm"
             >
               İptal
             </button>
@@ -252,40 +252,40 @@ export default function CouponsManager({ initialCoupons }: Props) {
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-start">
-              <th className="px-5 py-3 font-medium text-gray-500">Kod</th>
-              <th className="px-5 py-3 font-medium text-gray-500">İndirim</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Kullanım</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Geçerlilik</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
-              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
+            <tr className="bg-adm-surface-2 text-start">
+              <th className="px-5 py-3 font-medium text-adm-muted">Kod</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">İndirim</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Kullanım</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Geçerlilik</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Durum</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">İşlemler</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-adm-line-2">
             {coupons.map((c) => (
-              <tr key={c.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3 font-mono font-bold text-slate-900">
+              <tr key={c.id} className="hover:bg-adm-surface-2">
+                <td className="px-5 py-3 font-mono font-bold text-adm-ink">
                   {c.code}
                 </td>
-                <td className="px-5 py-3 text-gray-700">
+                <td className="px-5 py-3 text-adm-ink-2">
                   {c.discount_type === "percent"
                     ? `${c.discount_value}%`
                     : `$${c.discount_value.toFixed(2)}`}
                 </td>
-                <td className="px-5 py-3 text-gray-600">
+                <td className="px-5 py-3 text-adm-ink-2">
                   {c.used_count} / {c.max_uses}
                 </td>
-                <td className="px-5 py-3 text-gray-600">
+                <td className="px-5 py-3 text-adm-ink-2">
                   {c.valid_until
                     ? new Date(c.valid_until).toLocaleDateString("tr-TR")
                     : "Süresi yok"}
                 </td>
                 <td className="px-5 py-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${c.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${c.is_active ? "bg-adm-green-soft text-adm-green" : "bg-adm-rose-soft text-adm-rose"}`}
                   >
                     {c.is_active ? "Aktif" : "Pasif"}
                   </span>
@@ -294,24 +294,24 @@ export default function CouponsManager({ initialCoupons }: Props) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => startEdit(c)}
-                      className="p-1.5 rounded hover:bg-gray-100"
+                      className="p-1.5 rounded hover:bg-adm-line-2"
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => handleToggle(c.id)}
-                      className="p-1.5 rounded hover:bg-gray-100"
+                      className="p-1.5 rounded hover:bg-adm-line-2"
                     >
                       <Power
                         size={14}
                         className={
-                          c.is_active ? "text-green-600" : "text-red-400"
+                          c.is_active ? "text-adm-green" : "text-adm-rose"
                         }
                       />
                     </button>
                     <button
                       onClick={() => handleDelete(c.id)}
-                      className="p-1.5 rounded hover:bg-red-50 text-red-500"
+                      className="p-1.5 rounded hover:bg-adm-rose-soft text-adm-rose"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -321,7 +321,7 @@ export default function CouponsManager({ initialCoupons }: Props) {
             ))}
             {coupons.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-gray-400">
+                <td colSpan={6} className="px-5 py-8 text-center text-adm-muted">
                   Henüz kupon yok
                 </td>
               </tr>

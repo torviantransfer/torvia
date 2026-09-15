@@ -308,10 +308,10 @@ export default function BlogManager({ initialPosts }: Props) {
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-gray-500">{posts.length} yazı</p>
+        <p className="text-sm text-adm-muted">{posts.length} yazı</p>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors"
         >
           <Plus size={16} />
           Yeni Yazı
@@ -320,30 +320,30 @@ export default function BlogManager({ initialPosts }: Props) {
 
       {/* Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-adm-surface rounded-adm border border-adm-line p-4 sm:p-6 mb-6 space-y-6">
           {/* ── General section ── */}
           <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Genel</h3>
+            <h3 className="text-xs font-semibold text-adm-muted uppercase tracking-wider mb-3">Genel</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug (genel / yedek)</label>
+                <label className="block text-sm font-medium text-adm-ink-2 mb-1">Slug (genel / yedek)</label>
                 <input
                   type="text"
                   value={form.slug}
                   onChange={(e) => updateField("slug", slugify(e.target.value))}
                   required
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
                   placeholder="my-blog-post"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bağlantılı Bölge <span className="text-gray-400 font-normal">(opsiyonel — CTA fiyatı için)</span>
+                <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+                  Bağlantılı Bölge <span className="text-adm-muted font-normal">(opsiyonel — CTA fiyatı için)</span>
                 </label>
                 <select
                   value={form.primary_region_slug}
                   onChange={(e) => updateField("primary_region_slug", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-white"
+                  className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none bg-adm-surface"
                 >
                   <option value="">— Yok —</option>
                   {regions.map((r) => (
@@ -355,9 +355,9 @@ export default function BlogManager({ initialPosts }: Props) {
 
             {/* Image upload + URL + preview */}
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kapak Görseli</label>
+              <label className="block text-sm font-medium text-adm-ink-2 mb-1">Kapak Görseli</label>
               <div className="flex flex-col sm:flex-row gap-3 items-start">
-                <div className="relative w-full sm:w-40 h-24 rounded-lg overflow-hidden bg-gray-50 border border-gray-200 shrink-0 flex items-center justify-center">
+                <div className="relative w-full sm:w-40 h-24 rounded-adm-sm overflow-hidden bg-adm-surface-2 border border-adm-line shrink-0 flex items-center justify-center">
                   {form.image_url && !imageBroken ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -368,7 +368,7 @@ export default function BlogManager({ initialPosts }: Props) {
                       onLoad={() => setImageBroken(false)}
                     />
                   ) : (
-                    <ImageIcon size={22} className="text-gray-300" />
+                    <ImageIcon size={22} className="text-adm-faint" />
                   )}
                   {form.image_url && (
                     <button
@@ -393,23 +393,23 @@ export default function BlogManager({ initialPosts }: Props) {
                     />
                     <label
                       htmlFor="blog-image-upload"
-                      className="inline-flex items-center gap-2 px-3.5 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="inline-flex items-center gap-2 px-3.5 py-2 border border-adm-line-strong rounded-adm-sm text-sm font-medium text-adm-ink-2 hover:bg-adm-surface-2 cursor-pointer transition-colors"
                     >
                       {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                       {uploading ? "Yükleniyor..." : "Bilgisayardan Yükle"}
                     </label>
                   </div>
-                  {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+                  {uploadError && <p className="text-xs text-adm-rose">{uploadError}</p>}
                   <div>
                     <input
                       type="text"
                       value={form.image_url}
                       onChange={(e) => { updateField("image_url", e.target.value); setImageBroken(false); }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs text-gray-600 focus:ring-2 focus:ring-orange-500 outline-none"
+                      className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-xs text-adm-ink-2 focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
                       placeholder="veya bir görsel URL'si yapıştırın"
                     />
                   </div>
-                  <p className="text-[11px] text-gray-400">JPG, PNG, WEBP veya GIF · en fazla 5MB · önerilen oran 16:9</p>
+                  <p className="text-[11px] text-adm-muted">JPG, PNG, WEBP veya GIF · en fazla 5MB · önerilen oran 16:9</p>
                 </div>
               </div>
             </div>
@@ -417,8 +417,8 @@ export default function BlogManager({ initialPosts }: Props) {
 
           {/* ── Language tabs ── */}
           <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Dil İçeriği</h3>
-            <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
+            <h3 className="text-xs font-semibold text-adm-muted uppercase tracking-wider mb-3">Dil İçeriği</h3>
+            <div className="flex gap-1 border-b border-adm-line overflow-x-auto">
               {LOCALES.map((lang) => {
                 const hasContent = !!form[`title_${lang}` as keyof FormState];
                 return (
@@ -427,11 +427,11 @@ export default function BlogManager({ initialPosts }: Props) {
                     type="button"
                     onClick={() => setActiveLang(lang)}
                     className={`relative px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      activeLang === lang ? "border-orange-500 text-orange-600" : "border-transparent text-gray-500 hover:text-gray-700"
+                      activeLang === lang ? "border-adm-ink text-adm-brand-ink" : "border-transparent text-adm-muted hover:text-adm-ink-2"
                     }`}
                   >
                     {LOCALE_LABELS[lang]}
-                    {hasContent && <span className="ms-1.5 inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 align-middle" />}
+                    {hasContent && <span className="ms-1.5 inline-block w-1.5 h-1.5 rounded-full bg-adm-green-soft0 align-middle" />}
                   </button>
                 );
               })}
@@ -441,28 +441,28 @@ export default function BlogManager({ initialPosts }: Props) {
           {/* Focus keyword + secondary keywords */}
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Odak Anahtar Kelime <span className="text-gray-400 font-normal">({LOCALE_LABELS[activeLang]})</span>
+              <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+                Odak Anahtar Kelime <span className="text-adm-muted font-normal">({LOCALE_LABELS[activeLang]})</span>
               </label>
               <input
                 id="blog-focus_keyword"
                 type="text"
                 value={activeFocusKeyword}
                 onChange={(e) => updateField(`focus_keyword_${activeLang}`, e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
                 placeholder="ör. antalya havalimanı transfer"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Yan Kelimeler <span className="text-gray-400 font-normal">(virgülle ayırın)</span>
+              <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+                Yan Kelimeler <span className="text-adm-muted font-normal">(virgülle ayırın)</span>
               </label>
               <input
                 id="blog-keywords"
                 type="text"
                 value={activeSecondaryKeywords}
                 onChange={(e) => updateField(`secondary_keywords_${activeLang}`, e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
                 placeholder="ör. belek transfer, vip transfer"
               />
             </div>
@@ -472,17 +472,17 @@ export default function BlogManager({ initialPosts }: Props) {
           {/* Title */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Başlık <span className="text-gray-400 font-normal">(sayfa H1 + Google başlığı)</span>
+              <label className="block text-sm font-medium text-adm-ink-2">
+                Başlık <span className="text-adm-muted font-normal">(sayfa H1 + Google başlığı)</span>
               </label>
-              <span className={`text-xs ${activeTitle.length > TITLE_IDEAL_MAX ? "text-amber-600" : "text-gray-400"}`}>{activeTitle.length}/{TITLE_IDEAL_MAX}</span>
+              <span className={`text-xs ${activeTitle.length > TITLE_IDEAL_MAX ? "text-adm-amber" : "text-adm-muted"}`}>{activeTitle.length}/{TITLE_IDEAL_MAX}</span>
             </div>
             <input
               id="blog-meta_title"
               type="text"
               value={activeTitle}
               onChange={(e) => updateField(`title_${activeLang}`, e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+              className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
               placeholder={`${LOCALE_LABELS[activeLang]} başlığı`}
             />
           </div>
@@ -490,20 +490,20 @@ export default function BlogManager({ initialPosts }: Props) {
           {/* Meta description / excerpt */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-700">
-                Meta Açıklama <span className="text-gray-400 font-normal">(Google&apos;da başlığın altında görünür)</span>
+              <label className="block text-sm font-medium text-adm-ink-2">
+                Meta Açıklama <span className="text-adm-muted font-normal">(Google&apos;da başlığın altında görünür)</span>
               </label>
-              <span className={`text-xs ${activeExcerpt.length > DESC_IDEAL_MAX ? "text-amber-600" : "text-gray-400"}`}>{activeExcerpt.length}/{DESC_IDEAL_MAX}</span>
+              <span className={`text-xs ${activeExcerpt.length > DESC_IDEAL_MAX ? "text-adm-amber" : "text-adm-muted"}`}>{activeExcerpt.length}/{DESC_IDEAL_MAX}</span>
             </div>
             <textarea
               id="blog-meta_description"
               value={activeExcerpt}
               onChange={(e) => updateField(`excerpt_${activeLang}`, e.target.value)}
               rows={2}
-              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none resize-y"
+              className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none resize-y"
               placeholder="Arama sonuçlarında görünecek kısa açıklama (~150-160 karakter)"
             />
-            <p className="mt-1 text-xs text-gray-500">Boş bırakılırsa içerikten otomatik kısaltılır — ama tıklanma oranı için elle yazmanız önerilir.</p>
+            <p className="mt-1 text-xs text-adm-muted">Boş bırakılırsa içerikten otomatik kısaltılır — ama tıklanma oranı için elle yazmanız önerilir.</p>
           </div>
 
           {/* Previews and score, the same components the SEO screen uses. */}
@@ -530,45 +530,45 @@ export default function BlogManager({ initialPosts }: Props) {
 
           {/* URL slug for this language */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">URL slug ({LOCALE_LABELS[activeLang]})</label>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">URL slug ({LOCALE_LABELS[activeLang]})</label>
             <input
               id="blog-slug"
               type="text"
               value={activeSlugOverride}
               onChange={(e) => updateField(`slug_${activeLang}`, slugify(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+              className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
               placeholder="Boş bırakılırsa üstteki genel slug kullanılır"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-adm-muted">
               Bu dilin URL&apos;si. Okuyucunun dilinde yazın — Google sonuçlarında başlığın altında görünür ve tıklanma oranını etkiler.
             </p>
           </div>
 
           {/* Content */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">İçerik ({LOCALE_LABELS[activeLang]})</label>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">İçerik ({LOCALE_LABELS[activeLang]})</label>
             <textarea
               id="blog-content"
               value={form[`content_${activeLang}` as keyof FormState]}
               onChange={(e) => updateField(`content_${activeLang}`, e.target.value)}
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-orange-500 outline-none resize-y"
+              className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-sm font-mono focus:ring-2 focus:ring-adm-ink/[0.06] outline-none resize-y"
               placeholder={`${LOCALE_LABELS[activeLang]} içeriği (HTML destekler: <h2>, <p>, <img>, <a>...)`}
             />
           </div>
 
-          <div className="flex gap-2 pt-2 border-t border-gray-100">
+          <div className="flex gap-2 pt-2 border-t border-adm-line-2">
             <button
               type="submit"
               disabled={loading || uploading}
-              className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors disabled:opacity-50"
             >
               {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-adm-line-strong text-adm-ink-2 text-sm font-medium rounded-adm-sm hover:bg-adm-surface-2 transition-colors"
             >
               İptal
             </button>
@@ -579,38 +579,38 @@ export default function BlogManager({ initialPosts }: Props) {
       {/* Posts table — hidden while the form is open so editing/creating a
           post doesn't feel cluttered by every other post sitting right below it. */}
       {!showForm && (
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-adm-surface rounded-adm border border-adm-line overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-start px-4 py-3 font-medium text-gray-700">Yazı</th>
-                <th className="text-start px-4 py-3 font-medium text-gray-700">Slug</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-700">SEO</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-700">Durum</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-700">Tarih</th>
-                <th className="text-end px-4 py-3 font-medium text-gray-700">İşlemler</th>
+              <tr className="bg-adm-surface-2 border-b border-adm-line">
+                <th className="text-start px-4 py-3 font-medium text-adm-ink-2">Yazı</th>
+                <th className="text-start px-4 py-3 font-medium text-adm-ink-2">Slug</th>
+                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">SEO</th>
+                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">Durum</th>
+                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">Tarih</th>
+                <th className="text-end px-4 py-3 font-medium text-adm-ink-2">İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {posts.map((post) => (
-                <tr key={post.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={post.id} className="border-b border-adm-line-2 hover:bg-adm-surface-2">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative w-14 h-10 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
+                      <div className="relative w-14 h-10 rounded-adm-sm overflow-hidden bg-adm-line-2 border border-adm-line shrink-0 flex items-center justify-center">
                         {post.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={post.image_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <ImageIcon size={16} className="text-gray-300" />
+                          <ImageIcon size={16} className="text-adm-faint" />
                         )}
                       </div>
-                      <span className="font-medium text-gray-900 line-clamp-2">
+                      <span className="font-medium text-adm-ink line-clamp-2">
                         {post.title_en || post.title_tr || "Başlıksız"}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 font-mono text-xs">{post.slug}</td>
+                  <td className="px-4 py-3 text-adm-muted font-mono text-xs">{post.slug}</td>
                   <td className="px-4 py-3 text-center">
                     {/* Scored in the post's own primary language rather than a
                         fixed one, so a Turkish-only post is not marked down
@@ -620,30 +620,30 @@ export default function BlogManager({ initialPosts }: Props) {
                   <td className="px-4 py-3 text-center">
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        post.is_published ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"
+                        post.is_published ? "bg-adm-green-soft text-adm-green" : "bg-adm-line-2 text-adm-ink-2"
                       }`}
                     >
                       {post.is_published ? <Eye size={12} /> : <EyeOff size={12} />}
                       {post.is_published ? "Yayında" : "Taslak"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center text-gray-500 whitespace-nowrap">
+                  <td className="px-4 py-3 text-center text-adm-muted whitespace-nowrap">
                     {new Date(post.created_at).toLocaleDateString("tr-TR")}
                   </td>
                   <td className="px-4 py-3 text-end">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => handleToggle(post.id)}
-                        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="p-1.5 rounded-adm-sm hover:bg-adm-line-2 transition-colors"
                         title={post.is_published ? "Yayından Kaldır" : "Yayınla"}
                       >
-                        <Power size={14} className={post.is_published ? "text-green-600" : "text-gray-400"} />
+                        <Power size={14} className={post.is_published ? "text-adm-green" : "text-adm-muted"} />
                       </button>
-                      <button onClick={() => startEdit(post)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                        <Edit2 size={14} className="text-gray-500" />
+                      <button onClick={() => startEdit(post)} className="p-1.5 rounded-adm-sm hover:bg-adm-line-2 transition-colors">
+                        <Edit2 size={14} className="text-adm-muted" />
                       </button>
-                      <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-lg hover:bg-red-50 transition-colors">
-                        <Trash2 size={14} className="text-red-500" />
+                      <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-adm-sm hover:bg-adm-rose-soft transition-colors">
+                        <Trash2 size={14} className="text-adm-rose" />
                       </button>
                     </div>
                   </td>
@@ -651,7 +651,7 @@ export default function BlogManager({ initialPosts }: Props) {
               ))}
               {posts.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-adm-muted">
                     Henüz blog yazısı yok. İlk yazınızı oluşturun!
                   </td>
                 </tr>

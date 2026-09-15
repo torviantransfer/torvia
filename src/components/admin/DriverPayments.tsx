@@ -10,6 +10,7 @@ import {
   Card,
   Dialog as AdminDialog,
   dropQueryParam,
+  PageHeader,
   StatTile,
 } from "@/components/admin/ui";
 import DriverPaymentForm from "@/components/admin/DriverPaymentForm";
@@ -66,9 +67,9 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 
 const CHIP = {
-  owe: "bg-amber-50 text-amber-800 ring-amber-200",
-  owed: "bg-rose-50 text-rose-700 ring-rose-200",
-  closed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  owe: "bg-adm-amber-soft text-adm-amber ring-adm-amber-line",
+  owed: "bg-adm-rose-soft text-adm-rose ring-[#f6c9d1]",
+  closed: "bg-adm-green-soft text-adm-green ring-[#bfe3cb]",
 };
 
 /**
@@ -135,23 +136,22 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Şoför Ödemeleri</h1>
-          <p className="mt-1 text-sm text-slate-500">Şoförlerle cari hesaplar · bakiyeler dolar, bugün itibarıyla</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`${adminBase}/finance`} className={buttonSecondary}>
-            Kasa
-            <ArrowRight size={15} />
-          </Link>
-          <button type="button" onClick={() => setPaying("")} className={buttonPrimary}>
-            <Plus size={16} />
-            Ödeme yap
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Şoför Ödemeleri"
+        description="Şoförlerle cari hesaplar · bakiyeler dolar, bugün itibarıyla"
+        actions={
+          <>
+            <Link href={`${adminBase}/finance`} className={buttonSecondary}>
+              Kasa
+              <ArrowRight size={15} />
+            </Link>
+            <button type="button" onClick={() => setPaying("")} className={buttonPrimary}>
+              <Plus size={16} />
+              Ödeme yap
+            </button>
+          </>
+        }
+      />
 
       {/* ── Totals ── */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -183,39 +183,39 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
         flush
         actions={
           inactiveCount > 0 ? (
-            <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-500">
+            <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-adm-muted">
               <input
                 type="checkbox"
                 checked={showInactive}
                 onChange={(e) => setShowInactive(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-slate-300"
+                className="h-3.5 w-3.5 rounded border-adm-line-strong"
               />
               Pasifleri de göster ({inactiveCount})
             </label>
           ) : undefined
         }
       >
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-4 py-3 sm:px-5">
+        <div className="flex flex-wrap items-center gap-2 border-b border-adm-line-2 px-4 py-3 sm:px-5">
           <div className="relative min-w-0 flex-1 basis-full sm:basis-auto">
-            <Search size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-adm-muted" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="İsim veya telefon ara"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2 ps-9 pe-3 text-sm outline-none focus:border-slate-400"
+              className="w-full rounded-adm border border-adm-line bg-adm-surface py-2 ps-9 pe-3 text-sm outline-none focus:border-[#c9c8c2]"
             />
           </div>
           {/* One row that scrolls sideways on a phone, rather than a second line of filters. */}
-          <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1">
+          <div className="flex max-w-full gap-1 overflow-x-auto rounded-adm bg-adm-line-2 p-1">
             {FILTERS.map((f) => (
               <button
                 key={f.key}
                 type="button"
                 onClick={() => setFilter(f.key)}
                 aria-pressed={filter === f.key}
-                className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                  filter === f.key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                className={`shrink-0 whitespace-nowrap rounded-adm-sm px-3 py-1.5 text-xs font-semibold transition ${
+                  filter === f.key ? "bg-adm-surface text-adm-ink shadow-sm" : "text-adm-muted hover:text-adm-ink"
                 }`}
               >
                 {f.label}
@@ -225,25 +225,25 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
         </div>
 
         {rows.length === 0 ? (
-          <p className="px-5 py-12 text-center text-sm text-slate-400">Bu filtreye uyan şoför yok.</p>
+          <p className="px-5 py-12 text-center text-sm text-adm-muted">Bu filtreye uyan şoför yok.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-adm-line-2">
             {rows.map(({ driver: d, b, status }) => (
               <li
                 key={d.id}
-                className="group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 hover:bg-slate-50/70 sm:px-5"
+                className="group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-4 hover:bg-adm-surface-2/70 sm:px-5"
               >
                 {/* The name takes a whole line on a phone; balance and actions go under it. */}
                 <Link href={statementHref(d.id)} className="flex min-w-0 basis-full items-center gap-3 sm:flex-1 sm:basis-0">
                   <Avatar name={d.full_name} />
                   <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate font-semibold text-slate-900 group-hover:text-blue-700">
+                    <p className="flex items-center gap-2 truncate font-semibold text-adm-ink group-hover:text-adm-brand-ink">
                       {d.full_name}
                       {!d.is_active && (
-                        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">pasif</span>
+                        <span className="rounded-md bg-adm-line-2 px-1.5 py-0.5 text-[10px] font-semibold text-adm-muted">pasif</span>
                       )}
                     </p>
-                    <p className="text-xs text-slate-500 sm:truncate">
+                    <p className="text-xs text-adm-muted sm:truncate">
                       {[
                         d.phone,
                         b.monthJobs ? `Bu ay ${b.monthJobs} iş` : "Bu ay iş yok",
@@ -256,14 +256,14 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
                 </Link>
 
                 <div className="ps-[52px] sm:ms-auto sm:ps-0 sm:text-end">
-                  <p className={`text-lg font-bold tabular-nums ${status.tone === "owed" ? "text-rose-600" : "text-slate-900"}`}>
+                  <p className={`text-lg font-bold tabular-nums ${status.tone === "owed" ? "text-adm-rose" : "text-adm-ink"}`}>
                     {status.tone === "closed" ? "$0,00" : fmtMoney(Math.abs(b.balance), "USD")}
                   </p>
                   <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${CHIP[status.tone]}`}>
                     {status.label}
                   </span>
                   {b.upcoming !== 0 && (
-                    <p className="mt-0.5 text-[10px] text-slate-400">+{fmtMoney(b.upcoming, "USD")} yaklaşan</p>
+                    <p className="mt-0.5 text-[10px] text-adm-muted">+{fmtMoney(b.upcoming, "USD")} yaklaşan</p>
                   )}
                 </div>
 
@@ -271,14 +271,14 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
                   <button
                     type="button"
                     onClick={() => setPaying(d.id)}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                    className="rounded-adm border border-adm-line bg-adm-surface px-3 py-2 text-xs font-semibold text-adm-ink-2 hover:bg-adm-line-2"
                   >
                     Ödeme yap
                   </button>
                   <Link
                     href={statementHref(d.id)}
                     aria-label={`${d.full_name} carisi`}
-                    className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900"
+                    className="rounded-adm p-2 text-adm-muted hover:bg-adm-line-2 hover:text-adm-ink"
                   >
                     <ChevronRight size={18} />
                   </Link>
@@ -292,9 +292,9 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
       {/* ── Recent ── */}
       <Card title="Son hareketler" subtitle="Bütün hareketler şoförlerin kendi carisinde" flush>
         {recent.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-slate-400">Henüz hareket yok.</p>
+          <p className="px-5 py-10 text-center text-sm text-adm-muted">Henüz hareket yok.</p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-adm-line-2">
             {recent.map((p) => {
               const effect = ledgerEffect(p);
               const when = ledgerWhen(p);
@@ -303,26 +303,26 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
                   <span
                     className={`mt-0.5 shrink-0 rounded-md px-2 py-0.5 text-center text-[11px] font-semibold sm:mt-0 sm:w-20 ${
                       p.type === "earning"
-                        ? "bg-slate-100 text-slate-700"
+                        ? "bg-adm-line-2 text-adm-ink-2"
                         : p.type === "payment"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-700"
+                        ? "bg-adm-green-soft text-adm-green"
+                        : "bg-adm-amber-soft text-adm-amber"
                     }`}
                   >
                     {LEDGER_TYPE_LABEL[p.type]}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-slate-800 sm:truncate">
+                    <p className="text-sm text-adm-ink sm:truncate">
                       {p.drivers?.full_name ? (
-                        <Link href={statementHref(p.driver_id)} className="font-semibold hover:text-blue-700">
+                        <Link href={statementHref(p.driver_id)} className="font-semibold hover:text-adm-brand-ink">
                           {p.drivers.full_name}
                         </Link>
                       ) : (
                         "—"
                       )}
-                      <span className="text-slate-500"> · {p.description || p.reservations?.reservation_code || LEDGER_TYPE_LABEL[p.type]}</span>
+                      <span className="text-adm-muted"> · {p.description || p.reservations?.reservation_code || LEDGER_TYPE_LABEL[p.type]}</span>
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-adm-muted">
                       {fmtDay(when.day)}
                       {effect.original &&
                         ` · ${fmtMoney(effect.original.amount, effect.original.currency)}${
@@ -332,7 +332,7 @@ export default function DriverPayments({ drivers, balances, recent, rates, today
                   </div>
                   <span
                     className={`shrink-0 text-sm font-bold tabular-nums ${
-                      effect.usd === null ? "text-amber-700" : effect.usd < 0 ? "text-emerald-700" : "text-slate-900"
+                      effect.usd === null ? "text-adm-amber" : effect.usd < 0 ? "text-adm-green" : "text-adm-ink"
                     }`}
                   >
                     {effect.usd === null ? "kur yok" : `${effect.usd > 0 ? "+" : ""}${fmtMoney(effect.usd, "USD")}`}

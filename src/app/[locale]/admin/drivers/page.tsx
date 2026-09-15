@@ -1,26 +1,21 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import DriversManager from "@/components/admin/DriversManager";
+import { todayInBookingTz } from "@/lib/datetime";
+import { loadDriversOverview } from "@/lib/driversData";
+import { loadRates } from "@/lib/rates";
+import DriversScreen from "@/components/admin/drivers/DriversScreen";
 
-export default async function AdminDriversPage() {
+// A payment or a status change has to show on the next visit.
+export const dynamic = "force-dynamic";
+
+export default async function AdminDriversPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const supabase = createAdminClient();
+  const today = todayInBookingTz();
 
-  const { data: drivers } = await supabase
-    .from("drivers")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [drivers, rates] = await Promise.all([
+    loadDriversOverview(supabase, today),
+    loadRates(supabase).catch(() => null),
+  ]);
 
-  const { data: vehicles } = await supabase
-    .from("vehicles")
-    .select("id, plate_number, brand, model")
-    .eq("is_active", true);
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Şoförler</h1>
-      <DriversManager
-        initialDrivers={drivers ?? []}
-        vehicles={vehicles ?? []}
-      />
-    </div>
-  );
+  return <DriversScreen drivers={drivers} rates={rates} today={today} adminBase={`/${locale}/admin`} />;
 }

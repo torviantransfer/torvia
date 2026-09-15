@@ -183,10 +183,10 @@ export default function ReviewsManager({
       {/* Rating summary — the number that decides whether Google can show
           stars at all, stated plainly rather than left to be inferred. */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-[11px] uppercase tracking-wide text-slate-500">Ortalama puan</p>
+        <div className="rounded-adm border border-adm-line bg-adm-surface px-4 py-3">
+          <p className="text-[11px] uppercase tracking-wide text-adm-muted">Ortalama puan</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[22px] font-bold text-slate-900 tabular-nums">
+            <span className="text-[22px] font-bold text-adm-ink tabular-nums">
               {stats.value?.toFixed(1) ?? "—"}
             </span>
             <span className="flex">
@@ -196,8 +196,8 @@ export default function ReviewsManager({
                   size={13}
                   className={
                     stats.value && i < Math.round(stats.value)
-                      ? "text-amber-400 fill-amber-400"
-                      : "text-slate-300"
+                      ? "text-adm-amber fill-amber-400"
+                      : "text-adm-faint"
                   }
                 />
               ))}
@@ -210,18 +210,18 @@ export default function ReviewsManager({
       </div>
 
       <div
-        className="flex items-start gap-2.5 rounded-xl px-4 py-3 border"
+        className="flex items-start gap-2.5 rounded-adm px-4 py-3 border"
         style={{
           backgroundColor: enoughForStars ? "#f0fdf4" : "#fffbeb",
           borderColor: enoughForStars ? "#bbf7d0" : "#fde68a",
         }}
       >
         {enoughForStars ? (
-          <CheckCircle size={16} className="text-green-600 mt-0.5 shrink-0" />
+          <CheckCircle size={16} className="text-adm-green mt-0.5 shrink-0" />
         ) : (
-          <AlertCircle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+          <AlertCircle size={16} className="text-adm-amber mt-0.5 shrink-0" />
         )}
-        <p className="text-[12.5px] leading-relaxed text-slate-700">
+        <p className="text-[12.5px] leading-relaxed text-adm-ink-2">
           {enoughForStars ? (
             <>
               <b>{stats.count} onaylı yorum</b> ile Google&apos;a yıldız verisi gönderiliyor
@@ -239,7 +239,7 @@ export default function ReviewsManager({
       </div>
 
       {error && (
-        <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12.5px] text-red-700">
+        <p className="flex items-center gap-2 px-3 py-2 rounded-adm-sm bg-adm-rose-soft border border-[#f6c9d1] text-[12.5px] text-adm-rose">
           <AlertCircle size={14} /> {error}
         </p>
       )}
@@ -247,18 +247,18 @@ export default function ReviewsManager({
       {/* Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="relative flex-1">
-          <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-adm-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Yorum veya isim ara…"
-            className="w-full ps-9 pe-3 py-2.5 rounded-xl border border-slate-300 text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+            className="w-full ps-9 pe-3 py-2.5 rounded-adm border border-adm-line-strong text-[13.5px] focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]"
           />
         </div>
         <select
           value={regionFilter}
           onChange={(e) => setRegionFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-300 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+          className="px-3 py-2.5 rounded-adm border border-adm-line-strong text-[13px] bg-adm-surface focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30"
         >
           <option value="all">Tüm bölgeler</option>
           <option value="none">Bölgesiz</option>
@@ -268,7 +268,7 @@ export default function ReviewsManager({
             </option>
           ))}
         </select>
-        <div className="flex gap-1 p-1 rounded-xl bg-slate-100">
+        <div className="flex gap-1 p-1 rounded-adm bg-adm-line-2">
           {(
             [
               ["all", "Tümü"],
@@ -280,7 +280,7 @@ export default function ReviewsManager({
             <button
               key={id}
               onClick={() => setFilter(id)}
-              className="px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-adm-sm text-[12.5px] font-medium transition-all cursor-pointer"
               style={{
                 backgroundColor: filter === id ? "#fff" : "transparent",
                 color: filter === id ? "#0f172a" : "#64748b",
@@ -293,26 +293,26 @@ export default function ReviewsManager({
         </div>
         <button
           onClick={openNew}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-adm bg-adm-ink hover:bg-adm-ink-hover text-white text-[13px] font-semibold transition-colors cursor-pointer"
         >
           <Plus size={15} /> Yorum ekle
         </button>
       </div>
 
       {/* List */}
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
         {filtered.length === 0 ? (
-          <p className="px-4 py-10 text-center text-[13px] text-slate-500">
+          <p className="px-4 py-10 text-center text-[13px] text-adm-muted">
             Bu filtreye uyan değerlendirme yok.
           </p>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-adm-line-2">
             {filtered.map((r) => {
               const name = r.author_name || r.customers?.first_name || "Misafir";
               const region = regionName(r.region_id);
               const date = (r.published_at ?? r.created_at ?? "").slice(0, 10);
               return (
-                <li key={r.id} className="px-4 py-3.5 hover:bg-slate-50 transition-colors">
+                <li key={r.id} className="px-4 py-3.5 hover:bg-adm-surface-2 transition-colors">
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -321,33 +321,33 @@ export default function ReviewsManager({
                             <Star
                               key={i}
                               size={13}
-                              className={i < r.rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+                              className={i < r.rating ? "text-adm-amber fill-amber-400" : "text-adm-faint"}
                             />
                           ))}
                         </span>
-                        <span className="text-[13px] font-medium text-slate-900">{name}</span>
+                        <span className="text-[13px] font-medium text-adm-ink">{name}</span>
                         {r.author_country && (
-                          <span className="text-[11.5px] text-slate-500">· {r.author_country}</span>
+                          <span className="text-[11.5px] text-adm-muted">· {r.author_country}</span>
                         )}
                         {!r.is_approved && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-adm-amber-soft text-adm-amber">
                             onay bekliyor
                           </span>
                         )}
                         {r.is_featured && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-50 text-violet-700">
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-adm-violet-soft text-adm-violet">
                             öne çıkan
                           </span>
                         )}
                       </div>
 
                       {r.comment && (
-                        <p className="text-[13px] text-slate-600 leading-relaxed mt-1.5">
+                        <p className="text-[13px] text-adm-ink-2 leading-relaxed mt-1.5">
                           {r.comment}
                         </p>
                       )}
 
-                      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-500 flex-wrap">
+                      <div className="flex items-center gap-3 mt-1.5 text-[11px] text-adm-muted flex-wrap">
                         <span>{date}</span>
                         {region && (
                           <span className="inline-flex items-center gap-1">
@@ -385,7 +385,7 @@ export default function ReviewsManager({
                       </IconBtn>
                       <button
                         onClick={() => openEdit(r)}
-                        className="px-2 py-1 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+                        className="px-2 py-1 rounded-adm-sm text-[12px] font-medium text-adm-ink-2 hover:bg-adm-line-2 cursor-pointer"
                       >
                         Düzenle
                       </button>
@@ -404,14 +404,14 @@ export default function ReviewsManager({
       {/* Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-            <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-white">
-              <h2 className="text-[15px] font-semibold text-slate-900">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-adm-lg bg-adm-surface shadow-xl">
+            <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-adm-line bg-adm-surface">
+              <h2 className="text-[15px] font-semibold text-adm-ink">
                 {editingId ? "Değerlendirmeyi düzenle" : "Yeni değerlendirme"}
               </h2>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
+                className="text-adm-muted hover:text-adm-ink-2 cursor-pointer"
                 aria-label="Kapat"
               >
                 <X size={18} />
@@ -420,7 +420,7 @@ export default function ReviewsManager({
 
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">Puan</label>
+                <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">Puan</label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button
@@ -432,7 +432,7 @@ export default function ReviewsManager({
                     >
                       <Star
                         size={24}
-                        className={n <= form.rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+                        className={n <= form.rating ? "text-adm-amber fill-amber-400" : "text-adm-faint"}
                       />
                     </button>
                   ))}
@@ -524,7 +524,7 @@ export default function ReviewsManager({
               </div>
 
               <div className="flex gap-4 pt-1">
-                <label className="flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
+                <label className="flex items-center gap-2 text-[13px] text-adm-ink-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.is_approved}
@@ -533,7 +533,7 @@ export default function ReviewsManager({
                   />
                   Onaylı (sitede yayında)
                 </label>
-                <label className="flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
+                <label className="flex items-center gap-2 text-[13px] text-adm-ink-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.is_featured}
@@ -544,24 +544,24 @@ export default function ReviewsManager({
                 </label>
               </div>
 
-              <p className="text-[11.5px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">
+              <p className="text-[11.5px] text-adm-muted leading-relaxed border-t border-adm-line-2 pt-3">
                 Gerçekte alınmamış bir yorumu buraya yazmayın. Google uydurma değerlendirme
                 tespit ettiğinde sitenin tüm zengin sonuçlarını kapatır ve bunu geri almak
                 aylar sürer.
               </p>
             </div>
 
-            <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-slate-200 bg-white">
+            <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-adm-line bg-adm-surface">
               <button
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="px-4 py-2 rounded-adm-sm text-[13px] font-medium text-adm-ink-2 hover:bg-adm-line-2 cursor-pointer"
               >
                 Vazgeç
               </button>
               <button
                 onClick={submit}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-adm-sm bg-adm-ink hover:bg-adm-ink-hover disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
               >
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 {saving ? "Kaydediliyor…" : "Kaydet"}
@@ -575,7 +575,7 @@ export default function ReviewsManager({
 }
 
 const inputCls =
-  "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 bg-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500";
+  "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink bg-adm-surface placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]";
 
 function Field({
   label,
@@ -588,18 +588,18 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">{label}</label>
+      <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">{label}</label>
       {children}
-      {hint && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-adm-muted">{hint}</p>}
     </div>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="text-[22px] font-bold text-slate-900 tabular-nums mt-0.5">{value}</p>
+    <div className="rounded-adm border border-adm-line bg-adm-surface px-4 py-3">
+      <p className="text-[11px] uppercase tracking-wide text-adm-muted">{label}</p>
+      <p className="text-[22px] font-bold text-adm-ink tabular-nums mt-0.5">{value}</p>
     </div>
   );
 }
@@ -624,7 +624,7 @@ function IconBtn({
       onClick={onClick}
       title={title}
       aria-label={title}
-      className="p-1.5 rounded-lg transition-colors hover:bg-slate-100 cursor-pointer"
+      className="p-1.5 rounded-adm-sm transition-colors hover:bg-adm-line-2 cursor-pointer"
       style={{ color: danger ? "#94a3b8" : active ? activeColor : "#94a3b8" }}
       onMouseEnter={(e) => {
         if (danger) e.currentTarget.style.color = "#dc2626";

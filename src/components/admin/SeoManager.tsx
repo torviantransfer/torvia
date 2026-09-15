@@ -274,13 +274,13 @@ export default function SeoManager({
       </div>
 
       {blockedCount > 0 && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
-          <ShieldAlert size={16} className="text-amber-700 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5 rounded-adm border border-adm-amber-line bg-adm-amber-soft px-4 py-3">
+          <ShieldAlert size={16} className="text-adm-amber mt-0.5 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[12.5px] font-semibold text-amber-900">
+            <p className="text-[12.5px] font-semibold text-adm-amber">
               {blockedCount} sayfa okunamadı — koruma sayfasına yönlendirildi
             </p>
-            <p className="text-[11.5px] text-amber-800 mt-0.5 leading-snug">
+            <p className="text-[11.5px] text-adm-amber mt-0.5 leading-snug">
               Bu sayfalar için hiçbir SEO değeri gösterilmiyor. Okuma kaynağı{" "}
               <code className="font-mono">SEO_INSPECT_BASE_URL</code> ile ayarlanır; varsayılan
               public production adresidir. &quot;Bu deployment&quot; seçiliyken Vercel Deployment
@@ -293,18 +293,18 @@ export default function SeoManager({
       {/* Scanning is the only way this panel knows what the site actually
           serves, so its state is stated rather than left implicit -- including
           which deployment was read. */}
-      <div className="flex items-center gap-3 flex-wrap rounded-xl border border-slate-200 bg-white px-4 py-3">
+      <div className="flex items-center gap-3 flex-wrap rounded-adm border border-adm-line bg-adm-surface px-4 py-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[12.5px] font-medium text-slate-800">Yayındaki değerleri oku</p>
-          <p className="text-[11.5px] text-slate-500 mt-0.5">
+          <p className="text-[12.5px] font-medium text-adm-ink">Yayındaki değerleri oku</p>
+          <p className="text-[11.5px] text-adm-muted mt-0.5">
             Panel, sayfaların gerçek HTML çıktısını okuyarak mevcut title, canonical, robots,
             hreflang ve schema değerlerini gösterir.{" "}
             {unscanned > 0 ? `${unscanned} sayfa henüz taranmadı.` : "Listedeki tüm sayfalar tarandı."}
           </p>
           <p className="flex items-center gap-1.5 text-[11.5px] mt-1">
-            <Globe size={11} className="text-slate-400" />
-            <span className="text-slate-500">Kaynak:</span>
-            <span className="font-medium text-slate-800">
+            <Globe size={11} className="text-adm-muted" />
+            <span className="text-adm-muted">Kaynak:</span>
+            <span className="font-medium text-adm-ink">
               {source ? source.origin.replace(/^https?:\/\//, "") : "henüz okunmadı"}
             </span>
             {source && (
@@ -333,7 +333,7 @@ export default function SeoManager({
         <button
           onClick={() => scan(filtered.map((entry) => ({ entry, loc: locale })))}
           disabled={scanning.size > 0}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-[12.5px] font-semibold cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-adm-sm bg-adm-ink hover:bg-adm-ink-hover disabled:opacity-50 text-white text-[12.5px] font-semibold cursor-pointer shrink-0"
         >
           {scanning.size > 0 ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           {scanning.size > 0 ? `Taranıyor (${scanning.size})…` : `${filtered.length} sayfayı tara`}
@@ -342,23 +342,23 @@ export default function SeoManager({
 
       <div className="flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="relative flex-1">
-          <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-adm-muted" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Sayfa adı, URL, slug veya başlık ara…"
-            className="w-full ps-9 pe-3 py-2.5 rounded-xl border border-slate-300 text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+            className="w-full ps-9 pe-3 py-2.5 rounded-adm border border-adm-line-strong text-[13.5px] focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]"
           />
         </div>
         <button
           onClick={() => setBulk(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-adm border border-adm-line-strong bg-adm-surface hover:bg-adm-surface-2 text-adm-ink-2 text-[13px] font-semibold cursor-pointer shrink-0"
         >
           <Wand2 size={15} /> Toplu doldur
         </button>
         <button
           onClick={() => setCreating(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[13px] font-semibold cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-adm bg-adm-ink hover:bg-adm-ink-hover text-white text-[13px] font-semibold cursor-pointer shrink-0"
         >
           <Plus size={15} /> Yeni bölge
         </button>
@@ -388,7 +388,7 @@ export default function SeoManager({
           ]}
         />
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-slate-500">Dil:</span>
+          <span className="text-[12px] text-adm-muted">Dil:</span>
           <Pills
             value={locale}
             onChange={(v) => setLocale(v as Loc)}
@@ -398,11 +398,11 @@ export default function SeoManager({
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+      <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
+              <tr className="bg-adm-surface-2 border-b border-adm-line text-[11px] uppercase tracking-wide text-adm-muted">
                 <th className="px-4 py-2.5 font-semibold">Sayfa</th>
                 <th className="px-3 py-2.5 font-semibold">URL</th>
                 <th className="px-3 py-2.5 font-semibold">Title</th>
@@ -414,10 +414,10 @@ export default function SeoManager({
                 <th className="px-3 py-2.5 font-semibold">Güncelleme</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-adm-line-2">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-10 text-center text-[13px] text-slate-500">
+                  <td colSpan={9} className="px-4 py-10 text-center text-[13px] text-adm-muted">
                     Bu filtreye uyan sayfa yok.
                   </td>
                 </tr>
@@ -539,29 +539,29 @@ function ListRow({
   const health = findings ? auditSummary(findings) : null;
 
   return (
-    <tr className="hover:bg-slate-50 transition-colors cursor-pointer" onClick={onOpen}>
+    <tr className="hover:bg-adm-surface-2 transition-colors cursor-pointer" onClick={onOpen}>
       <td className="px-4 py-2.5">
         <div className="flex items-center gap-2.5">
           <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            className="w-7 h-7 rounded-adm-sm flex items-center justify-center shrink-0"
             style={{ backgroundColor: `${meta.color}14` }}
           >
             <meta.icon size={14} style={{ color: meta.color }} />
           </span>
           <span className="min-w-0">
-            <span className="block text-[13px] font-medium text-slate-900 truncate max-w-[220px]">
+            <span className="block text-[13px] font-medium text-adm-ink truncate max-w-[220px]">
               {entry.label}
             </span>
             <span className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10.5px] text-slate-500">{meta.label}</span>
+              <span className="text-[10.5px] text-adm-muted">{meta.label}</span>
               {!entry.isPublic && (
-                <span className="px-1 py-0.5 rounded text-[9.5px] font-medium bg-slate-100 text-slate-500">
+                <span className="px-1 py-0.5 rounded text-[9.5px] font-medium bg-adm-line-2 text-adm-muted">
                   yayında değil
                 </span>
               )}
               {duplicate && (
                 <span
-                  className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9.5px] font-medium bg-amber-50 text-amber-700"
+                  className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9.5px] font-medium bg-adm-amber-soft text-adm-amber"
                   title="Meta başlığı başka bir sayfayla aynı"
                 >
                   <CopyX size={9} /> yinelenen
@@ -573,7 +573,7 @@ function ListRow({
       </td>
 
       <td className="px-3 py-2.5">
-        <span className="text-[11.5px] text-slate-600 font-mono whitespace-nowrap">
+        <span className="text-[11.5px] text-adm-ink-2 font-mono whitespace-nowrap">
           /{locale}
           {route ? `/${route}` : ""}
         </span>
@@ -581,7 +581,7 @@ function ListRow({
 
       <td className="px-3 py-2.5 max-w-[240px]">
         {scanning ? (
-          <span className="text-[11.5px] text-slate-400">okunuyor…</span>
+          <span className="text-[11.5px] text-adm-muted">okunuyor…</span>
         ) : effectiveTitle ? (
           <span className="flex items-center gap-1.5 min-w-0">
             <span
@@ -589,16 +589,16 @@ function ListRow({
               style={{ backgroundColor: source === "admin" ? "#7c3aed" : "#0ea5e9" }}
               title={source === "admin" ? "Admin override" : "Sayfa kodu / varsayılan"}
             />
-            <span className="text-[12px] text-slate-700 truncate">{effectiveTitle}</span>
+            <span className="text-[12px] text-adm-ink-2 truncate">{effectiveTitle}</span>
           </span>
         ) : inspection?.blocked ? (
-          <span className="inline-flex items-center gap-1 text-[11.5px] text-amber-700">
+          <span className="inline-flex items-center gap-1 text-[11.5px] text-adm-amber">
             <ShieldAlert size={11} /> okunamadı
           </span>
         ) : inspection ? (
-          <span className="text-[11.5px] text-red-600">yok</span>
+          <span className="text-[11.5px] text-adm-rose">yok</span>
         ) : (
-          <span className="text-[11.5px] text-slate-400">taranmadı</span>
+          <span className="text-[11.5px] text-adm-muted">taranmadı</span>
         )}
       </td>
 
@@ -641,7 +641,7 @@ function ListRow({
         ) : hreflangCount === 0 ? (
           <Chip label="yok" color="#d97706" bg="#fffbeb" />
         ) : (
-          <span className="text-[11.5px] text-slate-600 tabular-nums">
+          <span className="text-[11.5px] text-adm-ink-2 tabular-nums">
             {hreflangCount}/{locales.length}
           </span>
         )}
@@ -664,7 +664,7 @@ function ListRow({
       </td>
 
       <td className="px-3 py-2.5">
-        <span className="text-[11px] text-slate-500 whitespace-nowrap">
+        <span className="text-[11px] text-adm-muted whitespace-nowrap">
           {entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString("tr-TR") : "—"}
         </span>
       </td>
@@ -673,7 +673,7 @@ function ListRow({
 }
 
 function Dash() {
-  return <span className="text-[11.5px] text-slate-300">—</span>;
+  return <span className="text-[11.5px] text-adm-faint">—</span>;
 }
 
 function Chip({
@@ -713,12 +713,12 @@ function Pills({
   compact?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-slate-100">
+    <div className="flex flex-wrap gap-1 p-1 rounded-adm bg-adm-line-2">
       {options.map(([id, label]) => (
         <button
           key={id}
           onClick={() => onChange(id)}
-          className={`${compact ? "px-2.5 py-1" : "px-3 py-1.5"} rounded-lg text-[12px] font-medium transition-all cursor-pointer`}
+          className={`${compact ? "px-2.5 py-1" : "px-3 py-1.5"} rounded-adm-sm text-[12px] font-medium transition-all cursor-pointer`}
           style={{
             backgroundColor: value === id ? "#fff" : "transparent",
             color: value === id ? "#0f172a" : "#64748b",
@@ -734,8 +734,8 @@ function Pills({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "ok" | "warn" }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-slate-500">{label}</p>
+    <div className="rounded-adm border border-adm-line bg-adm-surface px-4 py-3">
+      <p className="text-[11px] uppercase tracking-wide text-adm-muted">{label}</p>
       <p
         className="text-[22px] font-bold tabular-nums mt-0.5"
         style={{ color: tone === "warn" ? "#d97706" : tone === "ok" ? "#16a34a" : "#0f172a" }}
@@ -1010,20 +1010,20 @@ function SeoEditor({
 
   return (
     <div className="space-y-4">
-      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-slate-50/95 backdrop-blur border-b border-slate-200 flex items-center gap-3 flex-wrap">
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-adm-surface-2/95 backdrop-blur border-b border-adm-line flex items-center gap-3 flex-wrap">
         <button
           onClick={leave}
-          className="inline-flex items-center gap-1 text-[13px] font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
+          className="inline-flex items-center gap-1 text-[13px] font-medium text-adm-ink-2 hover:text-adm-ink cursor-pointer"
         >
           <ChevronLeft size={16} /> Liste
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-semibold text-slate-900 truncate">{entry.label}</p>
+          <p className="text-[14px] font-semibold text-adm-ink truncate">{entry.label}</p>
           <a
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11.5px] text-slate-500 hover:text-orange-600"
+            className="inline-flex items-center gap-1 text-[11.5px] text-adm-muted hover:text-adm-brand-ink"
           >
             {liveUrl.replace("https://", "")} <ExternalLink size={11} />
           </a>
@@ -1032,7 +1032,7 @@ function SeoEditor({
         <button
           onClick={() => setConfirming(true)}
           disabled={saving || !dirty}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-semibold text-white disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-adm-sm text-[13px] font-semibold text-white disabled:opacity-50 cursor-pointer"
           style={{ backgroundColor: saved && !dirty ? "#16a34a" : "#f97316" }}
         >
           {saving ? (
@@ -1051,20 +1051,20 @@ function SeoEditor({
       </div>
 
       {error && (
-        <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12.5px] text-red-700">
+        <p className="flex items-center gap-2 px-3 py-2 rounded-adm-sm bg-adm-rose-soft border border-[#f6c9d1] text-[12.5px] text-adm-rose">
           <AlertCircle size={14} /> {error}
         </p>
       )}
 
       {inspection?.blocked && (
-        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-300">
-          <ShieldAlert size={15} className="text-amber-700 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-adm-sm bg-adm-amber-soft border border-adm-amber-line">
+          <ShieldAlert size={15} className="text-adm-amber mt-0.5 shrink-0" />
           <div>
-            <p className="text-[12.5px] font-semibold text-amber-900">
+            <p className="text-[12.5px] font-semibold text-adm-amber">
               {inspection.blocked.message}
             </p>
-            <p className="text-[11.5px] text-amber-800 mt-0.5">{inspection.blocked.detail}</p>
-            <p className="text-[11.5px] text-slate-600 mt-1">
+            <p className="text-[11.5px] text-adm-amber mt-0.5">{inspection.blocked.detail}</p>
+            <p className="text-[11.5px] text-adm-ink-2 mt-1">
               Aşağıdaki alanların hiçbirinde &quot;mevcut değer&quot; gösterilmiyor. Boş
               görünenleri doldurmayın — gerçek değerleri bilinmiyor.
             </p>
@@ -1073,25 +1073,25 @@ function SeoEditor({
       )}
 
       {!entry.isPublic && (
-        <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 text-[12.5px] text-slate-600">
+        <p className="flex items-center gap-2 px-3 py-2 rounded-adm-sm bg-adm-line-2 border border-adm-line text-[12.5px] text-adm-ink-2">
           <EyeOff size={14} /> Bu sayfa yayında değil — sitemap&apos;te yok. SEO alanları yine de
           doldurulabilir.
         </p>
       )}
 
       {entry.shadowedBy && (
-        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg bg-amber-50 border border-amber-300">
-          <AlertOctagon size={15} className="text-amber-700 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-adm-sm bg-adm-amber-soft border border-adm-amber-line">
+          <AlertOctagon size={15} className="text-adm-amber mt-0.5 shrink-0" />
           <div>
-            <p className="text-[12.5px] font-semibold text-amber-900">
+            <p className="text-[12.5px] font-semibold text-adm-amber">
               Bu adresi bu kayıt üretmiyor.
             </p>
-            <p className="text-[11.5px] text-amber-800 mt-0.5">
+            <p className="text-[11.5px] text-adm-amber mt-0.5">
               /{locale}/{entry.routeFor(locale)} adresini kod içindeki landing sayfası servis
               ediyor; bölge satırı yalnızca fiyat, mesafe ve rezervasyon için kullanılıyor.
               Buradaki SEO alanları yayına çıkmaz.
             </p>
-            <p className="text-[11.5px] text-slate-700 mt-1">
+            <p className="text-[11.5px] text-adm-ink-2 mt-1">
               Bu sayfanın SEO&apos;sunu <strong>Landing → {entry.shadowedBy}</strong> kaydından
               düzenleyin.
             </p>
@@ -1165,9 +1165,9 @@ function SeoEditor({
               onChange={(v) => setRaw("nofollow", v)}
             />
             {inspection && (
-              <p className="text-[11.5px] text-slate-500">
+              <p className="text-[11.5px] text-adm-muted">
                 Şu an yayında:{" "}
-                <code className="font-mono text-slate-700">
+                <code className="font-mono text-adm-ink-2">
                   {inspection.googlebot ?? inspection.robots ?? "direktif yok"}
                 </code>
               </p>
@@ -1339,7 +1339,7 @@ function SeoEditor({
             <div>
               <label
                 htmlFor="seo-twitter_card"
-                className="block text-[12.5px] font-medium text-slate-700 mb-1.5"
+                className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5"
               >
                 Kart tipi
               </label>
@@ -1347,7 +1347,7 @@ function SeoEditor({
                 id="seo-twitter_card"
                 value={str(draft, "twitter_card")}
                 onChange={(e) => setRaw("twitter_card", e.target.value || null)}
-                className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-[13.5px] focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                className="w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong bg-adm-surface text-[13.5px] focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30"
               >
                 <option value="">
                   Varsayılan ({inspection?.twitterCard ?? "summary_large_image"})
@@ -1469,9 +1469,9 @@ function TriToggle({
   ];
   return (
     <div>
-      <p className="text-[13px] font-medium text-slate-800">{label}</p>
-      <p className="text-[11.5px] text-slate-500 mt-0.5 mb-2 leading-snug">{description}</p>
-      <div className="flex gap-1 p-1 rounded-xl bg-slate-100 w-fit">
+      <p className="text-[13px] font-medium text-adm-ink">{label}</p>
+      <p className="text-[11.5px] text-adm-muted mt-0.5 mb-2 leading-snug">{description}</p>
+      <div className="flex gap-1 p-1 rounded-adm bg-adm-line-2 w-fit">
         {options.map(([text, v]) => {
           const on = value === v;
           const danger = v === true;
@@ -1485,7 +1485,7 @@ function TriToggle({
                 }
                 onChange(v);
               }}
-              className="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-adm-sm text-[12px] font-medium transition-all cursor-pointer"
               style={{
                 backgroundColor: on ? (danger ? "#dc2626" : "#fff") : "transparent",
                 color: on ? (danger ? "#fff" : "#0f172a") : "#64748b",
@@ -1575,16 +1575,16 @@ function NewRegionDialog({
   };
 
   const input =
-    "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500";
+    "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-white">
-          <h2 className="text-[15px] font-semibold text-slate-900">Yeni bölge</h2>
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-adm-lg bg-adm-surface shadow-xl">
+        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-adm-line bg-adm-surface">
+          <h2 className="text-[15px] font-semibold text-adm-ink">Yeni bölge</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 cursor-pointer text-lg leading-none"
+            className="text-adm-muted hover:text-adm-ink-2 cursor-pointer text-lg leading-none"
             aria-label="Kapat"
           >
             ×
@@ -1593,7 +1593,7 @@ function NewRegionDialog({
 
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+            <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
               URL adresi
             </label>
             <input
@@ -1602,9 +1602,9 @@ function NewRegionDialog({
               placeholder="belek"
               className={input}
             />
-            <p className="mt-1.5 text-[11px] text-slate-500">
+            <p className="mt-1.5 text-[11px] text-adm-muted">
               Sayfa adresi:{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-adm-ink-2">
                 torviantransfer.com/tr/{bare || "…"}-transfer
               </span>
               <br />
@@ -1613,7 +1613,7 @@ function NewRegionDialog({
           </div>
 
           <div>
-            <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+            <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
               Bölge adı — her dilde
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -1628,7 +1628,7 @@ function NewRegionDialog({
               ))}
             </div>
             {missing.length > 0 && (
-              <p className="mt-1.5 text-[11px] text-amber-700">
+              <p className="mt-1.5 text-[11px] text-adm-amber">
                 Zorunlu diller eksik: {missing.map((l) => l.toUpperCase()).join(", ")}
               </p>
             )}
@@ -1636,7 +1636,7 @@ function NewRegionDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+              <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
                 Mesafe (km)
               </label>
               <input
@@ -1648,7 +1648,7 @@ function NewRegionDialog({
               />
             </div>
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+              <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
                 Süre (dakika)
               </label>
               <input
@@ -1661,29 +1661,29 @@ function NewRegionDialog({
             </div>
           </div>
 
-          <p className="text-[11.5px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">
+          <p className="text-[11.5px] text-adm-muted leading-relaxed border-t border-adm-line-2 pt-3">
             Bölge <b>pasif</b> olarak oluşturulur — sitemap&apos;e ve site menüsüne girmez.
             Kaydettikten sonra SEO editörü açılır.
           </p>
 
           {error && (
-            <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[12.5px] text-red-700">
+            <p className="flex items-center gap-2 px-3 py-2 rounded-adm-sm bg-adm-rose-soft border border-[#f6c9d1] text-[12.5px] text-adm-rose">
               <AlertCircle size={14} /> {error}
             </p>
           )}
         </div>
 
-        <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-slate-200 bg-white">
+        <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-adm-line bg-adm-surface">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+            className="px-4 py-2 rounded-adm-sm text-[13px] font-medium text-adm-ink-2 hover:bg-adm-line-2 cursor-pointer"
           >
             Vazgeç
           </button>
           <button
             onClick={submit}
             disabled={!canSave}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-adm-sm bg-adm-ink hover:bg-adm-ink-hover disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
             {saving ? "Ekleniyor…" : "Ekle ve SEO'yu düzenle"}

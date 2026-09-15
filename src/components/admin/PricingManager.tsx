@@ -291,8 +291,8 @@ export default function PricingManager({
 
   if (categories.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-8 text-center text-gray-400">
-        Önce <span className="font-medium text-gray-600">Araç Tipleri</span> sayfasından bir araç ekleyin.
+      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm px-5 py-8 text-center text-adm-muted">
+        Önce <span className="font-medium text-adm-ink-2">Araç Tipleri</span> sayfasından bir araç ekleyin.
       </div>
     );
   }
@@ -300,7 +300,7 @@ export default function PricingManager({
   return (
     <div>
       {categories.length > 1 && (
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1 mb-4">
+        <div className="flex gap-1 bg-adm-line-2 rounded-adm-sm p-1 mb-4">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -315,8 +315,8 @@ export default function PricingManager({
               }}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 cat.id === categoryId
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-adm-surface text-adm-ink shadow-sm"
+                  : "text-adm-muted hover:text-adm-ink-2"
               }`}
             >
               {cat.name}
@@ -326,11 +326,11 @@ export default function PricingManager({
       )}
 
       <div className="flex items-start justify-between gap-4 mb-4">
-        <p className="text-sm text-gray-500">
-          <span className="font-medium text-gray-700">{activeCategory?.name}</span>{" "}
+        <p className="text-sm text-adm-muted">
+          <span className="font-medium text-adm-ink-2">{activeCategory?.name}</span>{" "}
           fiyatları — tümü EUR cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
           {missingCount > 0 && (
-            <span className="text-amber-600">, {missingCount} güzergahta fiyat yok</span>
+            <span className="text-adm-amber">, {missingCount} güzergahta fiyat yok</span>
           )}
           .
         </p>
@@ -339,10 +339,10 @@ export default function PricingManager({
             setBulkOpen((open) => !open);
             setBulkNotice(null);
           }}
-          className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+          className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-adm-sm text-sm font-medium border transition-colors ${
             bulkOpen
-              ? "bg-gray-900 text-white border-gray-900"
-              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+              ? "bg-adm-ink text-white border-adm-ink"
+              : "bg-adm-surface text-adm-ink-2 border-adm-line hover:bg-adm-surface-2"
           }`}
         >
           <Wand2 size={14} />
@@ -351,14 +351,14 @@ export default function PricingManager({
       </div>
 
       {bulkOpen && (
-        <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+        <div className="mb-4 rounded-adm border border-adm-line bg-adm-surface-2 p-4">
           <div className="flex flex-wrap items-end gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-gray-500">Kaynak fiyatlar</span>
+              <span className="text-xs font-medium text-adm-muted">Kaynak fiyatlar</span>
               <select
                 value={bulkSource}
                 onChange={(e) => setBulkSource(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white min-w-56"
+                className="border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface min-w-56"
               >
                 <option value="">{activeCategory?.name} (mevcut fiyatları)</option>
                 {categories
@@ -372,15 +372,15 @@ export default function PricingManager({
             </label>
 
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-gray-500">İşlem</span>
+              <span className="text-xs font-medium text-adm-muted">İşlem</span>
               <div className="flex items-stretch">
-                <div className="flex gap-1 bg-gray-200 rounded-lg p-1 me-2">
+                <div className="flex gap-1 bg-adm-seg rounded-adm-sm p-1 me-2">
                   {([1, -1] as const).map((sign) => (
                     <button
                       key={sign}
                       onClick={() => setBulkSign(sign)}
                       className={`w-9 rounded-md text-sm font-semibold transition-colors ${
-                        bulkSign === sign ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+                        bulkSign === sign ? "bg-adm-surface text-adm-ink shadow-sm" : "text-adm-muted"
                       }`}
                     >
                       {sign === 1 ? "+" : "−"}
@@ -394,12 +394,12 @@ export default function PricingManager({
                   value={bulkValue}
                   onChange={(e) => setBulkValue(e.target.value)}
                   placeholder="20"
-                  className="w-24 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+                  className="w-24 border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface"
                 />
                 <select
                   value={bulkMode}
                   onChange={(e) => setBulkMode(e.target.value as AdjustMode)}
-                  className="ms-2 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white"
+                  className="ms-2 border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface"
                 >
                   <option value="amount">$ (sabit tutar)</option>
                   <option value="percent">% (yüzde)</option>
@@ -410,33 +410,33 @@ export default function PricingManager({
             <button
               onClick={applyBulk}
               disabled={loading || !preview || !!previewProblem}
-              className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 rounded-adm-sm bg-adm-ink text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-adm-ink-hover transition-colors"
             >
               {loading ? "Uygulanıyor…" : "Uygula"}
             </button>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span className="text-xs font-medium text-gray-500">Uygulanacak alanlar:</span>
+            <span className="text-xs font-medium text-adm-muted">Uygulanacak alanlar:</span>
             {ADJUSTABLE_FIELDS.map((field) => (
-              <label key={field} className="flex items-center gap-1.5 text-sm text-gray-700">
+              <label key={field} className="flex items-center gap-1.5 text-sm text-adm-ink-2">
                 <input
                   type="checkbox"
                   checked={bulkFields.includes(field)}
                   onChange={() => toggleField(field)}
-                  className="rounded border-gray-300"
+                  className="rounded border-adm-line-strong"
                 />
                 {FIELD_LABELS[field]}
               </label>
             ))}
           </div>
 
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-adm-muted">
             {previewProblem ? (
-              <span className="text-red-600">{previewProblem} — değeri düşürün.</span>
+              <span className="text-adm-rose">{previewProblem} — değeri düşürün.</span>
             ) : preview ? (
               <>
-                Tabloda <span className="text-emerald-700 font-medium">yeni fiyatlar</span> önizleniyor.
+                Tabloda <span className="text-adm-green font-medium">yeni fiyatlar</span> önizleniyor.
                 Uygula&apos;ya basana kadar hiçbir şey kaydedilmez.
                 {bulkMode === "percent" && " Yüzdeli sonuçlar tam dolara yuvarlanır."}
               </>
@@ -448,32 +448,32 @@ export default function PricingManager({
       )}
 
       {bulkNotice && (
-        <div className="mb-4 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
+        <div className="mb-4 rounded-adm-sm border border-[#bfe3cb] bg-adm-green-soft px-4 py-2 text-sm text-adm-green">
           {bulkNotice}
         </div>
       )}
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="mb-4 rounded-adm-sm border border-[#f6c9d1] bg-adm-rose-soft px-4 py-2 text-sm text-adm-rose">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-start">
-              <th className="px-4 py-3 font-medium text-gray-500">#</th>
-              <th className="px-4 py-3 font-medium text-gray-500">Bölge</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-end text-blue-700 bg-blue-50/50">Online Tek ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-end text-blue-700 bg-blue-50/50">Online G/D ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-end text-amber-700 bg-amber-50/50">Nakit Tek ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-end text-amber-700 bg-amber-50/50">Nakit G/D ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500 text-end text-emerald-700 bg-emerald-50/50">Depozit ($)</th>
-              <th className="px-4 py-3 font-medium text-gray-500">İşlem</th>
+            <tr className="bg-adm-surface-2 text-start">
+              <th className="px-4 py-3 font-medium text-adm-muted">#</th>
+              <th className="px-4 py-3 font-medium text-adm-muted">Bölge</th>
+              <th className="px-4 py-3 font-medium text-adm-muted text-end text-adm-brand-ink bg-adm-blue-soft/50">Online Tek ($)</th>
+              <th className="px-4 py-3 font-medium text-adm-muted text-end text-adm-brand-ink bg-adm-blue-soft/50">Online G/D ($)</th>
+              <th className="px-4 py-3 font-medium text-adm-muted text-end text-adm-amber bg-adm-amber-soft/50">Nakit Tek ($)</th>
+              <th className="px-4 py-3 font-medium text-adm-muted text-end text-adm-amber bg-adm-amber-soft/50">Nakit G/D ($)</th>
+              <th className="px-4 py-3 font-medium text-adm-muted text-end text-adm-green bg-adm-green-soft/50">Depozit ($)</th>
+              <th className="px-4 py-3 font-medium text-adm-muted">İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-adm-line-2">
             {lines.map((line, idx) => {
               const isEditing = editingKey === line.regionId;
               const row = line.row;
@@ -482,14 +482,14 @@ export default function PricingManager({
                   type="number" step="0.01" min="0"
                   value={value ?? ""}
                   onChange={(e) => setEditValues({ ...editValues, [field]: e.target.value ? parseFloat(e.target.value) : null })}
-                  className="w-20 border border-gray-200 rounded px-2 py-1 text-sm text-end"
+                  className="w-20 border border-adm-line rounded px-2 py-1 text-sm text-end"
                 />
               );
               const amount = (value: number | null | undefined, tone: string) =>
                 value != null ? (
                   <span className={`font-medium ${tone}`}>€{value.toFixed(0)}</span>
                 ) : (
-                  <span className="text-gray-300">—</span>
+                  <span className="text-adm-faint">—</span>
                 );
 
               const pending = preview?.get(line.regionId);
@@ -507,54 +507,54 @@ export default function PricingManager({
                 return (
                   <span className="inline-flex items-baseline gap-1.5 justify-end">
                     {current != null && (
-                      <span className="text-gray-300 line-through text-xs">${current.toFixed(0)}</span>
+                      <span className="text-adm-faint line-through text-xs">${current.toFixed(0)}</span>
                     )}
-                    {amount(next, "text-emerald-700")}
+                    {amount(next, "text-adm-green")}
                   </span>
                 );
               };
               return (
-              <tr key={line.regionId} className={`hover:bg-gray-50 ${!row && !isEditing ? "bg-amber-50/30" : ""}`}>
-                <td className="px-4 py-3 text-gray-400 text-xs">{idx + 1}</td>
-                <td className="px-4 py-3 font-medium text-gray-900 text-sm">
+              <tr key={line.regionId} className={`hover:bg-adm-surface-2 ${!row && !isEditing ? "bg-adm-amber-soft/30" : ""}`}>
+                <td className="px-4 py-3 text-adm-muted text-xs">{idx + 1}</td>
+                <td className="px-4 py-3 font-medium text-adm-ink text-sm">
                   {line.regionName}
                   {!row && !isEditing && (
-                    <span className="ms-2 text-xs font-normal text-amber-600">fiyat yok</span>
+                    <span className="ms-2 text-xs font-normal text-adm-amber">fiyat yok</span>
                   )}
                 </td>
                 {/* Online one-way */}
-                <td className="px-4 py-3 text-end bg-blue-50/20">
-                  {isEditing ? numInput("one_way_price", editValues.one_way_price) : money("one_way_price", "text-blue-700")}
+                <td className="px-4 py-3 text-end bg-adm-blue-soft/20">
+                  {isEditing ? numInput("one_way_price", editValues.one_way_price) : money("one_way_price", "text-adm-brand-ink")}
                 </td>
                 {/* Online round-trip */}
-                <td className="px-4 py-3 text-end bg-blue-50/20">
-                  {isEditing ? numInput("round_trip_price", editValues.round_trip_price) : money("round_trip_price", "text-blue-700")}
+                <td className="px-4 py-3 text-end bg-adm-blue-soft/20">
+                  {isEditing ? numInput("round_trip_price", editValues.round_trip_price) : money("round_trip_price", "text-adm-brand-ink")}
                 </td>
                 {/* Cash one-way */}
-                <td className="px-4 py-3 text-end bg-amber-50/20">
-                  {isEditing ? numInput("one_way_cash_price", editValues.one_way_cash_price) : money("one_way_cash_price", "text-amber-700")}
+                <td className="px-4 py-3 text-end bg-adm-amber-soft/20">
+                  {isEditing ? numInput("one_way_cash_price", editValues.one_way_cash_price) : money("one_way_cash_price", "text-adm-amber")}
                 </td>
                 {/* Cash round-trip */}
-                <td className="px-4 py-3 text-end bg-amber-50/20">
-                  {isEditing ? numInput("round_trip_cash_price", editValues.round_trip_cash_price) : money("round_trip_cash_price", "text-amber-700")}
+                <td className="px-4 py-3 text-end bg-adm-amber-soft/20">
+                  {isEditing ? numInput("round_trip_cash_price", editValues.round_trip_cash_price) : money("round_trip_cash_price", "text-adm-amber")}
                 </td>
                 {/* Deposit */}
-                <td className="px-4 py-3 text-end bg-emerald-50/20">
-                  {isEditing ? numInput("cash_deposit_amount", editValues.cash_deposit_amount) : money("cash_deposit_amount", "text-emerald-700")}
+                <td className="px-4 py-3 text-end bg-adm-green-soft/20">
+                  {isEditing ? numInput("cash_deposit_amount", editValues.cash_deposit_amount) : money("cash_deposit_amount", "text-adm-green")}
                 </td>
                 <td className="px-4 py-3">
                   {isEditing ? (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => handleSave(line)} disabled={loading} className="p-1.5 rounded hover:bg-green-50 text-green-600"><Save size={14} /></button>
-                      <button onClick={() => setEditingKey(null)} className="p-1.5 rounded hover:bg-gray-100"><X size={14} /></button>
+                      <button onClick={() => handleSave(line)} disabled={loading} className="p-1.5 rounded hover:bg-adm-green-soft text-adm-green"><Save size={14} /></button>
+                      <button onClick={() => setEditingKey(null)} className="p-1.5 rounded hover:bg-adm-line-2"><X size={14} /></button>
                     </div>
                   ) : (
                     <button
                       onClick={() => startEdit(line)}
                       title={row ? "Düzenle" : "Fiyat ekle"}
-                      className="p-1.5 rounded hover:bg-gray-100"
+                      className="p-1.5 rounded hover:bg-adm-line-2"
                     >
-                      {row ? <Edit2 size={14} /> : <Plus size={14} className="text-amber-600" />}
+                      {row ? <Edit2 size={14} /> : <Plus size={14} className="text-adm-amber" />}
                     </button>
                   )}
                 </td>
@@ -563,7 +563,7 @@ export default function PricingManager({
             })}
             {lines.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-gray-400">
+                <td colSpan={8} className="px-5 py-8 text-center text-adm-muted">
                   Henüz fiyatlandırma yapılmadı
                 </td>
               </tr>

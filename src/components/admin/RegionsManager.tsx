@@ -162,13 +162,13 @@ export default function RegionsManager({ initialRegions }: Props) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <p className="text-sm text-gray-500">{regions.length} bölge</p>
+        <p className="text-sm text-adm-muted">{regions.length} bölge</p>
         <button
           onClick={() => {
             resetForm();
             setShowForm(!showForm);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90"
+          className="flex items-center gap-2 px-4 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90"
         >
           <Plus size={16} />
           Bölge Ekle
@@ -178,14 +178,14 @@ export default function RegionsManager({ initialRegions }: Props) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl border border-gray-100 p-5 mb-6 space-y-4"
+          className="bg-adm-surface rounded-adm border border-adm-line-2 p-5 mb-6 space-y-4"
         >
-          <h3 className="font-bold text-gray-900">
+          <h3 className="font-bold text-adm-ink">
             {editingId ? "Bölge Düzenle" : "Yeni Bölge"}
           </h3>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Slug *
               </label>
               <input
@@ -193,83 +193,83 @@ export default function RegionsManager({ initialRegions }: Props) {
                 value={form.slug}
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 placeholder="e.g. belek"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (TR) *
               </label>
               <input
                 required
                 value={form.name_tr}
                 onChange={(e) => setForm({ ...form, name_tr: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (EN) *
               </label>
               <input
                 required
                 value={form.name_en}
                 onChange={(e) => setForm({ ...form, name_en: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (DE)
               </label>
               <input
                 value={form.name_de}
                 onChange={(e) => setForm({ ...form, name_de: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (PL)
               </label>
               <input
                 value={form.name_pl}
                 onChange={(e) => setForm({ ...form, name_pl: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (RU)
               </label>
               <input
                 value={form.name_ru}
                 onChange={(e) => setForm({ ...form, name_ru: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (NL)
               </label>
               <input
                 value={form.name_nl}
                 onChange={(e) => setForm({ ...form, name_nl: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Ad (RO)
               </label>
               <input
                 value={form.name_ro}
                 onChange={(e) => setForm({ ...form, name_ro: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Mesafe (km)
               </label>
               <input
@@ -279,11 +279,11 @@ export default function RegionsManager({ initialRegions }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, distance_km: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Süre (dk)
               </label>
               <input
@@ -292,11 +292,11 @@ export default function RegionsManager({ initialRegions }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, duration_minutes: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
+              <label className="block text-xs font-medium text-adm-muted mb-1">
                 Sıralama
               </label>
               <input
@@ -305,7 +305,7 @@ export default function RegionsManager({ initialRegions }: Props) {
                 onChange={(e) =>
                   setForm({ ...form, sort_order: e.target.value })
                 }
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -313,14 +313,14 @@ export default function RegionsManager({ initialRegions }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50"
             >
               {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
             </button>
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm"
+              className="px-4 py-2 border border-adm-line rounded-adm-sm text-sm"
             >
               İptal
             </button>
@@ -328,46 +328,46 @@ export default function RegionsManager({ initialRegions }: Props) {
         </form>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-start">
-              <th className="px-5 py-3 font-medium text-gray-500">#</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Bölge</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Slug</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Mesafe</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Süre</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Popüler</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Durum</th>
-              <th className="px-5 py-3 font-medium text-gray-500">İşlemler</th>
+            <tr className="bg-adm-surface-2 text-start">
+              <th className="px-5 py-3 font-medium text-adm-muted">#</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Bölge</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Slug</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Mesafe</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Süre</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Popüler</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">Durum</th>
+              <th className="px-5 py-3 font-medium text-adm-muted">İşlemler</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-adm-line-2">
             {regions.map((r) => (
-              <tr key={r.id} className="hover:bg-gray-50">
-                <td className="px-5 py-3 text-gray-400">{r.sort_order}</td>
+              <tr key={r.id} className="hover:bg-adm-surface-2">
+                <td className="px-5 py-3 text-adm-muted">{r.sort_order}</td>
                 <td className="px-5 py-3">
-                  <p className="font-medium text-gray-900">{r.name_en}</p>
-                  <p className="text-xs text-gray-400">{r.name_tr}</p>
+                  <p className="font-medium text-adm-ink">{r.name_en}</p>
+                  <p className="text-xs text-adm-muted">{r.name_tr}</p>
                 </td>
-                <td className="px-5 py-3 font-mono text-gray-600">{r.slug}</td>
-                <td className="px-5 py-3 text-gray-600">
+                <td className="px-5 py-3 font-mono text-adm-ink-2">{r.slug}</td>
+                <td className="px-5 py-3 text-adm-ink-2">
                   {r.distance_km ? `${r.distance_km} km` : "—"}
                 </td>
-                <td className="px-5 py-3 text-gray-600">
+                <td className="px-5 py-3 text-adm-ink-2">
                   {r.duration_minutes ? `${r.duration_minutes} dk` : "—"}
                 </td>
                 <td className="px-5 py-3">
                   <button
                     onClick={() => handleToggle(r.id, "is_popular")}
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_popular ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-400"}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_popular ? "bg-adm-amber-soft text-adm-amber" : "bg-adm-line-2 text-adm-muted"}`}
                   >
                     {r.is_popular ? "Popüler" : "Normal"}
                   </button>
                 </td>
                 <td className="px-5 py-3">
                   <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_active ? "bg-adm-green-soft text-adm-green" : "bg-adm-rose-soft text-adm-rose"}`}
                   >
                     {r.is_active ? "Aktif" : "Pasif"}
                   </span>
@@ -376,24 +376,24 @@ export default function RegionsManager({ initialRegions }: Props) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => startEdit(r)}
-                      className="p-1.5 rounded hover:bg-gray-100"
+                      className="p-1.5 rounded hover:bg-adm-line-2"
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => handleToggle(r.id)}
-                      className="p-1.5 rounded hover:bg-gray-100"
+                      className="p-1.5 rounded hover:bg-adm-line-2"
                     >
                       <Power
                         size={14}
                         className={
-                          r.is_active ? "text-green-600" : "text-red-400"
+                          r.is_active ? "text-adm-green" : "text-adm-rose"
                         }
                       />
                     </button>
                     <button
                       onClick={() => handleDelete(r.id)}
-                      className="p-1.5 rounded hover:bg-red-50 text-red-500"
+                      className="p-1.5 rounded hover:bg-adm-rose-soft text-adm-rose"
                     >
                       <Trash2 size={14} />
                     </button>
