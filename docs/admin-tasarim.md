@@ -291,7 +291,28 @@ Blog ile aynı düzen: liste + tam sayfa editör (başlık, alt başlık, görse
 
 ### 5.16 SEO Yönetimi
 
-Liste: sayfa adı, URL, skor rozeti, eksik alan sayısı, son inceleme. Filtre: sorunlu / eksik / noindex, grup, dil. Satır → düzenleme paneli: SERP önizlemesi, sosyal önizleme, alanlar, skor, farkı göstererek kaydetme. Toplu doldurma ve canlı inceleme eylemleri korunur.
+Dört tabloyu birden yönetir — `seo_pages` (ana sayfa, statik ve kod içindeki landing sayfaları), `landing_pages` (panelden oluşturulanlar), `regions`, `blog_posts` — yedi dilde.
+
+1. **Üst şerit:** sayfa sayısı · seçili dilin ortalama skoru · taranan / toplam · teknik hata · yinelenen metin.
+2. **Tarama kutusu:** panel, sayfaların gerçek HTML çıktısını okuyarak yayındaki title, canonical, robots, hreflang ve schema değerlerini gösterir. Okuma kaynağı seçilir (Public site / Bu deployment) ve hangi adresten okunduğu yazılır — önizlemenin rakamlarıyla production'ınkiler tek bir şeymiş gibi gösterilmez. Kaynak değişince eski okumalar atılır.
+3. **Filtreler:** arama (sayfa adı, URL, slug, başlık) · sayfa türü · sorun (Hepsi / Sorunlu / Eksik metadata / noindex) · dil.
+4. **Liste sütunları:** Sayfa (tür rozeti, yayında değil / yinelenen işareti) · URL · Title (değerin admin'den mi sayfa kodundan mı geldiğini gösteren nokta) · Index · Canonical · Hreflang · Sağlık · Skor · Güncelleme.
+5. **Başlık eylemleri:** Toplu doldur · Yeni bölge (pasif açılır, sitemap'e girmez).
+
+**SEO paneli (sağdan):** başlıkta sayfa türü, skor ve yayındaki adrese bağlantı; altında dil sekmeleri (her dilin doluluk durumuyla) ve üç sekme:
+
+- **Alanlar** — arama sonucu (meta başlık/açıklama, karakter sayacı) · canonical · indeksleme (noindex / nofollow, üç durumlu) · anahtar kelimeler · sayfa metni (H1, giriş) · Open Graph · X/Twitter · görsel ve alt metni · URL (salt okunur).
+- **Önizleme** — SERP ve sosyal kart önizlemesi.
+- **Teknik** — canlı okumadan gelen denetim bulguları, skor dökümü, runtime özeti, hreflang ve schema. Bir bulguya tıklanınca Alanlar sekmesi açılır ve ilgili kutuya gidilir.
+
+Alt çubukta değişiklik sayısı ve **Kaydet**; kaydetmeden önce farkı gösteren pencere açılır. Ctrl/⌘ + S aynı pencereyi açar.
+
+**Uygulamada:**
+- Her alanın yanında sayfanın **şu an yayında olan** değeri durur. Boş bir kutu "bu sayfanın başlığı yok" demek değildir — başlık sayfanın kendi kodundan geliyor olabilir; puanlama da bu etkin değere göre yapılır.
+- Okuma engellenirse (Vercel koruma sayfası) hiçbir alanda "mevcut değer" gösterilmez ve panel bunu açıkça yazar; boş görünenler doldurulmaz.
+- Bir bölge satırının adresini kod içindeki landing sayfası servis ediyorsa panel bunu söyler ve doğru kaydı gösterir — oradaki alanlar yayına çıkmaz.
+- Filtreler, dil ve açık sayfa adrese yazılır (`?locale=de&issue=problems&open=…`); link gönderilince aynı ekran açılır.
+- URL değiştirme bu panelden yapılmaz: 301 yönlendirme gerekir, yönlendirmeler `src/lib/redirects.ts` içinde durur.
 
 ### 5.17 Ayarlar
 
@@ -324,12 +345,12 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 | A1 | Uçuş durumu (indi, rötar, kalkış) | Uçuş kodu kayıtlı, durum kaynağı yok | **Karar: sonraya.** Uçuş verisi API'si alındığında eklenecek (ör. AeroDataBox): rezervasyon uçuşları için periyodik sorgu; rötar “Dikkat gerektiriyor”a düşer. O zamana kadar yalnızca uçuş kodu gösterilir. |
 | A2 | Ödeme linki gönder | **Yapıldı (Aşama 9).** Rezervasyon çekmecesinde "Ödeme linki" hızlı eylemi: `pending` bir rezervasyon için Stripe Checkout Session oluşturur (webhook'un beklediği aynı metadata ile — reservation_id, is_deposit, ...), linki kopyala/WhatsApp'la gönder penceresi açılır. | — |
 | A3 | Adminden yeni rezervasyon | **Yapıldı (Aşama 9).** `/admin/reservations/new` — tam sayfa form (müşteri, bölge/araç, tarih-saat, yolcu/bavul, ödeme türü), canlı fiyat önizlemesi. Kayıt "Ödeme bekliyor" olarak açılır, ardından A2 ile ödeme linki gönderilir; ödeme gelince durum Stripe webhook'u ile değişir. Üst çubuktaki **Yeni rezervasyon** ve komut paleti artık buraya açılır. | — |
-| A4 | İptalde para iadesi | İptal onayı durumu “iptal edildi” yapar ve şoför atamalarını kapatır; iade yapmaz | **Yapılmadı — Stripe'tan para çıkacağı için ayrıca onay gerekiyor.** Stripe iadesi (tam/kısmi) seçeneği. Buton hâlâ **İptali onayla** der; iade Stripe panelinden yapılır. |
-| A5 | Bildirim zili | Kaynak yok | **Karar: gerek yok, yapılmayacak.** Zil gösterilmez; yapılacak işler Bugün ekranında ve menü sayaçlarında zaten görünüyor. |
+| A4 | İptalde para iadesi | İptal onayı durumu “iptal edildi” yapar ve şoför atamalarını kapatır; iade yapmaz | **Onaylandı (16.09.2026) — sırada.** Rezervasyon çekmecesinden Stripe iadesi (tam/kısmi): ödenmiş bir kayıtta tutar seçilir, onay penceresinde ne kadar para çıkacağı yazar, iade `event_log`'a işlenir. |
+| A5 | Bildirim zili | Kaynak yok | **Yapılmayacak — 16.09.2026'da bir daha teyit edildi.** Zil gösterilmez; yapılacak işler Bugün ekranında ve menü sayaçlarında zaten görünüyor. |
 | A6 | Şoförün “izinli” durumu | **Yapıldı (Aşama 9).** `drivers.portal_token` + `/driver/panel/[token]` — her şoförün kalıcı, tek linki: bütün işlerini (bugün, yaklaşan, son tamamlananlar) görür, her işe kendi göreve-özel linkinden girer, önündeki 14 günden izin günlerini işaretler/kaldırır. Admin de Şoförler çekmecesinden aynı 14 günlük ızgaradan izin ekler/kaldırır ve "Panel linki"ni kopyalar. İzinli şoför bugün için "İzinli" rozetiyle listede ve çekmecede görünür. Mevcut iş başına link (`/driver/[token]`) değişmeden çalışmaya devam ediyor. | — |
 | A7 | Rezervasyon geçmişi | **Yapıldı (Aşama 9).** `event_log` tablosu — kim (admin e-postası/"system") ne yaptı (oluşturdu, düzenledi, ödeme linki gönderdi, ödeme alındı/başarısız, iptal onayladı/reddetti). Rezervasyon çekmecesinin Geçmiş bölümü artık bunu, atama zaman damgalarıyla birlikte tek zaman çizelgesinde gösteriyor. | — |
 | A8 | Toplu Telegram gönderimi | **Yapıldı (Aşama 9).** Seçilen rezervasyonları tek mesajda gönderen uç nokta (`/api/admin/send-to-telegram-bulk`); yalnızca çok büyük bir seçim Telegram'ın 4096 karakter sınırını aşarsa birden fazla mesaja bölünür. | — |
-| A9 | Rötarı şoföre bildir | — | A1 ile birlikte; şoförün WhatsApp'ına hazır mesajla bağlantı (`wa.me`). |
+| A9 | Rötarı şoföre bildir | — | **Yapılacak — A1'i beklemiyor (16.09.2026).** Rötarı admin fark eder, şoförün WhatsApp'ına hazır mesajla bağlantı (`wa.me`) gönderir. A1 geldiğinde aynı mesaj uçuş verisinden otomatik tetiklenir. |
 
 ---
 
@@ -354,11 +375,29 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 - [x] **Aşama 6 — Finans:** Kasa ve Şoför Ödemeleri tam uyarlandı. Fiyatlandırma (araç tipi seçici, toplu fiyat güncelleme, satır düzenleme) ve Kuponlar (sekmeler, liste, pencere) yeni bileşenlere geçti.
 - [x] **Aşama 7 — Site & Pazarlama:** Bölgeler (liste + çok dilli ad/açıklama penceresi — meta alanları SEO Yönetimi'nde kalıyor) · Değerlendirmeler (sekmeler, liste, pencere — bkz. not aşağıda) · Blog Yazıları (liste + Genel/Dil içeriği sekmeli tam sayfa editör) · Landing Sayfaları (liste + editör) yeni bileşenlere geçti. **SEO Yönetimi hariç** — bkz. not aşağıda.
 - [x] **Aşama 8 — Sistem:** Ayarlar, sol menülü dört bölüme ayrıldı (Genel, Döviz kurları, Gece tarifesi, Entegrasyonlar).
-- [x] **Aşama 9 — Altyapı:** A3 adminden rezervasyon (`/admin/reservations/new`, tam sayfa form, canlı fiyat önizlemesi) + A2 ödeme linki (Stripe Checkout, "Ödeme linki" hızlı eylemi, WhatsApp'a gönder) · A6 şoförün kalıcı paneli (`/driver/panel/[token]`) ve izin günleri (şoför kendi panelinden, admin Şoförler çekmecesinden işaretler; "İzinli" rozeti) · A7 olay kaydı (`event_log` tablosu, rezervasyon çekmecesindeki Geçmiş'e işleniyor) · A8 toplu Telegram (seçilenler tek mesajda gönderiliyor). **A4 (iade) yapılmadı** — Stripe'tan para çıkacağı için ayrıca onay bekliyor. Sonraya kalanlar: A1 uçuş durumu ve A9 rötar bildirimi (API alınınca). Yapılmayacak: A5 bildirim zili.
+- [x] **Aşama 9 — Altyapı:** A3 adminden rezervasyon (`/admin/reservations/new`, tam sayfa form, canlı fiyat önizlemesi) + A2 ödeme linki (Stripe Checkout, "Ödeme linki" hızlı eylemi, WhatsApp'a gönder) · A6 şoförün kalıcı paneli (`/driver/panel/[token]`) ve izin günleri (şoför kendi panelinden, admin Şoförler çekmecesinden işaretler; "İzinli" rozeti) · A7 olay kaydı (`event_log` tablosu, rezervasyon çekmecesindeki Geçmiş'e işleniyor) · A8 toplu Telegram (seçilenler tek mesajda gönderiliyor). Aşama 9'da A4 (iade) yapılmadı; A1, A4, A9 ve A5'in bugünkü durumu için Bölüm 7'deki tabloya bakın.
+- [x] **Aşama 10 — SEO Yönetimi:** ekran liste + sağdan panel yapısına geçti ve tek dosyadan (1695 satır) modüllere bölündü. Panelin içinde üç sekme var — Alanlar · Önizleme · Teknik — çünkü üçü birden bir çekmeceye sığmıyor ve düzenleyen aynı anda yalnızca biriyle çalışıyor. Filtreler, dil ve açık sayfa adrese yazılıyor (`?locale=de&issue=problems&open=…`), böylece bir soruna atılan link karşıda aynı ekranı açıyor. Kapsam aynı kaldı: dört tablo (`seo_pages`, `regions`, `blog_posts`, `landing_pages`), yedi dil, puanlama, canlı okuma, SERP/sosyal önizleme, toplu doldurma ve farkı göstererek kaydetme.
+
+### Aşama 10'un dosyaları
+
+| Dosya | Sorumluluk |
+|---|---|
+| `seo/SeoScreen.tsx` | Ekran kabuğu: veri, filtre durumu, adres senkronu, pencereler |
+| `seo/useInspections.ts` | Canlı okuma — tarama, hedef deployment, kaynak |
+| `seo/useSeoTable.ts` | entries · yinelenenler · skor · denetim · filtre · istatistik |
+| `seo/useSeoDraft.ts` | Düzenlenen satırın taslağı ve kaydetme yazımı |
+| `seo/SeoToolbar.tsx` | İstatistik şeridi, tarama kutusu, arama ve filtreler |
+| `seo/SeoList.tsx` | `DataGrid` sütunları ve satır hücreleri |
+| `seo/SeoPanel.tsx` | Çekmece kabuğu, uyarılar, sekmeler, kaydetme |
+| `seo/SeoFields.tsx` | Bir sayfanın bir dildeki bütün SEO alanları |
+| `seo/scoring.ts` | `scoreEntry` ve `auditFor` |
+| `seo/pageTypes.ts` · `TriToggle.tsx` · `NewRegionDialog.tsx` | Sayfa türü meta'sı, üç durumlu anahtar, yeni bölge penceresi |
 
 ### Devam notları
 
-- Aşama 1–8 `main`'de. Yalnızca **SEO Yönetimi** ekranı yapısal olarak eski hâliyle duruyor — renk/ölçü/gölge tasarım diline geçti ama liste + sağ panel yapısına henüz taşınmadı. Bu ekran, sitenin arama sonuçlarındaki görünürlüğünü doğrudan etkileyen puanlama, SERP/sosyal önizleme ve toplu doldurma araçlarını içeriyor; buradaki bir hatanın maliyeti yüksek olduğu için gerçek veriyle önce denenmeden yeniden yazılmadı. Sıradaki iş bu.
+- Aşama 1–10 `main`'de. Panelin bütün ekranları artık tasarım dilinde.
+- **Aşama 10 yerelde gerçek veriyle denenmedi** — `.env.local` Supabase anahtarı taşımadığı için SEO ekranı yalnızca TypeScript, ESLint ve `next build` ile doğrulandı. Canlıda ilk bakılacak yer burası: listenin tarama sütunları, panelin üç sekmesi, toplu doldurma ve kaydetme farkı.
+- Sıradaki iş: **A4 iade** (onaylandı), ardından **A9 rötar bildirimi**.
 - **Araç Tipleri'nde bir sapma:** Bölüm 5.7 "çok dilli ad ve açıklama sekmeleri" diyor, ama `vehicle_categories` tablosunda böyle sütunlar yok (tek `name`/`description`). Olmayan bir alan için sahte sekme koymak yerine tek dilli formla bırakıldı. Çok dilli isim gerekiyorsa önce veritabanına `name_xx`/`description_xx` sütunları eklenmeli.
 - **Değerlendirmeler'de bir sapma:** Bölüm 5.13 "Onay bekleyen · Yayında · Reddedilen" diyor, ama `reviews` tablosunda ayrı bir "reddedildi" durumu yok — `is_approved` iki hâlli. Sekmeler gerçek veriye göre Onay bekleyen · Yayında · Öne çıkan · Tümü olarak kuruldu.
 - Canlıda ilk bakılacaklar: bu turda eklenen her ekranın sorguları gerçek veriyle ilk kez canlıda çalışacak — Takvim & Kapasite, Canlı Ziyaretçiler'in iki sekmesi, Şoförler/Araçlar/Araç Tipleri, Kuponlar, Değerlendirmeler, Bölgeler, Fiyatlandırma, Ayarlar, Blog ve Landing editörleri. Bir sorun görülürse önce o düzeltilir.
