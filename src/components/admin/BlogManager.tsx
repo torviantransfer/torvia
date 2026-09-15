@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Plus, Edit2, Trash2, Power, Eye, EyeOff, Upload, Image as ImageIcon,
-  Loader2, X,
+  Plus, Edit2, Trash2, Power, Upload, Image as ImageIcon,
+  Loader2, X, FileText, ArrowLeft,
 } from "lucide-react";
 import {
   scoreSeo,
@@ -14,6 +14,23 @@ import {
 import SerpPreview from "./seo/SerpPreview";
 import SocialPreview from "./seo/SocialPreview";
 import SeoScorePanel, { ScoreBadge } from "./seo/SeoScorePanel";
+import {
+  Button,
+  Card,
+  Chip,
+  ConfirmDialog,
+  DataGrid,
+  EmptyState,
+  Field,
+  IconButton,
+  Input,
+  PageHeader,
+  Select,
+  Tabs,
+  Textarea,
+  cx,
+  type GridColumn,
+} from "@/components/admin/ui";
 
 interface BlogPost {
   id: string;
@@ -127,6 +144,9 @@ export default function BlogManager({ initialPosts }: Props) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageBroken, setImageBroken] = useState(false);
+  const [formSection, setFormSection] = useState<"general" | "content">("general");
+  const [deleting, setDeleting] = useState<BlogPost | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -143,6 +163,7 @@ export default function BlogManager({ initialPosts }: Props) {
     setActiveLang("en");
     setUploadError(null);
     setImageBroken(false);
+    setFormSection("general");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,16 +221,19 @@ export default function BlogManager({ initialPosts }: Props) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bu blog yazısını silmek istediğinize emin misiniz?")) return;
+  const handleDelete = async () => {
+    if (!deleting) return;
+    setDeleteBusy(true);
     const res = await fetch("/api/admin/crud", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "blog_posts", action: "delete", id }),
+      body: JSON.stringify({ table: "blog_posts", action: "delete", id: deleting.id }),
     });
     const result = await res.json();
+    setDeleteBusy(false);
     if (result.success) {
-      setPosts((prev) => prev.filter((p) => p.id !== id));
+      setPosts((prev) => prev.filter((p) => p.id !== deleting.id));
+      setDeleting(null);
     }
   };
 
@@ -245,6 +269,7 @@ export default function BlogManager({ initialPosts }: Props) {
     setEditingId(p.id);
     setShowForm(true);
     setImageBroken(false);
+    setFormSection("general");
   };
 
   const updateField = (key: string, value: string) => {
@@ -304,366 +329,307 @@ export default function BlogManager({ initialPosts }: Props) {
     (el as HTMLInputElement | null)?.focus();
   };
 
-  return (
-    <div>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-adm-muted">{posts.length} yazı</p>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors"
-        >
-          <Plus size={16} />
-          Yeni Yazı
-        </button>
-      </div>
-
-      {/* Form */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-adm-surface rounded-adm border border-adm-line p-4 sm:p-6 mb-6 space-y-6">
-          {/* ── General section ── */}
-          <div>
-            <h3 className="text-xs font-semibold text-adm-muted uppercase tracking-wider mb-3">Genel</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-adm-ink-2 mb-1">Slug (genel / yedek)</label>
-                <input
-                  type="text"
-                  value={form.slug}
-                  onChange={(e) => updateField("slug", slugify(e.target.value))}
-                  required
-                  className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
-                  placeholder="my-blog-post"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-adm-ink-2 mb-1">
-                  Bağlantılı Bölge <span className="text-adm-muted font-normal">(opsiyonel — CTA fiyatı için)</span>
-                </label>
-                <select
-                  value={form.primary_region_slug}
-                  onChange={(e) => updateField("primary_region_slug", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none bg-adm-surface"
-                >
-                  <option value="">— Yok —</option>
-                  {regions.map((r) => (
-                    <option key={r.slug} value={r.slug}>{r.name_tr || r.name_en}</option>
-                  ))}
-                </select>
-              </div>
+  const columns: GridColumn<BlogPost>[] = [
+    {
+      key: "post",
+      header: "Yazı",
+      width: "minmax(220px,1.6fr)",
+      area: "body",
+      cell: (post) => (
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-adm-sm border border-adm-line-2 bg-adm-line-2">
+            {post.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.image_url} alt="" className="size-full object-cover" />
+            ) : (
+              <ImageIcon size={16} aria-hidden="true" className="text-adm-faint" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="line-clamp-1 text-[13.5px] font-semibold">{post.title_en || post.title_tr || "Başlıksız"}</div>
+            <div className="flex items-center gap-1 font-mono text-[11px] text-adm-muted">
+              {post.slug}
+              <span className="ms-1.5 flex items-center gap-0.5 font-sans" title="Dolu diller">
+                {LOCALES.map((l) => (
+                  <span
+                    key={l}
+                    aria-hidden="true"
+                    className={cx("size-1.5 rounded-full", (post[`title_${l}` as keyof BlogPost] as string | null) ? "bg-adm-green" : "bg-adm-line-2")}
+                  />
+                ))}
+              </span>
             </div>
+          </div>
+        </div>
+      ),
+    },
+    { key: "seo", header: "SEO", width: "70px", area: "top-start", cell: (post) => <ScoreBadge percent={postScore(post)} /> },
+    {
+      key: "status",
+      header: "Durum",
+      width: "110px",
+      area: "top-end",
+      cell: (post) => (
+        <Chip tone={post.is_published ? "green" : "neutral"} plain>
+          {post.is_published ? "Yayında" : "Taslak"}
+        </Chip>
+      ),
+    },
+    { key: "date", header: "Tarih", width: "100px", area: "foot-start", cell: (post) => <span className="text-[13px] text-adm-muted">{new Date(post.created_at).toLocaleDateString("tr-TR")}</span> },
+    {
+      key: "actions",
+      header: "",
+      width: "110px",
+      area: "foot-end",
+      cell: (post) => (
+        <div className="flex items-center justify-end gap-0.5">
+          <IconButton
+            icon={Power}
+            label={post.is_published ? "Yayından kaldır" : "Yayınla"}
+            size="sm"
+            onClick={() => handleToggle(post.id)}
+            className={post.is_published ? "text-adm-green" : undefined}
+          />
+          <IconButton icon={Edit2} label="Düzenle" size="sm" onClick={() => startEdit(post)} />
+          <IconButton icon={Trash2} label="Sil" size="sm" onClick={() => setDeleting(post)} className="hover:bg-adm-rose-soft hover:text-adm-rose" />
+        </div>
+      ),
+    },
+  ];
 
-            {/* Image upload + URL + preview */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-adm-ink-2 mb-1">Kapak Görseli</label>
-              <div className="flex flex-col sm:flex-row gap-3 items-start">
-                <div className="relative w-full sm:w-40 h-24 rounded-adm-sm overflow-hidden bg-adm-surface-2 border border-adm-line shrink-0 flex items-center justify-center">
-                  {form.image_url && !imageBroken ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={form.image_url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={() => setImageBroken(true)}
-                      onLoad={() => setImageBroken(false)}
-                    />
-                  ) : (
-                    <ImageIcon size={22} className="text-adm-faint" />
-                  )}
-                  {form.image_url && (
-                    <button
-                      type="button"
-                      onClick={() => { updateField("image_url", ""); setImageBroken(false); }}
-                      className="absolute top-1 end-1 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
-                      aria-label="Görseli kaldır"
-                    >
-                      <X size={11} />
-                    </button>
-                  )}
-                </div>
-                <div className="flex-1 w-full space-y-2">
-                  <div className="flex gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={(e) => handleFileSelect(e.target.files?.[0])}
-                      className="hidden"
-                      id="blog-image-upload"
-                    />
-                    <label
-                      htmlFor="blog-image-upload"
-                      className="inline-flex items-center gap-2 px-3.5 py-2 border border-adm-line-strong rounded-adm-sm text-sm font-medium text-adm-ink-2 hover:bg-adm-surface-2 cursor-pointer transition-colors"
-                    >
-                      {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                      {uploading ? "Yükleniyor..." : "Bilgisayardan Yükle"}
-                    </label>
+  if (showForm) {
+    return (
+      <>
+        <div className="mb-5 mt-3 flex flex-wrap items-center gap-3">
+          <IconButton icon={ArrowLeft} label="Listeye dön" onClick={resetForm} className="rtl:rotate-180" />
+          <h1 className="text-[21px] font-bold tracking-[-0.02em] min-[761px]:text-2xl">{editingId ? "Yazıyı düzenle" : "Yeni yazı"}</h1>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <Tabs
+            label="Yazı bölümleri"
+            value={formSection}
+            onChange={setFormSection}
+            items={[
+              { key: "general", label: "Genel" },
+              { key: "content", label: "Dil içeriği" },
+            ]}
+          />
+
+          {formSection === "general" && (
+            <Card bodyClassName="grid gap-4 p-[18px]">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Slug (genel / yedek)" htmlFor="blog-base-slug">
+                  <Input id="blog-base-slug" required value={form.slug} onChange={(e) => updateField("slug", slugify(e.target.value))} placeholder="my-blog-post" />
+                </Field>
+                <Field label="Bağlantılı bölge" htmlFor="blog-region" hint="Opsiyonel — CTA fiyatı için.">
+                  <Select id="blog-region" value={form.primary_region_slug} onChange={(e) => updateField("primary_region_slug", e.target.value)}>
+                    <option value="">— Yok —</option>
+                    {regions.map((r) => (
+                      <option key={r.slug} value={r.slug}>
+                        {r.name_tr || r.name_en}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              </div>
+
+              <Field label="Kapak görseli">
+                <div className="flex flex-col items-start gap-3 sm:flex-row">
+                  <div className="relative flex h-24 w-full shrink-0 items-center justify-center overflow-hidden rounded-adm-sm border border-adm-line bg-adm-surface-2 sm:w-40">
+                    {form.image_url && !imageBroken ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={form.image_url} alt="" className="size-full object-cover" onError={() => setImageBroken(true)} onLoad={() => setImageBroken(false)} />
+                    ) : (
+                      <ImageIcon size={22} aria-hidden="true" className="text-adm-faint" />
+                    )}
+                    {form.image_url && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateField("image_url", "");
+                          setImageBroken(false);
+                        }}
+                        aria-label="Görseli kaldır"
+                        className="absolute end-1 top-1 flex size-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
                   </div>
-                  {uploadError && <p className="text-xs text-adm-rose">{uploadError}</p>}
-                  <div>
-                    <input
-                      type="text"
+                  <div className="w-full flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={(e) => handleFileSelect(e.target.files?.[0])} className="hidden" id="blog-image-upload" />
+                      <label htmlFor="blog-image-upload" className={buttonSecondaryLabelClass}>
+                        {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden="true" /> : <Upload size={14} aria-hidden="true" />}
+                        {uploading ? "Yükleniyor…" : "Bilgisayardan yükle"}
+                      </label>
+                    </div>
+                    {uploadError && <p className="text-xs text-adm-rose">{uploadError}</p>}
+                    <Input
                       value={form.image_url}
-                      onChange={(e) => { updateField("image_url", e.target.value); setImageBroken(false); }}
-                      className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-xs text-adm-ink-2 focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
+                      onChange={(e) => {
+                        updateField("image_url", e.target.value);
+                        setImageBroken(false);
+                      }}
+                      className="text-xs"
                       placeholder="veya bir görsel URL'si yapıştırın"
                     />
+                    <p className="text-[11px] text-adm-muted">JPG, PNG, WEBP veya GIF · en fazla 5MB · önerilen oran 16:9</p>
                   </div>
-                  <p className="text-[11px] text-adm-muted">JPG, PNG, WEBP veya GIF · en fazla 5MB · önerilen oran 16:9</p>
                 </div>
+              </Field>
+            </Card>
+          )}
+
+          {formSection === "content" && (
+            <div className="grid gap-4">
+              <div className="flex gap-1 overflow-x-auto border-b border-adm-line">
+                {LOCALES.map((lang) => {
+                  const hasContent = !!form[`title_${lang}` as keyof FormState];
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setActiveLang(lang)}
+                      className={cx(
+                        "whitespace-nowrap border-b-2 px-4 py-2 text-[13.5px] font-medium transition-colors",
+                        activeLang === lang ? "border-adm-ink text-adm-ink" : "border-transparent text-adm-muted hover:text-adm-ink-2"
+                      )}
+                    >
+                      {LOCALE_LABELS[lang]}
+                      {hasContent && <span aria-hidden="true" className="ms-1.5 inline-block size-1.5 rounded-full bg-adm-green align-middle" />}
+                    </button>
+                  );
+                })}
               </div>
+
+              <Card bodyClassName="grid gap-4 p-[18px]">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Odak anahtar kelime" htmlFor="blog-focus_keyword" hint={LOCALE_LABELS[activeLang]}>
+                    <Input id="blog-focus_keyword" value={activeFocusKeyword} onChange={(e) => updateField(`focus_keyword_${activeLang}`, e.target.value)} placeholder="ör. antalya havalimanı transfer" />
+                  </Field>
+                  <Field label="Yan kelimeler" htmlFor="blog-keywords" hint="Virgülle ayırın">
+                    <Input id="blog-keywords" value={activeSecondaryKeywords} onChange={(e) => updateField(`secondary_keywords_${activeLang}`, e.target.value)} placeholder="ör. belek transfer, vip transfer" />
+                  </Field>
+                </div>
+
+                <Field
+                  label="Başlık"
+                  htmlFor="blog-meta_title"
+                  hint={
+                    <span className={activeTitle.length > TITLE_IDEAL_MAX ? "text-adm-amber" : undefined}>
+                      Sayfa H1 + Google başlığı · {activeTitle.length}/{TITLE_IDEAL_MAX}
+                    </span>
+                  }
+                >
+                  <Input id="blog-meta_title" value={activeTitle} onChange={(e) => updateField(`title_${activeLang}`, e.target.value)} placeholder={`${LOCALE_LABELS[activeLang]} başlığı`} />
+                </Field>
+
+                <Field
+                  label="Meta açıklama"
+                  htmlFor="blog-meta_description"
+                  hint={
+                    <span className={activeExcerpt.length > DESC_IDEAL_MAX ? "text-adm-amber" : undefined}>
+                      Google&apos;da başlığın altında görünür · {activeExcerpt.length}/{DESC_IDEAL_MAX}
+                    </span>
+                  }
+                >
+                  <Textarea id="blog-meta_description" value={activeExcerpt} onChange={(e) => updateField(`excerpt_${activeLang}`, e.target.value)} rows={2} placeholder="Arama sonuçlarında görünecek kısa açıklama (~150-160 karakter)" />
+                </Field>
+                <p className="-mt-2 text-xs text-adm-muted">Boş bırakılırsa içerikten otomatik kısaltılır — ama tıklanma oranı için elle yazmanız önerilir.</p>
+
+                {/* Previews and score, the same components the SEO screen uses. */}
+                <div className="grid items-start gap-4 lg:grid-cols-2">
+                  <div className="grid gap-4">
+                    <SerpPreview
+                      title={activeTitle}
+                      description={activeExcerpt}
+                      path={`blog/${previewSlug}`}
+                      locale={activeLang}
+                      keywords={[activeFocusKeyword, ...parseKeywords(activeSecondaryKeywords)].filter(Boolean)}
+                      imageUrl={form.image_url || null}
+                    />
+                    <SocialPreview title={activeTitle} description={activeExcerpt} imageUrl={form.image_url || null} path={`blog/${previewSlug}`} locale={activeLang} />
+                  </div>
+                  <SeoScorePanel score={score} onFieldClick={focusField} />
+                </div>
+
+                <Field label={`URL slug (${LOCALE_LABELS[activeLang]})`} htmlFor="blog-slug" hint="Okuyucunun dilinde yazın; boş bırakılırsa üstteki genel slug kullanılır.">
+                  <Input id="blog-slug" value={activeSlugOverride} onChange={(e) => updateField(`slug_${activeLang}`, slugify(e.target.value))} placeholder="Boş bırakılırsa üstteki genel slug kullanılır" />
+                </Field>
+
+                <Field label={`İçerik (${LOCALE_LABELS[activeLang]})`} htmlFor="blog-content">
+                  <Textarea
+                    id="blog-content"
+                    value={form[`content_${activeLang}` as keyof FormState]}
+                    onChange={(e) => updateField(`content_${activeLang}`, e.target.value)}
+                    rows={12}
+                    className="font-mono"
+                    placeholder={`${LOCALE_LABELS[activeLang]} içeriği (HTML destekler: <h2>, <p>, <img>, <a>…)`}
+                  />
+                </Field>
+              </Card>
             </div>
-          </div>
+          )}
 
-          {/* ── Language tabs ── */}
-          <div>
-            <h3 className="text-xs font-semibold text-adm-muted uppercase tracking-wider mb-3">Dil İçeriği</h3>
-            <div className="flex gap-1 border-b border-adm-line overflow-x-auto">
-              {LOCALES.map((lang) => {
-                const hasContent = !!form[`title_${lang}` as keyof FormState];
-                return (
-                  <button
-                    key={lang}
-                    type="button"
-                    onClick={() => setActiveLang(lang)}
-                    className={`relative px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      activeLang === lang ? "border-adm-ink text-adm-brand-ink" : "border-transparent text-adm-muted hover:text-adm-ink-2"
-                    }`}
-                  >
-                    {LOCALE_LABELS[lang]}
-                    {hasContent && <span className="ms-1.5 inline-block w-1.5 h-1.5 rounded-full bg-adm-green-soft0 align-middle" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Focus keyword + secondary keywords */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-adm-ink-2 mb-1">
-                Odak Anahtar Kelime <span className="text-adm-muted font-normal">({LOCALE_LABELS[activeLang]})</span>
-              </label>
-              <input
-                id="blog-focus_keyword"
-                type="text"
-                value={activeFocusKeyword}
-                onChange={(e) => updateField(`focus_keyword_${activeLang}`, e.target.value)}
-                className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
-                placeholder="ör. antalya havalimanı transfer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-adm-ink-2 mb-1">
-                Yan Kelimeler <span className="text-adm-muted font-normal">(virgülle ayırın)</span>
-              </label>
-              <input
-                id="blog-keywords"
-                type="text"
-                value={activeSecondaryKeywords}
-                onChange={(e) => updateField(`secondary_keywords_${activeLang}`, e.target.value)}
-                className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
-                placeholder="ör. belek transfer, vip transfer"
-              />
-            </div>
-
-          </div>
-
-          {/* Title */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-adm-ink-2">
-                Başlık <span className="text-adm-muted font-normal">(sayfa H1 + Google başlığı)</span>
-              </label>
-              <span className={`text-xs ${activeTitle.length > TITLE_IDEAL_MAX ? "text-adm-amber" : "text-adm-muted"}`}>{activeTitle.length}/{TITLE_IDEAL_MAX}</span>
-            </div>
-            <input
-              id="blog-meta_title"
-              type="text"
-              value={activeTitle}
-              onChange={(e) => updateField(`title_${activeLang}`, e.target.value)}
-              className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
-              placeholder={`${LOCALE_LABELS[activeLang]} başlığı`}
-            />
-          </div>
-
-          {/* Meta description / excerpt */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-adm-ink-2">
-                Meta Açıklama <span className="text-adm-muted font-normal">(Google&apos;da başlığın altında görünür)</span>
-              </label>
-              <span className={`text-xs ${activeExcerpt.length > DESC_IDEAL_MAX ? "text-adm-amber" : "text-adm-muted"}`}>{activeExcerpt.length}/{DESC_IDEAL_MAX}</span>
-            </div>
-            <textarea
-              id="blog-meta_description"
-              value={activeExcerpt}
-              onChange={(e) => updateField(`excerpt_${activeLang}`, e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none resize-y"
-              placeholder="Arama sonuçlarında görünecek kısa açıklama (~150-160 karakter)"
-            />
-            <p className="mt-1 text-xs text-adm-muted">Boş bırakılırsa içerikten otomatik kısaltılır — ama tıklanma oranı için elle yazmanız önerilir.</p>
-          </div>
-
-          {/* Previews and score, the same components the SEO screen uses. */}
-          <div className="grid lg:grid-cols-2 gap-4 items-start">
-            <div className="space-y-4">
-              <SerpPreview
-                title={activeTitle}
-                description={activeExcerpt}
-                path={`blog/${previewSlug}`}
-                locale={activeLang}
-                keywords={[activeFocusKeyword, ...parseKeywords(activeSecondaryKeywords)].filter(Boolean)}
-                imageUrl={form.image_url || null}
-              />
-              <SocialPreview
-                title={activeTitle}
-                description={activeExcerpt}
-                imageUrl={form.image_url || null}
-                path={`blog/${previewSlug}`}
-                locale={activeLang}
-              />
-            </div>
-            <SeoScorePanel score={score} onFieldClick={focusField} />
-          </div>
-
-          {/* URL slug for this language */}
-          <div>
-            <label className="block text-sm font-medium text-adm-ink-2 mb-1">URL slug ({LOCALE_LABELS[activeLang]})</label>
-            <input
-              id="blog-slug"
-              type="text"
-              value={activeSlugOverride}
-              onChange={(e) => updateField(`slug_${activeLang}`, slugify(e.target.value))}
-              className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none"
-              placeholder="Boş bırakılırsa üstteki genel slug kullanılır"
-            />
-            <p className="mt-1 text-xs text-adm-muted">
-              Bu dilin URL&apos;si. Okuyucunun dilinde yazın — Google sonuçlarında başlığın altında görünür ve tıklanma oranını etkiler.
-            </p>
-          </div>
-
-          {/* Content */}
-          <div>
-            <label className="block text-sm font-medium text-adm-ink-2 mb-1">İçerik ({LOCALE_LABELS[activeLang]})</label>
-            <textarea
-              id="blog-content"
-              value={form[`content_${activeLang}` as keyof FormState]}
-              onChange={(e) => updateField(`content_${activeLang}`, e.target.value)}
-              rows={12}
-              className="w-full px-3 py-2 border border-adm-line-strong rounded-adm-sm text-sm font-mono focus:ring-2 focus:ring-adm-ink/[0.06] outline-none resize-y"
-              placeholder={`${LOCALE_LABELS[activeLang]} içeriği (HTML destekler: <h2>, <p>, <img>, <a>...)`}
-            />
-          </div>
-
-          <div className="flex gap-2 pt-2 border-t border-adm-line-2">
-            <button
-              type="submit"
-              disabled={loading || uploading}
-              className="px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors disabled:opacity-50"
-            >
-              {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="px-4 py-2 border border-adm-line-strong text-adm-ink-2 text-sm font-medium rounded-adm-sm hover:bg-adm-surface-2 transition-colors"
-            >
+          <div className="mt-4 flex gap-2 border-t border-adm-line-2 pt-4">
+            <Button type="submit" variant="primary" loading={loading || uploading}>
+              {editingId ? "Güncelle" : "Oluştur"}
+            </Button>
+            <Button type="button" onClick={resetForm}>
               İptal
-            </button>
+            </Button>
           </div>
         </form>
-      )}
+      </>
+    );
+  }
 
-      {/* Posts table — hidden while the form is open so editing/creating a
-          post doesn't feel cluttered by every other post sitting right below it. */}
-      {!showForm && (
-      <div className="bg-adm-surface rounded-adm border border-adm-line overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-adm-surface-2 border-b border-adm-line">
-                <th className="text-start px-4 py-3 font-medium text-adm-ink-2">Yazı</th>
-                <th className="text-start px-4 py-3 font-medium text-adm-ink-2">Slug</th>
-                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">SEO</th>
-                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">Durum</th>
-                <th className="text-center px-4 py-3 font-medium text-adm-ink-2">Tarih</th>
-                <th className="text-end px-4 py-3 font-medium text-adm-ink-2">İşlemler</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-b border-adm-line-2 hover:bg-adm-surface-2">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-14 h-10 rounded-adm-sm overflow-hidden bg-adm-line-2 border border-adm-line shrink-0 flex items-center justify-center">
-                        {post.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={post.image_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <ImageIcon size={16} className="text-adm-faint" />
-                        )}
-                      </div>
-                      <span className="font-medium text-adm-ink line-clamp-2">
-                        {post.title_en || post.title_tr || "Başlıksız"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-adm-muted font-mono text-xs">{post.slug}</td>
-                  <td className="px-4 py-3 text-center">
-                    {/* Scored in the post's own primary language rather than a
-                        fixed one, so a Turkish-only post is not marked down
-                        for having no English copy. */}
-                    <ScoreBadge percent={postScore(post)} />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        post.is_published ? "bg-adm-green-soft text-adm-green" : "bg-adm-line-2 text-adm-ink-2"
-                      }`}
-                    >
-                      {post.is_published ? <Eye size={12} /> : <EyeOff size={12} />}
-                      {post.is_published ? "Yayında" : "Taslak"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center text-adm-muted whitespace-nowrap">
-                    {new Date(post.created_at).toLocaleDateString("tr-TR")}
-                  </td>
-                  <td className="px-4 py-3 text-end">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => handleToggle(post.id)}
-                        className="p-1.5 rounded-adm-sm hover:bg-adm-line-2 transition-colors"
-                        title={post.is_published ? "Yayından Kaldır" : "Yayınla"}
-                      >
-                        <Power size={14} className={post.is_published ? "text-adm-green" : "text-adm-muted"} />
-                      </button>
-                      <button onClick={() => startEdit(post)} className="p-1.5 rounded-adm-sm hover:bg-adm-line-2 transition-colors">
-                        <Edit2 size={14} className="text-adm-muted" />
-                      </button>
-                      <button onClick={() => handleDelete(post.id)} className="p-1.5 rounded-adm-sm hover:bg-adm-rose-soft transition-colors">
-                        <Trash2 size={14} className="text-adm-rose" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {posts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-adm-muted">
-                    Henüz blog yazısı yok. İlk yazınızı oluşturun!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      )}
-    </div>
+  return (
+    <>
+      <PageHeader
+        title="Blog Yazıları"
+        actions={
+          <Button
+            variant="primary"
+            icon={Plus}
+            compact
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+          >
+            Yeni yazı
+          </Button>
+        }
+      />
+
+      <DataGrid
+        label="Blog yazıları"
+        columns={columns}
+        rows={posts}
+        rowKey={(post) => post.id}
+        onRowClick={(post) => startEdit(post)}
+        empty={<EmptyState compact icon={FileText} title="Henüz blog yazısı yok" action={<Button onClick={() => setShowForm(true)}>İlk yazıyı oluştur</Button>} />}
+      />
+
+      <ConfirmDialog
+        open={!!deleting}
+        title="Yazıyı sil"
+        message={deleting ? `"${deleting.title_en || deleting.title_tr || deleting.slug}" kalıcı olarak silinecek.` : ""}
+        confirmLabel="Sil"
+        danger
+        busy={deleteBusy}
+        onConfirm={handleDelete}
+        onClose={() => setDeleting(null)}
+      />
+    </>
   );
 }
+
+const buttonSecondaryLabelClass =
+  "inline-flex cursor-pointer items-center gap-2 rounded-adm-sm border border-adm-line bg-adm-surface px-3.5 py-2 text-[13px] font-semibold text-adm-ink-2 transition-colors hover:bg-adm-surface-2";
 
 /**
  * Row-level score for the posts table.

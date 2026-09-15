@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import PricingManager from "@/components/admin/PricingManager";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPricingPage() {
   const supabase = createAdminClient();
 
@@ -24,17 +26,10 @@ export default async function AdminPricingPage() {
     .order("sort_order", { ascending: true });
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Fiyatlandırma</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        Fiyatlar her araç tipi için ayrı tutulur. Üstteki sekmeden aracı seçip o
-        aracın bölge fiyatlarını düzenleyin.
-      </p>
-      <PricingManager
-        initialPricing={pricing ?? []}
-        regions={regions ?? []}
-        categories={categories ?? []}
-      />
-    </div>
+    <PricingManager
+      initialPricing={pricing ?? []}
+      regions={regions ?? []}
+      categories={categories ?? []}
+    />
   );
 }

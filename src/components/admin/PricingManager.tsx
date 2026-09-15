@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Edit2, Plus, Save, Wand2, X } from "lucide-react";
+import { Edit2, Plus, Save, Tags, Wand2, X } from "lucide-react";
 import {
   ADJUSTABLE_FIELDS,
   adjustFields,
@@ -10,6 +10,7 @@ import {
   type AdjustMode,
   type PriceFields,
 } from "@/lib/priceAdjust";
+import { Button, Card, EmptyState, Field, IconButton, Input, PageHeader, Segmented, Select } from "@/components/admin/ui";
 
 const FIELD_LABELS: Record<AdjustField, string> = {
   one_way_price: "Online tek yön",
@@ -291,75 +292,67 @@ export default function PricingManager({
 
   if (categories.length === 0) {
     return (
-      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm px-5 py-8 text-center text-adm-muted">
-        Önce <span className="font-medium text-adm-ink-2">Araç Tipleri</span> sayfasından bir araç ekleyin.
-      </div>
+      <>
+        <PageHeader title="Fiyatlandırma" />
+        <EmptyState
+          icon={Tags}
+          title="Önce bir araç tipi eklenmeli"
+          description="Fiyat tablosu, Araç Tipleri sayfasındaki araçlara göre kurulur."
+        />
+      </>
     );
   }
 
   return (
     <div>
-      {categories.length > 1 && (
-        <div className="flex gap-1 bg-adm-line-2 rounded-adm-sm p-1 mb-4">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setCategoryId(cat.id);
+      <PageHeader
+        title="Fiyatlandırma"
+        description="Fiyatlar her araç tipi için ayrı tutulur. Üstteki seçiciden aracı seçip o aracın bölge fiyatlarını düzenleyin."
+        actions={
+          categories.length > 1 ? (
+            <Segmented
+              label="Araç tipi"
+              value={categoryId}
+              onChange={(id) => {
+                setCategoryId(id);
                 setEditingKey(null);
                 setError(null);
                 setBulkNotice(null);
                 // The source only ever means another vehicle; kept pointing at
                 // the tab just left, it would silently become a self-copy.
-                if (cat.id === bulkSource) setBulkSource("");
+                if (id === bulkSource) setBulkSource("");
               }}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                cat.id === categoryId
-                  ? "bg-adm-surface text-adm-ink shadow-sm"
-                  : "text-adm-muted hover:text-adm-ink-2"
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      )}
+              options={categories.map((c) => ({ value: c.id, label: c.name }))}
+            />
+          ) : undefined
+        }
+      />
 
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <p className="text-sm text-adm-muted">
-          <span className="font-medium text-adm-ink-2">{activeCategory?.name}</span>{" "}
-          fiyatları — tümü EUR cinsindendir. {lines.length - missingCount} güzergah yapılandırıldı
-          {missingCount > 0 && (
-            <span className="text-adm-amber">, {missingCount} güzergahta fiyat yok</span>
-          )}
-          .
+          <span className="font-medium text-adm-ink-2">{activeCategory?.name}</span> fiyatları — tümü EUR cinsindendir.{" "}
+          {lines.length - missingCount} güzergah yapılandırıldı
+          {missingCount > 0 && <span className="text-adm-amber">, {missingCount} güzergahta fiyat yok</span>}.
         </p>
-        <button
+        <Button
+          variant={bulkOpen ? "primary" : "outline"}
+          icon={Wand2}
+          compact
+          className="shrink-0"
           onClick={() => {
             setBulkOpen((open) => !open);
             setBulkNotice(null);
           }}
-          className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-adm-sm text-sm font-medium border transition-colors ${
-            bulkOpen
-              ? "bg-adm-ink text-white border-adm-ink"
-              : "bg-adm-surface text-adm-ink-2 border-adm-line hover:bg-adm-surface-2"
-          }`}
         >
-          <Wand2 size={14} />
           Toplu fiyat güncelle
-        </button>
+        </Button>
       </div>
 
       {bulkOpen && (
-        <div className="mb-4 rounded-adm border border-adm-line bg-adm-surface-2 p-4">
+        <Card className="mb-4" bodyClassName="p-4">
           <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-adm-muted">Kaynak fiyatlar</span>
-              <select
-                value={bulkSource}
-                onChange={(e) => setBulkSource(e.target.value)}
-                className="border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface min-w-56"
-              >
+            <Field label="Kaynak fiyatlar" htmlFor="bulk-source">
+              <Select id="bulk-source" value={bulkSource} onChange={(e) => setBulkSource(e.target.value)} className="min-w-56">
                 <option value="">{activeCategory?.name} (mevcut fiyatları)</option>
                 {categories
                   .filter((c) => c.id !== categoryId)
@@ -368,52 +361,31 @@ export default function PricingManager({
                       {c.name} fiyatlarından
                     </option>
                   ))}
-              </select>
-            </label>
+              </Select>
+            </Field>
 
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium text-adm-muted">İşlem</span>
-              <div className="flex items-stretch">
-                <div className="flex gap-1 bg-adm-seg rounded-adm-sm p-1 me-2">
-                  {([1, -1] as const).map((sign) => (
-                    <button
-                      key={sign}
-                      onClick={() => setBulkSign(sign)}
-                      className={`w-9 rounded-md text-sm font-semibold transition-colors ${
-                        bulkSign === sign ? "bg-adm-surface text-adm-ink shadow-sm" : "text-adm-muted"
-                      }`}
-                    >
-                      {sign === 1 ? "+" : "−"}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={bulkValue}
-                  onChange={(e) => setBulkValue(e.target.value)}
-                  placeholder="20"
-                  className="w-24 border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface"
+            <Field label="İşlem">
+              <div className="flex items-center gap-2">
+                <Segmented
+                  label="Yön"
+                  value={String(bulkSign)}
+                  onChange={(v) => setBulkSign(v === "1" ? 1 : -1)}
+                  options={[
+                    { value: "1", label: "+" },
+                    { value: "-1", label: "−" },
+                  ]}
                 />
-                <select
-                  value={bulkMode}
-                  onChange={(e) => setBulkMode(e.target.value as AdjustMode)}
-                  className="ms-2 border border-adm-line rounded-adm-sm px-3 py-2 text-sm bg-adm-surface"
-                >
+                <Input type="number" min="0" step="0.01" value={bulkValue} onChange={(e) => setBulkValue(e.target.value)} placeholder="20" className="w-24" />
+                <Select value={bulkMode} onChange={(e) => setBulkMode(e.target.value as AdjustMode)} className="w-44">
                   <option value="amount">$ (sabit tutar)</option>
                   <option value="percent">% (yüzde)</option>
-                </select>
+                </Select>
               </div>
-            </div>
+            </Field>
 
-            <button
-              onClick={applyBulk}
-              disabled={loading || !preview || !!previewProblem}
-              className="px-4 py-2 rounded-adm-sm bg-adm-ink text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-adm-ink-hover transition-colors"
-            >
-              {loading ? "Uygulanıyor…" : "Uygula"}
-            </button>
+            <Button variant="primary" loading={loading} disabled={!preview || !!previewProblem} onClick={applyBulk}>
+              Uygula
+            </Button>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -424,7 +396,7 @@ export default function PricingManager({
                   type="checkbox"
                   checked={bulkFields.includes(field)}
                   onChange={() => toggleField(field)}
-                  className="rounded border-adm-line-strong"
+                  className="rounded border-adm-line-strong accent-adm-ink"
                 />
                 {FIELD_LABELS[field]}
               </label>
@@ -436,15 +408,15 @@ export default function PricingManager({
               <span className="text-adm-rose">{previewProblem} — değeri düşürün.</span>
             ) : preview ? (
               <>
-                Tabloda <span className="text-adm-green font-medium">yeni fiyatlar</span> önizleniyor.
-                Uygula&apos;ya basana kadar hiçbir şey kaydedilmez.
+                Tabloda <span className="font-medium text-adm-green">yeni fiyatlar</span> önizleniyor. Uygula&apos;ya
+                basana kadar hiçbir şey kaydedilmez.
                 {bulkMode === "percent" && " Yüzdeli sonuçlar tam dolara yuvarlanır."}
               </>
             ) : (
               "Bir değer girin; yeni fiyatlar kaydedilmeden önce tabloda gösterilir."
             )}
           </p>
-        </div>
+        </Card>
       )}
 
       {bulkNotice && (
@@ -459,7 +431,7 @@ export default function PricingManager({
         </div>
       )}
 
-      <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm overflow-hidden">
+      <div className="bg-adm-surface rounded-adm-lg border border-adm-line shadow-adm-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-adm-surface-2 text-start">
@@ -545,17 +517,17 @@ export default function PricingManager({
                 <td className="px-4 py-3">
                   {isEditing ? (
                     <div className="flex items-center gap-1">
-                      <button onClick={() => handleSave(line)} disabled={loading} className="p-1.5 rounded hover:bg-adm-green-soft text-adm-green"><Save size={14} /></button>
-                      <button onClick={() => setEditingKey(null)} className="p-1.5 rounded hover:bg-adm-line-2"><X size={14} /></button>
+                      <IconButton icon={Save} label="Kaydet" size="sm" onClick={() => handleSave(line)} disabled={loading} className="text-adm-green hover:bg-adm-green-soft" />
+                      <IconButton icon={X} label="Vazgeç" size="sm" onClick={() => setEditingKey(null)} />
                     </div>
                   ) : (
-                    <button
+                    <IconButton
+                      icon={row ? Edit2 : Plus}
+                      label={row ? "Düzenle" : "Fiyat ekle"}
+                      size="sm"
                       onClick={() => startEdit(line)}
-                      title={row ? "Düzenle" : "Fiyat ekle"}
-                      className="p-1.5 rounded hover:bg-adm-line-2"
-                    >
-                      {row ? <Edit2 size={14} /> : <Plus size={14} className="text-adm-amber" />}
-                    </button>
+                      className={row ? undefined : "text-adm-amber"}
+                    />
                   )}
                 </td>
               </tr>
