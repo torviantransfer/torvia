@@ -14,10 +14,14 @@ const RECENT_MOVEMENTS = 12;
 
 export default async function AdminDriverPaymentsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  // "Şoföre ödeme yap" in the Ctrl K palette lands here with ?pay=1.
+  const openPayment = (await searchParams).pay !== undefined;
   const supabase = createAdminClient();
   const today = todayInBookingTz();
 
@@ -55,6 +59,7 @@ export default async function AdminDriverPaymentsPage({
       recent={recent}
       rates={rates}
       today={today}
+      openPayment={openPayment}
       adminBase={`/${locale}/admin`}
     />
   );

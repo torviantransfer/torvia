@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { verifyAdmin } from "@/lib/admin-auth";
 import AdminShell from "@/components/admin/AdminShell";
 import AdminLoginForm from "@/components/admin/AdminLoginForm";
+import { SIDEBAR_COOKIE } from "@/components/admin/nav";
 
 /**
  * The admin is behind a login, but a login page is still a page: it answered
@@ -29,5 +31,16 @@ export default async function AdminLayout({
     return <AdminLoginForm />;
   }
 
-  return <AdminShell userEmail={user.email ?? ""}>{children}</AdminShell>;
+  const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string };
+  const collapsed = (await cookies()).get(SIDEBAR_COOKIE)?.value === "1";
+
+  return (
+    <AdminShell
+      userEmail={user.email ?? ""}
+      userName={meta.full_name || meta.name || null}
+      initialCollapsed={collapsed}
+    >
+      {children}
+    </AdminShell>
+  );
 }

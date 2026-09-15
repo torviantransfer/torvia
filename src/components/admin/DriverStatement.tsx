@@ -4,10 +4,14 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowLeft, FileSpreadsheet, FileText, Phone, Plus, Trash2 } from "lucide-react";
-import AdminDialog from "@/components/admin/AdminDialog";
-import { Avatar, buttonPrimary, buttonSecondary } from "@/components/admin/AdminUi";
+import {
+  Avatar,
+  buttonPrimary,
+  buttonSecondary,
+  Dialog as AdminDialog,
+  PeriodBar,
+} from "@/components/admin/ui";
 import DriverPaymentForm from "@/components/admin/DriverPaymentForm";
-import PeriodBar from "@/components/admin/PeriodBar";
 import {
   balanceStatus,
   fmtDay,

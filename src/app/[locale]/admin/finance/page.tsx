@@ -30,6 +30,7 @@ export default async function AdminFinancePage({
       rates={rates}
       tablesMissing={tablesMissing}
       period={period}
+      openEntry={first(sp.add) === "income" ? "income" : first(sp.add) === "expense" ? "expense" : null}
       adminBase={`/${locale}/admin`}
     />
   );

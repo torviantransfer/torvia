@@ -1,65 +1,45 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import ReservationList from "@/components/admin/ReservationList";
-import ExportButton from "@/components/admin/ExportButton";
-import type { Reservation } from "@/components/admin/reservations/types";
+import { loadReservationList } from "@/lib/adminReservationsData";
+import { parseReservationQuery } from "@/lib/reservationQuery";
+import ReservationsScreen from "@/components/admin/reservations/ReservationsScreen";
 
-// The list is refreshed in place via router.refresh() after every mutation, so the
-// segment must never be served from a prerender.
+// Every mutation reloads the list through the API; the first page must still
+// be read fresh on each visit, never from a prerender.
 export const dynamic = "force-dynamic";
 
-/**
- * Only what a row shows or a filter reads.
- *
- * This used to be `*` plus four joins for two hundred rows — every price
- * component, every note and address, the full assignment records with their
- * drivers and vehicles — because the row expanded in place and needed all of
- * it eventually. Now that opening a reservation loads its own page, the list
- * carries a fraction of the payload, which is the difference that shows on a
- * phone.
- *
- * The text columns that look surplus are the ones the search box reads:
- * flight codes, hotel name, the customer's email and phone, and the assigned
- * driver's name. Dropping those would quietly narrow what search can find.
- */
-const LIST_COLUMNS = `
-  id, reservation_code, status, trip_type, direction, created_at,
-  pickup_datetime, total_price, payment_method,
-  currency, exchange_rate_eur, exchange_rate_usd,
-  adults, children, flight_code, return_flight_code, hotel_name,
-  customers(first_name, last_name, email, phone),
-  regions(name_en, name_tr, slug),
-  driver_assignments(id, leg, status, drivers(full_name))
-`;
+const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
 export default async function AdminReservationsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  const supabase = createAdminClient();
+  const sp = await searchParams;
+  const query = parseReservationQuery(sp);
+  const db = createAdminClient();
 
-  const { data: reservations } = await supabase
-    .from("reservations")
-    .select(LIST_COLUMNS)
-    .order("created_at", { ascending: false })
-    .limit(200);
+  const [initial, { data: regions }, { data: drivers }] = await Promise.all([
+    loadReservationList(db, query),
+    db.from("regions").select("id, name_tr, name_en").order("name_en"),
+    db.from("drivers").select("id, full_name").eq("is_active", true).order("full_name"),
+  ]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Rezervasyonlar</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Transfer takibi, şoför ataması ve voucher yönetimi
-          </p>
-        </div>
-        <ExportButton />
-      </div>
-      <ReservationList
-        reservations={(reservations ?? []) as unknown as Reservation[]}
-        adminBase={`/${locale}/admin`}
-      />
-    </div>
+    <ReservationsScreen
+      initial={initial}
+      initialQuery={query}
+      regions={(regions ?? [])
+        .map((r: { id: string; name_tr: string | null; name_en: string | null }) => ({
+          id: r.id,
+          name: r.name_tr || r.name_en || "—",
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, "tr"))}
+      drivers={(drivers ?? []).map((d: { id: string; full_name: string }) => ({ id: d.id, name: d.full_name }))}
+      adminBase={`/${locale}/admin`}
+      openCode={first(sp.open) ?? null}
+    />
   );
 }

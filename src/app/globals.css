@@ -114,6 +114,84 @@
   --font-sans: var(--font-inter), var(--font-arabic);
   /* Montserrat has no Arabic, so Arabic headlines fall through to Noto. */
   --font-display: var(--font-montserrat), var(--font-arabic);
+
+  /* Admin panel — docs/admin-tasarim.md, bölüm 2. Prefixed so the public
+     site's tokens above keep their meaning. */
+  --color-adm-bg: #f5f5f2;
+  --color-adm-side: #fbfbf9;
+  --color-adm-surface: #ffffff;
+  --color-adm-surface-2: #fafaf8;
+  --color-adm-seg: #ebeae5;
+  --color-adm-line: #e7e6e1;
+  --color-adm-line-2: #f0efeb;
+  --color-adm-line-strong: #d3d2cc;
+  --color-adm-avatar: #e4e2dc;
+  --color-adm-ink: #15171b;
+  --color-adm-ink-hover: #2a2e35;
+  --color-adm-ink-2: #3b4048;
+  --color-adm-muted: #71757d;
+  --color-adm-faint: #a4a7ad;
+  --color-adm-brand: #0e8a61;
+  --color-adm-brand-ink: #0a6a4a;
+  --color-adm-brand-soft: #e6f4ee;
+  --color-adm-green: #127a3e;
+  --color-adm-green-soft: #e3f3e8;
+  --color-adm-amber: #a15c07;
+  --color-adm-amber-soft: #fdf2d8;
+  --color-adm-amber-line: #f5d58a;
+  --color-adm-rose: #b4233c;
+  --color-adm-rose-soft: #fde8eb;
+  --color-adm-blue: #1f55c7;
+  --color-adm-blue-soft: #e5edfd;
+  --color-adm-violet: #5b3cc4;
+  --color-adm-violet-soft: #eeeafc;
+  --color-adm-teal: #0f766e;
+  --color-adm-teal-soft: #e0f2f0;
+  --radius-adm-sm: 8px;
+  --radius-adm: 10px;
+  --radius-adm-lg: 14px;
+  --shadow-adm-sm: 0 1px 2px rgba(21, 23, 27, 0.05);
+  --shadow-adm-md: 0 10px 30px rgba(21, 23, 27, 0.1);
+  --shadow-adm-lg: 0 24px 60px rgba(21, 23, 27, 0.18);
+}
+
+/* ─── Admin panel ─── */
+.adm-root {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.adm-root svg.lucide {
+  stroke-width: 1.8;
+}
+.adm-root :is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid #0e8a61;
+  outline-offset: 2px;
+}
+/* The site-wide blue focus ring further down is unlayered, so it outranks the
+   admin's utilities; these put the admin's own ring back. */
+.adm-root :is(input, textarea, select):focus {
+  border-color: #c9c8c2;
+  box-shadow: 0 0 0 3px rgba(21, 23, 27, 0.06);
+}
+.adm-root [aria-invalid="true"]:is(input, textarea, select) {
+  border-color: #b4233c;
+}
+/* Fields that sit inside a larger control and draw no box of their own. */
+.adm-root .adm-bare:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+@keyframes adm-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes adm-pop {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes adm-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 
 body {

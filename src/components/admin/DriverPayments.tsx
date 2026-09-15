@@ -3,8 +3,15 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarClock, ChevronRight, HandCoins, Plus, Search, TrendingDown, Wallet } from "lucide-react";
-import AdminDialog from "@/components/admin/AdminDialog";
-import { Avatar, buttonPrimary, buttonSecondary, Card, StatTile } from "@/components/admin/AdminUi";
+import {
+  Avatar,
+  buttonPrimary,
+  buttonSecondary,
+  Card,
+  Dialog as AdminDialog,
+  dropQueryParam,
+  StatTile,
+} from "@/components/admin/ui";
 import DriverPaymentForm from "@/components/admin/DriverPaymentForm";
 import {
   balanceStatus,
@@ -32,6 +39,8 @@ interface Props {
   recent: LedgerListRow[];
   rates: Rates;
   today: string;
+  /** Open "Ödeme yap" straight away — the Ctrl K palette's shortcut. */
+  openPayment?: boolean;
   adminBase: string;
 }
 
@@ -68,12 +77,16 @@ const CHIP = {
  * and to whom — and puts "record a payment" one click from each name. The
  * detail of any account is its own page.
  */
-export default function DriverPayments({ drivers, balances, recent, rates, today, adminBase }: Props) {
+export default function DriverPayments({ drivers, balances, recent, rates, today, openPayment, adminBase }: Props) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [showInactive, setShowInactive] = useState(false);
-  const [paying, setPaying] = useState<string | null>(null); // driver id, or "" for the picker
-  const closeDialog = useCallback(() => setPaying(null), []);
+  // driver id, or "" for the picker
+  const [paying, setPaying] = useState<string | null>(openPayment ? "" : null);
+  const closeDialog = useCallback(() => {
+    setPaying(null);
+    dropQueryParam("pay");
+  }, []);
 
   const statementHref = (id: string) => `${adminBase}/driver-payments/${id}`;
 
