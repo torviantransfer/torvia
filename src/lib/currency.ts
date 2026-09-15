@@ -128,10 +128,16 @@ export type Settlement = "USD" | "EUR";
  *
  * Returns null when a conversion is needed and no rate for it was captured, so
  * the caller can show "not calculable" instead of a confident wrong number. The
- * two rates point in opposite directions and are not interchangeable:
+ * two rates point in opposite directions, so neither can stand in for the other
+ * as it is — but either one, inverted, converts the other way:
  *
  *   usdPerEur — `reservations.exchange_rate_usd`, written since the euro switch
  *   eurPerUsd — `reservations.exchange_rate_eur`, written before it
+ *
+ * The inversion matters because a booking only ever carries one of them. Since
+ * the switch `exchange_rate_eur` is written as NULL, so a dollar fee could not
+ * be brought into euro at all: every such job read as unpriced on the earnings
+ * screen, however long ago its fee had been agreed.
  *
  * Both are the rate of the booking day, which is the rate the job was agreed
  * at. Rounded to cents: the columns these land in are NUMERIC(10,2), and an
@@ -147,10 +153,13 @@ export function convertSettlement(
 ): number | null {
   if (from === to) return amount;
 
-  const rate = from === "EUR" ? usdPerEur : eurPerUsd;
-  if (!rate || !Number.isFinite(rate)) return null;
+  const direct = from === "EUR" ? usdPerEur : eurPerUsd;
+  if (direct && Number.isFinite(direct)) return Math.round(amount * direct * 100) / 100;
 
-  return Math.round(amount * rate * 100) / 100;
+  const inverse = from === "EUR" ? eurPerUsd : usdPerEur;
+  if (inverse && Number.isFinite(inverse) && inverse > 0) return Math.round((amount / inverse) * 100) / 100;
+
+  return null;
 }
 
 /** A reservation's own settlement currency. Anything not EUR is a pre-switch row. */

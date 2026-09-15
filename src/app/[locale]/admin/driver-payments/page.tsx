@@ -4,6 +4,9 @@ import DriverEarnings, {
   type EarningsReservation,
 } from "@/components/admin/DriverEarnings";
 import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
+import { todayInBookingTz } from "@/lib/datetime";
+import { summariseLedger, type LedgerListRow, type LedgerSummary } from "@/lib/driverStatement";
+import { loadAllLedger, loadUsdRate } from "@/lib/driverStatementData";
 
 // Fees are edited on the reservations screen and the numbers here have to move
 // with them, so this must never come back from a prerender.
@@ -19,21 +22,23 @@ export const dynamic = "force-dynamic";
  */
 const EARNING_STATUSES = CONFIRMED_STATUSES;
 
-export default async function AdminDriverPaymentsPage() {
+/** The ledger list under the drivers table shows this many of the latest movements. */
+const RECENT_MOVEMENTS = 200;
+
+export default async function AdminDriverPaymentsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const supabase = createAdminClient();
+  const today = todayInBookingTz();
 
-  const { data: drivers } = await supabase
-    .from("drivers")
-    .select("id, full_name, phone, is_active")
-    .order("full_name");
-
-  const { data: payments } = await supabase
-    .from("driver_payments")
-    .select(
-      "*, drivers(full_name), reservations(reservation_code)"
-    )
-    .order("created_at", { ascending: false })
-    .limit(200);
+  const [{ data: drivers }, ledger, usdRate] = await Promise.all([
+    supabase.from("drivers").select("id, full_name, phone, is_active").order("full_name"),
+    loadAllLedger(supabase),
+    loadUsdRate(supabase),
+  ]);
 
   /**
    * Grouped by pickup_datetime rather than by when the booking was made: "this
@@ -65,29 +70,26 @@ export default async function AdminDriverPaymentsPage() {
     (r) => (r.driver_assignments ?? []).length > 0
   );
 
-  // Calculate balances per driver
-  const balances: Record<
-    string,
-    { earnings: number; payments: number; adjustments: number; balance: number }
-  > = {};
-
-  for (const d of drivers ?? []) {
-    balances[d.id] = { earnings: 0, payments: 0, adjustments: 0, balance: 0 };
+  /**
+   * Every row of every driver, in dollars, up to today — the same sum a
+   * driver's own statement shows. This used to total the latest 200 rows as
+   * raw numbers, so an old movement could drop out of a balance and a euro row
+   * could be added to dollars as if it were one.
+   */
+  const byDriver = new Map<string, LedgerListRow[]>();
+  for (const row of ledger) {
+    const rows = byDriver.get(row.driver_id) ?? [];
+    rows.push(row);
+    byDriver.set(row.driver_id, rows);
+  }
+  const balances: Record<string, LedgerSummary> = {};
+  for (const [driverId, rows] of byDriver) {
+    balances[driverId] = summariseLedger(rows, today);
   }
 
-  for (const p of payments ?? []) {
-    if (!balances[p.driver_id]) continue;
-    if (p.type === "earning") {
-      balances[p.driver_id].earnings += p.amount;
-      balances[p.driver_id].balance += p.amount;
-    } else if (p.type === "payment") {
-      balances[p.driver_id].payments += p.amount;
-      balances[p.driver_id].balance -= p.amount;
-    } else if (p.type === "adjustment") {
-      balances[p.driver_id].adjustments += p.amount;
-      balances[p.driver_id].balance += p.amount;
-    }
-  }
+  const recent = [...ledger]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .slice(0, RECENT_MOVEMENTS);
 
   return (
     <div>
@@ -99,8 +101,11 @@ export default async function AdminDriverPaymentsPage() {
 
       <DriverPayments
         drivers={drivers ?? []}
-        payments={payments ?? []}
+        payments={recent}
         balances={balances}
+        usdRate={usdRate}
+        today={today}
+        adminBase={`/${locale}/admin`}
       />
     </div>
   );
