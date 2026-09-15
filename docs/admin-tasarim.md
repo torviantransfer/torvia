@@ -321,12 +321,12 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 
 | # | Özellik | Bugünkü durum | Yapılacak |
 |---|---|---|---|
-| A1 | Uçuş durumu (indi, rötar, kalkış) | Uçuş kodu kayıtlı, durum kaynağı yok | Uçuş verisi servisi seçilir (ör. AeroDataBox), rezervasyon uçuşları için periyodik sorgu; rötar “Dikkat gerektiriyor”a düşer. Hazır olana kadar yalnızca uçuş kodu gösterilir. |
+| A1 | Uçuş durumu (indi, rötar, kalkış) | Uçuş kodu kayıtlı, durum kaynağı yok | **Karar: sonraya.** Uçuş verisi API'si alındığında eklenecek (ör. AeroDataBox): rezervasyon uçuşları için periyodik sorgu; rötar “Dikkat gerektiriyor”a düşer. O zamana kadar yalnızca uçuş kodu gösterilir. |
 | A2 | Ödeme linki gönder | Yok | Bekleyen rezervasyon için Stripe ödeme linki oluşturma + e-posta/WhatsApp ile gönderme uç noktası. |
-| A3 | Adminden yeni rezervasyon | Yok | Admin içinden rezervasyon oluşturma akışı (müşteri, güzergah, tarih, araç, fiyat, ödeme türü). Hazır olana kadar buton site rezervasyon sayfasını yeni sekmede açar. |
+| A3 | Adminden yeni rezervasyon | Yok | **Karar: yapılacak, A2 ile birlikte.** Online ödeme yapamayan müşteri için rezervasyonu ben girerim (müşteri, güzergah, tarih ve saat, araç, yolcu/bavul, fiyat, ödeme türü: online link / nakit). Kayıt “Ödeme bekliyor” olarak açılır, ardından A2 ile müşteriye ödeme linki gönderilir; ödeme gelince durum Stripe webhook'u ile “Ödendi” olur. Hazır olana kadar buton site rezervasyon sayfasını yeni sekmede açar. |
 | A4 | İptalde para iadesi | İptal onayı durumu “iptal edildi” yapar ve şoför atamalarını kapatır; iade yapmaz | Stripe iadesi (tam/kısmi) seçeneği. Hazır olana kadar buton **İptali onayla** der; iade Stripe panelinden yapılır. |
-| A5 | Bildirim zili | Kaynak yok | Yeni rezervasyon, iptal talebi, onay bekleyen değerlendirme, ödeme hatası olaylarından bildirim listesi. Hazır olana kadar zil gösterilmez. |
-| A6 | Şoförün “izinli” durumu | İzin verisi yok | Şoföre izin günleri alanı. Hazır olana kadar şoför durumu yalnızca atamalardan türetilir: yolda (yolcu alındı), işi var, müsait. |
+| A5 | Bildirim zili | Kaynak yok | **Karar: gerek yok, yapılmayacak.** Zil gösterilmez; yapılacak işler Bugün ekranında ve menü sayaçlarında zaten görünüyor. |
+| A6 | Şoförün “izinli” durumu | İzin verisi yok. Şoför bugün her atama için gelen linkten (`/driver/[token]`) işi görüp durumunu güncelliyor (kabul et, yolcu alındı, tamamlandı). | **Karar: şoförün kalıcı paneli.** Her şoföre tek, kalıcı bir panel linki: bütün işlerini (bugün, yaklaşan, geçmiş) görür, her işte kabul et / yolcu alındı / tamamlandı der, kendi takviminden müsait / izinli günlerini işaretler. İzin günlerini ben de adminden girebilirim. İzinli şoför, şoför atama listesinde “İzinli” olarak en alta düşer ve Bugün ekranında ayrı gösterilir. Mevcut iş başına link çalışmaya devam eder. Hazır olana kadar durum yalnızca atamalardan türetilir: yolda, işi var, müsait. |
 | A7 | Rezervasyon geçmişi | Ayrı kayıt tablosu yok | Olay kaydı tablosu (oluşturuldu, ödendi, şoför atandı, voucher gönderildi, düzenlendi, iptal). Hazır olana kadar mevcut zaman damgalarından (oluşturma, ödeme, atama, kabul, alış, tamamlanma) derlenir. |
 | A8 | Toplu Telegram gönderimi | Tek rezervasyon için var | Seçilen rezervasyonları tek mesajda gönderen uç nokta. |
 | A9 | Rötarı şoföre bildir | — | A1 ile birlikte; şoförün WhatsApp'ına hazır mesajla bağlantı (`wa.me`). |
@@ -354,4 +354,12 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 - [ ] **Aşama 6 — Finans:** Kasa uyarlaması · Fiyatlandırma tablosu · Kuponlar.
 - [ ] **Aşama 7 — Site & Pazarlama:** Bölgeler · Değerlendirmeler · Blog · Landing · SEO.
 - [ ] **Aşama 8 — Sistem:** Ayarlar (Genel, Döviz, Gece tarifesi, Entegrasyonlar).
-- [ ] **Aşama 9 — Altyapı:** A1 uçuş durumu · A2 ödeme linki · A3 adminden rezervasyon · A4 iade · A5 bildirimler · A6 izin günleri · A7 olay kaydı · A8 toplu Telegram · A9 rötar bildirimi.
+- [ ] **Aşama 9 — Altyapı:** A3 adminden rezervasyon + A2 ödeme linki (önce bunlar) · A6 şoförün kalıcı paneli ve izin günleri · A7 olay kaydı · A8 toplu Telegram · A4 iade (Stripe'tan para çıkacağı için yapılmadan önce ayrıca onay). Sonraya kalanlar: A1 uçuş durumu ve A9 rötar bildirimi (API alınınca). Yapılmayacak: A5 bildirim zili.
+
+### Devam notları
+
+- Aşama 1, 2 ve 3 üst üste kurulu branch'lerde, push edildi, `main`'e henüz alınmadı: `feat/admin-ui-temel` → `feat/admin-ui-rezervasyonlar` → `feat/admin-ui-bugun`. En üstteki (`feat/admin-ui-bugun`) üçünü birden içerir.
+- Sıradaki adım: `feat/admin-ui-bugun` önizlemede gerçek veriyle denenir (Bugün sayıları, Rezervasyonlar listesi ve filtreleri, sağ panelden şoför atama, Ctrl K araması); sorun yoksa `main`'e alınır.
+- Sonra sırasıyla Aşama 4, 5, 6, 7, 8, en son Aşama 9. Her aşama önceki branch'in üstünden yeni branch'te (`feat/admin-ui-<aşama>`) yapılır.
+- Yerelde `.env.local` gerçek Supabase anahtarı taşımadığı için ekranlar geçici bir önizleme sayfasında (`/tr/zz-ui-onizleme`, sahte veri ve sahte API yanıtlarıyla) kontrol edilir; bu sayfa commit'e girmez.
+- Commit ve PR metinlerinde yapay zeka satırı (Co-Authored-By vb.) kullanılmaz. Eski commit'lerdeki satırlar için geçmişin yeniden yazılması ve `.claude/settings.json`, `CLAUDE.md` dosyalarının repodan kaldırılması henüz kararlaştırılmadı.
