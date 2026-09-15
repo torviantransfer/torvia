@@ -13,6 +13,8 @@ export type EventAction =
   | "payment_link_sent"
   | "paid"
   | "payment_failed"
+  | "refunded"
+  | "delay_notified"
   | "assigned"
   | "unassigned"
   | "status_changed"

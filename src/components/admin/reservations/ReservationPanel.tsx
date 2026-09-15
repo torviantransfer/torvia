@@ -18,6 +18,7 @@ import {
   PlaneTakeoff,
   Send,
   Trash2,
+  Undo2,
   UserPlus,
   type LucideIcon,
 } from "lucide-react";
@@ -42,6 +43,7 @@ import AssignmentBlock from "./AssignmentBlock";
 import DriverLinkDialog from "./DriverLinkDialog";
 import EditReservationDialog from "./EditReservationDialog";
 import PaymentLinkDialog from "./PaymentLinkDialog";
+import RefundDialog from "./RefundDialog";
 import {
   type Leg,
   type Reservation,
@@ -59,6 +61,7 @@ import {
   legsOf,
   liveAssignment,
   LIVE_ASSIGNMENT_STATUSES,
+  amountText,
   moneyText,
   regionName,
   reservationProfit,
@@ -110,6 +113,7 @@ export function useReservationPanel(
   const [busy, setBusy] = useState<null | "telegram" | "delete" | "approve" | "reject" | "payment-link">(null);
   const [handover, setHandover] = useState<AssignResult | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
+  const [refunding, setRefunding] = useState(false);
 
   const code = r.reservation_code;
   const currency = settlementOf(r.currency);
@@ -234,6 +238,11 @@ export function useReservationPanel(
       };
     });
   const unpriced = liveAssignments.length - fees.length;
+  const refunded = Number(r.refunded_amount) || 0;
+  /* Offered on any booking that took an online payment. Whether anything is
+     actually left to refund is Stripe's answer, not ours -- the dialog asks it
+     before showing a figure or enabling its button. */
+  const refundable = !!r.stripe_payment_intent_id;
   const feesInFare = fees.every((f) => f.inFare !== null) ? fees.reduce((sum, f) => sum + (f.inFare ?? 0), 0) : null;
   const profit = reservationProfit(r);
   const noteVisible = !!r.notes && r.status !== "cancel_requested";
@@ -246,7 +255,8 @@ export function useReservationPanel(
           <p className="text-[13.5px] font-semibold text-adm-rose">Müşteri iptal talep etti</p>
           {r.notes && <p className="mt-1 whitespace-pre-line text-[13px] text-[#7a1a2c]">{r.notes}</p>}
           <p className="mt-1 text-xs text-[#7a1a2c]/80">
-            Onaylanınca rezervasyon iptal edilir ve şoför atamaları kapanır. Ödeme iadesi Stripe panelinden yapılır.
+            Onaylanınca rezervasyon iptal edilir ve şoför atamaları kapanır. Para iadesi ayrı bir
+            işlemdir — aşağıdaki <b>Para</b> bölümünden yapılır.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" loading={busy === "reject"} onClick={() => cancelAction("reject")}>
@@ -282,7 +292,25 @@ export function useReservationPanel(
         </div>
       </DrawerSection>
 
-      <DrawerSection title="Para">
+      <DrawerSection
+        title="Para"
+        action={
+          refundable && (
+            <Button size="sm" variant="danger-ghost" icon={Undo2} onClick={() => setRefunding(true)}>
+              Para iadesi
+            </Button>
+          )
+        }
+      >
+        {refunded > 0 && (
+          <p className="mb-2.5 flex items-center gap-2 rounded-adm-sm border border-[#f6c9d1] bg-adm-rose-soft px-3 py-2 text-[12.5px] text-adm-rose">
+            <Undo2 size={14} aria-hidden="true" />
+            <span>
+              <b>{amountText(refunded, r.refunded_currency ?? currency)}</b> iade edildi
+              {r.refunded_at ? ` · ${fmtStamp(r.refunded_at)}` : ""}
+            </span>
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2.5">
           <Fact
             label="Müşteri ödemesi"
@@ -438,6 +466,19 @@ export function useReservationPanel(
         />
       )}
       {handover && <DriverLinkDialog {...handover} onClose={() => setHandover(null)} />}
+      {refunding && (
+        <RefundDialog
+          reservationId={r.id}
+          code={code}
+          customerName={customerName(r)}
+          onClose={() => setRefunding(false)}
+          onDone={() => {
+            setRefunding(false);
+            toast("İade gönderildi.");
+            onChanged();
+          }}
+        />
+      )}
       {paymentLink && (
         <PaymentLinkDialog url={paymentLink} customerName={customerName(r)} phone={phone} onClose={() => setPaymentLink(null)} />
       )}
@@ -649,6 +690,15 @@ const EVENT_TEXT: Record<string, (e: ReservationEvent) => string> = {
   payment_link_sent: (e) => `Ödeme linki gönderildi — ${e.actor}`,
   paid: () => "Ödeme alındı",
   payment_failed: (e) => `Ödeme başarısız — ${String(e.detail?.reason ?? "")}`.trim(),
+  delay_notified: (e) =>
+    `${e.detail?.minutes} dk rötar şoföre bildirildi${
+      e.detail?.driver ? ` — ${e.detail.driver}` : ""
+    } · ${e.actor}`,
+  refunded: (e) =>
+    `${e.detail?.full ? "Tam iade" : "Kısmi iade"} ${amountText(
+      Number(e.detail?.amount ?? 0),
+      String(e.detail?.currency ?? "EUR")
+    )} — ${e.actor}`,
 };
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { Check, Copy, FileText, Mail, MessageCircle, Pencil, RefreshCw, UserMinus } from "lucide-react";
+import { Check, Copy, FileText, Mail, MessageCircle, Pencil, RefreshCw, TimerReset, UserMinus } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
 // The passenger pays in euro, the driver is owed dollars — anything that puts
 // the two in one sum converts first, through the same helper as the ledger.
@@ -19,6 +19,7 @@ import {
   cx,
   useToast,
 } from "@/components/admin/ui";
+import DelayDialog from "./DelayDialog";
 import {
   type DriverAssignment,
   type Reservation,
@@ -82,6 +83,7 @@ export default function AssignmentBlock({
   const [savingFee, setSavingFee] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [unassigning, setUnassigning] = useState(false);
+  const [delaying, setDelaying] = useState(false);
 
   const live = LIVE_ASSIGNMENT_STATUSES.includes(da.status);
   const isReturn = da.leg === "return";
@@ -328,6 +330,11 @@ export default function AssignmentBlock({
             newTab
           />
           <IconButton size="sm" icon={copied ? Check : Copy} label="Şoför paneli linkini kopyala" onClick={copyLink} />
+          {phone && (
+            <Button size="sm" icon={TimerReset} onClick={() => setDelaying(true)}>
+              Rötar bildir
+            </Button>
+          )}
           <span aria-hidden="true" className="mx-0.5 h-4 w-px bg-adm-line" />
           <Button size="sm" variant="ghost" icon={RefreshCw} onClick={onReplace}>
             Değiştir
@@ -343,6 +350,19 @@ export default function AssignmentBlock({
             Kaldır
           </Button>
         </div>
+      )}
+
+      {delaying && (
+        <DelayDialog
+          reservation={r}
+          assignment={da}
+          onClose={() => setDelaying(false)}
+          onSent={() => {
+            setDelaying(false);
+            toast("Rötar bildirimi kaydedildi.");
+            onChanged();
+          }}
+        />
       )}
 
       <ConfirmDialog
