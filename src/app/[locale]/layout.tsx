@@ -21,8 +21,9 @@ const inter = Inter({
 });
 
 /**
- * Inter carries no Arabic glyphs, and neither does Montserrat — which only
- * ever sets the Latin wordmark, so it needs none.
+ * Inter carries no Arabic glyphs, and neither does Montserrat — which sets the
+ * booking headline through `font-display`, whose stack hands Arabic on to
+ * this face.
  *
  * Loaded with the Arabic subset alone: the @font-face it produces declares a
  * unicode-range covering Arabic script only, so a browser on the other seven

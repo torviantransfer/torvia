@@ -112,6 +112,8 @@
   --color-sidebar: #0F172A;
   --color-sidebar-hover: #1E293B;
   --font-sans: var(--font-inter), var(--font-arabic);
+  /* Montserrat has no Arabic, so Arabic headlines fall through to Noto. */
+  --font-display: var(--font-montserrat), var(--font-arabic);
 }
 
 body {
@@ -354,6 +356,19 @@ input:focus, textarea:focus, select:focus {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Gold text — champagne at the cap height deepening to amber at the baseline.
+   Cloned per line box, so on an inline element that wraps every line carries
+   the whole ramp rather than one line light and the next one dark. */
+.text-gold-gradient {
+  color: #E8B75A;
+  background-image: linear-gradient(175deg, #FFF3D1 0%, #F7DC96 28%, #E9BC62 58%, #C98F3A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Stat card */

@@ -12,7 +12,7 @@ import SocialProofStrip from "@/components/booking/SocialProofStrip";
 import { type ReviewRow } from "@/lib/reviews";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
 import { vehicleIsActive, type VehicleFlag } from "@/lib/vehicleFlag";
 import { localeDirection } from "@/i18n/config";
@@ -303,12 +303,12 @@ export default async function BookingPage({
   // in all six locales, which is dead weight in image search for the ru/de/pl
   // markets the site actually sells into.
   const heroAlt: Record<string, string> = {
-    tr: "Antalya Havalimanı VIP transfer aracı",
-    en: "Antalya Airport VIP transfer vehicle",
-    de: "VIP-Transferfahrzeug am Flughafen Antalya",
-    pl: "Pojazd transferu VIP na lotnisku Antalya",
-    ru: "Автомобиль VIP-трансфера в аэропорту Анталии",
-    nl: "VIP-transfervoertuig op de luchthaven Antalya",
+    tr: "Antalya'da deniz kenarındaki otelin önünde bekleyen VIP transfer aracı",
+    en: "VIP transfer vehicle waiting outside a seafront hotel in Antalya",
+    de: "VIP-Transferfahrzeug vor einem Hotel am Meer in Antalya",
+    pl: "Pojazd transferu VIP przed hotelem nad morzem w Antalyi",
+    ru: "Автомобиль VIP-трансфера у отеля на побережье Анталии",
+    nl: "VIP-transfervoertuig bij een hotel aan zee in Antalya",
   };
 
   /* Both only matter to the phone hero, where the headline sits beside the
@@ -320,10 +320,41 @@ export default async function BookingPage({
   const heroIsRtl = localeDirection(locale) === "rtl";
   const heroScrimTo = heroIsRtl ? "left" : "right";
 
+  /* Two photographs of the same forecourt, picked per width by a <picture>
+     so a visitor downloads only the one they will see. The phone band is a
+     narrow window, so it gets the close shot, which fills it with the car.
+     Desktop gets the wide shot: its car stands higher in the frame, above a
+     deep strip of pavement the booking bar can cover without covering the
+     car. The switch is at Tailwind's `lg`, where the <img>'s crop classes
+     change too.
+
+     Not preloaded. With a different LCP image on each side of the
+     breakpoint, a preload fetches the wrong one on half the visits, so the
+     <img> asks for high fetch priority instead. `sizes` stays: without it
+     Next assumes the image is as wide as the viewport at every breakpoint
+     and phones pull a far larger variant than they can show. */
+  const heroImage = {
+    alt: heroAlt[locale] ?? heroAlt.en,
+    fill: true,
+    sizes: "100vw",
+    quality: 80,
+  };
+  const {
+    props: { srcSet: heroWideSrcSet },
+  } = getImageProps({ ...heroImage, src: "/images/antalya-hotel-vip-transfer-hero-wide.jpg" });
+  const {
+    props: { srcSet: heroCloseSrcSet, ...heroImgProps },
+  } = getImageProps({
+    ...heroImage,
+    src: "/images/antalya-hotel-vip-transfer-hero.jpg",
+    loading: "eager",
+    fetchPriority: "high",
+  });
+
   /* The headline doubles as the SEO title, so every locale hands it over as
-     "<offer> | <promise>". Desktop prints the one line it has always been.
-     The phone sets the two halves apart, because at this width the whole
-     string in one weight is a block of bold text rather than a headline —
+     "<offer> | <promise>". Both widths set the two halves apart — the offer
+     in white, the promise in gold on the line below — because the whole
+     string in one colour is a block of bold text rather than a headline:
      nothing in it is louder than anything else. Split, never shortened: the
      full string stays inside the h1. */
   const [heroTitleLead, heroTitleTail] = (() => {
@@ -359,25 +390,40 @@ export default async function BookingPage({
               header above it and the booking card below, which at 240px it
               was not — the car was showing as a strip between the two. */}
           <section className="relative bg-white lg:min-h-[480px] flex flex-col items-center justify-center pt-16 lg:pt-16">
-            <div className="absolute inset-x-0 top-0 h-[276px] lg:h-[560px] overflow-hidden">
-              <Image
-                src="/images/antalya-airport-vip-transfer-hero.jpg"
-                alt={heroAlt[locale] ?? heroAlt.en}
-                fill
-                // A band on a phone is a narrow window on the same photograph,
-                // and centred it cuts the back of the car off. Pinning the crop
-                // to the right edge keeps the whole car in frame; the sky it
-                // gives up on the left is the part the headline covers anyway.
-                // Desktop is wide enough to need neither the shift nor the flip.
-                className={`object-cover object-right lg:object-center ${heroIsRtl ? "-scale-x-100 lg:scale-x-100" : ""}`}
-                priority
-                quality={80}
-                // `fill` without `sizes` makes Next assume the image is as wide
-                // as the viewport at every breakpoint, so phones pull a far
-                // larger variant than they can show. This is the LCP element, so
-                // that lands directly on Core Web Vitals.
-                sizes="100vw"
-              />
+            <div className="absolute inset-x-0 top-0 h-[276px] lg:h-[560px] overflow-hidden bg-[#775F5C]">
+              {/* The close shot's car sits in the lower half of its frame, and
+                  the phone's booking card starts two thirds of the way down
+                  the band — hung from the top, the card covered all of the car
+                  but its roof. Lifted 56px, the wheels end at 187px, and the
+                  h1's minimum height keeps the card from starting above
+                  202px, so there is clear ground under the car in every
+                  language rather than a card edge running into the tyres.
+                  The strip that opens at the bottom lies under the card and
+                  the white dissolve, on a ground the colour of the photo's
+                  pavement so the gutters beside the card show no seam.
+                  Desktop hangs from the top. */}
+              <div className="absolute inset-x-0 -top-14 h-full lg:top-0">
+                <picture>
+                  <source media="(min-width: 64rem)" srcSet={heroWideSrcSet} />
+                  <img
+                    {...heroImgProps}
+                    alt={heroImage.alt}
+                    srcSet={heroCloseSrcSet}
+                    // A band on a phone is a narrow window on the photograph,
+                    // and centred it cuts the back of the car off. Pinning the
+                    // crop to the right edge keeps the whole car in frame; the
+                    // sky it gives up on the left is the part the headline
+                    // covers anyway. From about 490px the band is wider than
+                    // the photograph, the crop turns vertical, and centred it
+                    // dropped the car behind the card on tablets; anchored to
+                    // the bottom it stays above. Desktop's crop is vertical
+                    // too: 65% of the way down puts the wide shot's wheels at
+                    // 390-414px from 1024px to 1920px, above the booking bar
+                    // even under the Arabic title, which raises the bar most.
+                    className={`object-cover object-[right_bottom] lg:object-[center_65%] ${heroIsRtl ? "-scale-x-100 lg:scale-x-100" : ""}`}
+                  />
+                </picture>
+              </div>
               {/* Barely there on a phone. It used to carry the headline as
                   well, which meant darkening the whole frame — and the car
                   with it, until the thing the photograph is for looked washed
@@ -422,20 +468,32 @@ export default async function BookingPage({
                   out of the block at the bottom and stand it beside the car,
                   in the half of the frame the scrim darkens, while the
                   subtitle and the chips stay where they were — below the card,
-                  on white. Capped at 52% of the column so it never reaches the
+                  on white. Capped at 42% of the column so it never reaches the
                   bonnet, which is what decides the type size here: the
                   headline doubles as the SEO title and the Polish and Russian
                   ones are half again as long as the English.
-                  Desktop is unchanged — full width, centred, above the card. */}
-              <h1 className="order-1 lg:order-1 max-w-[42%] lg:max-w-none text-[15px] leading-[1.28] sm:text-xl lg:text-5xl font-bold text-white lg:text-center mb-9 lg:mb-3 drop-shadow-lg">
-                <span className="block lg:inline">{heroTitleLead}</span>
+
+                  Set in Montserrat with both halves at the same size, so the
+                  colour alone carries the step from offer to promise. Balanced,
+                  so a long title breaks into even lines instead of leaving one
+                  word on a line of its own. Desktop stays centred above the card.
+
+                  Below `lg` it never stands shorter than 94px, the height of
+                  the Turkish title. The card follows the headline down, so a
+                  shorter title — English and German take three lines, Arabic
+                  two — lifted the card into the car's wheels. */}
+              <h1 className="order-1 lg:order-1 max-w-[42%] lg:max-w-none min-h-[94px] lg:min-h-0 font-display text-[15px] leading-[1.2] sm:text-xl lg:text-5xl lg:leading-[1.08] font-extrabold tracking-tight text-balance text-white lg:text-center mb-9 lg:mb-3 drop-shadow-lg">
+                <span className="block">{heroTitleLead}</span>
                 {heroTitleTail && (
                   <>
-                    <span className="hidden lg:inline"> | </span>
-                    {/* em-sized, so the step down holds at every breakpoint,
-                        and folded back into the line on desktop. */}
-                    <span className="mt-1.5 block text-[0.8em] font-medium text-white/75 lg:mt-0 lg:inline lg:text-[1em] lg:font-bold lg:text-white">
-                      {heroTitleTail}
+                    {/* Never shown, but left in the markup so the h1 still
+                        reads as the whole "<offer> | <promise>" title. */}
+                    <span className="hidden"> | </span>
+                    {/* The gradient sits on the inner, inline box, which is
+                        cloned per line — a promise that wraps is lit top to
+                        bottom on every line, not once across the block. */}
+                    <span className="mt-1 block lg:mt-1.5">
+                      <span className="text-gold-gradient">{heroTitleTail}</span>
                     </span>
                   </>
                 )}
