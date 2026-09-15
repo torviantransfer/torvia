@@ -2,8 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Settlement } from "@/lib/currency";
-import { ACCOUNT_CURRENCY, fmtMoney, fmtRate, type LedgerType } from "@/lib/driverStatement";
+import { ACCOUNT_CURRENCY, type LedgerType } from "@/lib/driverStatement";
+import {
+  CASH,
+  CASH_SYMBOL,
+  convertQuoted,
+  defaultQuote,
+  fmtCash,
+  fmtQuote,
+  quotePair,
+  type Cash,
+  type Rates,
+} from "@/lib/rates";
 
 interface Props {
   /** Offer a driver picker. Left out on a driver's own account, where `driverId` is fixed. */
@@ -11,31 +21,47 @@ interface Props {
   driverId?: string;
   /** Jobs a movement can be tied to. */
   reservations?: { id: string; code: string }[];
-  usdRate: { rate: number; updatedAt: string | null } | null;
+  rates: Rates | null;
   today: string;
   onDone?: () => void;
+  onCancel?: () => void;
 }
 
+const TYPES: { key: LedgerType; label: string; hint: string }[] = [
+  { key: "payment", label: "Ödeme yaptım", hint: "Şoföre verdiğiniz para; borcunuzdan düşer." },
+  { key: "earning", label: "Hak ediş", hint: "Rezervasyona bağlı olmayan bir iş için şoföre borç yazar." },
+  { key: "adjustment", label: "Düzeltme", hint: "Artı borcu artırır, eksi (ceza, avans) borçtan düşer." },
+];
+
+const label = "mb-1.5 block text-xs font-semibold text-slate-600";
 const field =
-  "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900/10";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5";
+
+/** Today's rate as the input wants it: a dot decimal, to the places the pair is quoted in. */
+function rateInput(currency: Cash, rates: Rates | null): string {
+  const quoted = rates ? defaultQuote(currency, ACCOUNT_CURRENCY, rates) : null;
+  if (!quoted) return "";
+  const places = quotePair(currency, ACCOUNT_CURRENCY).quote === "TRY" ? 100 : 10000;
+  return String(Math.round(quoted * places) / places);
+}
 
 /**
- * One movement on a driver's account, in dollars or in euro.
+ * One movement on a driver's account, in dollars, euro or lira.
  *
- * Euro is converted at the day's rate, prefilled from the settings screen and
- * left editable for the times a round rate was agreed with the driver in
- * person. The conversion is spelled out before saving, because a wrong rate is
- * much easier to catch as "€85 × 1,1612 = $98,70" than as a balance that is
- * slightly off a week later.
+ * A foreign amount is converted at the day's rate, prefilled from the settings
+ * screen and left editable for the times a round rate was agreed with the
+ * driver in person. The conversion is spelled out before saving, because a
+ * wrong rate is much easier to catch as "3.500,00 ₺ ÷ 41,20 = $84,95" than as a
+ * balance that is slightly off a week later.
  */
-export default function DriverPaymentForm({ drivers, driverId, reservations, usdRate, today, onDone }: Props) {
+export default function DriverPaymentForm({ drivers, driverId, reservations, rates, today, onDone, onCancel }: Props) {
   const router = useRouter();
   const [form, setForm] = useState({
     driverId: driverId ?? "",
     type: "payment" as LedgerType,
     amount: "",
-    currency: "USD" as Settlement,
-    rate: usdRate ? String(usdRate.rate) : "",
+    currency: "USD" as Cash,
+    rate: "",
     date: today,
     description: "",
     reservationId: "",
@@ -46,6 +72,12 @@ export default function DriverPaymentForm({ drivers, driverId, reservations, usd
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  const pickCurrency = (currency: Cash) =>
+    setForm((f) => ({ ...f, currency, rate: currency === ACCOUNT_CURRENCY ? "" : rateInput(currency, rates) }));
+
+  const pair = quotePair(form.currency, ACCOUNT_CURRENCY);
+  const todayQuote = form.currency === ACCOUNT_CURRENCY || !rates ? null : defaultQuote(form.currency, ACCOUNT_CURRENCY, rates);
+
   const preview = useMemo(() => {
     const amount = Number(form.amount);
     if (!form.amount || !Number.isFinite(amount) || amount === 0) return null;
@@ -53,16 +85,18 @@ export default function DriverPaymentForm({ drivers, driverId, reservations, usd
 
     let usd = signed;
     let conversion = "";
-    if (form.currency === "EUR") {
-      const rate = Number(form.rate);
-      if (!Number.isFinite(rate) || rate <= 0) return { text: "Euro için kur yazılmalı.", warn: true };
-      usd = Math.round(signed * rate * 100) / 100;
-      conversion = `${fmtMoney(signed, "EUR")} × ${fmtRate(rate)} = ${fmtMoney(usd, "USD")} · `;
+    if (form.currency !== ACCOUNT_CURRENCY) {
+      const quoted = Number(form.rate);
+      if (!Number.isFinite(quoted) || quoted <= 0) return { text: "Kur yazılmalı.", warn: true };
+      usd = convertQuoted(signed, form.currency, ACCOUNT_CURRENCY, quoted);
+      conversion = `${fmtCash(signed, form.currency)} · ${fmtQuote(form.currency, ACCOUNT_CURRENCY, quoted)} → ${fmtCash(usd, "USD")}`;
     }
-
     const effect = form.type === "payment" ? -Math.abs(usd) : usd;
-    const verb = effect < 0 ? "şoföre borcunuzdan düşülecek" : "şoföre borcunuza eklenecek";
-    return { text: `${conversion}${fmtMoney(Math.abs(effect), ACCOUNT_CURRENCY)} ${verb}.`, warn: false };
+    return {
+      conversion,
+      text: `${fmtCash(Math.abs(effect), ACCOUNT_CURRENCY)} ${effect < 0 ? "şoföre borcunuzdan düşülecek" : "şoföre borcunuza eklenecek"}`,
+      warn: false,
+    };
   }, [form.amount, form.currency, form.rate, form.type]);
 
   const submit = async (e: React.FormEvent) => {
@@ -78,7 +112,7 @@ export default function DriverPaymentForm({ drivers, driverId, reservations, usd
           type: form.type,
           amount: Number(form.amount),
           currency: form.currency,
-          exchangeRate: form.currency === "EUR" ? Number(form.rate) : undefined,
+          exchangeRate: form.currency === ACCOUNT_CURRENCY ? undefined : Number(form.rate),
           paidAt: form.date,
           description: form.description,
           reservationId: form.reservationId || undefined,
@@ -100,10 +134,12 @@ export default function DriverPaymentForm({ drivers, driverId, reservations, usd
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3 border-b border-slate-100 bg-slate-50 px-5 py-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {drivers && (
+    <form onSubmit={submit} className="space-y-4">
+      {drivers && (
+        <div>
+          <label className={label} htmlFor="pay-driver">Şoför</label>
           <select
+            id="pay-driver"
             value={form.driverId}
             onChange={(e) => set("driverId", e.target.value)}
             required
@@ -116,114 +152,178 @@ export default function DriverPaymentForm({ drivers, driverId, reservations, usd
               </option>
             ))}
           </select>
-        )}
+        </div>
+      )}
 
-        <select
-          value={form.type}
-          onChange={(e) => set("type", e.target.value as LedgerType)}
-          className={field}
-        >
-          <option value="payment">Şoföre ödeme</option>
-          <option value="earning">Hak ediş (elle)</option>
-          <option value="adjustment">Düzeltme (+ / −)</option>
-        </select>
+      <div>
+        <span className={label}>İşlem</span>
+        <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1">
+          {TYPES.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => set("type", t.key)}
+              className={`rounded-lg px-2 py-2 text-xs font-semibold transition ${
+                form.type === t.key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[11px] text-slate-400">{TYPES.find((t) => t.key === form.type)?.hint}</p>
+      </div>
 
+      <div>
+        <label className={label} htmlFor="pay-amount">Tutar</label>
         <div className="flex gap-2">
           <input
+            id="pay-amount"
             type="number"
+            inputMode="decimal"
             step="0.01"
             min={form.type === "adjustment" ? undefined : "0"}
-            placeholder={form.type === "adjustment" ? "Tutar (− düşer)" : "Tutar"}
+            placeholder="0,00"
             value={form.amount}
             onChange={(e) => set("amount", e.target.value)}
             required
-            className={`${field} min-w-0 flex-1`}
+            className={`${field} min-w-0 flex-1 text-lg font-semibold`}
           />
-          <div className="flex shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white text-sm font-semibold">
-            {(["USD", "EUR"] as Settlement[]).map((c) => (
+          <div className="flex shrink-0 rounded-xl bg-slate-100 p-1">
+            {CASH.map((c) => (
               <button
                 key={c}
                 type="button"
-                onClick={() => set("currency", c)}
-                className={`px-3 ${form.currency === c ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+                onClick={() => pickCurrency(c)}
+                aria-pressed={form.currency === c}
+                className={`w-10 rounded-lg text-sm font-bold transition ${
+                  form.currency === c ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                }`}
               >
-                {c === "USD" ? "$" : "€"}
+                {CASH_SYMBOL[c]}
               </button>
             ))}
           </div>
         </div>
+      </div>
 
-        <input
-          type="date"
-          value={form.date}
-          max={today}
-          onChange={(e) => set("date", e.target.value)}
-          required
-          className={field}
-          title="İşlem tarihi"
-        />
-
-        {form.currency === "EUR" && (
-          <label className="flex items-center gap-2 text-xs text-slate-500">
-            <span className="shrink-0">1 € =</span>
+      {form.currency !== ACCOUNT_CURRENCY && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <span className="shrink-0 font-semibold">1 {CASH_SYMBOL[pair.base]} =</span>
             <input
               type="number"
-              step="0.0001"
+              inputMode="decimal"
+              step={pair.quote === "TRY" ? "0.01" : "0.0001"}
               min="0"
               value={form.rate}
               onChange={(e) => set("rate", e.target.value)}
               required
-              className={`${field} min-w-0 flex-1`}
+              aria-label="Kur"
+              className={`${field} min-w-0 flex-1 py-2`}
             />
-            <span className="shrink-0">$</span>
-          </label>
-        )}
+            <span className="shrink-0 font-semibold">{CASH_SYMBOL[pair.quote]}</span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+            <span>
+              {todayQuote
+                ? `Günlük kur (Ayarlar): ${fmtQuote(form.currency, ACCOUNT_CURRENCY, todayQuote)}`
+                : "Günlük kur bulunamadı; kuru elle yazın."}
+            </span>
+            {todayQuote && (
+              <button
+                type="button"
+                onClick={() => set("rate", rateInput(form.currency, rates))}
+                className="font-semibold text-slate-600 hover:text-slate-900"
+              >
+                Günlük kura dön
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
-        {reservations && reservations.length > 0 && (
-          <select
-            value={form.reservationId}
-            onChange={(e) => set("reservationId", e.target.value)}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className={label} htmlFor="pay-date">Tarih</label>
+          <input
+            id="pay-date"
+            type="date"
+            value={form.date}
+            max={today}
+            onChange={(e) => set("date", e.target.value)}
+            required
             className={field}
-          >
-            <option value="">Rezervasyon (isteğe bağlı)</option>
-            {reservations.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.code}
-              </option>
-            ))}
-          </select>
+          />
+        </div>
+        {reservations && reservations.length > 0 && (
+          <div>
+            <label className={label} htmlFor="pay-reservation">Rezervasyon <span className="font-normal text-slate-400">(isteğe bağlı)</span></label>
+            <select
+              id="pay-reservation"
+              value={form.reservationId}
+              onChange={(e) => set("reservationId", e.target.value)}
+              className={field}
+            >
+              <option value="">Bağlama</option>
+              {reservations.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.code}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
+      </div>
 
+      <div>
+        <label className={label} htmlFor="pay-note">Açıklama <span className="font-normal text-slate-400">(isteğe bağlı)</span></label>
         <input
+          id="pay-note"
           type="text"
-          placeholder="Açıklama"
+          placeholder="Örn. elden ödeme, havale"
           value={form.description}
           onChange={(e) => set("description", e.target.value)}
-          className={`${field} ${form.currency === "EUR" && !(reservations && reservations.length > 0) ? "lg:col-span-2" : ""}`}
+          className={field}
         />
+      </div>
 
+      <div
+        className={`rounded-xl px-3.5 py-3 text-sm ${
+          preview?.warn ? "bg-amber-50 text-amber-800" : preview ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-400"
+        }`}
+        aria-live="polite"
+      >
+        {preview ? (
+          <>
+            {preview.conversion && <p className="text-xs opacity-70">{preview.conversion}</p>}
+            <p className="font-semibold">{preview.text}</p>
+          </>
+        ) : (
+          "Tutarı yazınca hesaba etkisi burada görünür. Hesap dolar tutulur."
+        )}
+      </div>
+
+      {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
+
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+          >
+            Vazgeç
+          </button>
+        )}
         <button
           type="submit"
           disabled={saving}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
         >
           {saving ? "Kaydediliyor…" : "Kaydet"}
         </button>
       </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <p className={preview?.warn ? "text-amber-700" : "text-slate-600"}>
-          {preview?.text ?? "Hesap dolar tutulur; euro tutar kurla çevrilip yazılır."}
-        </p>
-        {form.currency === "EUR" && usdRate && (
-          <p className="text-slate-400">
-            Günlük kur (Ayarlar): 1 € = {fmtRate(usdRate.rate)} $
-            {usdRate.updatedAt &&
-              ` · ${new Date(usdRate.updatedAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}`}
-          </p>
-        )}
-      </div>
-      {error && <p className="text-xs font-semibold text-rose-600">{error}</p>}
     </form>
   );
 }

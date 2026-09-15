@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
-import { loadUsdRate } from "@/lib/driverStatementData";
+import { defaultQuote, isCash, loadRates, perUnit, quoteBand, quotePair, CASH_SYMBOL, type Cash } from "@/lib/rates";
 
 const TYPES = ["earning", "payment", "adjustment"] as const;
 type LedgerType = (typeof TYPES)[number];
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-/**
- * A euro-to-dollar rate outside this band is a typo — 11.6 for 1.16 — and
- * would put a tenfold figure on a driver's account. The pair has not left it
- * in living memory.
- */
-const RATE_MIN = 0.5;
-const RATE_MAX = 3;
 
 /** `YYYY-MM-DD` as noon in Antalya, so the day survives any timezone it is read in. */
 function dayToInstant(value: unknown): string | null {
@@ -23,23 +15,30 @@ function dayToInstant(value: unknown): string | null {
   return Number.isNaN(at.getTime()) ? null : at.toISOString();
 }
 
-/** The one failure that is not the request's fault: migration 092 has not been run. */
-function missingMigration(error: { code?: string; message?: string }) {
-  return (
+/** The failures that are not the request's fault: a migration has not been run. */
+function migrationHint(error: { code?: string; message?: string }): string | null {
+  const message = error.message ?? "";
+  if (/driver_payments_original_currency_valid/.test(message)) {
+    return "TL ödeme için veritabanında 093 numaralı migration çalıştırılmalı.";
+  }
+  if (
     error.code === "PGRST204" ||
     error.code === "42703" ||
-    /original_amount|original_currency|exchange_rate|paid_at/.test(error.message ?? "")
-  );
+    /original_amount|original_currency|exchange_rate|paid_at/.test(message)
+  ) {
+    return "Veritabanında yeni kolonlar yok: 092 numaralı migration çalıştırılmalı.";
+  }
+  return null;
 }
 
 /**
  * Records one hand-entered movement on a driver's account.
  *
- * The account is kept in dollars. Money handed over in euro is converted at
- * the day's rate — the one on the settings screen, unless the admin typed the
- * rate agreed with the driver — and the row keeps the euro amount and the rate
- * beside the dollar figure, so the statement can say "€85 × 1.16 = $98.60"
- * rather than a bare number nobody can check.
+ * The account is kept in dollars. Money handed over in euro or lira is
+ * converted at the day's rate — the one on the settings screen, unless the
+ * admin typed the rate agreed with the driver — and the row keeps the original
+ * amount and the rate beside the dollar figure, so the statement can say
+ * "3.500 ₺ at 1 $ = 41,20 ₺" rather than a bare number nobody can check.
  */
 export async function POST(request: NextRequest) {
   const { error: authError } = await requireAdmin();
@@ -62,28 +61,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Tutar geçersiz." }, { status: 400 });
     }
 
-    const currency = body.currency === "EUR" ? "EUR" : "USD";
-    let rate: number | null = null;
-    if (currency === "EUR") {
+    const currency: Cash = isCash(body.currency) ? body.currency : "USD";
+    let usdPerUnit: number | null = null;
+    if (currency !== "USD") {
       const given = Number(body.exchangeRate);
-      rate = Number.isFinite(given) && given > 0 ? given : (await loadUsdRate(supabase))?.rate ?? null;
-      if (!rate) {
+      const quoted =
+        Number.isFinite(given) && given > 0 ? given : defaultQuote(currency, "USD", await loadRates(supabase));
+      if (!quoted) {
+        return NextResponse.json({ error: "Günlük kur bulunamadı. Kuru elle yazın." }, { status: 400 });
+      }
+      const [min, max] = quoteBand(currency, "USD");
+      if (quoted < min || quoted > max) {
+        const { base, quote } = quotePair(currency, "USD");
         return NextResponse.json(
-          { error: "Günlük kur bulunamadı. Kuru elle yazın." },
+          { error: `Kur ${min} ile ${max} arasında olmalı (1 ${CASH_SYMBOL[base]} kaç ${CASH_SYMBOL[quote]}).` },
           { status: 400 }
         );
       }
-      if (rate < RATE_MIN || rate > RATE_MAX) {
-        return NextResponse.json(
-          { error: `Kur ${RATE_MIN} ile ${RATE_MAX} arasında olmalı (1 € kaç $).` },
-          { status: 400 }
-        );
-      }
+      usdPerUnit = Math.round(perUnit(currency, "USD", quoted) * 1e10) / 1e10;
     }
 
     // Payments and earnings are sizes; only an adjustment may take money off.
     const signed = round2(type === "adjustment" ? entered : Math.abs(entered));
-    const amount = rate ? round2(signed * rate) : signed;
+    const amount = usdPerUnit === null ? signed : round2(signed * usdPerUnit);
     const paidAt = dayToInstant(body.paidAt);
     const description = typeof body.description === "string" ? body.description.trim() : "";
 
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         currency: "USD",
         original_amount: signed,
         original_currency: currency,
-        exchange_rate: rate,
+        exchange_rate: usdPerUnit,
         description: description || null,
         ...(paidAt ? { paid_at: paidAt } : {}),
       })
@@ -106,14 +106,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Driver payment error:", error);
-      return NextResponse.json(
-        {
-          error: missingMigration(error)
-            ? "Veritabanında yeni kolonlar yok: 092 numaralı migration çalıştırılmalı."
-            : "Kayıt oluşturulamadı.",
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: migrationHint(error) ?? "Kayıt oluşturulamadı." }, { status: 500 });
     }
 
     return NextResponse.json({ payment: data });

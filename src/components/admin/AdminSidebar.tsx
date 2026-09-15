@@ -13,6 +13,7 @@ import {
   Ticket,
   Star,
   Wallet,
+  Landmark,
   Settings,
   LogOut,
   ChevronRight,
@@ -44,6 +45,8 @@ const navDefs = [
   { path: "/coupons", label: "Kuponlar", icon: Ticket },
   { path: "/reviews", label: "Değerlendirmeler", icon: Star },
   { path: "/driver-payments", label: "Şoför Ödemeleri", icon: Wallet },
+  // The company's own profit and loss; driver accounts feed its cost line.
+  { path: "/finance", label: "Kasa", icon: Landmark },
   { path: "/settings", label: "Ayarlar", icon: Settings },
 ];
 

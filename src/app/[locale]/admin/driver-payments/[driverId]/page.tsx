@@ -32,7 +32,7 @@ export default async function DriverStatementPage({
     <DriverStatement
       statement={loaded.statement}
       period={period}
-      usdRate={loaded.usdRate}
+      rates={loaded.rates}
       adminBase={`/${locale}/admin`}
     />
   );

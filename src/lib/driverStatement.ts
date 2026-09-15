@@ -8,11 +8,11 @@
  *    been paid, and corrections. The balance comes from here and only here, so
  *    a payment typed in by hand counts even when it is tied to no job.
  *
- * The account is kept in dollars, because that is what drivers are paid in. A
- * euro row — a fee agreed in euro, or money handed over in euro — is converted
- * at its own rate: a job at the rate of its booking day, a payment at the rate
- * of the day it was made. Nothing is re-read at today's rate, which would move
- * a settled balance every time the rate moved.
+ * The account is kept in dollars, because that is what drivers are paid in.
+ * Money in any other currency — a fee agreed in euro, a payment handed over in
+ * euro or in lira — is converted at its own rate: a job at the rate of its
+ * booking day, a payment at the rate of the day it was made. Nothing is re-read
+ * at today's rate, which would move a settled balance every time the rate moved.
  *
  * Pure: no database and no Next. The page, the export route and the payment
  * form all read the same figures from here, so the screen, the Excel file and
@@ -20,8 +20,21 @@
  */
 import { convertSettlement, reservationMoney, settlementOf, type Settlement } from "@/lib/currency";
 import { BOOKING_TZ, bookingParts } from "@/lib/datetime";
+import { inRange, type DateRange } from "@/lib/period";
+import { fmtCash, fmtQuote, isCash, quotePair, type Cash } from "@/lib/rates";
 import { CONFIRMED_STATUSES } from "@/lib/reservation-status";
 import { legStartsAtAirport } from "@/lib/transfer-route";
+
+export {
+  PERIODS,
+  fmtDay,
+  matchPeriod,
+  parseRange,
+  periodRange,
+  rangeLabel,
+  rangeQuery,
+} from "@/lib/period";
+export type { DateRange, PeriodKey } from "@/lib/period";
 
 /** Drivers are paid in dollars, so that is what a balance is kept in. */
 export const ACCOUNT_CURRENCY: Settlement = "USD";
@@ -85,10 +98,11 @@ export interface RawLedgerRow {
   created_at: string;
   reservation_id: string | null;
   assignment_id: string | null;
-  // From migration 092; absent until it has run.
+  // From migrations 092/093; absent until they have run.
   paid_at?: string | null;
   original_amount?: number | string | null;
   original_currency?: string | null;
+  /** Dollars per one unit of `original_currency`. */
   exchange_rate?: number | string | null;
   reservations: {
     reservation_code: string | null;
@@ -106,7 +120,7 @@ export type LedgerListRow = RawLedgerRow & {
   drivers: { full_name: string | null } | null;
 };
 
-// ─── numbers and dates ───
+// ─── numbers ───
 
 const num = (value: unknown): number | null => {
   if (value === null || value === undefined || value === "") return null;
@@ -116,24 +130,14 @@ const num = (value: unknown): number | null => {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-const SYMBOL: Record<Settlement, string> = { USD: "$", EUR: "€" };
+/** "$1.234,50", "−€12,00", "3.500,00 ₺". */
+export const fmtMoney = (value: number, currency: Cash) => fmtCash(value, currency);
 
-/** "$1.234,50", "−€12,00" — Turkish grouping, two decimals, a real minus sign. */
-export function fmtMoney(value: number, currency: Settlement): string {
-  const digits = Math.abs(value).toLocaleString("tr-TR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-  return `${value < 0 ? "−" : ""}${SYMBOL[currency]}${digits}`;
+/** The rate a row was converted into dollars at, said the usual way: "1 € = 1,1600 $", "1 $ = 41,20 ₺". */
+export function rateText(currency: Cash, usdPerUnit: number): string {
+  const quoted = quotePair(currency, ACCOUNT_CURRENCY).base === currency ? usdPerUnit : 1 / usdPerUnit;
+  return fmtQuote(currency, ACCOUNT_CURRENCY, quoted);
 }
-
-/** Dollars per euro, to four places: "1,1612". */
-export const fmtRate = (rate: number) =>
-  rate.toLocaleString("tr-TR", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-
-/** `2026-09-15` -> `15.09.2026`. */
-export const fmtDay = (day: string) =>
-  day ? `${day.slice(8, 10)}.${day.slice(5, 7)}.${day.slice(0, 4)}` : "—";
 
 export const TRIP_LABEL = (tripType: string) =>
   tripType === "round_trip" ? "Gidiş-dönüş" : "Tek yön";
@@ -148,106 +152,14 @@ export function balanceStatus(balance: number): {
   return { label: "Hesap kapalı", tone: "closed" };
 }
 
-// ─── periods ───
-
-/** Inclusive calendar days, `YYYY-MM-DD`; a null end is open. */
-export interface DateRange {
-  from: string | null;
-  to: string | null;
-}
-
-export type PeriodKey = "this_month" | "last_month" | "last_3" | "this_year" | "all";
-
-export const PERIODS: { key: PeriodKey; label: string }[] = [
-  { key: "this_month", label: "Bu ay" },
-  { key: "last_month", label: "Geçen ay" },
-  { key: "last_3", label: "Son 3 ay" },
-  { key: "this_year", label: "Bu yıl" },
-  { key: "all", label: "Tümü" },
-];
-
-const isDay = (value: unknown): value is string =>
-  typeof value === "string" &&
-  /^\d{4}-\d{2}-\d{2}$/.test(value) &&
-  !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
-
-/** Day `day` of month index `month` (overflow allowed), as `YYYY-MM-DD`. */
-const utcDay = (year: number, month: number, day: number) =>
-  new Date(Date.UTC(year, month, day)).toISOString().slice(0, 10);
-
-/** `today` is Antalya's `YYYY-MM-DD`, so a month turns over on Antalya's midnight. */
-export function periodRange(key: PeriodKey, today: string): DateRange {
-  const year = Number(today.slice(0, 4));
-  const month = Number(today.slice(5, 7)) - 1;
-  switch (key) {
-    case "this_month":
-      return { from: utcDay(year, month, 1), to: utcDay(year, month + 1, 0) };
-    case "last_month":
-      return { from: utcDay(year, month - 1, 1), to: utcDay(year, month, 0) };
-    case "last_3":
-      return { from: utcDay(year, month - 2, 1), to: utcDay(year, month + 1, 0) };
-    case "this_year":
-      return { from: `${year}-01-01`, to: `${year}-12-31` };
-    case "all":
-      return { from: null, to: null };
-  }
-}
-
-export function matchPeriod(range: DateRange, today: string): PeriodKey | null {
-  return (
-    PERIODS.find((p) => {
-      const r = periodRange(p.key, today);
-      return r.from === range.from && r.to === range.to;
-    })?.key ?? null
-  );
-}
-
-/** Reads `?period=` or `?from=&to=`; anything else is this month. */
-export function parseRange(
-  input: { from?: string | null; to?: string | null; period?: string | null },
-  today: string
-): { range: DateRange; period: PeriodKey | null } {
-  const preset = PERIODS.find((p) => p.key === input.period);
-  if (preset) return { range: periodRange(preset.key, today), period: preset.key };
-
-  if (isDay(input.from) || isDay(input.to)) {
-    let from = isDay(input.from) ? input.from : null;
-    let to = isDay(input.to) ? input.to : null;
-    if (from && to && from > to) [from, to] = [to, from];
-    const range = { from, to };
-    return { range, period: matchPeriod(range, today) };
-  }
-
-  return { range: periodRange("this_month", today), period: "this_month" };
-}
-
-/** The query string that reproduces a range, for links and downloads. */
-export function rangeQuery(range: DateRange, period: PeriodKey | null): string {
-  if (period) return `period=${period}`;
-  const q = new URLSearchParams();
-  if (range.from) q.set("from", range.from);
-  if (range.to) q.set("to", range.to);
-  return q.toString();
-}
-
-export function rangeLabel(range: DateRange): string {
-  if (!range.from && !range.to) return "Tüm kayıtlar";
-  if (!range.from) return `${fmtDay(range.to!)} tarihine kadar`;
-  if (!range.to) return `${fmtDay(range.from)} tarihinden itibaren`;
-  return `${fmtDay(range.from)} – ${fmtDay(range.to)}`;
-}
-
-const inRange = (day: string, range: DateRange) =>
-  (!range.from || day >= range.from) && (!range.to || day <= range.to);
-
 // ─── the ledger ───
 
 export interface LedgerEffect {
   /** Signed, in dollars: positive is owed to the driver. null when no rate exists to convert with. */
   usd: number | null;
   /** What was actually agreed or handed over, when that was not dollars. */
-  original: { amount: number; currency: Settlement } | null;
-  /** Dollars per euro used for the conversion. */
+  original: { amount: number; currency: Cash } | null;
+  /** Dollars per one unit of the original currency. */
   rate: number | null;
 }
 
@@ -255,7 +167,11 @@ export function ledgerEffect(row: RawLedgerRow): LedgerEffect {
   const amount = num(row.amount) ?? 0;
   const currency = settlementOf(row.currency);
   const storedRate = num(row.exchange_rate);
-  const usdPerEur = storedRate ?? num(row.reservations?.exchange_rate_usd);
+  const originalCurrency = isCash(row.original_currency) ? row.original_currency : null;
+
+  // A stored rate belongs to the original currency. On a euro row it also
+  // converts `amount`; on a lira row `amount` is already dollars.
+  const usdPerEur = originalCurrency === "EUR" && storedRate ? storedRate : num(row.reservations?.exchange_rate_usd);
   const converted = convertSettlement(
     amount,
     currency,
@@ -277,7 +193,6 @@ export function ledgerEffect(row: RawLedgerRow): LedgerEffect {
   const usd = signed === null ? null : round2(signed);
 
   const originalAmount = num(row.original_amount);
-  const originalCurrency = row.original_currency ? settlementOf(row.original_currency) : null;
   if (originalAmount !== null && originalCurrency && originalCurrency !== ACCOUNT_CURRENCY) {
     return {
       usd,
@@ -333,9 +248,16 @@ export interface LedgerSummary {
   upcoming: number;
   /** Rows that could not be converted for want of a rate — left out, not guessed. */
   unconvertible: number;
+  /** Paid out so far this calendar month. */
+  monthPaid: number;
+  /** Transfer legs driven so far this calendar month. */
+  monthJobs: number;
+  /** The last day money was handed to the driver by hand. */
+  lastPaymentDay: string | null;
 }
 
 export function summariseLedger(rows: RawLedgerRow[], today: string): LedgerSummary {
+  const month = today.slice(0, 7);
   const s: LedgerSummary = {
     earnings: 0,
     payments: 0,
@@ -343,20 +265,33 @@ export function summariseLedger(rows: RawLedgerRow[], today: string): LedgerSumm
     balance: 0,
     upcoming: 0,
     unconvertible: 0,
+    monthPaid: 0,
+    monthJobs: 0,
+    lastPaymentDay: null,
   };
   for (const row of rows) {
     const { usd } = ledgerEffect(row);
+    const { day } = ledgerWhen(row);
+    const manual = row.assignment_id === null;
+
+    if (row.type === "payment" && manual && day <= today && (!s.lastPaymentDay || day > s.lastPaymentDay)) {
+      s.lastPaymentDay = day;
+    }
+    if (row.type === "earning" && !manual && day <= today && day.startsWith(month)) s.monthJobs += 1;
+
     if (usd === null) {
       s.unconvertible += 1;
       continue;
     }
-    if (ledgerWhen(row).day > today) {
+    if (day > today) {
       s.upcoming = round2(s.upcoming + usd);
       continue;
     }
     if (row.type === "earning") s.earnings = round2(s.earnings + usd);
-    else if (row.type === "payment") s.payments = round2(s.payments - usd);
-    else s.adjustments = round2(s.adjustments + usd);
+    else if (row.type === "payment") {
+      s.payments = round2(s.payments - usd);
+      if (day.startsWith(month)) s.monthPaid = round2(s.monthPaid - usd);
+    } else s.adjustments = round2(s.adjustments + usd);
     s.balance = round2(s.balance + usd);
   }
   return s;
@@ -437,7 +372,7 @@ function buildJob(r: RawReservation, driverId: string): JobRow | null {
   const usdPerEur = num(r.exchange_rate_usd);
   const eurPerUsd = num(r.exchange_rate_eur);
   const fare = reservationMoney(num(r.total_price) ?? 0, r.currency, eurPerUsd);
-  const fareCurrency = fare.currency === "EUR" ? "EUR" : "USD";
+  const fareCurrency: Settlement = fare.currency === "EUR" ? "EUR" : "USD";
 
   const cashAmount = num(r.driver_amount) ?? 0;
   const cash =
@@ -507,7 +442,8 @@ export interface MovementRow {
   manual: boolean;
   description: string;
   code: string | null;
-  original: { amount: number; currency: Settlement } | null;
+  original: { amount: number; currency: Cash } | null;
+  /** Dollars per one unit of the original currency. */
   rate: number | null;
   usd: number | null;
   /** Running balance after this row. */

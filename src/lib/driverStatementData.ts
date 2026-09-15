@@ -8,28 +8,13 @@ import {
   type RawReservation,
   type Statement,
 } from "@/lib/driverStatement";
+import { loadRates, type Rates } from "@/lib/rates";
+import { fetchAll } from "@/lib/supabaseFetchAll";
 
 /**
- * Reads what lib/driverStatement.ts works from.
- *
- * Everything is read in full, a page at a time. The payments screen used to
- * take the latest 200 ledger rows and total those, so once a driver's history
- * passed that the oldest rows fell out of his balance without a word.
+ * Reads what lib/driverStatement.ts works from, every row of it: a balance
+ * totalled from a truncated history is wrong without looking wrong.
  */
-
-const PAGE = 1000;
-
-type Page<T> = PromiseLike<{ data: T[] | null; error: { message: string } | null }>;
-
-async function fetchAll<T>(page: (from: number, to: number) => Page<T>): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await page(from, from + PAGE - 1);
-    if (error) throw new Error(error.message);
-    rows.push(...(data ?? []));
-    if (!data || data.length < PAGE) return rows;
-  }
-}
 
 /** `*` rather than a column list, so the screen still loads before migration 092 has run. */
 const LEDGER_SELECT = `*,
@@ -42,24 +27,6 @@ const RESERVATION_SELECT = `id, reservation_code, status, trip_type, direction,
   regions(name_tr, name_en),
   driver_assignments(id, leg, status, driver_id, driver_fee, driver_fee_currency,
     drivers(full_name), vehicles(plate_number))`;
-
-export interface UsdRate {
-  /** Dollars per one euro. */
-  rate: number;
-  updatedAt: string | null;
-}
-
-/** The rate on the settings screen, which the exchange-rate cron refreshes. */
-export async function loadUsdRate(supabase: SupabaseClient): Promise<UsdRate | null> {
-  const { data } = await supabase
-    .from("exchange_rates")
-    .select("rate, last_updated")
-    .eq("base_currency", "EUR")
-    .eq("target_currency", "USD")
-    .maybeSingle();
-  const rate = Number(data?.rate);
-  return rate > 0 ? { rate, updatedAt: data?.last_updated ?? null } : null;
-}
 
 export async function loadAllLedger(supabase: SupabaseClient): Promise<LedgerListRow[]> {
   return fetchAll<LedgerListRow>((from, to) =>
@@ -76,7 +43,7 @@ export async function loadDriverStatement(
   driverId: string,
   range: DateRange,
   today: string
-): Promise<{ statement: Statement; usdRate: UsdRate | null } | null> {
+): Promise<{ statement: Statement; rates: Rates } | null> {
   const { data: driver } = await supabase
     .from("drivers")
     .select("id, full_name, phone, is_active")
@@ -84,7 +51,7 @@ export async function loadDriverStatement(
     .maybeSingle();
   if (!driver) return null;
 
-  const [assignments, ledger, usdRate] = await Promise.all([
+  const [assignments, ledger, rates] = await Promise.all([
     fetchAll<{ reservation_id: string | null }>((from, to) =>
       supabase
         .from("driver_assignments")
@@ -101,7 +68,7 @@ export async function loadDriverStatement(
         .order("id")
         .range(from, to)
     ),
-    loadUsdRate(supabase),
+    loadRates(supabase),
   ]);
 
   // A hundred ids at a time keeps the `in` filter well inside URL limits.
@@ -118,6 +85,6 @@ export async function loadDriverStatement(
 
   return {
     statement: buildStatement({ driver: driver as RawDriver, reservations, ledger, range, today }),
-    usdRate,
+    rates,
   };
 }
