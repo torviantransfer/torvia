@@ -1,9 +1,18 @@
-﻿"use client";
+"use client";
 
 import { useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
+import { Lock, LogIn, Mail } from "lucide-react";
+import { Button } from "./ui/Button";
+import { Field, Input } from "./ui/Field";
+
+/** Supabase answers in English; the one message anyone actually sees gets a Turkish line. */
+function explain(message: string) {
+  if (/invalid login credentials/i.test(message)) return "E-posta ya da şifre hatalı.";
+  if (/email not confirmed/i.test(message)) return "Bu e-posta adresi henüz doğrulanmamış.";
+  return message;
+}
 
 export default function AdminLoginForm() {
   const [email, setEmail] = useState("");
@@ -12,23 +21,19 @@ export default function AdminLoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
+      setError(explain(error.message));
       setLoading(false);
       return;
     }
@@ -38,81 +43,52 @@ export default function AdminLoginForm() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ backgroundColor: "#F1F5F9", colorScheme: "light" }}
+      className="adm-root flex min-h-screen w-full items-center justify-center bg-adm-bg px-4 py-10 text-adm-ink"
+      style={{ colorScheme: "light" }}
     >
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <Lock size={28} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">TORVIAN Yönetim</h1>
-          <p className="text-gray-500 text-sm mt-1">Devam etmek için giriş yapın</p>
+      <div className="w-full max-w-[380px]">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <span className="grid size-11 place-items-center rounded-xl bg-adm-ink text-base font-bold text-white">T</span>
+          <h1 className="mt-4 text-[21px] font-bold tracking-[-0.02em]">Torvian Admin</h1>
+          <p className="mt-1 text-[13px] text-adm-muted">Devam etmek için giriş yapın</p>
         </div>
 
         <form
           onSubmit={handleLogin}
-          className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 space-y-4"
+          className="space-y-4 rounded-adm-lg border border-adm-line bg-adm-surface p-6 shadow-adm-sm"
         >
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-posta
-            </label>
-            <div className="relative">
-              <Mail
-                size={16}
-                className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                placeholder="torviantransfer@gmail.com"
-              />
-            </div>
-          </div>
+          <Field label="E-posta" htmlFor="admin-email">
+            <Input
+              id="admin-email"
+              type="email"
+              required
+              autoComplete="username"
+              icon={Mail}
+              inputSize="lg"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ad@ornek.com"
+            />
+          </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Şifre
-            </label>
-            <div className="relative">
-              <Lock
-                size={16}
-                className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full ps-10 pe-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
+          <Field label="Şifre" htmlFor="admin-password" error={error || undefined}>
+            <Input
+              id="admin-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              icon={Lock}
+              inputSize="lg"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={error ? true : undefined}
+              placeholder="••••••••"
+            />
+          </Field>
 
-          {error && (
-            <div className="flex items-center gap-2 text-red-500 text-sm">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Lock size={16} />
-            )}
-            Giriş Yap
-          </button>
+          <Button type="submit" variant="primary" icon={LogIn} loading={loading} className="h-10 w-full">
+            Giriş yap
+          </Button>
         </form>
       </div>
     </div>

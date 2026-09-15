@@ -1,196 +1,266 @@
-﻿"use client";
+"use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import {
-  LayoutDashboard,
-  CalendarCheck,
-  Users,
-  Car,
-  DollarSign,
-  MapPin,
-  Ticket,
-  Star,
-  Wallet,
-  Landmark,
-  Settings,
-  LogOut,
-  ChevronRight,
-  FileText,
-  Calendar,
-  Radio,
-  Search,
-  LayoutTemplate,
-  X,
-} from "lucide-react";
+import { LogOut, PanelLeft, Search, X } from "lucide-react";
+import { ADMIN_NAV, navHref, type NavItem, type ShellCounts } from "./nav";
+import { Avatar } from "./ui/Avatar";
+import { cx } from "./ui/cx";
 
-const navDefs = [
-  { path: "", label: "Kontrol Paneli", icon: LayoutDashboard },
-  { path: "/live-visitors", label: "Canlı Ziyaretçiler", icon: Radio },
-  { path: "/reservations", label: "Rezervasyonlar", icon: CalendarCheck },
-  { path: "/availability", label: "Takvim & Kapasite", icon: Calendar },
-  { path: "/drivers", label: "Şoförler", icon: Users },
-  { path: "/vehicles", label: "Araçlar", icon: Car },
-  // The classes a customer chooses between when booking, as opposed to
-  // /vehicles, which is the physical fleet.
-  { path: "/vehicle-categories", label: "Araç Tipleri", icon: Car },
-  { path: "/pricing", label: "Fiyatlandırma", icon: DollarSign },
-  { path: "/regions", label: "Bölgeler", icon: MapPin },
-  { path: "/blog", label: "Blog Yazıları", icon: FileText },
-  // Sits next to the SEO screen rather than next to the blog: the two are
-  // edited in the same session, since a landing page is created to rank.
-  { path: "/landing", label: "Landing Sayfaları", icon: LayoutTemplate },
-  { path: "/seo", label: "SEO Yönetimi", icon: Search },
-  { path: "/coupons", label: "Kuponlar", icon: Ticket },
-  { path: "/reviews", label: "Değerlendirmeler", icon: Star },
-  { path: "/driver-payments", label: "Şoför Ödemeleri", icon: Wallet },
-  // The company's own profit and loss; driver accounts feed its cost line.
-  { path: "/finance", label: "Kasa", icon: Landmark },
-  { path: "/settings", label: "Ayarlar", icon: Settings },
-];
+const noSubscription = () => () => {};
+const onApple = () => /Mac|iPhone|iPad/.test(navigator.platform);
+
+function badgeFor(item: NavItem, counts: ShellCounts | null) {
+  if (!counts || !item.counter) return null;
+  switch (item.counter) {
+    case "reservations": {
+      const n = counts.needsDriver + counts.cancelRequests;
+      return n > 0
+        ? { n, alert: true, title: `${counts.needsDriver} şoför bekleyen · ${counts.cancelRequests} iptal talebi` }
+        : null;
+    }
+    case "reviews":
+      return counts.pendingReviews > 0
+        ? { n: counts.pendingReviews, alert: false, title: "Onay bekleyen değerlendirme" }
+        : null;
+    case "live":
+      return counts.liveNow > 0 ? { n: counts.liveNow, alert: false, title: "Şu an sitede" } : null;
+    default:
+      return null;
+  }
+}
 
 export default function AdminSidebar({
+  base,
+  locale,
+  current,
+  counts,
   userEmail,
-  open = false,
-  onClose,
+  userName,
+  collapsed,
+  menuOpen,
+  onCloseMenu,
+  onToggleCollapsed,
+  onOpenPalette,
 }: {
+  base: string;
+  locale: string;
+  current: NavItem | null;
+  counts: ShellCounts | null;
   userEmail: string;
-  open?: boolean;
-  onClose?: () => void;
+  userName: string | null;
+  collapsed: boolean;
+  menuOpen: boolean;
+  onCloseMenu: () => void;
+  onToggleCollapsed: () => void;
+  onOpenPalette: () => void;
 }) {
-  const pathname = usePathname();
   const router = useRouter();
-  // Extract locale from pathname (e.g. /en/admin/... → en)
-  const locale = pathname.split("/")[1] || "en";
-  const base = `/${locale}/admin`;
+  const apple = useSyncExternalStore(noSubscription, onApple, () => false);
+  const [meOpen, setMeOpen] = useState(false);
+  const me = useRef<HTMLDivElement>(null);
 
-  const navItems = navDefs.map((d) => ({
-    ...d,
-    href: d.path ? `${base}${d.path}` : base,
-  }));
+  useEffect(() => {
+    if (!meOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!me.current?.contains(e.target as Node)) setMeOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMeOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [meOpen]);
 
-  const isActive = (href: string) => {
-    if (href === base) return pathname === base;
-    return pathname.startsWith(href);
+  const signOut = async () => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await supabase.auth.signOut();
+    router.push(`/${locale}`);
   };
+
+  // Collapsing is a desktop state; the phone drawer always shows the labels.
+  const c = collapsed;
+  const hideCollapsed = c ? "min-[901px]:hidden" : "";
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      <div
+        aria-hidden="true"
+        onClick={onCloseMenu}
+        className={cx(
+          "fixed inset-0 z-30 bg-[rgba(21,23,27,.28)] transition-opacity duration-200 min-[901px]:hidden",
+          menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+      />
 
       <aside
-        className={`fixed start-0 top-0 bottom-0 w-64 flex flex-col z-40 transition-transform duration-200 ease-out ${
-          open ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-        style={{ backgroundColor: "#0F172A" }}
+        aria-label="Ana menü"
+        className={cx(
+          "fixed inset-y-0 start-0 z-40 flex w-64 flex-col border-e border-adm-line bg-adm-side transition-[width,translate] duration-200 ease-out",
+          "max-[900px]:shadow-adm-lg",
+          c && "min-[901px]:w-[68px]",
+          !menuOpen && "max-[900px]:ltr:-translate-x-full max-[900px]:rtl:translate-x-full"
+        )}
       >
-        {/* Logo */}
-        <div
-          className="px-6 h-16 flex items-center justify-between"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <Link href={base} className="flex items-center gap-2.5" onClick={onClose}>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
-            <div>
-              <span className="text-white font-bold text-base tracking-tight">
-                TORVIAN
-              </span>
-              <span className="text-slate-500 text-[10px] font-medium ms-1.5 uppercase tracking-widest">
-                Admin
-              </span>
-            </div>
+        <div className={cx("relative flex h-[60px] shrink-0 items-center gap-2.5 px-4", c && "min-[901px]:justify-center min-[901px]:px-0")}>
+          <Link href={base} onClick={onCloseMenu} className="flex items-center gap-2.5 rounded-[9px]">
+            <span className="grid size-[30px] place-items-center rounded-[9px] bg-adm-ink text-[13px] font-bold text-white">T</span>
+            <span className={cx("font-bold tracking-[.02em]", hideCollapsed)}>TORVIAN</span>
+            <span
+              className={cx(
+                "rounded-md bg-adm-brand-soft px-1.5 py-px text-[10.5px] font-semibold text-adm-brand-ink",
+                hideCollapsed
+              )}
+            >
+              Admin
+            </span>
           </Link>
           <button
-            onClick={onClose}
-            className="lg:hidden text-slate-400 hover:text-white p-1"
-            aria-label="Menüyü kapat"
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={c ? "Menüyü genişlet" : "Menüyü daralt"}
+            title={c ? "Menüyü genişlet" : "Menüyü daralt"}
+            className={cx(
+              "grid size-7 place-items-center rounded-adm-sm text-adm-muted hover:bg-adm-line-2 hover:text-adm-ink max-[900px]:hidden",
+              c
+                ? "absolute -end-3.5 top-4 border border-adm-line bg-adm-surface shadow-adm-sm"
+                : "ms-auto"
+            )}
           >
-            <X size={20} />
+            <PanelLeft size={16} aria-hidden="true" className="rtl:-scale-x-100" />
+          </button>
+          <button
+            type="button"
+            onClick={onCloseMenu}
+            aria-label="Menüyü kapat"
+            className="ms-auto grid size-8 place-items-center rounded-adm-sm text-adm-muted hover:bg-adm-line-2 hover:text-adm-ink min-[901px]:hidden"
+          >
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <p className="px-3 mb-3 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-            Menü
-          </p>
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200"
-                  style={{
-                    backgroundColor: active ? "rgba(249,115,22,0.1)" : "transparent",
-                    color: active ? "#fb923c" : "#94a3b8",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
-                      e.currentTarget.style.color = "#ffffff";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = "#94a3b8";
-                    }
-                  }}
-                >
-                  <item.icon
-                    size={18}
-                    strokeWidth={active ? 2 : 1.5}
-                    style={{ color: active ? "#fb923c" : "#64748b" }}
-                  />
-                  <span className="flex-1">{item.label}</span>
-                  {active && (
-                    <ChevronRight size={14} style={{ color: "rgba(251,146,60,0.6)" }} />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
+        <button
+          type="button"
+          onClick={onOpenPalette}
+          title={c ? "Ara veya komut" : undefined}
+          className={cx(
+            "mx-3 mb-2.5 mt-1 flex h-9 shrink-0 items-center gap-2 rounded-adm border border-adm-line bg-adm-surface px-2.5 text-[13px] text-adm-muted shadow-adm-sm transition-colors hover:border-[#d6d5cf] hover:text-adm-ink-2",
+            c && "min-[901px]:justify-center min-[901px]:px-0"
+          )}
+        >
+          <Search size={16} aria-hidden="true" />
+          <span className={hideCollapsed}>Ara veya komut…</span>
+          <kbd
+            className={cx(
+              "ms-auto rounded-md border border-adm-line bg-adm-surface-2 px-1.5 font-sans text-[11px] font-semibold text-adm-faint max-[900px]:hidden",
+              hideCollapsed
+            )}
+          >
+            {apple ? "⌘ K" : "Ctrl K"}
+          </kbd>
+        </button>
+
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-3 pt-1">
+          {ADMIN_NAV.map((group, gi) => (
+            <div key={group.title} className="mt-3.5 first:mt-1">
+              <div className={cx("px-2.5 pb-1.5 text-[11px] font-semibold uppercase tracking-[.06em] text-adm-faint", hideCollapsed)}>
+                {group.title}
+              </div>
+              {c && gi > 0 && <div aria-hidden="true" className="mx-3 mb-2 hidden h-px bg-adm-line min-[901px]:block" />}
+              <ul className="grid gap-px">
+                {group.items.map((item) => {
+                  const active = item === current;
+                  const badge = badgeFor(item, counts);
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.path}>
+                      <Link
+                        href={navHref(base, item)}
+                        onClick={onCloseMenu}
+                        aria-current={active ? "page" : undefined}
+                        title={c ? item.label : undefined}
+                        className={cx(
+                          "relative flex h-[34px] items-center gap-2.5 rounded-[9px] px-2.5 text-[13.5px] transition-colors",
+                          active
+                            ? "bg-adm-surface font-semibold text-adm-ink shadow-adm-sm ring-1 ring-inset ring-adm-line"
+                            : "font-medium text-adm-ink-2 hover:bg-adm-line-2 hover:text-adm-ink",
+                          c && "min-[901px]:justify-center min-[901px]:px-0"
+                        )}
+                      >
+                        <Icon size={16} aria-hidden="true" className={active ? "text-adm-brand" : "text-adm-faint"} />
+                        <span className={cx("truncate", hideCollapsed)}>{item.label}</span>
+                        {badge && (
+                          <span
+                            title={badge.title}
+                            className={cx(
+                              "ms-auto min-w-5 rounded-[10px] px-1.5 text-center text-[11px] font-semibold tabular-nums",
+                              badge.alert ? "bg-adm-amber-soft text-adm-amber" : "bg-adm-line-2 text-adm-muted",
+                              hideCollapsed
+                            )}
+                          >
+                            {badge.n}
+                          </span>
+                        )}
+                        {badge?.alert && c && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute end-3 top-1.5 hidden size-2 rounded-full border-2 border-adm-side bg-adm-amber min-[901px]:block"
+                          />
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </nav>
 
-      {/* Footer */}
-      <div className="px-3 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
-            <span className="text-white text-xs font-bold">{(userEmail?.[0] ?? "A").toUpperCase()}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">Yönetici</p>
-            <p className="text-[11px] text-slate-500 truncate">{userEmail}</p>
-          </div>
+        <div ref={me} className="relative shrink-0 border-t border-adm-line p-3">
+          {meOpen && (
+            <div
+              role="menu"
+              className="absolute bottom-full start-3 z-10 mb-1.5 w-56 rounded-adm border border-adm-line bg-adm-surface p-1.5 shadow-adm-md motion-safe:animate-[adm-pop_120ms_ease-out]"
+            >
+              <p className="truncate px-2.5 pb-1.5 pt-1 text-xs text-adm-muted">{userEmail}</p>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={signOut}
+                className="flex h-[34px] w-full items-center gap-2 rounded-adm-sm px-2.5 text-[13px] font-semibold text-adm-rose hover:bg-adm-rose-soft"
+              >
+                <LogOut size={16} aria-hidden="true" />
+                Çıkış yap
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={meOpen}
+            onClick={() => setMeOpen((open) => !open)}
+            title={c ? userEmail : undefined}
+            className={cx(
+              "flex w-full items-center gap-2.5 rounded-adm p-1.5 text-start hover:bg-adm-line-2",
+              c && "min-[901px]:justify-center"
+            )}
+          >
+            <Avatar name={userName ?? userEmail} />
+            <span className={cx("min-w-0", hideCollapsed)}>
+              <span className="block truncate text-[13px] font-semibold leading-tight">{userName ?? "Yönetici"}</span>
+              <span className="block truncate text-[11.5px] text-adm-muted">{userEmail}</span>
+            </span>
+          </button>
         </div>
-        <button
-          onClick={async () => {
-            const supabase = createBrowserClient(
-              process.env.NEXT_PUBLIC_SUPABASE_URL!,
-              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-            );
-            await supabase.auth.signOut();
-            router.push(`/${locale}`);
-          }}
-          className="w-full flex items-center gap-3 px-3 py-2 mt-1 rounded-lg text-[13px] text-slate-500 hover:text-red-400 transition-all cursor-pointer"
-        >
-          <LogOut size={16} />
-          <span>Çıkış Yap</span>
-        </button>
-      </div>
       </aside>
     </>
   );

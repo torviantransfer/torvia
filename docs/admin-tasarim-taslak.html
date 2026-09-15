@@ -1,0 +1,940 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TORVIAN Admin — Yeni Nesil Taslak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f5f2;
+    --surface: #ffffff;
+    --surface-2: #fafaf8;
+    --line: #e7e6e1;
+    --line-2: #f0efeb;
+    --ink: #15171b;
+    --ink-2: #3b4048;
+    --muted: #71757d;
+    --faint: #a4a7ad;
+
+    --brand: #0e8a61;
+    --brand-ink: #0a6a4a;
+    --brand-soft: #e6f4ee;
+
+    --amber: #a15c07;
+    --amber-soft: #fdf2d8;
+    --amber-line: #f5d58a;
+    --rose: #b4233c;
+    --rose-soft: #fde8eb;
+    --blue: #1f55c7;
+    --blue-soft: #e5edfd;
+    --violet: #5b3cc4;
+    --violet-soft: #eeeafc;
+    --teal: #0f766e;
+    --teal-soft: #e0f2f0;
+    --green: #127a3e;
+    --green-soft: #e3f3e8;
+
+    --r-lg: 14px;
+    --r: 10px;
+    --r-sm: 8px;
+    --sh-sm: 0 1px 2px rgba(21,23,27,.05);
+    --sh-md: 0 10px 30px rgba(21,23,27,.10);
+    --sh-lg: 0 24px 60px rgba(21,23,27,.18);
+    --sidebar: 256px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; padding: 0; }
+  a { color: inherit; text-decoration: none; }
+  svg.lucide { width: 16px; height: 16px; stroke-width: 1.8; flex: none; }
+  .num { font-variant-numeric: tabular-nums; }
+  .mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .01em; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+  [hidden] { display: none !important; }
+
+  /* ─── Shell ─── */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; width: var(--sidebar); z-index: 30;
+    display: flex; flex-direction: column;
+    background: #fbfbf9; border-right: 1px solid var(--line);
+    transition: width .2s ease, transform .2s ease;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; height: 60px; padding: 0 16px; }
+  .brand-mark {
+    display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px;
+    background: var(--ink); color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .brand-name { font-weight: 700; letter-spacing: .02em; }
+  .brand-pill { margin-left: 2px; padding: 1px 6px; border-radius: 6px; background: var(--brand-soft); color: var(--brand-ink); font-size: 10.5px; font-weight: 600; }
+  .collapse-btn { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); }
+  .collapse-btn:hover { background: var(--line-2); color: var(--ink); }
+
+  .search-trigger {
+    margin: 4px 12px 10px; height: 36px; display: flex; align-items: center; gap: 8px;
+    padding: 0 10px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface);
+    color: var(--muted); font-size: 13px; box-shadow: var(--sh-sm);
+  }
+  .search-trigger:hover { border-color: #d6d5cf; color: var(--ink-2); }
+  .kbd { margin-left: auto; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--faint); font-size: 11px; font-weight: 600; }
+
+  .nav { flex: 1; overflow-y: auto; padding: 4px 10px 12px; }
+  .nav-group { margin-top: 14px; }
+  .nav-title { padding: 0 10px 6px; color: var(--faint); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .nav-item {
+    width: 100%; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 10px;
+    border-radius: 9px; color: var(--ink-2); font-size: 13.5px; font-weight: 500; text-align: left;
+    position: relative;
+  }
+  .nav-item svg { color: var(--faint); }
+  .nav-item:hover { background: var(--line-2); color: var(--ink); }
+  .nav-item.active { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--sh-sm), inset 0 0 0 1px var(--line); }
+  .nav-item.active svg { color: var(--brand); }
+  .nav-count { margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 10px; background: var(--line-2); color: var(--muted); font-size: 11px; font-weight: 600; text-align: center; }
+  .nav-count.alert { background: var(--amber-soft); color: var(--amber); }
+  .nav-label { white-space: nowrap; overflow: hidden; }
+
+  .sidebar-foot { padding: 12px; border-top: 1px solid var(--line); }
+  .me { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; }
+  .me:hover { background: var(--line-2); }
+  .avatar { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%; background: #e4e2dc; color: var(--ink-2); font-size: 11px; font-weight: 700; }
+  .avatar.sm { width: 24px; height: 24px; font-size: 10px; }
+  .avatar.lg { width: 40px; height: 40px; font-size: 13px; }
+  .me-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+  .me-mail { color: var(--muted); font-size: 11.5px; }
+
+  .app.collapsed { --sidebar: 68px; }
+  .app.collapsed .nav-label, .app.collapsed .nav-title, .app.collapsed .nav-count, .app.collapsed .brand-name,
+  .app.collapsed .brand-pill, .app.collapsed .search-trigger span, .app.collapsed .search-trigger .kbd,
+  .app.collapsed .me > div { display: none; }
+  .app.collapsed .nav-item { justify-content: center; padding: 0; }
+  .app.collapsed .search-trigger { justify-content: center; }
+  .app.collapsed .brand { justify-content: center; padding: 0; }
+  .app.collapsed .collapse-btn { position: absolute; right: -14px; top: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); }
+
+  .main { flex: 1; min-width: 0; margin-left: var(--sidebar); transition: margin-left .2s ease; }
+  .topbar {
+    position: sticky; top: 0; z-index: 20; height: 60px; display: flex; align-items: center; gap: 12px;
+    padding: 0 28px; background: rgba(245,245,242,.86); backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+  }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .menu-btn { display: none; }
+  .crumbs { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+  .crumbs strong { color: var(--ink); font-weight: 600; }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .live { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 10px; border-radius: 9px; color: var(--ink-2); font-size: 12.5px; font-weight: 500; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.15); }
+  .icon-btn { position: relative; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; color: var(--ink-2); }
+  .icon-btn:hover { background: var(--line-2); }
+  .icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: #e11d48; border: 2px solid var(--bg); }
+
+  .page { padding: 8px 28px 56px; max-width: 1440px; }
+
+  /* ─── Primitives ─── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 13px;
+    border-radius: 9px; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background .15s, box-shadow .15s, color .15s;
+  }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 12.5px; border-radius: 8px; gap: 6px; }
+  .btn-sm svg.lucide { width: 14px; height: 14px; }
+  .btn-primary { background: var(--ink); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .btn-primary:hover { background: #2a2e35; }
+  .btn-brand { background: var(--brand); color: #fff; }
+  .btn-brand:hover { background: var(--brand-ink); }
+  .btn-outline { background: var(--surface); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--line), var(--sh-sm); }
+  .btn-outline:hover { box-shadow: inset 0 0 0 1px #d3d2cc, var(--sh-sm); color: var(--ink); }
+  .btn-ghost { color: var(--ink-2); }
+  .btn-ghost:hover { background: var(--line-2); color: var(--ink); }
+  .btn-warn { background: var(--amber-soft); color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber-line); }
+  .btn-warn:hover { background: #fbe8b8; }
+  .btn-danger-ghost { color: var(--rose); }
+  .btn-danger-ghost:hover { background: var(--rose-soft); }
+
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 7px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .85; }
+  .chip.plain::before { display: none; }
+  .t-green { background: var(--green-soft); color: var(--green); }
+  .t-amber { background: var(--amber-soft); color: var(--amber); }
+  .t-rose { background: var(--rose-soft); color: var(--rose); }
+  .t-blue { background: var(--blue-soft); color: var(--blue); }
+  .t-violet { background: var(--violet-soft); color: var(--violet); }
+  .t-teal { background: var(--teal-soft); color: var(--teal); }
+  .t-slate { background: var(--line-2); color: var(--ink-2); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-sm); }
+  .card-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line-2); }
+  .card-head h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .card-head .sub { color: var(--muted); font-size: 12.5px; }
+  .card-head .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .link { color: var(--brand-ink); font-size: 12.5px; font-weight: 600; }
+  .link:hover { text-decoration: underline; }
+
+  .page-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 12px 0 20px; }
+  .eyebrow { color: var(--muted); font-size: 12.5px; font-weight: 500; }
+  .page-head h1 { margin: 2px 0 0; font-size: 24px; line-height: 1.2; letter-spacing: -.02em; font-weight: 700; }
+  .page-head .actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .seg { display: inline-flex; padding: 3px; border-radius: 10px; background: #ebeae5; }
+  .seg button { height: 28px; padding: 0 12px; border-radius: 8px; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+  .seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--sh-sm); }
+
+  /* ─── Today ─── */
+  .pulse { display: grid; grid-template-columns: repeat(5, 1fr); margin-bottom: 20px; overflow: hidden; }
+  .pulse > div { padding: 16px 18px; border-right: 1px solid var(--line-2); }
+  .pulse > div:last-child { border-right: 0; }
+  .pulse .label { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; font-weight: 500; }
+  .pulse .value { margin-top: 6px; font-size: 26px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  .pulse .hint { margin-top: 3px; color: var(--muted); font-size: 12px; }
+  .pulse .warn .value { color: var(--amber); }
+
+  .today-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+  .stack { display: grid; gap: 20px; }
+
+  .inbox-item { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line-2); }
+  .inbox-item:last-child { border-bottom: 0; }
+  .inbox-icon { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 9px; }
+  .inbox-body { min-width: 0; flex: 1; }
+  .inbox-title { font-size: 13.5px; font-weight: 600; }
+  .inbox-meta { color: var(--muted); font-size: 12.5px; }
+  .inbox-actions { display: flex; gap: 6px; flex: none; }
+
+  .timeline { padding: 6px 0; }
+  .tl-hour { display: flex; align-items: center; gap: 10px; padding: 12px 18px 6px; color: var(--faint); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; }
+  .tl-hour::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+  .tl-now { color: #e11d48; }
+  .tl-now::after { background: #fecdd3; }
+  .tl-item { display: grid; grid-template-columns: 62px 34px minmax(0,1.4fr) minmax(0,1fr) 150px; align-items: center; gap: 12px; padding: 10px 18px; cursor: pointer; }
+  .tl-item:hover { background: var(--surface-2); }
+  .tl-time { font-size: 15px; font-weight: 700; }
+  .dir { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--line-2); color: var(--ink-2); }
+  .dir.arr { background: var(--blue-soft); color: var(--blue); }
+  .dir.dep { background: var(--violet-soft); color: var(--violet); }
+  .tl-route { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-sub { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .who .name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .who .plate { color: var(--muted); font-size: 11.5px; }
+
+  .drivers .row { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--line-2); }
+  .drivers .row:last-child { border-bottom: 0; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .sd-road { background: #2563eb; box-shadow: 0 0 0 3px #dbe6fd; }
+  .sd-free { background: #16a34a; box-shadow: 0 0 0 3px #d9f2e1; }
+  .sd-off { background: #b8bbc1; box-shadow: 0 0 0 3px #eceef0; }
+
+  .money { padding: 16px 18px; }
+  .money .big { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
+  .money .delta { color: var(--green); font-size: 12.5px; font-weight: 600; }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; margin-top: 14px; }
+  .bars span { flex: 1; border-radius: 4px 4px 0 0; background: #cfe9de; }
+  .bars span.cur { background: var(--brand); }
+  .bars-x { display: flex; gap: 6px; margin-top: 6px; color: var(--faint); font-size: 11px; }
+  .bars-x span { flex: 1; text-align: center; }
+  .kv { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--line); font-size: 13px; }
+  .kv:first-of-type { margin-top: 14px; }
+  .kv b { font-weight: 600; }
+
+  /* ─── Reservations ─── */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 14px; overflow-x: auto; }
+  .tab { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 12px; color: var(--muted); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+  .tab:hover { color: var(--ink); }
+  .tab.on { color: var(--ink); }
+  .tab.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--ink); }
+  .tab .n { padding: 0 6px; border-radius: 9px; background: var(--line-2); color: var(--muted); font-size: 11.5px; }
+  .tab .n.warn { background: var(--amber-soft); color: var(--amber); }
+  .tab .n.bad { background: var(--rose-soft); color: var(--rose); }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .search { position: relative; flex: 1; min-width: 240px; max-width: 420px; }
+  .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+  .search input { width: 100%; height: 34px; padding: 0 12px 0 34px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); outline: none; box-shadow: var(--sh-sm); font-size: 13px; }
+  .search input:focus { border-color: #c9c8c2; box-shadow: 0 0 0 3px rgba(21,23,27,.06); }
+  .filter { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px; border: 1px dashed #d4d3cd; border-radius: 9px; color: var(--ink-2); font-size: 13px; font-weight: 500; }
+  .filter:hover { border-color: #b9b8b2; background: var(--surface); }
+  .filter.set { border-style: solid; background: var(--surface); box-shadow: var(--sh-sm); }
+  .filter.set b { color: var(--ink); font-weight: 600; }
+  .toolbar .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+  .grid-table { overflow: hidden; }
+  .g-row {
+    display: grid; align-items: center; gap: 14px; padding: 10px 16px;
+    grid-template-columns: 22px 78px minmax(170px,1.25fr) minmax(170px,1.2fr) 128px minmax(150px,.9fr) 118px 116px 64px;
+    border-bottom: 1px solid var(--line-2); position: relative;
+  }
+  .g-head { padding-top: 9px; padding-bottom: 9px; background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 600; border-bottom-color: var(--line); }
+  .g-group { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line-2); font-size: 12.5px; }
+  .g-group b { font-weight: 600; }
+  .g-group .meta { color: var(--muted); }
+  .g-body .g-row { cursor: pointer; transition: background .12s; }
+  .g-body .g-row:hover { background: #fbfbf8; }
+  .g-body .g-row.sel { background: #f3faf6; }
+  .g-body .g-row.sel::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--brand); }
+  .g-body .g-row.open { background: #f6f6f2; }
+  .g-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--ink); }
+  .c-time .t { font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .c-time .k { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11.5px; }
+  .c-time .k svg.lucide { width: 12px; height: 12px; }
+  .strong { font-weight: 600; font-size: 13.5px; }
+  .small { color: var(--muted); font-size: 12px; }
+  .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cc { display: inline-block; padding: 0 4px; margin-right: 4px; border-radius: 4px; background: var(--line-2); color: var(--muted); font-size: 10.5px; font-weight: 700; letter-spacing: .02em; }
+  .assign { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px dashed var(--amber-line); background: #fffaf0; color: var(--amber); font-size: 12.5px; font-weight: 600; }
+  .assign:hover { background: var(--amber-soft); }
+  .row-actions { display: flex; justify-content: flex-end; gap: 2px; opacity: 0; transition: opacity .12s; }
+  .g-row:hover .row-actions, .g-row.open .row-actions { opacity: 1; }
+  .row-actions .icon-btn { width: 28px; height: 28px; }
+
+  .selbar {
+    position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 14px;
+    background: var(--ink); color: #fff; box-shadow: var(--sh-lg); transition: .2s ease; z-index: 25;
+  }
+  .selbar.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+  .selbar .btn { color: #fff; }
+  .selbar .btn:hover { background: rgba(255,255,255,.12); }
+  .selbar .sep { width: 1px; height: 20px; background: rgba(255,255,255,.2); margin: 0 4px; }
+
+  /* ─── Drawer ─── */
+  .scrim { position: fixed; inset: 0; background: rgba(21,23,27,.18); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 460px; max-width: 100%; z-index: 41;
+    display: flex; flex-direction: column; background: var(--surface); box-shadow: var(--sh-lg);
+    transform: translateX(104%); transition: transform .24s cubic-bezier(.2,.8,.2,1);
+  }
+  .drawer.show { transform: none; }
+  .d-head { padding: 16px 20px 14px; border-bottom: 1px solid var(--line-2); }
+  .d-top { display: flex; align-items: center; gap: 8px; }
+  .d-top .right { margin-left: auto; display: flex; gap: 2px; }
+  .d-title { margin: 10px 0 2px; font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+  .d-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .d-quick .btn { height: 52px; flex-direction: column; gap: 3px; font-size: 11.5px; }
+  .d-quick .btn svg.lucide { width: 17px; height: 17px; }
+  .d-body { flex: 1; overflow-y: auto; padding: 16px 20px 24px; display: grid; gap: 16px; align-content: start; }
+  .d-section h3 { margin: 0 0 8px; color: var(--muted); font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .leg { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .leg-top { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--surface-2); border-bottom: 1px solid var(--line-2); font-size: 12.5px; }
+  .leg-top b { font-weight: 600; }
+  .leg-route { display: grid; grid-template-columns: 14px 1fr; gap: 2px 10px; padding: 12px 14px 4px; }
+  .leg-route .pin { width: 10px; height: 10px; margin-top: 5px; border-radius: 50%; border: 2px solid var(--ink); background: #fff; }
+  .leg-route .pin.end { background: var(--ink); }
+  .leg-route .line { width: 2px; height: 16px; margin-left: 4px; background: repeating-linear-gradient(to bottom, #cfcec8 0 3px, transparent 3px 6px); }
+  .leg-route .place { font-size: 13.5px; font-weight: 600; }
+  .leg-route .place span { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+  .leg-foot { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; }
+  .leg-foot .right { margin-left: auto; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fact { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line-2); }
+  .fact .l { color: var(--muted); font-size: 11.5px; }
+  .fact .v { font-size: 14px; font-weight: 600; }
+  .fact .v.good { color: var(--green); }
+  .contact { display: grid; gap: 6px; font-size: 13px; }
+  .contact div { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+  .contact svg { color: var(--faint); }
+  .note { padding: 10px 12px; border-radius: 10px; background: #fff8e8; color: #6b4b0c; font-size: 13px; }
+  .log { display: grid; gap: 0; }
+  .log div { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: start; padding: 7px 0; font-size: 12.5px; }
+  .log i { width: 8px; height: 8px; margin: 5px 0 0 4px; border-radius: 50%; background: #cfcec8; }
+  .log i.g { background: var(--brand); }
+  .log span:last-child { color: var(--faint); white-space: nowrap; }
+  .d-foot { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line-2); background: var(--surface-2); }
+  .d-foot .right { margin-left: auto; display: flex; gap: 8px; }
+
+  /* ─── Command palette ─── */
+  .palette-wrap { position: fixed; inset: 0; z-index: 60; display: grid; justify-items: center; align-items: start; padding-top: 12vh; background: rgba(21,23,27,.28); opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .palette-wrap.show { opacity: 1; pointer-events: auto; }
+  .palette { width: min(600px, 92vw); border-radius: 16px; background: var(--surface); box-shadow: var(--sh-lg); overflow: hidden; transform: scale(.98); transition: transform .15s; }
+  .palette-wrap.show .palette { transform: none; }
+  .p-input { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line-2); }
+  .p-input input { flex: 1; border: 0; outline: none; font-size: 15px; background: transparent; }
+  .p-list { max-height: 360px; overflow-y: auto; padding: 8px; }
+  .p-title { padding: 8px 10px 4px; color: var(--faint); font-size: 11.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+  .p-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 9px; font-size: 13.5px; text-align: left; }
+  .p-item svg { color: var(--muted); }
+  .p-item.on, .p-item:hover { background: var(--line-2); }
+  .p-item .hint { margin-left: auto; color: var(--faint); font-size: 12px; }
+
+  /* ─── Placeholder ─── */
+  .empty { display: grid; justify-items: center; gap: 10px; padding: 90px 20px; text-align: center; }
+  .empty .ico { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-sm); }
+  .empty .ico svg.lucide { width: 24px; height: 24px; color: var(--muted); }
+  .empty h2 { margin: 6px 0 0; font-size: 18px; }
+  .empty p { margin: 0; max-width: 460px; color: var(--muted); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 1180px) {
+    .today-grid { grid-template-columns: 1fr; }
+    .pulse { grid-template-columns: repeat(3, 1fr); }
+    .pulse > div:nth-child(3) { border-right: 0; }
+    .pulse > div:nth-child(n+4) { border-top: 1px solid var(--line-2); }
+    .g-row { grid-template-columns: 22px 72px minmax(160px,1.2fr) minmax(150px,1fr) 118px minmax(130px,.8fr) 108px 108px; }
+    .g-row .c-act { display: none; }
+  }
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); box-shadow: var(--sh-lg); }
+    .app.menu-open .sidebar { transform: none; }
+    .main { margin-left: 0; }
+    .menu-btn { display: grid; }
+    .collapse-btn { display: none; }
+    .topbar { padding: 0 16px; }
+    .page { padding: 4px 16px 90px; }
+    .live span { display: none; }
+  }
+  @media (max-width: 760px) {
+    .pulse { grid-template-columns: 1fr 1fr; }
+    .pulse > div { border-right: 0 !important; border-top: 1px solid var(--line-2); }
+    .pulse > div:nth-child(-n+2) { border-top: 0; }
+    .pulse > div:nth-child(odd) { border-right: 1px solid var(--line-2) !important; }
+    .tl-item { grid-template-columns: 52px minmax(0,1fr) auto; grid-template-areas: "time route route" "time who who"; row-gap: 4px; }
+    .tl-item .tl-time { grid-area: time; align-self: start; padding-top: 2px; }
+    .tl-item .dir { display: none; }
+    .tl-item .tl-main { grid-area: route; }
+    .tl-item .tl-flight { display: none; }
+    .tl-item .who { grid-area: who; }
+    .inbox-item { flex-wrap: wrap; }
+    .inbox-actions { width: 100%; padding-left: 44px; }
+    .g-head { display: none; }
+    .g-row {
+      grid-template-columns: 1fr auto; gap: 6px 12px; padding: 14px 16px;
+      grid-template-areas: "time status" "res res" "route route" "driver pay";
+    }
+    .g-row .c-check, .g-row .c-act, .g-row .c-flight { display: none; }
+    .c-time { grid-area: time; display: flex; align-items: baseline; gap: 8px; }
+    .c-res { grid-area: res; }
+    .c-route { grid-area: route; }
+    .c-driver { grid-area: driver; }
+    .c-pay { grid-area: pay; text-align: right; }
+    .c-status { grid-area: status; }
+    .search { max-width: none; min-width: 100%; }
+    .toolbar .right { display: none; }
+    .page-head h1 { font-size: 21px; }
+    .drawer { width: 100%; }
+    .d-quick .btn { height: 48px; }
+    /* A phone's top bar keeps the action, not its label. */
+    .top-right .btn-primary { width: 34px; padding: 0; }
+    .top-right .btn-primary span { display: none; }
+    .top-right .live { display: none; }
+    .crumbs > span:first-child, .crumbs > svg { display: none; }
+    .p-item .mono { white-space: nowrap; }
+    .p-item .hint { display: none; }
+    .pulse > div:last-child { grid-column: 1 / -1; border-right: 0 !important; }
+    .card-head .right .sub { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ─────────── Sidebar ─────────── -->
+  <aside class="sidebar" aria-label="Ana menü">
+    <div class="brand">
+      <span class="brand-mark">T</span>
+      <span class="brand-name">TORVIAN</span>
+      <span class="brand-pill">Admin</span>
+      <button class="collapse-btn" id="collapseBtn" aria-label="Menüyü daralt"><i data-lucide="panel-left"></i></button>
+    </div>
+    <button class="search-trigger" data-palette><i data-lucide="search"></i><span>Ara veya komut…</span><span class="kbd">Ctrl K</span></button>
+
+    <nav class="nav" id="nav">
+      <div class="nav-group">
+        <div class="nav-title">Operasyon</div>
+        <button class="nav-item active" data-view="today"><i data-lucide="sun"></i><span class="nav-label">Bugün</span></button>
+        <button class="nav-item" data-view="reservations"><i data-lucide="ticket"></i><span class="nav-label">Rezervasyonlar</span><span class="nav-count alert">3</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Takvim & Kapasite" data-icon="calendar-days"><i data-lucide="calendar-days"></i><span class="nav-label">Takvim & Kapasite</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Canlı Ziyaretçiler" data-icon="radio"><i data-lucide="radio"></i><span class="nav-label">Canlı Ziyaretçiler</span><span class="nav-count">12</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">Filo & Ekip</div>
+        <button class="nav-item" data-view="placeholder" data-title="Şoförler" data-icon="users"><i data-lucide="users"></i><span class="nav-label">Şoförler</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Araçlar" data-icon="car"><i data-lucide="car"></i><span class="nav-label">Araçlar</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Araç Tipleri" data-icon="layers"><i data-lucide="layers"></i><span class="nav-label">Araç Tipleri</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Şoför Ödemeleri" data-icon="wallet"><i data-lucide="wallet"></i><span class="nav-label">Şoför Ödemeleri</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">Finans</div>
+        <button class="nav-item" data-view="placeholder" data-title="Kasa" data-icon="landmark"><i data-lucide="landmark"></i><span class="nav-label">Kasa</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Fiyatlandırma" data-icon="tags"><i data-lucide="tags"></i><span class="nav-label">Fiyatlandırma</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Kuponlar" data-icon="ticket-percent"><i data-lucide="ticket-percent"></i><span class="nav-label">Kuponlar</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">Site & Pazarlama</div>
+        <button class="nav-item" data-view="placeholder" data-title="Bölgeler" data-icon="map-pin"><i data-lucide="map-pin"></i><span class="nav-label">Bölgeler</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Değerlendirmeler" data-icon="star"><i data-lucide="star"></i><span class="nav-label">Değerlendirmeler</span><span class="nav-count">2</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Blog Yazıları" data-icon="file-text"><i data-lucide="file-text"></i><span class="nav-label">Blog Yazıları</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="Landing Sayfaları" data-icon="layout-template"><i data-lucide="layout-template"></i><span class="nav-label">Landing Sayfaları</span></button>
+        <button class="nav-item" data-view="placeholder" data-title="SEO Yönetimi" data-icon="search-check"><i data-lucide="search-check"></i><span class="nav-label">SEO Yönetimi</span></button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">Sistem</div>
+        <button class="nav-item" data-view="placeholder" data-title="Ayarlar" data-icon="settings"><i data-lucide="settings"></i><span class="nav-label">Ayarlar</span></button>
+      </div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="me">
+        <span class="avatar">TT</span>
+        <div>
+          <div class="me-name">Torvian Transfer</div>
+          <div class="me-mail">torviantransfer@gmail.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─────────── Main ─────────── -->
+  <div class="main">
+    <header class="topbar" id="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menüyü aç"><i data-lucide="menu"></i></button>
+      <div class="crumbs"><span>Admin</span><i data-lucide="chevron-right" style="width:14px;height:14px"></i><strong id="crumb">Bugün</strong></div>
+      <div class="top-right">
+        <span class="live"><i></i><span>12 kişi sitede</span></span>
+        <button class="icon-btn" data-palette aria-label="Ara"><i data-lucide="search"></i></button>
+        <button class="icon-btn" aria-label="Bildirimler"><i data-lucide="bell"></i><span class="dot"></span></button>
+        <button class="btn btn-primary"><i data-lucide="plus"></i><span>Yeni rezervasyon</span></button>
+      </div>
+    </header>
+
+    <!-- ═══════════ BUGÜN ═══════════ -->
+    <section class="page" id="view-today">
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Salı, 15 Eylül 2026 · Antalya 08:42</div>
+          <h1>Günaydın, bugün 14 transfer var</h1>
+        </div>
+        <div class="actions">
+          <div class="seg"><button class="on">Bugün</button><button>Yarın</button><button>Bu hafta</button></div>
+        </div>
+      </div>
+
+      <div class="card pulse">
+        <div><div class="label"><i data-lucide="route"></i>Transfer</div><div class="value num">14</div><div class="hint">8 karşılama · 6 çıkış</div></div>
+        <div><div class="label"><i data-lucide="users"></i>Yolcu</div><div class="value num">41</div><div class="hint">23 bavul</div></div>
+        <div class="warn"><div class="label"><i data-lucide="user-plus"></i>Şoför bekleyen</div><div class="value num">3</div><div class="hint">en yakını 14:20</div></div>
+        <div><div class="label"><i data-lucide="banknote"></i>Nakit tahsilat</div><div class="value num">€480</div><div class="hint">4 işte şoförde</div></div>
+        <div><div class="label"><i data-lucide="trending-up"></i>Bugünün cirosu</div><div class="value num">€1.640</div><div class="hint">dünden %12 fazla</div></div>
+      </div>
+
+      <div class="today-grid">
+        <div class="stack">
+          <div class="card">
+            <div class="card-head">
+              <h2>Dikkat gerektiriyor</h2><span class="chip plain t-amber">4</span>
+              <div class="right"><span class="sub">Hepsi bitince burası boşalır</span></div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-icon t-amber"><i data-lucide="user-plus"></i></div>
+              <div class="inbox-body">
+                <div class="inbox-title">14:20 karşılamada şoför yok</div>
+                <div class="inbox-meta"><span class="mono">TRV-24091</span> · Jan de Vries · AYT → Regnum Carya, Belek · gidiş-dönüş</div>
+              </div>
+              <div class="inbox-actions"><button class="btn btn-sm btn-primary" data-open="TRV-24091">Şoför ata</button></div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-icon t-rose"><i data-lucide="circle-x"></i></div>
+              <div class="inbox-body">
+                <div class="inbox-title">İptal talebi</div>
+                <div class="inbox-meta"><span class="mono">TRV-24077</span> · Olga Petrova · 18 Eyl · “Uçuşumuz iptal oldu”</div>
+              </div>
+              <div class="inbox-actions"><button class="btn btn-sm btn-outline">Reddet</button><button class="btn btn-sm btn-primary">Onayla ve iade et</button></div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-icon t-blue"><i data-lucide="plane-landing"></i></div>
+              <div class="inbox-body">
+                <div class="inbox-title">SU 2136 rötar yaptı, iniş 15:50</div>
+                <div class="inbox-meta"><span class="mono">TRV-24093</span> · şoför Hasan Demir 15:05'te bekleyecek</div>
+              </div>
+              <div class="inbox-actions"><button class="btn btn-sm btn-outline"><i data-lucide="message-circle"></i>Şoföre bildir</button></div>
+            </div>
+            <div class="inbox-item">
+              <div class="inbox-icon t-slate"><i data-lucide="credit-card"></i></div>
+              <div class="inbox-body">
+                <div class="inbox-title">Ödeme 2 saattir bekliyor</div>
+                <div class="inbox-meta"><span class="mono">TRV-24102</span> · Emma Janssen · €85 · bu gece 22:10</div>
+              </div>
+              <div class="inbox-actions"><button class="btn btn-sm btn-outline"><i data-lucide="send"></i>Ödeme linki gönder</button></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>Günün akışı</h2><span class="sub">saat sırasıyla</span>
+              <div class="right"><button class="link" data-go="reservations">Liste olarak aç</button></div>
+            </div>
+            <div class="timeline" id="timeline"></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card drivers">
+            <div class="card-head"><h2>Şoförler</h2><span class="sub">bugün</span><div class="right"><button class="link">Tümü</button></div></div>
+            <div class="row"><span class="status-dot sd-road"></span><span class="avatar sm">AY</span><div style="min-width:0;flex:1"><div class="strong">Ahmet Yılmaz</div><div class="small">Yolda · Kaya Palazzo'ya</div></div><span class="small num">3 iş</span></div>
+            <div class="row"><span class="status-dot sd-free"></span><span class="avatar sm">MK</span><div style="min-width:0;flex:1"><div class="strong">Mehmet Kaya</div><div class="small">Müsait · sıradaki 11:15</div></div><span class="small num">2 iş</span></div>
+            <div class="row"><span class="status-dot sd-free"></span><span class="avatar sm">HD</span><div style="min-width:0;flex:1"><div class="strong">Hasan Demir</div><div class="small">Müsait · sıradaki 15:05</div></div><span class="small num">2 iş</span></div>
+            <div class="row"><span class="status-dot sd-free"></span><span class="avatar sm">MÇ</span><div style="min-width:0;flex:1"><div class="strong">Murat Çelik</div><div class="small">Müsait · sıradaki 19:45</div></div><span class="small num">1 iş</span></div>
+            <div class="row"><span class="status-dot sd-off"></span><span class="avatar sm">VŞ</span><div style="min-width:0;flex:1"><div class="strong">Veli Şahin</div><div class="small">İzinli</div></div><span class="small num">—</span></div>
+          </div>
+
+          <div class="card money">
+            <div style="display:flex;align-items:center"><div class="strong">Eylül · net kâr</div><button class="link" style="margin-left:auto">Kasa</button></div>
+            <div class="big num">€4.820</div>
+            <div class="delta">↗ Ağustos'a göre %18</div>
+            <div class="bars"><span style="height:38%"></span><span style="height:52%"></span><span style="height:45%"></span><span style="height:68%"></span><span style="height:74%"></span><span class="cur" style="height:88%"></span></div>
+            <div class="bars-x"><span>Nis</span><span>May</span><span>Haz</span><span>Tem</span><span>Ağu</span><span>Eyl</span></div>
+            <div class="kv"><span>Şoförlere borç</span><b class="num">$1.240</b></div>
+            <div class="kv"><span>Bu ay reklam</span><b class="num">€612</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ REZERVASYONLAR ═══════════ -->
+    <section class="page" id="view-reservations" hidden>
+      <div class="page-head">
+        <div>
+          <div class="eyebrow">Operasyon</div>
+          <h1>Rezervasyonlar</h1>
+        </div>
+        <div class="actions">
+          <button class="btn btn-outline"><i data-lucide="download"></i>Dışa aktar</button>
+          <button class="btn btn-primary"><i data-lucide="plus"></i>Yeni rezervasyon</button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab on">Yaklaşan <span class="n">38</span></button>
+        <button class="tab">Bugün <span class="n">14</span></button>
+        <button class="tab">Şoför bekleyen <span class="n warn">3</span></button>
+        <button class="tab">Ödeme bekleyen <span class="n warn">2</span></button>
+        <button class="tab">İptal talebi <span class="n bad">1</span></button>
+        <button class="tab">Geçmiş</button>
+        <button class="tab">Tümü</button>
+      </div>
+
+      <div class="toolbar">
+        <label class="search"><i data-lucide="search"></i><input placeholder="Kod, müşteri, telefon, uçuş, otel…"></label>
+        <button class="filter set"><i data-lucide="calendar"></i>Tarih: <b>15 – 22 Eyl</b></button>
+        <button class="filter"><i data-lucide="map-pin"></i>Bölge</button>
+        <button class="filter"><i data-lucide="user"></i>Şoför</button>
+        <button class="filter"><i data-lucide="wallet"></i>Ödeme</button>
+        <div class="right">
+          <div class="seg"><button class="on" title="Liste"><i data-lucide="list"></i></button><button title="Takvim"><i data-lucide="calendar-range"></i></button></div>
+          <button class="btn btn-ghost"><i data-lucide="arrow-up-down"></i>Alış saati</button>
+        </div>
+      </div>
+
+      <div class="card grid-table">
+        <div class="g-row g-head">
+          <span class="c-check"><input type="checkbox" aria-label="Tümünü seç"></span>
+          <span>Saat</span><span>Rezervasyon</span><span>Güzergah</span><span>Uçuş</span><span>Şoför</span><span>Ödeme</span><span>Durum</span><span class="c-act"></span>
+        </div>
+        <div class="g-body" id="rows"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PLACEHOLDER ═══════════ -->
+    <section class="page" id="view-placeholder" hidden>
+      <div class="empty">
+        <div class="ico" id="phIcon"><i data-lucide="sparkles"></i></div>
+        <h2 id="phTitle">Sekme</h2>
+        <p>Bu taslakta sadece <b>Bugün</b> ve <b>Rezervasyonlar</b> ekranları dolu. Bu sekmenin içi, yön üzerinde anlaştıktan sonra aynı parçalarla (başlık, sekmeler, filtre çubuğu, tablo, sağdan açılan panel) tasarlanacak.</p>
+        <button class="btn btn-outline" data-go="reservations" style="margin-top:6px">Rezervasyonlara dön</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ─────────── Selection bar ─────────── -->
+  <div class="selbar" id="selbar">
+    <span><b id="selCount">0</b> seçili</span>
+    <span class="sep"></span>
+    <button class="btn btn-sm"><i data-lucide="send"></i>Telegram'a gönder</button>
+    <button class="btn btn-sm"><i data-lucide="user-plus"></i>Şoför ata</button>
+    <button class="btn btn-sm"><i data-lucide="file-down"></i>Voucher</button>
+    <span class="sep"></span>
+    <button class="btn btn-sm" id="selClear" aria-label="Seçimi kaldır"><i data-lucide="x"></i></button>
+  </div>
+
+  <!-- ─────────── Drawer ─────────── -->
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-label="Rezervasyon detayı">
+    <div class="d-head">
+      <div class="d-top">
+        <span class="mono small" id="dCode">TRV-24091</span>
+        <span class="chip" id="dStatus">Ödendi</span>
+        <div class="right">
+          <button class="icon-btn" aria-label="Önceki"><i data-lucide="chevron-up"></i></button>
+          <button class="icon-btn" aria-label="Sonraki"><i data-lucide="chevron-down"></i></button>
+          <button class="icon-btn" aria-label="Yeni sekmede aç"><i data-lucide="maximize-2"></i></button>
+          <button class="icon-btn" id="dClose" aria-label="Kapat"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="d-title" id="dName">Jan de Vries</div>
+      <div class="small" id="dMeta"><span class="cc">NL</span>3 yetişkin · 3 bavul · İngilizce</div>
+      <div class="d-quick">
+        <button class="btn btn-outline"><i data-lucide="message-circle"></i>WhatsApp</button>
+        <button class="btn btn-outline"><i data-lucide="phone"></i>Ara</button>
+        <button class="btn btn-outline"><i data-lucide="file-text"></i>Voucher</button>
+        <button class="btn btn-outline"><i data-lucide="send"></i>Telegram</button>
+      </div>
+    </div>
+
+    <div class="d-body">
+      <div class="d-section">
+        <h3>Yolculuk</h3>
+        <div style="display:grid;gap:10px" id="dLegs"></div>
+      </div>
+
+      <div class="d-section">
+        <h3>Para</h3>
+        <div class="facts">
+          <div class="fact"><div class="l">Müşteri ödedi</div><div class="v num" id="dFare">€145,00</div></div>
+          <div class="fact"><div class="l">Ödeme</div><div class="v good" id="dPay">Online · Stripe</div></div>
+          <div class="fact"><div class="l">Şoförlere</div><div class="v num">$140 <span class="small">(≈ €120,69)</span></div></div>
+          <div class="fact"><div class="l">Bize kalan</div><div class="v num good">€24,31</div></div>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <h3>Müşteri</h3>
+        <div class="contact">
+          <div><i data-lucide="mail"></i>jan.devries@example.nl</div>
+          <div><i data-lucide="phone"></i>+31 6 1234 5678</div>
+          <div><i data-lucide="hotel"></i>Regnum Carya Golf & Spa, Belek</div>
+        </div>
+      </div>
+
+      <div class="d-section">
+        <h3>Not</h3>
+        <div class="note">Çocuk koltuğu istiyoruz (2 yaş). Karşılama tabelasında “DE VRIES” yazsın.</div>
+      </div>
+
+      <div class="d-section">
+        <h3>Geçmiş</h3>
+        <div class="log">
+          <div><i class="g"></i><span>Ödeme alındı · €145 Stripe</span><span>12 Eyl 10:14</span></div>
+          <div><i></i><span>Voucher e-postayla gönderildi</span><span>12 Eyl 10:15</span></div>
+          <div><i></i><span>Rezervasyon oluşturuldu · booking sayfası (EN)</span><span>12 Eyl 10:09</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-foot">
+      <button class="btn btn-ghost"><i data-lucide="pencil"></i>Düzenle</button>
+      <div class="right"><button class="btn btn-danger-ghost"><i data-lucide="ban"></i>İptal et</button></div>
+    </div>
+  </aside>
+
+  <!-- ─────────── Command palette ─────────── -->
+  <div class="palette-wrap" id="palette">
+    <div class="palette" role="dialog" aria-label="Arama ve komutlar">
+      <div class="p-input"><i data-lucide="search"></i><input id="pInput" placeholder="Rezervasyon, müşteri, uçuş ara veya bir işlem yaz…"><span class="kbd">Esc</span></div>
+      <div class="p-list">
+        <div class="p-title">Hızlı işlemler</div>
+        <button class="p-item on"><i data-lucide="plus"></i>Yeni rezervasyon<span class="hint">N</span></button>
+        <button class="p-item"><i data-lucide="hand-coins"></i>Şoföre ödeme yap</button>
+        <button class="p-item"><i data-lucide="receipt"></i>Kasaya gider ekle</button>
+        <div class="p-title">Rezervasyonlar</div>
+        <button class="p-item" data-open="TRV-24091"><i data-lucide="ticket"></i><span class="mono">TRV-24091</span>&nbsp;Jan de Vries · bugün 14:20<span class="hint">şoför yok</span></button>
+        <button class="p-item" data-open="TRV-24093"><i data-lucide="ticket"></i><span class="mono">TRV-24093</span>&nbsp;Olga Ivanova · bugün 15:05</button>
+        <div class="p-title">Sayfalar</div>
+        <button class="p-item" data-go="reservations"><i data-lucide="ticket"></i>Rezervasyonlar</button>
+        <button class="p-item"><i data-lucide="wallet"></i>Şoför Ödemeleri</button>
+        <button class="p-item"><i data-lucide="landmark"></i>Kasa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── sample data: Antalya, 15 September ───
+  const R = [
+    { code: "TRV-24085", day: "today", time: "09:40", kind: "arr", from: "AYT", to: "Kaya Palazzo", region: "Belek", customer: "Markus Weber", cc: "DE", pax: 4, bags: 4, flight: "DE 1523", fs: ["İndi 09:28", "t-green"], driver: ["Ahmet Yılmaz", "07 ABC 101"], pay: ["€165", "Online"], status: ["Yolcu alındı", "t-violet"] },
+    { code: "TRV-24088", day: "today", time: "11:15", kind: "dep", from: "Rixos Premium", to: "AYT", region: "Belek", customer: "Anna Kowalska", cc: "PL", pax: 2, bags: 3, flight: "LO 7702", fs: ["Kalkış 14:05", "t-slate"], driver: ["Mehmet Kaya", "07 KL 342"], pay: ["€120", "Nakit · şoförde €100"], status: ["Şoför atandı", "t-blue"] },
+    { code: "TRV-24091", day: "today", time: "14:20", kind: "arr", from: "AYT", to: "Regnum Carya", region: "Belek", customer: "Jan de Vries", cc: "NL", pax: 3, bags: 3, flight: "TK 2412", fs: ["Zamanında", "t-green"], driver: null, pay: ["€145", "Online"], status: ["Ödendi", "t-green"], round: true },
+    { code: "TRV-24093", day: "today", time: "15:05", kind: "arr", from: "AYT", to: "TUI Magic Life", region: "Side", customer: "Olga Ivanova", cc: "RU", pax: 2, bags: 2, flight: "SU 2136", fs: ["Rötar +45 dk", "t-amber"], driver: ["Hasan Demir", "07 HD 220"], pay: ["€130", "Online"], status: ["Şoför atandı", "t-blue"] },
+    { code: "TRV-24096", day: "today", time: "17:30", kind: "dep", from: "Alanya Beach", to: "AYT", region: "Alanya", customer: "Sophie Müller", cc: "DE", pax: 5, bags: 6, flight: "EW 7582", fs: ["Kalkış 21:10", "t-slate"], driver: null, pay: ["€180", "Nakit · şoförde €150"], status: ["Kapora ödendi", "t-teal"] },
+    { code: "TRV-24099", day: "today", time: "19:45", kind: "arr", from: "AYT", to: "Rixos Sungate", region: "Kemer", customer: "Piotr Nowak", cc: "PL", pax: 2, bags: 2, flight: "PC 1234", fs: ["Zamanında", "t-green"], driver: ["Murat Çelik", "07 MC 515"], pay: ["€95", "Online"], status: ["Şoför atandı", "t-blue"] },
+    { code: "TRV-24102", day: "today", time: "22:10", kind: "arr", from: "AYT", to: "Titanic Deluxe", region: "Lara", customer: "Emma Janssen", cc: "NL", pax: 2, bags: 2, flight: "HV 5821", fs: ["Zamanında", "t-green"], driver: null, pay: ["€85", "Ödeme bekliyor"], status: ["Ödeme bekliyor", "t-amber"] },
+    { code: "TRV-24104", day: "tomorrow", time: "06:30", kind: "dep", from: "Maxx Royal", to: "AYT", region: "Kemer", customer: "Thomas Becker", cc: "DE", pax: 2, bags: 2, flight: "XQ 142", fs: ["Kalkış 09:40", "t-slate"], driver: ["Ahmet Yılmaz", "07 ABC 101"], pay: ["€110", "Online"], status: ["Şoför atandı", "t-blue"] },
+    { code: "TRV-24107", day: "tomorrow", time: "12:50", kind: "arr", from: "AYT", to: "Gloria Serenity", region: "Belek", customer: "Katarzyna Zielińska", cc: "PL", pax: 4, bags: 5, flight: "W6 2851", fs: ["Planlandı", "t-slate"], driver: null, pay: ["€150", "Online"], status: ["Ödendi", "t-green"] },
+  ];
+  const initials = (n) => n.split(" ").map((w) => w[0]).slice(0, 2).join("").toLocaleUpperCase("tr-TR");
+  const icon = (name) => `<i data-lucide="${name}"></i>`;
+
+  // ─── timeline ───
+  const tl = document.getElementById("timeline");
+  let lastHour = "";
+  tl.innerHTML = R.filter((r) => r.day === "today").map((r) => {
+    const hour = r.time.slice(0, 2);
+    const head = hour !== lastHour ? `<div class="tl-hour ${hour === "09" ? "" : ""}">${hour}:00</div>` : "";
+    const now = r.code === "TRV-24088" ? `<div class="tl-hour tl-now">ŞİMDİ · 08:42 → sıradaki 11:15</div>` : "";
+    lastHour = hour;
+    const who = r.driver
+      ? `<div class="who"><span class="avatar sm">${initials(r.driver[0])}</span><div style="min-width:0"><div class="name">${r.driver[0]}</div><div class="plate mono">${r.driver[1]}</div></div></div>`
+      : `<div class="who"><button class="assign" data-open="${r.code}">${icon("user-plus")}Şoför ata</button></div>`;
+    return `${now}${head}
+      <div class="tl-item" data-open="${r.code}">
+        <div class="tl-time num">${r.time}</div>
+        <div class="dir ${r.kind}">${icon(r.kind === "arr" ? "plane-landing" : "plane-takeoff")}</div>
+        <div class="tl-main" style="min-width:0">
+          <div class="tl-route">${r.from} → ${r.to} <span class="small">· ${r.region}</span></div>
+          <div class="tl-sub"><span class="cc">${r.cc}</span>${r.customer} · ${r.pax} yolcu · ${r.pay[0]} ${r.pay[1].startsWith("Nakit") ? "nakit" : ""}</div>
+        </div>
+        <div class="tl-flight" style="min-width:0"><div class="strong mono" style="font-size:12.5px">${r.flight}</div><span class="chip ${r.fs[1]}">${r.fs[0]}</span></div>
+        ${who}
+      </div>`;
+  }).join("");
+
+  // ─── reservations table ───
+  const rows = document.getElementById("rows");
+  const group = (key, label, meta) => `<div class="g-group"><b>${label}</b><span class="meta">${meta}</span></div>`;
+  const rowHtml = (r) => `
+    <div class="g-row" data-open="${r.code}">
+      <span class="c-check"><input type="checkbox" aria-label="${r.code} seç"></span>
+      <div class="c-time"><div class="t num">${r.time}</div><div class="k">${icon(r.kind === "arr" ? "plane-landing" : "plane-takeoff")}${r.kind === "arr" ? "Karşılama" : "Çıkış"}</div></div>
+      <div class="c-res" style="min-width:0"><div class="strong ellipsis">${r.customer}</div><div class="small ellipsis"><span class="mono">${r.code}</span> · <span class="cc">${r.cc}</span>${r.pax} yolcu · ${r.bags} bavul</div></div>
+      <div class="c-route" style="min-width:0"><div class="strong ellipsis" style="font-weight:500">${r.from} → ${r.to}</div><div class="small ellipsis">${r.region}${r.round ? " · <b style='color:var(--ink-2)'>gidiş-dönüş</b>" : ""}</div></div>
+      <div class="c-flight"><div class="mono" style="font-size:12.5px;font-weight:600">${r.flight}</div><span class="small" style="color:${r.fs[1] === "t-amber" ? "var(--amber)" : r.fs[1] === "t-green" ? "var(--green)" : "var(--muted)"};font-weight:500">${r.fs[0]}</span></div>
+      <div class="c-driver" style="min-width:0">${r.driver
+        ? `<div class="who"><span class="avatar sm">${initials(r.driver[0])}</span><div style="min-width:0"><div class="name">${r.driver[0]}</div><div class="plate mono">${r.driver[1]}</div></div></div>`
+        : `<button class="assign" data-open="${r.code}">${icon("user-plus")}Şoför ata</button>`}</div>
+      <div class="c-pay"><div class="strong num">${r.pay[0]}</div><div class="small" style="${r.pay[1].startsWith("Nakit") ? "color:var(--amber);font-weight:500" : r.pay[1] === "Ödeme bekliyor" ? "color:var(--rose);font-weight:500" : ""}">${r.pay[1]}</div></div>
+      <div class="c-status"><span class="chip ${r.status[1]}">${r.status[0]}</span></div>
+      <div class="c-act row-actions"><button class="icon-btn" aria-label="WhatsApp">${icon("message-circle")}</button><button class="icon-btn" aria-label="Diğer">${icon("more-horizontal")}</button></div>
+    </div>`;
+  rows.innerHTML =
+    group("today", "Bugün · Salı 15 Eylül", "7 transfer · €920 · 3 şoför bekliyor") +
+    R.filter((r) => r.day === "today").map(rowHtml).join("") +
+    group("tomorrow", "Yarın · Çarşamba 16 Eylül", "2 transfer · €260 · 1 şoför bekliyor") +
+    R.filter((r) => r.day === "tomorrow").map(rowHtml).join("");
+
+  lucide.createIcons();
+
+  // ─── views ───
+  const app = document.getElementById("app");
+  const views = { today: "view-today", reservations: "view-reservations", placeholder: "view-placeholder" };
+  function show(view, title, iconName) {
+    Object.values(views).forEach((id) => (document.getElementById(id).hidden = true));
+    document.getElementById(views[view]).hidden = false;
+    document.getElementById("crumb").textContent = title || (view === "today" ? "Bugün" : "Rezervasyonlar");
+    if (view === "placeholder") {
+      document.getElementById("phTitle").textContent = title;
+      document.getElementById("phIcon").innerHTML = icon(iconName || "sparkles");
+      lucide.createIcons();
+    }
+    document.querySelectorAll(".nav-item").forEach((b) => {
+      const same = b.dataset.view === view && (view !== "placeholder" || b.dataset.title === title);
+      b.classList.toggle("active", same);
+    });
+    app.classList.remove("menu-open");
+    window.scrollTo({ top: 0 });
+  }
+  document.querySelectorAll(".nav-item").forEach((b) =>
+    b.addEventListener("click", () => show(b.dataset.view, b.dataset.title, b.dataset.icon))
+  );
+  document.querySelectorAll("[data-go]").forEach((b) =>
+    b.addEventListener("click", (e) => { e.stopPropagation(); closePalette(); show(b.dataset.go); })
+  );
+
+  // ─── drawer ───
+  const drawer = document.getElementById("drawer");
+  const scrim = document.getElementById("scrim");
+  function openDrawer(code) {
+    const r = R.find((x) => x.code === code) || R[2];
+    document.getElementById("dCode").textContent = r.code;
+    const st = document.getElementById("dStatus");
+    st.className = `chip ${r.status[1]}`; st.textContent = r.status[0];
+    document.getElementById("dName").textContent = r.customer;
+    document.getElementById("dMeta").innerHTML = `<span class="cc">${r.cc}</span>${r.pax} yolcu · ${r.bags} bavul · ${r.region}`;
+    document.getElementById("dFare").textContent = r.pay[0];
+    document.getElementById("dPay").textContent = r.pay[1];
+    const leg = (label, date, from, fromSub, to, toSub, flight, fs, driver) => `
+      <div class="leg">
+        <div class="leg-top">${icon(label === "Gidiş" ? "plane-landing" : "plane-takeoff")}<b>${label}</b><span class="small">· ${date}</span><span style="margin-left:auto" class="mono small">${flight}</span><span class="chip ${fs[1]}">${fs[0]}</span></div>
+        <div class="leg-route">
+          <span class="pin"></span><div class="place">${from}<span>${fromSub}</span></div>
+          <span class="line"></span><span></span>
+          <span class="pin end"></span><div class="place">${to}<span>${toSub}</span></div>
+        </div>
+        <div class="leg-foot">${driver
+          ? `<span class="avatar">${initials(driver[0])}</span><div><div class="strong">${driver[0]}</div><div class="small mono">${driver[1]} · Mercedes Vito</div></div><div class="right"><button class="btn btn-sm btn-ghost">Değiştir</button></div>`
+          : `<span class="small" style="color:var(--amber);font-weight:600">Şoför atanmadı</span><div class="right"><button class="btn btn-sm btn-primary">${icon("user-plus")}Şoför ata</button></div>`}</div>
+      </div>`;
+    const airport = ["Antalya Havalimanı", "AYT · Dış Hatlar"];
+    const hotel = [r.to === "AYT" ? r.from : r.to, r.region];
+    let legs = r.kind === "arr"
+      ? leg("Gidiş", `Bugün ${r.time}`, airport[0], airport[1], hotel[0], hotel[1], r.flight, r.fs, r.driver)
+      : leg("Gidiş", `Bugün ${r.time}`, hotel[0], hotel[1], airport[0], airport[1], r.flight, r.fs, r.driver);
+    if (r.round) legs += leg("Dönüş", "22 Eyl 09:00", hotel[0], hotel[1], airport[0], airport[1], "TK 2417", ["Planlandı", "t-slate"], null);
+    document.getElementById("dLegs").innerHTML = legs;
+    lucide.createIcons();
+    document.querySelectorAll(".g-row.open").forEach((x) => x.classList.remove("open"));
+    document.querySelectorAll(`.g-row[data-open="${code}"]`).forEach((x) => x.classList.add("open"));
+    drawer.classList.add("show"); scrim.classList.add("show");
+  }
+  function closeDrawer() {
+    drawer.classList.remove("show"); scrim.classList.remove("show");
+    document.querySelectorAll(".g-row.open").forEach((x) => x.classList.remove("open"));
+  }
+  document.addEventListener("click", (e) => {
+    const cb = e.target.closest(".c-check");
+    if (cb) { e.stopPropagation(); updateSel(); return; }
+    const opener = e.target.closest("[data-open]");
+    if (opener) { closePalette(); if (!document.getElementById("view-reservations").hidden || opener.closest("#view-today") || opener.closest(".palette")) openDrawer(opener.dataset.open); }
+  });
+  scrim.addEventListener("click", closeDrawer);
+  document.getElementById("dClose").addEventListener("click", closeDrawer);
+
+  // ─── selection ───
+  const selbar = document.getElementById("selbar");
+  function updateSel() {
+    setTimeout(() => {
+      const checked = [...document.querySelectorAll(".g-body input[type=checkbox]:checked")];
+      document.querySelectorAll(".g-body .g-row").forEach((row) => row.classList.toggle("sel", row.querySelector("input").checked));
+      document.getElementById("selCount").textContent = checked.length;
+      selbar.classList.toggle("show", checked.length > 0);
+    });
+  }
+  document.getElementById("selClear").addEventListener("click", () => {
+    document.querySelectorAll(".g-body input[type=checkbox]").forEach((c) => (c.checked = false));
+    updateSel();
+  });
+
+  // ─── palette ───
+  const palette = document.getElementById("palette");
+  function openPalette() { palette.classList.add("show"); setTimeout(() => document.getElementById("pInput").focus(), 20); }
+  function closePalette() { palette.classList.remove("show"); }
+  document.querySelectorAll("[data-palette]").forEach((b) => b.addEventListener("click", openPalette));
+  palette.addEventListener("click", (e) => { if (e.target === palette) closePalette(); });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openPalette(); }
+    if (e.key === "Escape") { closePalette(); closeDrawer(); }
+  });
+
+  // ─── shell ───
+  document.getElementById("collapseBtn").addEventListener("click", () => app.classList.toggle("collapsed"));
+  document.getElementById("menuBtn").addEventListener("click", () => app.classList.toggle("menu-open"));
+  window.addEventListener("scroll", () => document.getElementById("topbar").classList.toggle("scrolled", window.scrollY > 4));
+  document.querySelectorAll(".seg, .tabs").forEach((g) =>
+    g.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      g.querySelectorAll("button").forEach((x) => x.classList.remove("on")); b.classList.add("on");
+    })
+  );
+
+  // Let a link open a view straight away: admin-yeni-nesil.html#reservations
+  if (location.hash === "#reservations") show("reservations");
+  if (location.hash === "#drawer") { show("reservations"); openDrawer("TRV-24091"); }
+</script>
+</body>
+</html>

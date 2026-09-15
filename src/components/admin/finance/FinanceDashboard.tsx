@@ -14,9 +14,16 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import AdminDialog from "@/components/admin/AdminDialog";
-import { buttonPrimary, buttonSecondary, Card, Delta, StatTile } from "@/components/admin/AdminUi";
-import PeriodBar from "@/components/admin/PeriodBar";
+import {
+  buttonPrimary,
+  buttonSecondary,
+  Card,
+  Delta,
+  Dialog as AdminDialog,
+  dropQueryParam,
+  PeriodBar,
+  StatTile,
+} from "@/components/admin/ui";
 import { NetProfitChart, RevenueCostChart } from "@/components/admin/finance/FinanceCharts";
 import FinanceEntryForm from "@/components/admin/finance/FinanceEntryForm";
 import { change, type EntryKind, type FinanceCategory, type FinanceReport } from "@/lib/finance";
@@ -29,6 +36,8 @@ interface Props {
   rates: Rates;
   tablesMissing: boolean;
   period: PeriodKey | null;
+  /** Open the entry dialog straight away — the Ctrl K palette's "Kasaya gider ekle". */
+  openEntry?: EntryKind | null;
   adminBase: string;
 }
 
@@ -40,12 +49,23 @@ const TRANSFERS_SHOWN = 15;
  * and what is left. The net profit leads, because that is the question; the
  * charts, the categories and the per-transfer list are there to answer "why".
  */
-export default function FinanceDashboard({ report: r, categories, rates, tablesMissing, period, adminBase }: Props) {
+export default function FinanceDashboard({
+  report: r,
+  categories,
+  rates,
+  tablesMissing,
+  period,
+  openEntry,
+  adminBase,
+}: Props) {
   const router = useRouter();
-  const [dialog, setDialog] = useState<EntryKind | null>(null);
+  const [dialog, setDialog] = useState<EntryKind | null>(tablesMissing ? null : (openEntry ?? null));
   const [allTransfers, setAllTransfers] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const closeDialog = useCallback(() => setDialog(null), []);
+  const closeDialog = useCallback(() => {
+    setDialog(null);
+    dropQueryParam("add");
+  }, []);
 
   const base = `${adminBase}/finance`;
   const query = rangeQuery(r.range, period);
