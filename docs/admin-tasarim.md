@@ -358,8 +358,8 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 
 ### Devam notları
 
-- Aşama 1, 2 ve 3 üst üste kurulu branch'lerde, push edildi, `main`'e henüz alınmadı: `feat/admin-ui-temel` → `feat/admin-ui-rezervasyonlar` → `feat/admin-ui-bugun`. En üstteki (`feat/admin-ui-bugun`) üçünü birden içerir.
-- Sıradaki adım: `feat/admin-ui-bugun` önizlemede gerçek veriyle denenir (Bugün sayıları, Rezervasyonlar listesi ve filtreleri, sağ panelden şoför atama, Ctrl K araması); sorun yoksa `main`'e alınır.
-- Sonra sırasıyla Aşama 4, 5, 6, 7, 8, en son Aşama 9. Her aşama önceki branch'in üstünden yeni branch'te (`feat/admin-ui-<aşama>`) yapılır.
+- Aşama 1, 2 ve 3 `main`'e alındı (`feat/admin-ui-temel` → `feat/admin-ui-rezervasyonlar` → `feat/admin-ui-bugun`).
+- Canlıda ilk bakılacaklar: Bugün ekranındaki sayılar, Rezervasyonlar listesi ve filtreleri, sağ panelden şoför atama, Ctrl K araması. Bu ekranların sorguları gerçek veriyle ilk kez canlıda çalıştı; bir sorun görülürse önce o düzeltilir.
+- Sıradaki iş **Aşama 4** (Takvim & Kapasite, Canlı Ziyaretçiler: Canlı / Analitik). Sonra 5, 6, 7, 8, en son 9. Her aşama güncel `main`'den açılan yeni branch'te (`feat/admin-ui-<aşama>`) yapılır, önizlemede denenir, sonra `main`'e alınır.
 - Yerelde `.env.local` gerçek Supabase anahtarı taşımadığı için ekranlar geçici bir önizleme sayfasında (`/tr/zz-ui-onizleme`, sahte veri ve sahte API yanıtlarıyla) kontrol edilir; bu sayfa commit'e girmez.
 - Commit ve PR metinlerinde yapay zeka satırı (Co-Authored-By vb.) kullanılmaz. Eski commit'lerdeki satırlar için geçmişin yeniden yazılması ve `.claude/settings.json`, `CLAUDE.md` dosyalarının repodan kaldırılması henüz kararlaştırılmadı.
