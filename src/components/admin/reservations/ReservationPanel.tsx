@@ -10,6 +10,7 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Link as LinkIcon,
   MoreHorizontal,
   Pencil,
   Phone,
@@ -40,10 +41,12 @@ import AssignDriverPanel, { type AssignResult } from "./AssignDriverPanel";
 import AssignmentBlock from "./AssignmentBlock";
 import DriverLinkDialog from "./DriverLinkDialog";
 import EditReservationDialog from "./EditReservationDialog";
+import PaymentLinkDialog from "./PaymentLinkDialog";
 import {
   type Leg,
   type Reservation,
   type ReservationDetail,
+  type ReservationEvent,
   customerName,
   dayHeading,
   dayKey,
@@ -104,8 +107,9 @@ export function useReservationPanel(
   const [assignLeg, setAssignLeg] = useState<Leg | null>(initialAssignLeg);
   const [editing, setEditing] = useState(false);
   const [confirm, setConfirm] = useState<null | "delete" | "approve">(null);
-  const [busy, setBusy] = useState<null | "telegram" | "delete" | "approve" | "reject">(null);
+  const [busy, setBusy] = useState<null | "telegram" | "delete" | "approve" | "reject" | "payment-link">(null);
   const [handover, setHandover] = useState<AssignResult | null>(null);
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
 
   const code = r.reservation_code;
   const currency = settlementOf(r.currency);
@@ -123,6 +127,25 @@ export function useReservationPanel(
     try {
       await post("/api/admin/send-to-telegram", { reservationId: r.id });
       toast("Şoför grubuna gönderildi.");
+    } catch (e) {
+      toast(errorText(e), "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const sendPaymentLink = async () => {
+    setBusy("payment-link");
+    try {
+      const res = await fetch("/api/admin/send-payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservationId: r.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? "Ödeme linki oluşturulamadı.");
+      setPaymentLink(data.url);
+      onChanged();
     } catch (e) {
       toast(errorText(e), "error");
     } finally {
@@ -189,7 +212,11 @@ export function useReservationPanel(
       />
       <QuickAction icon={Phone} label="Ara" href={phone ? `tel:${phone}` : undefined} disabled={!phone} />
       <QuickAction icon={FileText} label="Voucher" href={voucherHref} newTab />
-      <QuickAction icon={Send} label="Telegram" onClick={sendTelegram} loading={busy === "telegram"} />
+      {r.status === "pending" ? (
+        <QuickAction icon={LinkIcon} label="Ödeme linki" onClick={sendPaymentLink} loading={busy === "payment-link"} />
+      ) : (
+        <QuickAction icon={Send} label="Telegram" onClick={sendTelegram} loading={busy === "telegram"} />
+      )}
     </>
   );
 
@@ -210,7 +237,7 @@ export function useReservationPanel(
   const feesInFare = fees.every((f) => f.inFare !== null) ? fees.reduce((sum, f) => sum + (f.inFare ?? 0), 0) : null;
   const profit = reservationProfit(r);
   const noteVisible = !!r.notes && r.status !== "cancel_requested";
-  const history = buildHistory(r);
+  const history = buildHistory(r, detail.events);
 
   const body = (
     <>
@@ -411,6 +438,9 @@ export function useReservationPanel(
         />
       )}
       {handover && <DriverLinkDialog {...handover} onClose={() => setHandover(null)} />}
+      {paymentLink && (
+        <PaymentLinkDialog url={paymentLink} customerName={customerName(r)} phone={phone} onClose={() => setPaymentLink(null)} />
+      )}
       <ConfirmDialog
         open={confirm === "delete"}
         title={hardDelete ? "Kaydı sil" : "Rezervasyonu iptal et"}
@@ -608,20 +638,43 @@ function PriceBreakdown({ r, currency }: { r: Reservation; currency: Settlement 
   );
 }
 
+/** The subset of event_log actions worth a line on this timeline — the rest
+ * (assigned, unassigned, status_changed) already have their own timestamped
+ * line below, from driver_assignments, and would just repeat it. */
+const EVENT_TEXT: Record<string, (e: ReservationEvent) => string> = {
+  created: (e) => `Rezervasyon oluşturuldu — ${e.actor}`,
+  edited: (e) => `Düzenlendi — ${e.actor}`,
+  cancelled: (e) => `İptal onaylandı — ${e.actor}`,
+  cancel_rejected: (e) => `İptal talebi reddedildi — ${e.actor}`,
+  payment_link_sent: (e) => `Ödeme linki gönderildi — ${e.actor}`,
+  paid: () => "Ödeme alındı",
+  payment_failed: (e) => `Ödeme başarısız — ${String(e.detail?.reason ?? "")}`.trim(),
+};
+
 /**
- * The booking's timeline, pieced together from the timestamps it already has.
- * A proper event log (who changed what) is on the list for later.
+ * The booking's timeline: the timestamps every row already carries
+ * (created, assigned, accepted, picked up, completed), plus whatever
+ * event_log has recorded — who edited it, who sent a payment link, who
+ * approved a cancellation.
  */
-function buildHistory(r: Reservation) {
-  const events: { at: string; text: string }[] = [{ at: r.created_at, text: "Rezervasyon oluşturuldu" }];
+function buildHistory(r: Reservation, events: ReservationEvent[] = []) {
+  const hasCreatedEvent = events.some((e) => e.action === "created");
+  const out: { at: string; text: string }[] = hasCreatedEvent
+    ? []
+    : [{ at: r.created_at, text: "Rezervasyon oluşturuldu" }];
+
   for (const da of r.driver_assignments ?? []) {
     const who = `${da.drivers?.full_name ?? "Şoför"} · ${da.leg === "return" ? "dönüş" : "gidiş"}`;
-    if (da.assigned_at) events.push({ at: da.assigned_at, text: `Şoföre gönderildi — ${who}` });
-    if (da.accepted_at) events.push({ at: da.accepted_at, text: `Şoför kabul etti — ${who}` });
-    if (da.picked_up_at) events.push({ at: da.picked_up_at, text: `Yolcu alındı — ${who}` });
-    if (da.completed_at) events.push({ at: da.completed_at, text: `Tamamlandı — ${who}` });
+    if (da.assigned_at) out.push({ at: da.assigned_at, text: `Şoföre gönderildi — ${who}` });
+    if (da.accepted_at) out.push({ at: da.accepted_at, text: `Şoför kabul etti — ${who}` });
+    if (da.picked_up_at) out.push({ at: da.picked_up_at, text: `Yolcu alındı — ${who}` });
+    if (da.completed_at) out.push({ at: da.completed_at, text: `Tamamlandı — ${who}` });
   }
-  return events
-    .filter((e) => e.at)
-    .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+
+  for (const e of events) {
+    const format = EVENT_TEXT[e.action];
+    if (format) out.push({ at: e.created_at, text: format(e) });
+  }
+
+  return out.filter((e) => e.at).sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
 }

@@ -6,6 +6,7 @@ import { convertFromUSD } from "@/lib/currency";
 import { notifyNewPayment, notifyNewCashBooking, notifyPaymentFailed, sendDriverVoucherToTelegram } from "@/lib/telegram";
 import { capiPurchase } from "@/lib/capi";
 import { bookingParts } from "@/lib/datetime";
+import { logEvent } from "@/lib/eventLog";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -113,6 +114,13 @@ export async function POST(request: NextRequest) {
         recipient: "admin",
         content: `Payment received for reservation ${reservationCode}. Amount: $${(paymentIntent.amount ?? 0) / 100}`,
         metadata: { reservation_id: reservationId, payment_intent_id: paymentIntent.id },
+      });
+
+      await logEvent(supabase, {
+        reservationId,
+        action: "paid",
+        actor: "system",
+        detail: { is_deposit: isDeposit, amount: (paymentIntent.amount ?? 0) / 100 },
       });
 
       // Send confirmation email to customer
@@ -349,6 +357,13 @@ export async function POST(request: NextRequest) {
           decline_code: pi.last_payment_error?.decline_code ?? null,
           error_code: pi.last_payment_error?.code ?? null,
         },
+      });
+
+      await logEvent(supabase, {
+        reservationId,
+        action: "payment_failed",
+        actor: "system",
+        detail: { reason },
       });
 
       // Read the customer so the alert carries a number to call, which is the

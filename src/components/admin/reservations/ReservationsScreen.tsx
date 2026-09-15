@@ -444,27 +444,26 @@ export default function ReservationsScreen({
 
   const sendSelectedToTelegram = async () => {
     setTelegramBusy(true);
-    let sent = 0;
-    let failed = 0;
-    for (const r of selectedRows) {
-      try {
-        const res = await fetch("/api/admin/send-to-telegram", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reservationId: r.id }),
-        });
-        if (res.ok) sent += 1;
-        else failed += 1;
-      } catch {
-        failed += 1;
+    try {
+      const res = await fetch("/api/admin/send-to-telegram-bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservationIds: selectedRows.map((r) => r.id) }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast(data?.error ?? "Gönderilemedi.", "error");
+        return;
       }
+      toast(
+        data.messages > 1
+          ? `${data.sent} rezervasyon, ${data.messages} mesajda şoför grubuna gönderildi.`
+          : `${data.sent} rezervasyon tek mesajda şoför grubuna gönderildi.`
+      );
+    } finally {
+      setTelegramBusy(false);
+      setTelegramConfirm(false);
     }
-    setTelegramBusy(false);
-    setTelegramConfirm(false);
-    toast(
-      failed ? `${sent} gönderildi, ${failed} gönderilemedi.` : `${sent} rezervasyon şoför grubuna gönderildi.`,
-      failed ? "error" : "success"
-    );
   };
 
   const downloadSelectedVouchers = () => {
@@ -668,7 +667,7 @@ export default function ReservationsScreen({
       <ConfirmDialog
         open={telegramConfirm}
         title="Telegram'a gönder"
-        message={`${selectedRows.length} rezervasyon şoför grubuna ayrı mesajlar olarak gönderilecek.`}
+        message={`${selectedRows.length} rezervasyon şoför grubuna tek mesajda gönderilecek.`}
         confirmLabel="Gönder"
         busy={telegramBusy}
         onConfirm={sendSelectedToTelegram}

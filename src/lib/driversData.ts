@@ -11,8 +11,10 @@ export interface DriverRow {
   phone: string | null;
   email: string | null;
   is_active: boolean;
+  portal_token: string | null;
   balance: LedgerSummary;
   todayJobs: number;
+  onLeaveToday: boolean;
 }
 
 export interface DriverJob {
@@ -46,13 +48,14 @@ export async function loadDriversOverview(
   db: SupabaseClient,
   today: string
 ): Promise<DriverRow[]> {
-  const [{ data: drivers }, ledger, { data: assignments }] = await Promise.all([
-    db.from("drivers").select("id, full_name, phone, email, is_active").order("full_name"),
+  const [{ data: drivers }, ledger, { data: assignments }, { data: leave }] = await Promise.all([
+    db.from("drivers").select("id, full_name, phone, email, is_active, portal_token").order("full_name"),
     loadAllLedger(db),
     db
       .from("driver_assignments")
       .select("driver_id, leg, status, reservations(reservation_code, pickup_datetime, return_datetime, trip_type, direction, regions(name_tr, name_en))")
       .in("status", LIVE_ASSIGNMENT_STATUSES),
+    db.from("driver_leave_days").select("driver_id").eq("leave_date", today),
   ]);
 
   const byDriverLedger = new Map<string, LedgerListRow[]>();
@@ -69,10 +72,13 @@ export async function loadDriversOverview(
     todayCount.set(a.driver_id, (todayCount.get(a.driver_id) ?? 0) + 1);
   }
 
-  return ((drivers ?? []) as Omit<DriverRow, "balance" | "todayJobs">[]).map((d) => ({
+  const onLeaveToday = new Set((leave ?? []).map((l: { driver_id: string }) => l.driver_id));
+
+  return ((drivers ?? []) as Omit<DriverRow, "balance" | "todayJobs" | "onLeaveToday">[]).map((d) => ({
     ...d,
     balance: summariseLedger(byDriverLedger.get(d.id) ?? [], today),
     todayJobs: todayCount.get(d.id) ?? 0,
+    onLeaveToday: onLeaveToday.has(d.id),
   }));
 }
 
@@ -100,4 +106,17 @@ export async function loadDriverUpcoming(db: SupabaseClient, driverId: string, t
     });
   }
   return jobs.sort((a, b) => a.wall.localeCompare(b.wall)).slice(0, limit);
+}
+
+/** A driver's leave days from today out to `days` ahead, for the drawer's grid. */
+export async function loadDriverLeaveDays(db: SupabaseClient, driverId: string, today: string, days = 30): Promise<string[]> {
+  const horizon = new Date();
+  horizon.setDate(horizon.getDate() + days);
+  const { data } = await db
+    .from("driver_leave_days")
+    .select("leave_date")
+    .eq("driver_id", driverId)
+    .gte("leave_date", today)
+    .lte("leave_date", horizon.toISOString().slice(0, 10));
+  return (data ?? []).map((r: { leave_date: string }) => r.leave_date);
 }

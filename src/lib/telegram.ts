@@ -480,6 +480,49 @@ export async function sendDriverVoucherToTelegram(data: DriverVoucherData): Prom
   await sendTelegramRaw(buildTransferMessage(data));
 }
 
+/** Telegram rejects a text message over this many characters. */
+const TELEGRAM_MAX_LENGTH = 4096;
+
+/**
+ * Several reservations offered to the transfer group at once, from the
+ * reservations list's bulk "Telegram'a gönder" action. Previously that action
+ * looped the single-reservation endpoint once per selected row, so ticking
+ * five bookings put five separate messages in the group in quick succession.
+ *
+ * Built as one message so the group reads it as one batch. Only split into
+ * more than one send if the combined text would exceed what Telegram accepts
+ * — packed greedily, so a handful of reservations still lands as a single
+ * message in the common case, and only a very large selection is broken up.
+ */
+export async function sendBulkTransferToTelegram(items: DriverVoucherData[]): Promise<{ messages: number }> {
+  if (items.length === 0) return { messages: 0 };
+
+  const header = (n: number, of: number) =>
+    of > 1 ? `🚘 <b>TORVIAN TRANSFER — ${n} adet (${of} mesajın parçası)</b>` : `🚘 <b>TORVIAN TRANSFER — ${n} adet</b>`;
+  const divider = "\n\n━━━━━━━━━━━━━━━━━━━━\n\n";
+  const bodies = items.map((item) => buildTransferMessage(item).replace(/^🚘 <b>TORVIAN TRANSFER<\/b>\n/, ""));
+
+  // Greedily pack bodies into as few messages as fit under the limit.
+  const groups: string[][] = [[]];
+  let length = header(0, 1).length;
+  for (const body of bodies) {
+    const added = divider.length + body.length;
+    if (length + added > TELEGRAM_MAX_LENGTH && groups[groups.length - 1].length > 0) {
+      groups.push([]);
+      length = header(0, 1).length;
+    }
+    groups[groups.length - 1].push(body);
+    length += added;
+  }
+
+  for (let i = 0; i < groups.length; i++) {
+    const text = [header(items.length, groups.length), ...groups[i]].join(divider);
+    await sendTelegramRaw(text);
+  }
+
+  return { messages: groups.length };
+}
+
 // ────────── Send price list table to Telegram ──────────
 
 /**

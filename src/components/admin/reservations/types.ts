@@ -411,12 +411,22 @@ export function moneyText(value: number | string | null | undefined, currency: "
 
 // ─── what the screens load ───
 
+export interface ReservationEvent {
+  id: string;
+  action: string;
+  actor: string;
+  detail: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface ReservationDetail {
   reservation: Reservation;
   /** Bookings around the same date, for each driver's load that day. */
   nearby: Reservation[];
   drivers: Driver[];
   vehicles: Vehicle[];
+  /** event_log rows for this reservation, newest last — see ReservationPanel's buildHistory. */
+  events: ReservationEvent[];
 }
 
 export interface TabCounts {

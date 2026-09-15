@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, Plus, Power, User, UserX, Wallet } from "lucide-react";
+import { Copy, Mail, Phone, Plus, Power, User, UserX, Wallet } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
 import {
   ACCOUNT_CURRENCY,
@@ -26,6 +26,7 @@ import {
   SearchInput,
   Tabs,
   Toolbar,
+  cx,
   useToast,
   type GridColumn,
 } from "@/components/admin/ui";
@@ -145,12 +146,19 @@ export default function DriversScreen({
     {
       key: "status",
       header: "Durum",
-      width: "110px",
+      width: "150px",
       wideOnly: true,
       cell: (d) => (
-        <Chip tone={d.is_active ? "green" : "neutral"} plain>
-          {d.is_active ? "Aktif" : "Pasif"}
-        </Chip>
+        <div className="flex flex-wrap gap-1">
+          <Chip tone={d.is_active ? "green" : "neutral"} plain>
+            {d.is_active ? "Aktif" : "Pasif"}
+          </Chip>
+          {d.onLeaveToday && (
+            <Chip tone="rose" plain>
+              İzinli
+            </Chip>
+          )}
+        </div>
       ),
     },
   ];
@@ -199,6 +207,11 @@ export default function DriversScreen({
               <Chip tone={open.is_active ? "green" : "neutral"} plain>
                 {open.is_active ? "Aktif" : "Pasif"}
               </Chip>
+              {open.onLeaveToday && (
+                <Chip tone="rose" plain>
+                  Bugün izinli
+                </Chip>
+              )}
             </>
           )
         }
@@ -220,6 +233,16 @@ export default function DriversScreen({
                 label={open.is_active ? "Pasife al" : "Aktifleştir"}
                 onClick={() => toggle(open)}
                 loading={togglingId === open.id}
+              />
+              <QuickAction
+                icon={Copy}
+                label="Panel linki"
+                disabled={!open.portal_token}
+                onClick={async () => {
+                  if (!open.portal_token) return;
+                  await navigator.clipboard.writeText(`${window.location.origin}/driver/panel/${open.portal_token}`);
+                  toast("Şoförün panel linki kopyalandı.");
+                }}
               />
             </>
           )
@@ -283,21 +306,55 @@ export default function DriversScreen({
 }
 
 function DriverDetail({ driver, today }: { driver: DriverRow; today: string }) {
+  const toast = useToast();
   // Keyed by driver id, so switching drivers shows "loading" for the new one
   // without a synchronous reset in the effect body.
-  const [byDriver, setByDriver] = useState<Record<string, DriverJob[]>>({});
-  const jobs = byDriver[driver.id] ?? null;
+  const [byDriver, setByDriver] = useState<Record<string, { jobs: DriverJob[]; leaveDays: string[] }>>({});
+  const data = byDriver[driver.id] ?? null;
+  const jobs = data?.jobs ?? null;
+  const [leave, setLeave] = useState<Set<string>>(new Set());
+  const [busyDate, setBusyDate] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/admin/drivers/${driver.id}/jobs`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { jobs: [] }))
-      .then((d) => !cancelled && setByDriver((prev) => ({ ...prev, [driver.id]: d.jobs ?? [] })))
-      .catch(() => !cancelled && setByDriver((prev) => ({ ...prev, [driver.id]: [] })));
+      .then((r) => (r.ok ? r.json() : { jobs: [], leaveDays: [] }))
+      .then((d) => {
+        if (cancelled) return;
+        setByDriver((prev) => ({ ...prev, [driver.id]: { jobs: d.jobs ?? [], leaveDays: d.leaveDays ?? [] } }));
+        setLeave(new Set(d.leaveDays ?? []));
+      })
+      .catch(() => !cancelled && setByDriver((prev) => ({ ...prev, [driver.id]: { jobs: [], leaveDays: [] } })));
     return () => {
       cancelled = true;
     };
   }, [driver.id]);
+
+  const workingDays = new Set((jobs ?? []).map((j) => j.wall.slice(0, 10)));
+
+  const toggleLeave = async (date: string) => {
+    const isLeave = leave.has(date);
+    setBusyDate(date);
+    try {
+      const res = await fetch("/api/admin/driver-leave", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ driverId: driver.id, date, action: isLeave ? "remove" : "add" }),
+      });
+      if (!res.ok) {
+        toast("İşlem yapılamadı.", "error");
+        return;
+      }
+      setLeave((prev) => {
+        const next = new Set(prev);
+        if (isLeave) next.delete(date);
+        else next.add(date);
+        return next;
+      });
+    } finally {
+      setBusyDate(null);
+    }
+  };
 
   return (
     <>
@@ -334,6 +391,33 @@ function DriverDetail({ driver, today }: { driver: DriverRow; today: string }) {
         )}
       </DrawerSection>
 
+      <DrawerSection title="İzin günleri">
+        <div className="grid grid-cols-7 gap-1.5">
+          {nextDays(today, 14).map((date) => {
+            const { weekday, day } = dayLabel(date);
+            const isLeave = leave.has(date);
+            const hasWork = workingDays.has(date);
+            return (
+              <button
+                key={date}
+                type="button"
+                disabled={hasWork || busyDate === date}
+                onClick={() => toggleLeave(date)}
+                aria-pressed={isLeave}
+                title={hasWork ? "Bu günde işi var" : undefined}
+                className={cx(
+                  "flex flex-col items-center gap-0.5 rounded-adm border px-1 py-1.5 text-center transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                  isLeave ? "border-adm-rose bg-adm-rose-soft text-adm-rose" : "border-adm-line-2 text-adm-ink-2 hover:border-adm-line-strong"
+                )}
+              >
+                <span className="text-[9.5px] font-bold uppercase text-adm-faint">{weekday}</span>
+                <span className="text-[11.5px] font-semibold tabular-nums">{day}</span>
+              </button>
+            );
+          })}
+        </div>
+      </DrawerSection>
+
       <DrawerSection title="Bu ayın özeti">
         <Card bodyClassName="grid grid-cols-2 gap-3 p-3.5">
           <div>
@@ -356,4 +440,24 @@ function DriverDetail({ driver, today }: { driver: DriverRow; today: string }) {
       </DrawerSection>
     </>
   );
+}
+
+/** Next `count` days as "yyyy-mm-dd", starting today. */
+function nextDays(today: string, count: number): string[] {
+  const [y, m, d] = today.split("-").map(Number);
+  const start = new Date(Date.UTC(y, m - 1, d));
+  return Array.from({ length: count }, (_, i) => {
+    const dt = new Date(start);
+    dt.setUTCDate(dt.getUTCDate() + i);
+    return dt.toISOString().slice(0, 10);
+  });
+}
+
+function dayLabel(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return {
+    weekday: dt.toLocaleDateString("tr-TR", { timeZone: "UTC", weekday: "short" }),
+    day: dt.toLocaleDateString("tr-TR", { timeZone: "UTC", day: "numeric", month: "short" }),
+  };
 }

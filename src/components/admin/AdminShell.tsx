@@ -118,7 +118,6 @@ export default function AdminShell({
             crumb={current?.label ?? null}
             liveNow={counts?.liveNow ?? null}
             base={base}
-            locale={locale}
             onMenu={() => setMenuOpen(true)}
             onSearch={openPalette}
           />
@@ -126,7 +125,7 @@ export default function AdminShell({
             {children}
           </main>
         </div>
-        <CommandPalette open={paletteOpen} onClose={closePalette} base={base} locale={locale} />
+        <CommandPalette open={paletteOpen} onClose={closePalette} base={base} />
       </div>
     </ToastProvider>
   );

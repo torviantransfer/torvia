@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { DIRECTIONS } from "@/lib/transfer-route";
+import { logEvent } from "@/lib/eventLog";
 
 export async function POST(request: NextRequest) {
-  const { error: authError } = await requireAdmin();
+  const { error: authError, user } = await requireAdmin();
   if (authError) return authError;
 
   try {
@@ -14,14 +15,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "reservationId is required" }, { status: 400 });
     }
 
-    const allowed: Record<string, any> = {};
+    const allowed: Record<string, unknown> = {};
     const fields = ["hotel_name", "hotel_address", "flight_code", "return_flight_code", "pickup_datetime", "return_datetime", "notes", "status", "direction"];
     for (const f of fields) {
       if (body[f] !== undefined) allowed[f] = body[f];
     }
 
     // A value outside the CHECK constraint would surface as an opaque 500.
-    if (allowed.direction !== undefined && !DIRECTIONS.includes(allowed.direction)) {
+    if (allowed.direction !== undefined && !DIRECTIONS.includes(allowed.direction as (typeof DIRECTIONS)[number])) {
       return NextResponse.json({ error: "Invalid direction" }, { status: 400 });
     }
 
@@ -39,6 +40,13 @@ export async function POST(request: NextRequest) {
       console.error("Edit reservation error:", error.message);
       return NextResponse.json({ error: "Failed to update reservation" }, { status: 500 });
     }
+
+    await logEvent(supabase, {
+      reservationId: reservationId,
+      action: "edited",
+      actor: user?.email ?? "admin",
+      detail: allowed,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -10,7 +10,6 @@ export default function AdminTopbar({
   crumb,
   liveNow,
   base,
-  locale,
   onMenu,
   onSearch,
 }: {
@@ -19,7 +18,6 @@ export default function AdminTopbar({
   /** Null until the first count arrives. */
   liveNow: number | null;
   base: string;
-  locale: string;
   onMenu: () => void;
   onSearch: () => void;
 }) {
@@ -70,17 +68,7 @@ export default function AdminTopbar({
           </Link>
         )}
         <IconButton icon={Search} label="Ara" onClick={onSearch} />
-        {/* Until the admin can create a booking itself (A3), this opens the
-            site's booking page, which is where one is made today. */}
-        <ButtonLink
-          href={`/${locale}/booking`}
-          target="_blank"
-          rel="noopener"
-          variant="primary"
-          icon={Plus}
-          compact
-          title="Site rezervasyon sayfası yeni sekmede açılır"
-        >
+        <ButtonLink href={`${base}/reservations/new`} variant="primary" icon={Plus} compact>
           Yeni rezervasyon
         </ButtonLink>
       </div>

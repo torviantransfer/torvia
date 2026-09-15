@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyCancelAction } from "@/lib/telegram";
 import { settledStatusFor } from "@/lib/reservation-status";
+import { logEvent } from "@/lib/eventLog";
 
 export async function POST(req: NextRequest) {
   // Verify admin auth
@@ -76,6 +77,12 @@ export async function POST(req: NextRequest) {
       admin_user: user.email,
       timestamp: new Date().toISOString(),
     },
+  });
+
+  await logEvent(admin, {
+    reservationId: reservation_id,
+    action: action === "approve" ? "cancelled" : "cancel_rejected",
+    actor: user.email ?? "admin",
   });
 
   // Telegram

@@ -243,7 +243,7 @@ export async function loadReservationDetail(db: Db, code: string): Promise<Reser
   const to = new Date(centre);
   to.setDate(to.getDate() + WORKLOAD_WINDOW_DAYS + (reservation.return_datetime ? 30 : 0));
 
-  const [{ data: nearby }, { data: drivers }, { data: vehicles }] = await Promise.all([
+  const [{ data: nearby }, { data: drivers }, { data: vehicles }, { data: events }] = await Promise.all([
     db
       .from("reservations")
       .select(
@@ -257,6 +257,11 @@ export async function loadReservationDetail(db: Db, code: string): Promise<Reser
       .limit(500),
     db.from("drivers").select("id, full_name, phone").eq("is_active", true).order("full_name"),
     db.from("vehicles").select("id, plate_number, brand, model").eq("is_active", true).order("plate_number"),
+    db
+      .from("event_log")
+      .select("id, action, actor, detail, created_at")
+      .eq("reservation_id", reservation.id as string)
+      .order("created_at"),
   ]);
 
   return {
@@ -264,5 +269,6 @@ export async function loadReservationDetail(db: Db, code: string): Promise<Reser
     nearby: (nearby ?? []) as unknown as Reservation[],
     drivers: (drivers ?? []) as Driver[],
     vehicles: (vehicles ?? []) as Vehicle[],
+    events: (events ?? []) as ReservationDetail["events"],
   };
 }

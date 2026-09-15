@@ -43,19 +43,17 @@ export default function CommandPalette({
   open,
   onClose,
   base,
-  locale,
 }: {
   open: boolean;
   onClose: () => void;
   base: string;
-  locale: string;
 }) {
   // Mounted afresh on every open, so the query and results never linger.
   if (!open) return null;
-  return <Palette onClose={onClose} base={base} locale={locale} />;
+  return <Palette onClose={onClose} base={base} />;
 }
 
-function Palette({ onClose, base, locale }: { onClose: () => void; base: string; locale: string }) {
+function Palette({ onClose, base }: { onClose: () => void; base: string }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
@@ -103,16 +101,7 @@ function Palette({ onClose, base, locale }: { onClose: () => void; base: string;
   const matches = (item: Item) => !folded || fold(item.text).includes(folded);
 
   const quick: Item[] = [
-    {
-      id: "new-reservation",
-      icon: Plus,
-      text: "Yeni rezervasyon",
-      hint: "Site rezervasyon sayfası",
-      run: () => {
-        onClose();
-        window.open(`/${locale}/booking`, "_blank", "noopener");
-      },
-    },
+    { id: "new-reservation", icon: Plus, text: "Yeni rezervasyon", run: () => go(`${base}/reservations/new`) },
     { id: "driver-payment", icon: Wallet, text: "Şoföre ödeme yap", run: () => go(`${base}/driver-payments?pay=1`) },
     { id: "expense", icon: Receipt, text: "Kasaya gider ekle", run: () => go(`${base}/finance?add=expense`) },
   ];
