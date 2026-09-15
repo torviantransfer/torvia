@@ -1,8 +1,17 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import SeoManager from "@/components/admin/SeoManager";
+import SeoScreen, { type SeoScreenQuery } from "@/components/admin/seo/SeoScreen";
 
-export default async function AdminSeoPage() {
+function one(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+export default async function AdminSeoPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const supabase = createAdminClient();
+  const sp = await searchParams;
 
   // All four tables that back an indexable page. Regions, posts and landing
   // pages are read regardless of whether they are live: an unpublished page
@@ -16,23 +25,21 @@ export default async function AdminSeoPage() {
       supabase.from("landing_pages").select("*").order("sort_order"),
     ]);
 
+  const initialQuery: SeoScreenQuery = {
+    locale: one(sp.locale),
+    group: one(sp.group),
+    issue: one(sp.issue),
+    q: one(sp.q),
+    open: one(sp.open),
+  };
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">SEO Yönetimi</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Ana sayfa, landing ve statik sayfalar, panelden oluşturulan landing sayfaları,
-          bölgeler ve blog yazıları. Panel her alanın
-          yayındaki gerçek değerini sayfanın HTML çıktısından okur — boş görünen bir alan
-          &quot;değer yok&quot; anlamına gelmez.
-        </p>
-      </div>
-      <SeoManager
-        initialPages={(pages ?? []) as Record<string, unknown>[]}
-        initialRegions={(regions ?? []) as Record<string, unknown>[]}
-        initialPosts={(posts ?? []) as Record<string, unknown>[]}
-        initialLandings={(landings ?? []) as Record<string, unknown>[]}
-      />
-    </div>
+    <SeoScreen
+      initialPages={(pages ?? []) as Record<string, unknown>[]}
+      initialRegions={(regions ?? []) as Record<string, unknown>[]}
+      initialPosts={(posts ?? []) as Record<string, unknown>[]}
+      initialLandings={(landings ?? []) as Record<string, unknown>[]}
+      initialQuery={initialQuery}
+    />
   );
 }
