@@ -217,11 +217,11 @@ Eski kontrol panelindeki grafikler (aylık gelir, durum dağılımı, popüler b
 **Rezervasyon paneli (sağdan):**
 - Başlık: kod, durum, müşteri adı, ülke · yolcu · bavul · dil.
 - Hızlı eylemler: WhatsApp · Ara · Voucher · Telegram.
-- **Yolculuk:** her bacak için kart — gidiş/dönüş, tarih-saat, uçuş (+durum), başlangıç ve varış noktası, atanmış şoför ve araç (**Değiştir** / **Kaldır**) ya da **Şoför ata**. Şoför ata aynı panelin içinde açılır (şoförlerin o günkü yükü görünür), ücret ve para birimi aynı adımda girilir.
-- **Para:** müşterinin ödediği, ödeme türü (online/nakit, kapora, şoförde kalan), şoförlere giden (para birimi + euro karşılığı), bize kalan.
+- **Yolculuk:** her bacak için kart — gidiş/dönüş, tarih-saat, uçuş (+durum), başlangıç ve varış noktası, atanmış şoför ve araç (**Değiştir** / **Kaldır**, **Rötar bildir**) ya da **Şoför ata**. Şoför ata aynı panelin içinde açılır (şoförlerin o günkü yükü görünür), ücret ve para birimi aynı adımda girilir.
+- **Para:** müşterinin ödediği, ödeme türü (online/nakit, kapora, şoförde kalan), şoförlere giden (para birimi + euro karşılığı), bize kalan. Online ödeme alınmışsa başlıkta **Para iadesi**; iade yapılmışsa tutarı ve zamanı bölümün başında durur.
 - **Müşteri:** e-posta, telefon, otel ve adres.
 - **Not:** müşteri notu, çocuk koltuğu, karşılama tabelası.
-- **İptal talebi** varsa panelin en üstünde: talep notu + **Reddet** / **İptali onayla**.
+- **İptal talebi** varsa panelin en üstünde: talep notu + **Reddet** / **İptali onayla**. Onay yalnızca rezervasyonu kapatır; para iadesi Para bölümünden ayrıca yapılır.
 - **Geçmiş:** oluşturma, ödeme, şoför atama, voucher gönderimi zamanları.
 - Alt çubuk: Düzenle · İptal et / Kaydı sil (bekleyen ya da iptal edilmiş kayıtta).
 - “Tam sayfada aç” mevcut `/admin/reservations/[kod]` sayfasını aynı düzende açar; bu adres paylaşılabilir kalır.
@@ -345,12 +345,12 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 | A1 | Uçuş durumu (indi, rötar, kalkış) | Uçuş kodu kayıtlı, durum kaynağı yok | **Karar: sonraya.** Uçuş verisi API'si alındığında eklenecek (ör. AeroDataBox): rezervasyon uçuşları için periyodik sorgu; rötar “Dikkat gerektiriyor”a düşer. O zamana kadar yalnızca uçuş kodu gösterilir. |
 | A2 | Ödeme linki gönder | **Yapıldı (Aşama 9).** Rezervasyon çekmecesinde "Ödeme linki" hızlı eylemi: `pending` bir rezervasyon için Stripe Checkout Session oluşturur (webhook'un beklediği aynı metadata ile — reservation_id, is_deposit, ...), linki kopyala/WhatsApp'la gönder penceresi açılır. | — |
 | A3 | Adminden yeni rezervasyon | **Yapıldı (Aşama 9).** `/admin/reservations/new` — tam sayfa form (müşteri, bölge/araç, tarih-saat, yolcu/bavul, ödeme türü), canlı fiyat önizlemesi. Kayıt "Ödeme bekliyor" olarak açılır, ardından A2 ile ödeme linki gönderilir; ödeme gelince durum Stripe webhook'u ile değişir. Üst çubuktaki **Yeni rezervasyon** ve komut paleti artık buraya açılır. | — |
-| A4 | İptalde para iadesi | İptal onayı durumu “iptal edildi” yapar ve şoför atamalarını kapatır; iade yapmaz | **Onaylandı (16.09.2026) — sırada.** Rezervasyon çekmecesinden Stripe iadesi (tam/kısmi): ödenmiş bir kayıtta tutar seçilir, onay penceresinde ne kadar para çıkacağı yazar, iade `event_log`'a işlenir. |
+| A4 | İptalde para iadesi | **Yapıldı (Aşama 11).** Rezervasyon çekmecesinin **Para** bölümünde "Para iadesi": pencere açılırken tahsil edilen, o ana kadar iade edilmiş ve kalan tutar Stripe'tan okunur — kendi sütunlarımızdan değil, çünkü `total_price` tahsil edileni değil rezervasyonun tutarını söyler, nakit kayıtta yalnızca kapora çekilmiştir ve Stripe panelinden yapılmış bir iade bizde hiç görünmez. Tamamı ya da bir kısmı iade edilir; buton tutarı açıkça yazar. Fazla iade sunucuda da engellenir, tekrar basmaya karşı idempotency anahtarı var. Sonuç `reservations.refunded_amount` ve `event_log`'a işlenir. İade rezervasyonun durumunu değiştirmez — iptal ayrı işlemdir. | — |
 | A5 | Bildirim zili | Kaynak yok | **Yapılmayacak — 16.09.2026'da bir daha teyit edildi.** Zil gösterilmez; yapılacak işler Bugün ekranında ve menü sayaçlarında zaten görünüyor. |
 | A6 | Şoförün “izinli” durumu | **Yapıldı (Aşama 9).** `drivers.portal_token` + `/driver/panel/[token]` — her şoförün kalıcı, tek linki: bütün işlerini (bugün, yaklaşan, son tamamlananlar) görür, her işe kendi göreve-özel linkinden girer, önündeki 14 günden izin günlerini işaretler/kaldırır. Admin de Şoförler çekmecesinden aynı 14 günlük ızgaradan izin ekler/kaldırır ve "Panel linki"ni kopyalar. İzinli şoför bugün için "İzinli" rozetiyle listede ve çekmecede görünür. Mevcut iş başına link (`/driver/[token]`) değişmeden çalışmaya devam ediyor. | — |
 | A7 | Rezervasyon geçmişi | **Yapıldı (Aşama 9).** `event_log` tablosu — kim (admin e-postası/"system") ne yaptı (oluşturdu, düzenledi, ödeme linki gönderdi, ödeme alındı/başarısız, iptal onayladı/reddetti). Rezervasyon çekmecesinin Geçmiş bölümü artık bunu, atama zaman damgalarıyla birlikte tek zaman çizelgesinde gösteriyor. | — |
 | A8 | Toplu Telegram gönderimi | **Yapıldı (Aşama 9).** Seçilen rezervasyonları tek mesajda gönderen uç nokta (`/api/admin/send-to-telegram-bulk`); yalnızca çok büyük bir seçim Telegram'ın 4096 karakter sınırını aşarsa birden fazla mesaja bölünür. | — |
-| A9 | Rötarı şoföre bildir | — | **Yapılacak — A1'i beklemiyor (16.09.2026).** Rötarı admin fark eder, şoförün WhatsApp'ına hazır mesajla bağlantı (`wa.me`) gönderir. A1 geldiğinde aynı mesaj uçuş verisinden otomatik tetiklenir. |
+| A9 | Rötarı şoföre bildir | **Yapıldı (Aşama 11).** Atanmış şoförün satırında "Rötar bildir": süre seçilir (15 dk – 1,5 saat ya da serbest), planlanan ve yeni saat yan yana gösterilir, gidecek mesaj önizlenir, WhatsApp hazır metinle açılır. Bildirim rezervasyonun saatini değiştirmez, yalnızca şoförü haberdar eder; `event_log`'a işlenir. A1 geldiğinde aynı mesaj uçuş verisinden otomatik tetiklenecek. | — |
 
 ---
 
@@ -378,6 +378,8 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 - [x] **Aşama 9 — Altyapı:** A3 adminden rezervasyon (`/admin/reservations/new`, tam sayfa form, canlı fiyat önizlemesi) + A2 ödeme linki (Stripe Checkout, "Ödeme linki" hızlı eylemi, WhatsApp'a gönder) · A6 şoförün kalıcı paneli (`/driver/panel/[token]`) ve izin günleri (şoför kendi panelinden, admin Şoförler çekmecesinden işaretler; "İzinli" rozeti) · A7 olay kaydı (`event_log` tablosu, rezervasyon çekmecesindeki Geçmiş'e işleniyor) · A8 toplu Telegram (seçilenler tek mesajda gönderiliyor). Aşama 9'da A4 (iade) yapılmadı; A1, A4, A9 ve A5'in bugünkü durumu için Bölüm 7'deki tabloya bakın.
 - [x] **Aşama 10 — SEO Yönetimi:** ekran liste + sağdan panel yapısına geçti ve tek dosyadan (1695 satır) modüllere bölündü. Panelin içinde üç sekme var — Alanlar · Önizleme · Teknik — çünkü üçü birden bir çekmeceye sığmıyor ve düzenleyen aynı anda yalnızca biriyle çalışıyor. Filtreler, dil ve açık sayfa adrese yazılıyor (`?locale=de&issue=problems&open=…`), böylece bir soruna atılan link karşıda aynı ekranı açıyor. Kapsam aynı kaldı: dört tablo (`seo_pages`, `regions`, `blog_posts`, `landing_pages`), yedi dil, puanlama, canlı okuma, SERP/sosyal önizleme, toplu doldurma ve farkı göstererek kaydetme.
 
+- [x] **Aşama 11 — Para iadesi ve rötar bildirimi:** A4 iade (`/api/admin/refund`, çekmecenin Para bölümünden tam/kısmi, tutarlar Stripe'tan okunuyor, migration `096_reservation_refunds.sql`) · A9 rötar bildirimi (atanmış şoförün satırından, hazır WhatsApp mesajı, `event_log`'a işleniyor).
+
 ### Aşama 10'un dosyaları
 
 | Dosya | Sorumluluk |
@@ -395,9 +397,10 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 
 ### Devam notları
 
-- Aşama 1–10 `main`'de. Panelin bütün ekranları artık tasarım dilinde.
-- **Aşama 10 yerelde gerçek veriyle denenmedi** — `.env.local` Supabase anahtarı taşımadığı için SEO ekranı yalnızca TypeScript, ESLint ve `next build` ile doğrulandı. Canlıda ilk bakılacak yer burası: listenin tarama sütunları, panelin üç sekmesi, toplu doldurma ve kaydetme farkı.
-- Sıradaki iş: **A4 iade** (onaylandı), ardından **A9 rötar bildirimi**.
+- Aşama 1–9 `main`'de ve canlıda. Aşama 10 (`feat/admin-ui-seo`) ve Aşama 11 (`feat/admin-refund-delay`) branch'te, önizleme bekliyor. Panelin bütün ekranları artık tasarım dilinde.
+- **Aşama 10 ve 11 yerelde gerçek veriyle denenmedi** — `.env.local` Supabase anahtarı taşımadığı için yalnızca TypeScript, ESLint ve `next build` ile doğrulandı. Önizlemede ilk bakılacaklar: SEO ekranının tarama sütunları ve panelin üç sekmesi; iadenin Stripe'tan okuduğu tutarlar (önce **test modunda** bir ödeme üzerinde denenmeli).
+- **Aşama 11 bir migration getiriyor** — `096_reservation_refunds.sql`. Canlıya alınmadan önce Supabase'de çalıştırılmalı, yoksa iade yazımı `refunded_amount` sütununu bulamaz (para Stripe'ta iade edilir ama satıra işlenmez).
+- Geriye yalnızca **A1 uçuş durumu** kaldı; uçuş verisi API'si alınınca yapılacak. A9'un mesajı o zaman elle değil uçuş verisinden tetiklenecek.
 - **Araç Tipleri'nde bir sapma:** Bölüm 5.7 "çok dilli ad ve açıklama sekmeleri" diyor, ama `vehicle_categories` tablosunda böyle sütunlar yok (tek `name`/`description`). Olmayan bir alan için sahte sekme koymak yerine tek dilli formla bırakıldı. Çok dilli isim gerekiyorsa önce veritabanına `name_xx`/`description_xx` sütunları eklenmeli.
 - **Değerlendirmeler'de bir sapma:** Bölüm 5.13 "Onay bekleyen · Yayında · Reddedilen" diyor, ama `reviews` tablosunda ayrı bir "reddedildi" durumu yok — `is_approved` iki hâlli. Sekmeler gerçek veriye göre Onay bekleyen · Yayında · Öne çıkan · Tümü olarak kuruldu.
 - Canlıda ilk bakılacaklar: bu turda eklenen her ekranın sorguları gerçek veriyle ilk kez canlıda çalışacak — Takvim & Kapasite, Canlı Ziyaretçiler'in iki sekmesi, Şoförler/Araçlar/Araç Tipleri, Kuponlar, Değerlendirmeler, Bölgeler, Fiyatlandırma, Ayarlar, Blog ve Landing editörleri. Bir sorun görülürse önce o düzeltilir.

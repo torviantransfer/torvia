@@ -86,6 +86,13 @@ export interface Reservation {
   child_seat_fee?: number | null;
   round_trip_discount?: number | null;
   coupon_discount?: number | null;
+  /** Set by the Stripe webhook once a payment succeeds; the handle a refund needs. */
+  stripe_payment_intent_id?: string | null;
+  // Present once 096_reservation_refunds has been applied. Mirrors what Stripe
+  // holds; the refund dialog still reads Stripe before sending any money.
+  refunded_amount?: number | null;
+  refunded_currency?: string | null;
+  refunded_at?: string | null;
   customers: {
     first_name: string;
     last_name: string;
@@ -407,6 +414,21 @@ export function moneyText(value: number | string | null | undefined, currency: "
     maximumFractionDigits: 2,
   });
   return `${n < 0 ? "−" : ""}${currency === "USD" ? "$" : "€"}${text}`;
+}
+
+/**
+ * The same, for an amount whose currency comes from Stripe rather than from us.
+ *
+ * A charge can be in a currency `moneyText` has no symbol for — older rows were
+ * taken in USD, and nothing stops a future one being something else. Printing
+ * "€" over such an amount would be a lie, so anything unrecognised is shown
+ * with its code instead of a symbol.
+ */
+export function amountText(value: number | string | null | undefined, currency: string) {
+  const code = (currency || "EUR").toUpperCase();
+  if (code === "EUR" || code === "USD") return moneyText(value, code);
+  const n = Number(value) || 0;
+  return `${n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${code}`;
 }
 
 // ─── what the screens load ───
