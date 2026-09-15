@@ -201,13 +201,13 @@ export default function SettingsManager({
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+      <div className="flex gap-1 bg-adm-line-2 rounded-adm-sm p-1">
         <button
           onClick={() => setActiveTab("general")}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
             activeTab === "general"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
+              ? "bg-adm-surface text-adm-ink shadow-sm"
+              : "text-adm-muted hover:text-adm-ink-2"
           }`}
         >
           Genel Ayarlar
@@ -216,8 +216,8 @@ export default function SettingsManager({
           onClick={() => setActiveTab("integrations")}
           className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
             activeTab === "integrations"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
+              ? "bg-adm-surface text-adm-ink shadow-sm"
+              : "text-adm-muted hover:text-adm-ink-2"
           }`}
         >
           Entegrasyonlar
@@ -227,8 +227,8 @@ export default function SettingsManager({
       {activeTab === "general" && (
         <>
           {/* App Settings */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-            <h2 className="font-bold text-gray-900 mb-4">Uygulama Ayarları</h2>
+          <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm p-6">
+            <h2 className="font-bold text-adm-ink mb-4">Uygulama Ayarları</h2>
             <div className="space-y-4">
               {settings.filter((s) => !HIDDEN_KEYS.has(s.key)).map((setting) => {
                 const meta = SETTING_LABELS[setting.key] ?? {
@@ -240,8 +240,8 @@ export default function SettingsManager({
                 return (
                   <div key={setting.key} className="flex items-start gap-4">
                     <div className="w-64 flex-shrink-0">
-                      <label className="text-sm font-medium text-gray-700">{meta.label}</label>
-                      {meta.hint && <p className="text-xs text-gray-400 mt-0.5">{meta.hint}</p>}
+                      <label className="text-sm font-medium text-adm-ink-2">{meta.label}</label>
+                      {meta.hint && <p className="text-xs text-adm-muted mt-0.5">{meta.hint}</p>}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
                       {isToggle ? (
@@ -250,11 +250,11 @@ export default function SettingsManager({
                             type="button"
                             onClick={() => handleSave(setting.key, !toggleOn)}
                             disabled={saving === setting.key}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${toggleOn ? "bg-emerald-500" : "bg-gray-200"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${toggleOn ? "bg-adm-green-soft0" : "bg-adm-seg"}`}
                           >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggleOn ? "translate-x-6" : "translate-x-1"}`} />
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-adm-surface shadow transition-transform ${toggleOn ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
-                          <span className={`text-sm font-medium ${toggleOn ? "text-emerald-600" : "text-gray-400"}`}>
+                          <span className={`text-sm font-medium ${toggleOn ? "text-adm-green" : "text-adm-muted"}`}>
                             {saving === setting.key ? "Kaydediliyor..." : toggleOn ? "Açık" : "Kapalı"}
                           </span>
                         </>
@@ -267,12 +267,12 @@ export default function SettingsManager({
                             onChange={(e) =>
                               setValues({ ...values, [setting.key]: e.target.value })
                             }
-                            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-40"
+                            className="border border-adm-line rounded-adm-sm px-3 py-2 text-sm w-40"
                           />
                           <button
                             onClick={() => handleSave(setting.key)}
                             disabled={saving === setting.key}
-                            className="px-3 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+                            className="px-3 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
                           >
                             <Save size={14} />
                             {saving === setting.key ? "Kaydediliyor..." : "Kaydet"}
@@ -295,13 +295,13 @@ export default function SettingsManager({
           />
 
           {/* Exchange Rates */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+          <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900">Döviz Kurları (EUR baz)</h2>
+              <h2 className="font-bold text-adm-ink">Döviz Kurları (EUR baz)</h2>
               <button
                 onClick={handleRefreshRates}
                 disabled={refreshing}
-                className="px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50"
+                className="px-3 py-2 bg-adm-line-2 rounded-adm-sm text-sm hover:bg-adm-seg flex items-center gap-1 disabled:opacity-50"
               >
                 <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
                 API&apos;den Güncelle
@@ -311,7 +311,7 @@ export default function SettingsManager({
               {exchangeRates.map((rate) => (
                 <div
                   key={rate.id}
-                  className="flex items-center justify-between border border-gray-100 rounded-lg p-4"
+                  className="flex items-center justify-between border border-adm-line-2 rounded-adm-sm p-4"
                 >
                   <div>
                     {/* The base is read from the row rather than written in, so
@@ -320,7 +320,7 @@ export default function SettingsManager({
                     <p className="font-mono font-bold text-lg">
                       1 {rate.base_currency} = {rate.rate} {rate.target_currency}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-adm-muted">
                       Güncelleme:{" "}
                       {new Date(rate.last_updated).toLocaleString("tr-TR")}
                     </p>
@@ -338,8 +338,8 @@ export default function SettingsManager({
       {activeTab === "integrations" && (
         <div className="space-y-6">
           {/* Info Banner */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <p className="text-sm text-blue-800">
+          <div className="bg-adm-blue-soft border border-adm-blue-soft rounded-adm p-4">
+            <p className="text-sm text-adm-blue">
               <strong>Not:</strong> API anahtarlarınız güvenli şekilde veritabanında saklanır. 
               Alternatif olarak Vercel ortam değişkenlerinde de tanımlayabilirsiniz — 
               her ikisi de desteklenir, buradaki değerler önceliklidir.
@@ -351,21 +351,21 @@ export default function SettingsManager({
             const fields = INTEGRATION_FIELDS.filter((f) => f.group === group);
             const Icon = fields[0]?.icon;
             return (
-              <div key={group} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+              <div key={group} className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  {Icon && <Icon size={18} className="text-gray-400" />}
-                  <h2 className="font-bold text-gray-900">{group}</h2>
+                  {Icon && <Icon size={18} className="text-adm-muted" />}
+                  <h2 className="font-bold text-adm-ink">{group}</h2>
                   {/* Group status badge */}
                   {(() => {
                     const allSet = fields.every(
                       (f) => integrations.find((i) => i.key === f.key)?.hasValue
                     );
                     return allSet ? (
-                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-adm-green bg-adm-green-soft px-2 py-1 rounded-full">
                         <CheckCircle2 size={12} /> Bağlı
                       </span>
                     ) : (
-                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+                      <span className="ms-auto flex items-center gap-1 text-xs font-medium text-adm-amber bg-adm-amber-soft px-2 py-1 rounded-full">
                         <XCircle size={12} /> Yapılandırılmadı
                       </span>
                     );
@@ -380,15 +380,15 @@ export default function SettingsManager({
                     return (
                       <div key={field.key} className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm font-medium text-gray-700 w-52">
+                          <label className="text-sm font-medium text-adm-ink-2 w-52">
                             {field.label}
                           </label>
                           {int?.hasValue ? (
-                            <span className="text-xs text-green-600 flex items-center gap-1">
+                            <span className="text-xs text-adm-green flex items-center gap-1">
                               <CheckCircle2 size={12} /> Tanımlı
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Tanımlı değil</span>
+                            <span className="text-xs text-adm-muted">Tanımlı değil</span>
                           )}
                         </div>
 
@@ -402,7 +402,7 @@ export default function SettingsManager({
                                 onChange={(e) =>
                                   setIntValues({ ...intValues, [field.key]: e.target.value })
                                 }
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm pe-10 font-mono"
+                                className="w-full border border-adm-line rounded-adm-sm px-3 py-2 text-sm pe-10 font-mono"
                               />
                               {field.sensitive && (
                                 <button
@@ -410,7 +410,7 @@ export default function SettingsManager({
                                   onClick={() =>
                                     setIntVisible({ ...intVisible, [field.key]: !isVisible })
                                   }
-                                  className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                  className="absolute end-2 top-1/2 -translate-y-1/2 text-adm-muted hover:text-adm-ink-2"
                                 >
                                   {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
@@ -419,7 +419,7 @@ export default function SettingsManager({
                             <button
                               onClick={() => handleIntSave(field.key)}
                               disabled={intSaving === field.key || !intValues[field.key]}
-                              className="px-3 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
+                              className="px-3 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
                             >
                               <Save size={14} />
                               {intSaving === field.key ? "..." : "Kaydet"}
@@ -429,7 +429,7 @@ export default function SettingsManager({
                                 setIntEditing({ ...intEditing, [field.key]: false });
                                 setIntValues({ ...intValues, [field.key]: "" });
                               }}
-                              className="px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200"
+                              className="px-3 py-2 bg-adm-line-2 rounded-adm-sm text-sm hover:bg-adm-seg"
                             >
                               İptal
                             </button>
@@ -437,13 +437,13 @@ export default function SettingsManager({
                         ) : (
                           <div className="flex items-center gap-2">
                             {int?.hasValue && (
-                              <span className="text-sm font-mono text-gray-400 bg-gray-50 px-3 py-1.5 rounded border border-gray-100">
+                              <span className="text-sm font-mono text-adm-muted bg-adm-surface-2 px-3 py-1.5 rounded border border-adm-line-2">
                                 {int.value || "••••••••"}
                               </span>
                             )}
                             <button
                               onClick={() => setIntEditing({ ...intEditing, [field.key]: true })}
-                              className="px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 text-gray-700"
+                              className="px-3 py-2 bg-adm-line-2 rounded-adm-sm text-sm hover:bg-adm-seg text-adm-ink-2"
                             >
                               {int?.hasValue ? "Değiştir" : "Ekle"}
                             </button>
@@ -456,12 +456,12 @@ export default function SettingsManager({
 
                 {/* Telegram Price List Button */}
                 {group === "Telegram Bildirim" && (
-                  <div className="mt-5 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500 mb-3">Fiyat listesini Telegram grubuna gönderin ve sabitleyin.</p>
+                  <div className="mt-5 pt-4 border-t border-adm-line-2">
+                    <p className="text-xs text-adm-muted mb-3">Fiyat listesini Telegram grubuna gönderin ve sabitleyin.</p>
                     <button
                       onClick={handleSendPriceList}
                       disabled={sendingPriceList}
-                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 font-medium"
+                      className="px-4 py-2.5 bg-[#1f55c7] text-white rounded-adm-sm text-sm hover:bg-[#1f55c7] disabled:opacity-50 flex items-center gap-2 font-medium"
                     >
                       {sendingPriceList ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -495,14 +495,14 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
   const isSavingAny = saving === "night_tariff_percent" || saving === "night_tariff_start" || saving === "night_tariff_end";
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+    <div className="bg-adm-surface rounded-adm border border-adm-line-2 shadow-sm p-6">
       {/* Header with toggle */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <Moon size={18} className="text-indigo-500" />
+          <Moon size={18} className="text-adm-blue" />
           <div>
-            <h2 className="font-bold text-gray-900">Gece Tarifesi</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Belirtilen saatler arasındaki rezervasyonlara ek ücret uygular</p>
+            <h2 className="font-bold text-adm-ink">Gece Tarifesi</h2>
+            <p className="text-xs text-adm-muted mt-0.5">Belirtilen saatler arasındaki rezervasyonlara ek ücret uygular</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -510,11 +510,11 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
             type="button"
             onClick={() => onSave("night_tariff_enabled", !enabled)}
             disabled={saving === "night_tariff_enabled"}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${enabled ? "bg-indigo-500" : "bg-gray-200"}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${enabled ? "bg-adm-blue" : "bg-adm-seg"}`}
           >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${enabled ? "translate-x-6" : "translate-x-1"}`} />
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-adm-surface shadow transition-transform ${enabled ? "translate-x-6" : "translate-x-1"}`} />
           </button>
-          <span className={`text-sm font-medium ${enabled ? "text-indigo-600" : "text-gray-400"}`}>
+          <span className={`text-sm font-medium ${enabled ? "text-adm-blue" : "text-adm-muted"}`}>
             {saving === "night_tariff_enabled" ? "..." : enabled ? "Açık" : "Kapalı"}
           </span>
         </div>
@@ -524,18 +524,18 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
       <div className={`grid sm:grid-cols-3 gap-4 transition-opacity ${enabled ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
         {/* Start time */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Başlangıç Saati</label>
+          <label className="block text-xs font-semibold text-adm-muted uppercase tracking-wide mb-2">Başlangıç Saati</label>
           <div className="flex gap-2">
             <input
               type="time"
               value={values.night_tariff_start ?? "00:00"}
               onChange={(e) => setValues((v) => ({ ...v, night_tariff_start: e.target.value }))}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+              className="flex-1 border border-adm-line rounded-adm-sm px-3 py-2 text-sm font-mono"
             />
             <button
               onClick={() => onSave("night_tariff_start")}
               disabled={saving === "night_tariff_start"}
-              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+              className="px-2.5 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50"
             >
               <Save size={13} />
             </button>
@@ -544,18 +544,18 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
 
         {/* End time */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Bitiş Saati</label>
+          <label className="block text-xs font-semibold text-adm-muted uppercase tracking-wide mb-2">Bitiş Saati</label>
           <div className="flex gap-2">
             <input
               type="time"
               value={values.night_tariff_end ?? "07:00"}
               onChange={(e) => setValues((v) => ({ ...v, night_tariff_end: e.target.value }))}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono"
+              className="flex-1 border border-adm-line rounded-adm-sm px-3 py-2 text-sm font-mono"
             />
             <button
               onClick={() => onSave("night_tariff_end")}
               disabled={saving === "night_tariff_end"}
-              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+              className="px-2.5 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50"
             >
               <Save size={13} />
             </button>
@@ -564,7 +564,7 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
 
         {/* Percent */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ek Ücret (%)</label>
+          <label className="block text-xs font-semibold text-adm-muted uppercase tracking-wide mb-2">Ek Ücret (%)</label>
           <div className="flex gap-2">
             <input
               type="number"
@@ -573,13 +573,13 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
               step="1"
               value={values.night_tariff_percent ?? "0"}
               onChange={(e) => setValues((v) => ({ ...v, night_tariff_percent: e.target.value }))}
-              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm w-20"
+              className="flex-1 border border-adm-line rounded-adm-sm px-3 py-2 text-sm w-20"
               placeholder="0"
             />
             <button
               onClick={() => onSave("night_tariff_percent")}
               disabled={saving === "night_tariff_percent"}
-              className="px-2.5 py-2 bg-slate-900 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50"
+              className="px-2.5 py-2 bg-adm-ink text-white rounded-adm-sm text-sm hover:opacity-90 disabled:opacity-50"
             >
               <Save size={13} />
             </button>
@@ -589,12 +589,12 @@ function NightTariffSection({ values, setValues, saving, onSave }: NightTariffPr
 
       {/* Preview */}
       {enabled && (
-        <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-indigo-50 border border-indigo-100">
-          <Moon size={14} className="text-indigo-500 flex-shrink-0" />
-          <p className="text-xs text-indigo-700">
+        <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-adm-sm bg-adm-blue-soft border border-adm-blue-soft">
+          <Moon size={14} className="text-adm-blue flex-shrink-0" />
+          <p className="text-xs text-adm-blue">
             <strong>{values.night_tariff_start ?? "00:00"} – {values.night_tariff_end ?? "07:00"}</strong> saatleri arasındaki rezervasyonlara{" "}
             <strong>%{values.night_tariff_percent ?? "0"}</strong> gece tarifesi uygulanır.
-            {isSavingAny && <span className="ms-2 text-indigo-400">Kaydediliyor...</span>}
+            {isSavingAny && <span className="ms-2 text-adm-blue">Kaydediliyor...</span>}
           </p>
         </div>
       )}

@@ -25,9 +25,9 @@ interface Props {
   onCancel?: () => void;
 }
 
-const label = "mb-1.5 block text-xs font-semibold text-slate-600";
+const label = "mb-1.5 block text-xs font-semibold text-adm-ink-2";
 const field =
-  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-900/5";
+  "w-full rounded-adm border border-adm-line bg-adm-surface px-3 py-2.5 text-sm text-adm-ink outline-none transition focus:border-[#c9c8c2] focus:ring-4 focus:ring-adm-ink/[0.06]";
 
 function rateInput(currency: Cash, rates: Rates): string {
   const quoted = defaultQuote(currency, "EUR", rates);
@@ -129,14 +129,14 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+      <div className="grid grid-cols-2 gap-1 rounded-adm bg-adm-line-2 p-1">
         {(["expense", "income"] as EntryKind[]).map((k) => (
           <button
             key={k}
             type="button"
             onClick={() => setForm((f) => ({ ...f, kind: k, categoryId: "" }))}
-            className={`rounded-lg py-2 text-sm font-semibold transition ${
-              form.kind === k ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+            className={`rounded-adm-sm py-2 text-sm font-semibold transition ${
+              form.kind === k ? "bg-adm-surface text-adm-ink shadow-sm" : "text-adm-muted hover:text-adm-ink"
             }`}
           >
             {k === "expense" ? "Gider" : "Gelir"}
@@ -165,7 +165,7 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
             <button
               type="button"
               onClick={() => setNewCategory("")}
-              className="inline-flex shrink-0 items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              className="inline-flex shrink-0 items-center gap-1 rounded-adm border border-adm-line px-3 text-xs font-semibold text-adm-ink-2 hover:bg-adm-surface-2"
             >
               <Plus size={14} />
               Yeni
@@ -190,14 +190,14 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
             <button
               type="button"
               onClick={addCategory}
-              className="shrink-0 rounded-xl bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-800"
+              className="shrink-0 rounded-adm bg-adm-ink px-3 text-xs font-semibold text-white hover:bg-adm-ink-hover"
             >
               Ekle
             </button>
             <button
               type="button"
               onClick={() => setNewCategory(null)}
-              className="shrink-0 rounded-xl px-2 text-xs font-semibold text-slate-500 hover:bg-slate-100"
+              className="shrink-0 rounded-adm px-2 text-xs font-semibold text-adm-muted hover:bg-adm-line-2"
             >
               Vazgeç
             </button>
@@ -220,15 +220,15 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
             required
             className={`${field} min-w-0 flex-1 text-lg font-semibold`}
           />
-          <div className="flex shrink-0 rounded-xl bg-slate-100 p-1">
+          <div className="flex shrink-0 rounded-adm bg-adm-line-2 p-1">
             {CASH.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, currency: c, rate: c === "EUR" ? "" : rateInput(c, rates) }))}
                 aria-pressed={form.currency === c}
-                className={`w-10 rounded-lg text-sm font-bold transition ${
-                  form.currency === c ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                className={`w-10 rounded-adm-sm text-sm font-bold transition ${
+                  form.currency === c ? "bg-adm-ink text-white" : "text-adm-muted hover:text-adm-ink"
                 }`}
               >
                 {CASH_SYMBOL[c]}
@@ -239,8 +239,8 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
       </div>
 
       {form.currency !== "EUR" && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
+        <div className="rounded-adm border border-adm-line bg-adm-surface-2 p-3">
+          <div className="flex items-center gap-2 text-sm text-adm-ink-2">
             <span className="shrink-0 font-semibold">1 {CASH_SYMBOL[pair.base]} =</span>
             <input
               type="number"
@@ -255,7 +255,7 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
             />
             <span className="shrink-0 font-semibold">{CASH_SYMBOL[pair.quote]}</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400">
+          <p className="mt-2 text-[11px] text-adm-muted">
             {todayQuote
               ? `Günlük kur (Ayarlar): ${fmtQuote(form.currency, "EUR", todayQuote)}`
               : "Günlük kur bulunamadı; kuru elle yazın."}
@@ -276,7 +276,7 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
           />
         </div>
         <div>
-          <label className={label} htmlFor="fin-note">Açıklama <span className="font-normal text-slate-400">(isteğe bağlı)</span></label>
+          <label className={label} htmlFor="fin-note">Açıklama <span className="font-normal text-adm-muted">(isteğe bağlı)</span></label>
           <input
             id="fin-note"
             type="text"
@@ -290,7 +290,7 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
 
       <div
         aria-live="polite"
-        className={`rounded-xl px-3.5 py-3 text-sm ${preview ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-400"}`}
+        className={`rounded-adm px-3.5 py-3 text-sm ${preview ? "bg-adm-ink text-white" : "bg-adm-surface-2 text-adm-muted"}`}
       >
         {preview ? (
           <>
@@ -302,14 +302,14 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
         )}
       </div>
 
-      {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-adm-rose">{error}</p>}
 
       <div className="flex justify-end gap-2 pt-1">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+            className="rounded-adm px-4 py-2.5 text-sm font-semibold text-adm-ink-2 hover:bg-adm-line-2"
           >
             Vazgeç
           </button>
@@ -317,7 +317,7 @@ export default function FinanceEntryForm({ categories: initial, rates, today, ki
         <button
           type="submit"
           disabled={saving}
-          className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-adm bg-adm-ink px-5 py-2.5 text-sm font-semibold text-white hover:bg-adm-ink-hover disabled:opacity-50"
         >
           {saving ? "Kaydediliyor…" : "Kaydet"}
         </button>

@@ -88,18 +88,18 @@ export default function SaveDiffDialog({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40">
-      <div className="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-white">
+      <div className="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-adm-lg bg-adm-surface shadow-xl">
+        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-adm-line bg-adm-surface">
           <div>
-            <h2 className="text-[15px] font-semibold text-slate-900">Değişiklikleri onayla</h2>
-            <p className="text-[11.5px] text-slate-500 mt-0.5">
+            <h2 className="text-[15px] font-semibold text-adm-ink">Değişiklikleri onayla</h2>
+            <p className="text-[11.5px] text-adm-muted mt-0.5">
               {changes.length} alan değişecek
               {critical.length > 0 && ` · ${critical.length} tanesi kritik`}
             </p>
           </div>
           <button
             onClick={onCancel}
-            className="text-slate-400 hover:text-slate-700 cursor-pointer"
+            className="text-adm-muted hover:text-adm-ink-2 cursor-pointer"
             aria-label="Kapat"
           >
             <X size={18} />
@@ -107,13 +107,13 @@ export default function SaveDiffDialog({
         </div>
 
         {critical.length > 0 && (
-          <div className="mx-5 mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
-            <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-red-800">
+          <div className="mx-5 mt-4 rounded-adm-sm border border-[#f6c9d1] bg-adm-rose-soft px-3 py-2.5">
+            <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-adm-rose">
               <AlertTriangle size={14} /> Sıralamayı etkileyebilecek değişiklikler
             </p>
             <ul className="mt-1.5 space-y-1">
               {critical.map((c) => (
-                <li key={c.field} className="text-[11.5px] text-red-700 leading-snug">
+                <li key={c.field} className="text-[11.5px] text-adm-rose leading-snug">
                   <b>{c.label}:</b> {c.critical}
                 </li>
               ))}
@@ -123,39 +123,39 @@ export default function SaveDiffDialog({
 
         <ul className="p-5 space-y-3">
           {changes.map((c) => (
-            <li key={c.field} className="rounded-lg border border-slate-200 overflow-hidden">
-              <p className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-[11.5px] font-medium text-slate-700">
+            <li key={c.field} className="rounded-adm-sm border border-adm-line overflow-hidden">
+              <p className="px-3 py-1.5 bg-adm-surface-2 border-b border-adm-line text-[11.5px] font-medium text-adm-ink-2">
                 {c.label}
                 {c.critical && (
-                  <span className="ms-1.5 px-1 py-0.5 rounded text-[9.5px] font-bold bg-red-100 text-red-700">
+                  <span className="ms-1.5 px-1 py-0.5 rounded text-[9.5px] font-bold bg-adm-rose-soft text-adm-rose">
                     KRİTİK
                   </span>
                 )}
               </p>
               <div className="grid sm:grid-cols-[1fr_auto_1fr] gap-2 items-center px-3 py-2">
-                <span className="text-[11.5px] text-slate-500 line-through break-words">
-                  {c.before || <span className="not-italic no-underline text-slate-400">— boş —</span>}
+                <span className="text-[11.5px] text-adm-muted line-through break-words">
+                  {c.before || <span className="not-italic no-underline text-adm-muted">— boş —</span>}
                 </span>
-                <ArrowRight size={13} className="text-slate-400 hidden sm:block" />
-                <span className="text-[11.5px] text-slate-900 font-medium break-words">
-                  {c.after || <span className="font-normal text-slate-400">— boş (varsayılana döner) —</span>}
+                <ArrowRight size={13} className="text-adm-muted hidden sm:block" />
+                <span className="text-[11.5px] text-adm-ink font-medium break-words">
+                  {c.after || <span className="font-normal text-adm-muted">— boş (varsayılana döner) —</span>}
                 </span>
               </div>
             </li>
           ))}
         </ul>
 
-        <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-slate-200 bg-white">
+        <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-3.5 border-t border-adm-line bg-adm-surface">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+            className="px-4 py-2 rounded-adm-sm text-[13px] font-medium text-adm-ink-2 hover:bg-adm-line-2 cursor-pointer"
           >
             Vazgeç
           </button>
           <button
             onClick={onConfirm}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-adm-sm disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
             style={{ backgroundColor: critical.length > 0 ? "#dc2626" : "#f97316" }}
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}

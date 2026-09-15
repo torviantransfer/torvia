@@ -1,13 +1,7 @@
-import AdminCalendarAvailability from "@/components/admin/AdminCalendarAvailability";
+import CapacityCalendar from "@/components/admin/calendar/CapacityCalendar";
 
-export default function AdminCalendarPage() {
-  return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Takvim & Kapasite</h1>
-        <p className="text-sm text-slate-500 mt-1">Tüm transferleri takip edin, günleri kapatın.</p>
-      </div>
-      <AdminCalendarAvailability />
-    </div>
-  );
+/** The same screen as /admin/availability; kept so old links still work. */
+export default async function AdminCalendarPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  return <CapacityCalendar adminBase={`/${locale}/admin`} />;
 }

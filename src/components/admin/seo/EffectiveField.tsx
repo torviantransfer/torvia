@@ -107,12 +107,12 @@ export default function EffectiveField({
     : "#94a3b8";
 
   const inputClass =
-    "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 disabled:bg-slate-50 disabled:text-slate-500";
+    "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2] disabled:bg-adm-surface-2 disabled:text-adm-muted";
 
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2 mb-1.5">
-        <label htmlFor={id} className="text-[12.5px] font-medium text-slate-700">
+        <label htmlFor={id} className="text-[12.5px] font-medium text-adm-ink-2">
           {label}
         </label>
         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function EffectiveField({
       {readOnly ? (
         <>
           <input value={effective} disabled className={inputClass} />
-          <p className="mt-1 text-[11px] text-amber-700">{readOnly.reason}</p>
+          <p className="mt-1 text-[11px] text-adm-amber">{readOnly.reason}</p>
         </>
       ) : editing ? (
         <>
@@ -170,7 +170,7 @@ export default function EffectiveField({
                 onChange("");
                 setEditing(false);
               }}
-              className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-500 hover:text-red-600 cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11.5px] font-medium text-adm-muted hover:text-adm-rose cursor-pointer"
             >
               <RotateCcw size={11} /> Override&apos;ı sil, varsayılana dön
             </button>
@@ -178,7 +178,7 @@ export default function EffectiveField({
               <button
                 type="button"
                 onClick={() => onChange(live.trim())}
-                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-slate-500 hover:text-slate-900 cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11.5px] font-medium text-adm-muted hover:text-adm-ink cursor-pointer"
               >
                 <Check size={11} /> Mevcut değeri kopyala
               </button>
@@ -186,36 +186,36 @@ export default function EffectiveField({
           </div>
         </>
       ) : (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <div className="rounded-adm-sm border border-adm-line bg-adm-surface-2 px-3 py-2">
           {loading ? (
-            <p className="text-[13px] text-slate-400">Sayfadan okunuyor…</p>
+            <p className="text-[13px] text-adm-muted">Sayfadan okunuyor…</p>
           ) : unreadable ? (
-            <p className="text-[13px] text-amber-700 leading-snug">
+            <p className="text-[13px] text-adm-amber leading-snug">
               {unreadable}
               <br />
-              <span className="text-[11.5px] text-slate-500">
+              <span className="text-[11.5px] text-adm-muted">
                 Bu alanın gerçek değeri bilinmiyor — boş sanıp doldurmayın.
               </span>
             </p>
           ) : effective ? (
-            <p className="text-[13px] text-slate-800 leading-snug break-words">{effective}</p>
+            <p className="text-[13px] text-adm-ink leading-snug break-words">{effective}</p>
           ) : (
-            <p className="text-[13px] text-red-600">
+            <p className="text-[13px] text-adm-rose">
               Sayfada bu değer yok — burayı doldurmak gerçekten bir eksiği kapatır.
             </p>
           )}
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-medium text-orange-600 hover:text-orange-700 cursor-pointer"
+            className="mt-1.5 inline-flex items-center gap-1 text-[11.5px] font-medium text-adm-brand-ink hover:text-adm-brand-ink cursor-pointer"
           >
             <Pencil size={11} /> Bu değeri düzenle / override oluştur
           </button>
         </div>
       )}
 
-      {warning && <p className="mt-1.5 text-[11px] text-red-600">{warning}</p>}
-      {hint && !warning && <p className="mt-1 text-[11px] text-slate-500">{hint}</p>}
+      {warning && <p className="mt-1.5 text-[11px] text-adm-rose">{warning}</p>}
+      {hint && !warning && <p className="mt-1 text-[11px] text-adm-muted">{hint}</p>}
 
       {/* The three-way breakdown, collapsed by default. Expanded it answers
           "why does the site show X when the box says Y" without guesswork. */}
@@ -224,13 +224,13 @@ export default function EffectiveField({
           <button
             type="button"
             onClick={() => setShowDetail((v) => !v)}
-            className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 cursor-pointer"
+            className="inline-flex items-center gap-1 text-[11px] text-adm-muted hover:text-adm-ink-2 cursor-pointer"
           >
             {showDetail ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
             Değer kaynağı
           </button>
           {showDetail && (
-            <dl className="mt-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 space-y-1">
+            <dl className="mt-1 rounded-adm-sm bg-adm-surface-2 border border-adm-line px-3 py-2 space-y-1">
               <Row term="Admin override" value={override.trim() || "—"} />
               <Row
                 term="Sayfadaki mevcut değer"
@@ -249,9 +249,9 @@ export default function EffectiveField({
 function Row({ term, value, strong }: { term: string; value: string; strong?: boolean }) {
   return (
     <div className="grid grid-cols-[150px_1fr] gap-2">
-      <dt className="text-[11px] text-slate-500">{term}</dt>
+      <dt className="text-[11px] text-adm-muted">{term}</dt>
       <dd
-        className={`text-[11.5px] break-words ${strong ? "font-medium text-slate-900" : "text-slate-700"}`}
+        className={`text-[11.5px] break-words ${strong ? "font-medium text-adm-ink" : "text-adm-ink-2"}`}
       >
         {value}
       </dd>

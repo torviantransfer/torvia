@@ -32,15 +32,15 @@ const tick = (v: number) => `${v < 0 ? "−" : ""}€${compact.format(Math.abs(v
 
 function TooltipCard({ title, rows }: { title: string; rows: { label: string; value: string; color?: string; sub?: boolean }[] }) {
   return (
-    <div className="min-w-[190px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs shadow-lg">
-      <p className="mb-1.5 font-medium text-slate-500">{title}</p>
+    <div className="min-w-[190px] rounded-adm border border-adm-line bg-adm-surface px-3 py-2.5 text-xs shadow-lg">
+      <p className="mb-1.5 font-medium text-adm-muted">{title}</p>
       {rows.map((row) => (
         <div key={row.label} className="flex items-center justify-between gap-5 py-0.5">
-          <span className={`flex items-center gap-2 ${row.sub ? "ps-5 text-slate-400" : "text-slate-500"}`}>
+          <span className={`flex items-center gap-2 ${row.sub ? "ps-5 text-adm-muted" : "text-adm-muted"}`}>
             {row.color && <span className="h-0.5 w-3 rounded-full" style={{ backgroundColor: row.color }} />}
             {row.label}
           </span>
-          <span className={`tabular-nums ${row.sub ? "text-slate-600" : "font-bold text-slate-900"}`}>{row.value}</span>
+          <span className={`tabular-nums ${row.sub ? "text-adm-ink-2" : "font-bold text-adm-ink"}`}>{row.value}</span>
         </div>
       ))}
     </div>
@@ -79,7 +79,7 @@ const axes = (
 export function RevenueCostChart({ months }: { months: MonthRow[] }) {
   return (
     <div>
-      <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-600">
+      <div className="mb-3 flex flex-wrap gap-4 text-xs text-adm-ink-2">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: REVENUE }} />
           Ciro
@@ -121,7 +121,7 @@ export function RevenueCostChart({ months }: { months: MonthRow[] }) {
 export function NetProfitChart({ months }: { months: MonthRow[] }) {
   return (
     <div>
-      <div className="mb-3 flex flex-wrap gap-4 text-xs text-slate-600">
+      <div className="mb-3 flex flex-wrap gap-4 text-xs text-adm-ink-2">
         <span className="inline-flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: REVENUE }} />
           Kâr

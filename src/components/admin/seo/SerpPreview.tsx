@@ -74,13 +74,13 @@ export default function SerpPreview({
   const crumb = path ? `${SITE} › ${locale} › ${path.split("/").join(" › ")}` : `${SITE} › ${locale}`;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 bg-slate-50">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+    <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-adm-line-2 bg-adm-surface-2">
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-adm-muted">
           <Globe size={13} />
           Google önizleme
         </div>
-        <div className="flex items-center gap-0.5 rounded-lg bg-white border border-slate-200 p-0.5">
+        <div className="flex items-center gap-0.5 rounded-adm-sm bg-adm-surface border border-adm-line p-0.5">
           {(["desktop", "mobile"] as const).map((d) => (
             <button
               key={d}
@@ -104,14 +104,14 @@ export default function SerpPreview({
           <div className="flex-1 min-w-0">
             {/* Favicon + breadcrumb row, matching Google's current layout. */}
             <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                <span className="text-[9px] font-bold text-orange-600">T</span>
+              <div className="w-6 h-6 rounded-full bg-adm-line-2 border border-adm-line flex items-center justify-center shrink-0">
+                <span className="text-[9px] font-bold text-adm-brand-ink">T</span>
               </div>
               <div className="min-w-0">
-                <div className="text-[13px] leading-4 text-slate-900">TORVIAN Transfer</div>
-                <div className="text-[11px] leading-4 text-slate-500 truncate">{crumb}</div>
+                <div className="text-[13px] leading-4 text-adm-ink">TORVIAN Transfer</div>
+                <div className="text-[11px] leading-4 text-adm-muted truncate">{crumb}</div>
               </div>
-              <ChevronDown size={13} className="text-slate-400 shrink-0" />
+              <ChevronDown size={13} className="text-adm-muted shrink-0" />
             </div>
 
             <div
@@ -129,24 +129,24 @@ export default function SerpPreview({
                 back them; showing them unconditionally would teach the editor
                 to expect stars the markup does not actually earn. */}
             {rating != null && reviewCount != null && reviewCount > 0 && (
-              <div className="flex items-center gap-1.5 mb-1 text-[13px] text-slate-600">
+              <div className="flex items-center gap-1.5 mb-1 text-[13px] text-adm-ink-2">
                 <span className="flex">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Star
                       key={i}
                       size={13}
-                      className={i < Math.round(rating) ? "text-amber-500" : "text-slate-300"}
+                      className={i < Math.round(rating) ? "text-adm-amber" : "text-adm-faint"}
                       fill="currentColor"
                     />
                   ))}
                 </span>
                 <span className="font-medium">{rating.toFixed(1)}</span>
-                <span className="text-slate-500">({reviewCount} yorum)</span>
+                <span className="text-adm-muted">({reviewCount} yorum)</span>
               </div>
             )}
 
             <div
-              className="text-[13px] leading-[1.58] text-slate-600"
+              className="text-[13px] leading-[1.58] text-adm-ink-2"
               style={{ fontFamily: "arial, sans-serif" }}
             >
               {highlight(shownDesc.text, keywords)}
@@ -155,7 +155,7 @@ export default function SerpPreview({
 
           {/* max-image-preview:large is what lets this thumbnail appear at all. */}
           {imageUrl && (
-            <div className="w-[92px] h-[92px] shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+            <div className="w-[92px] h-[92px] shrink-0 rounded-adm-sm overflow-hidden bg-adm-line-2 border border-adm-line">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imageUrl} alt="" className="w-full h-full object-cover" />
             </div>
@@ -163,7 +163,7 @@ export default function SerpPreview({
         </div>
 
         {(shownTitle.cut || shownDesc.cut) && (
-          <p className="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5">
+          <p className="mt-3 text-[11px] text-adm-amber bg-adm-amber-soft border border-adm-amber-line rounded-md px-2.5 py-1.5">
             {shownTitle.cut && shownDesc.cut
               ? "Başlık ve açıklama bu ekranda kesiliyor."
               : shownTitle.cut

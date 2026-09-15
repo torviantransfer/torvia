@@ -349,17 +349,20 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 - [x] **Aşama 1 — Temel:** renk ve ölçü değişkenleri · `ui/` bileşenleri (Bölüm 4) · yeni yan menü ve üst çubuk · komut paleti · telefon çekmecesi · giriş ekranı.
 - [x] **Aşama 2 — Rezervasyonlar:** sekmeler ve filtreler · gruplu liste · sağ panel · panel içinde şoför atama · toplu işlemler · detay sayfasının yeni düzeni · sayfalama.
 - [x] **Aşama 3 — Bugün:** özet şeridi · dikkat gerektiriyor · günün akışı · şoför durumu · bu ay kutusu · eski grafiklerin taşınması.
-- [ ] **Aşama 4 — Operasyon:** Takvim & Kapasite · Canlı Ziyaretçiler (Canlı / Analitik).
-- [ ] **Aşama 5 — Filo & Ekip:** Şoförler · Araçlar · Araç Tipleri · Şoför Ödemeleri uyarlaması.
-- [ ] **Aşama 6 — Finans:** Kasa uyarlaması · Fiyatlandırma tablosu · Kuponlar.
-- [ ] **Aşama 7 — Site & Pazarlama:** Bölgeler · Değerlendirmeler · Blog · Landing · SEO.
-- [ ] **Aşama 8 — Sistem:** Ayarlar (Genel, Döviz, Gece tarifesi, Entegrasyonlar).
+- [x] **Aşama 4 — Operasyon:** Takvim & Kapasite (aylık takvim, gün paneli, varsayılan kapasite, transfere tıklayınca rezervasyon paneli) · Canlı Ziyaretçiler (Canlı / Analitik sekmesi; eski kontrol paneli grafikleri Analitik'e taşındı, ciro artık euro ve transfer tarihine göre).
+- [x] **Aşama 5 — Filo & Ekip:** Şoförler (sekmeler, arama, sağ panelden iletişim/işler/bu ay özeti/ödeme/pasife alma) · Araçlar (liste, sağ panel, görsel yükleme) · Araç Tipleri (kart ızgarası, düzenleme penceresi — tek dilli ad/açıklama, bkz. not aşağıda) · Şoför Ödemeleri tasarım diline tam geçti.
+- [~] **Aşama 6 — Finans:** Kasa ve Şoför Ödemeleri (yukarıda) tam uyarlandı. Fiyatlandırma ve Kuponlar şimdilik yalnızca renk/ölçü/gölge tasarım diline geçirildi; sekme/liste/sağ panel yapısına henüz kavuşmadı.
+- [~] **Aşama 7 — Site & Pazarlama:** Bölgeler, Değerlendirmeler, Blog, Landing, SEO şimdilik yalnızca renk/ölçü/gölge tasarım diline geçirildi; asıl yapıları (sekmeler, dil sekmeleri, SEO panelleri) değişmedi.
+- [~] **Aşama 8 — Sistem:** Ayarlar yalnızca renk/ölçü/gölge tasarım diline geçirildi; yapısı değişmedi.
 - [ ] **Aşama 9 — Altyapı:** A3 adminden rezervasyon + A2 ödeme linki (önce bunlar) · A6 şoförün kalıcı paneli ve izin günleri · A7 olay kaydı · A8 toplu Telegram · A4 iade (Stripe'tan para çıkacağı için yapılmadan önce ayrıca onay). Sonraya kalanlar: A1 uçuş durumu ve A9 rötar bildirimi (API alınınca). Yapılmayacak: A5 bildirim zili.
+
+`[~]` = ekran çalışıyor ve görsel dile (renkler, köşe yuvarlaklığı, gölge, yazı) tam geçti, ama Bölüm 4'teki liste + sağ panel yapısına henüz taşınmadı; sonraki bir oturumda tamamlanacak.
 
 ### Devam notları
 
-- Aşama 1, 2 ve 3 `main`'e alındı (`feat/admin-ui-temel` → `feat/admin-ui-rezervasyonlar` → `feat/admin-ui-bugun`).
-- Canlıda ilk bakılacaklar: Bugün ekranındaki sayılar, Rezervasyonlar listesi ve filtreleri, sağ panelden şoför atama, Ctrl K araması. Bu ekranların sorguları gerçek veriyle ilk kez canlıda çalıştı; bir sorun görülürse önce o düzeltilir.
-- Sıradaki iş **Aşama 4** (Takvim & Kapasite, Canlı Ziyaretçiler: Canlı / Analitik). Sonra 5, 6, 7, 8, en son 9. Her aşama güncel `main`'den açılan yeni branch'te (`feat/admin-ui-<aşama>`) yapılır, önizlemede denenir, sonra `main`'e alınır.
+- Aşama 1–5 `main`'e alındı. Aşama 6-8'in "tam uyarlanan" kısımları (Kasa, Şoför Ödemeleri) da içeride; kalan ekranlar (Fiyatlandırma, Kuponlar, Bölgeler, Değerlendirmeler, Blog, Landing, SEO, Ayarlar) görsel olarak uyumlu ama yapısal olarak eski haliyle çalışıyor durumda `main`'de.
+- **Araç Tipleri'nde bir sapma:** Bölüm 5.7 "çok dilli ad ve açıklama sekmeleri" diyor, ama `vehicle_categories` tablosunda böyle sütunlar yok (tek `name`/`description`). Olmayan bir alan için sahte sekme koymak yerine tek dilli formla bırakıldı. Çok dilli isim gerekiyorsa önce veritabanına `name_xx`/`description_xx` sütunları eklenmeli.
+- Canlıda ilk bakılacaklar: Bugün ekranındaki sayılar, Rezervasyonlar listesi ve filtreleri, sağ panelden şoför atama, Ctrl K araması, Şoförler/Araçlar/Araç Tipleri listeleri, Takvim & Kapasite, Canlı Ziyaretçiler'in iki sekmesi. Bu ekranların sorguları gerçek veriyle ilk kez canlıda çalışacak; bir sorun görülürse önce o düzeltilir.
+- Sıradaki iş: Fiyatlandırma, Kuponlar, Bölgeler, Değerlendirmeler, Blog, Landing, SEO ve Ayarlar'ı Bölüm 4'teki liste + sağ panel yapısına taşımak (Aşama 6-8'i tamamlamak), sonra Aşama 9.
 - Yerelde `.env.local` gerçek Supabase anahtarı taşımadığı için ekranlar geçici bir önizleme sayfasında (`/tr/zz-ui-onizleme`, sahte veri ve sahte API yanıtlarıyla) kontrol edilir; bu sayfa commit'e girmez.
 - Commit ve PR metinlerinde yapay zeka satırı (Co-Authored-By vb.) kullanılmaz. Eski commit'lerdeki satırlar için geçmişin yeniden yazılması ve `.claude/settings.json`, `CLAUDE.md` dosyalarının repodan kaldırılması henüz kararlaştırılmadı.

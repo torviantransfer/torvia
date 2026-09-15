@@ -21,6 +21,7 @@ import {
   Delta,
   Dialog as AdminDialog,
   dropQueryParam,
+  PageHeader,
   PeriodBar,
   StatTile,
 } from "@/components/admin/ui";
@@ -91,30 +92,29 @@ export default function FinanceDashboard({
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Kasa</h1>
-          <p className="mt-1 text-sm text-slate-500">Kâr / zarar · tutarlar euro · {rangeLabel(r.range)}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <a href={exportHref("xlsx")} className={buttonSecondary}>
-            <FileSpreadsheet size={16} className="text-emerald-600" />
-            Excel
-          </a>
-          <a href={exportHref("pdf")} className={buttonSecondary}>
-            <FileText size={16} className="text-rose-600" />
-            PDF
-          </a>
-          <button type="button" onClick={() => setDialog("expense")} className={buttonPrimary} disabled={tablesMissing}>
-            <Plus size={16} />
-            Gider / gelir ekle
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Kasa"
+        description={`Kâr / zarar · tutarlar euro · ${rangeLabel(r.range)}`}
+        actions={
+          <>
+            <a href={exportHref("xlsx")} className={buttonSecondary}>
+              <FileSpreadsheet size={16} className="text-adm-green" />
+              Excel
+            </a>
+            <a href={exportHref("pdf")} className={buttonSecondary}>
+              <FileText size={16} className="text-adm-rose" />
+              PDF
+            </a>
+            <button type="button" onClick={() => setDialog("expense")} className={buttonPrimary} disabled={tablesMissing}>
+              <Plus size={16} />
+              Gider / gelir ekle
+            </button>
+          </>
+        }
+      />
 
       {tablesMissing && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="flex items-start gap-2 rounded-adm border border-adm-amber-line bg-adm-amber-soft px-4 py-3 text-sm text-adm-amber">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <p>
             Gider girebilmek için Supabase&apos;de <strong>093 numaralı migration</strong> çalıştırılmalı. Ciro ve şoför
@@ -127,7 +127,7 @@ export default function FinanceDashboard({
 
       {/* ── Figures ── */}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-        <div className={`rounded-2xl p-5 text-white md:col-span-2 xl:col-span-2 ${t.net < 0 ? "bg-rose-600" : "bg-slate-900"}`}>
+        <div className={`rounded-adm-lg p-5 text-white md:col-span-2 xl:col-span-2 ${t.net < 0 ? "bg-adm-rose" : "bg-adm-ink"}`}>
           <p className="text-xs font-medium text-white/70">Net kâr</p>
           <p className="mt-2 text-4xl font-bold tracking-tight">{fmtCash(t.net, "EUR")}</p>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/80">
@@ -162,7 +162,7 @@ export default function FinanceDashboard({
       </div>
 
       {(t.missingFees > 0 || t.unconvertible > 0) && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+        <div className="flex items-start gap-2 rounded-adm border border-adm-amber-line bg-adm-amber-soft px-4 py-3 text-xs text-adm-amber">
           <AlertTriangle size={14} className="mt-px shrink-0" />
           <div className="space-y-0.5">
             {t.missingFees > 0 && (
@@ -190,16 +190,16 @@ export default function FinanceDashboard({
         </Card>
       </div>
 
-      <details className="group rounded-2xl border border-slate-200 bg-white">
-        <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 text-sm font-bold text-slate-900">
+      <details className="group rounded-adm-lg border border-adm-line bg-adm-surface">
+        <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3.5 text-sm font-bold text-adm-ink">
           Aylık tablo
-          <span className="text-xs font-semibold text-slate-400 group-open:hidden">Göster</span>
-          <span className="hidden text-xs font-semibold text-slate-400 group-open:inline">Gizle</span>
+          <span className="text-xs font-semibold text-adm-muted group-open:hidden">Göster</span>
+          <span className="hidden text-xs font-semibold text-adm-muted group-open:inline">Gizle</span>
         </summary>
-        <div className="overflow-x-auto border-t border-slate-100">
+        <div className="overflow-x-auto border-t border-adm-line-2">
           <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wider text-slate-400">
+              <tr className="text-[11px] uppercase tracking-wider text-adm-muted">
                 <th className="px-5 py-2.5 text-start font-bold">Ay</th>
                 <th className="px-3 py-2.5 text-end font-bold">Transfer</th>
                 <th className="px-3 py-2.5 text-end font-bold">Ciro</th>
@@ -211,14 +211,14 @@ export default function FinanceDashboard({
             </thead>
             <tbody className="tabular-nums">
               {r.months.map((m) => (
-                <tr key={m.key} className="border-t border-slate-50">
-                  <td className="px-5 py-2 font-medium text-slate-700">{m.label}</td>
-                  <td className="px-3 py-2 text-end text-slate-600">{m.transfers}</td>
-                  <td className="px-3 py-2 text-end text-slate-700">{fmtCash(m.revenue, "EUR")}</td>
-                  <td className="px-3 py-2 text-end text-slate-600">{fmtCash(m.driverCost, "EUR")}</td>
-                  <td className="px-3 py-2 text-end text-slate-600">{fmtCash(m.expenses, "EUR")}</td>
-                  <td className="px-3 py-2 text-end text-slate-600">{fmtCash(m.otherIncome, "EUR")}</td>
-                  <td className={`px-5 py-2 text-end font-bold ${m.net < 0 ? "text-rose-600" : "text-slate-900"}`}>
+                <tr key={m.key} className="border-t border-adm-line-2">
+                  <td className="px-5 py-2 font-medium text-adm-ink-2">{m.label}</td>
+                  <td className="px-3 py-2 text-end text-adm-ink-2">{m.transfers}</td>
+                  <td className="px-3 py-2 text-end text-adm-ink-2">{fmtCash(m.revenue, "EUR")}</td>
+                  <td className="px-3 py-2 text-end text-adm-ink-2">{fmtCash(m.driverCost, "EUR")}</td>
+                  <td className="px-3 py-2 text-end text-adm-ink-2">{fmtCash(m.expenses, "EUR")}</td>
+                  <td className="px-3 py-2 text-end text-adm-ink-2">{fmtCash(m.otherIncome, "EUR")}</td>
+                  <td className={`px-5 py-2 text-end font-bold ${m.net < 0 ? "text-adm-rose" : "text-adm-ink"}`}>
                     {fmtCash(m.net, "EUR")}
                   </td>
                 </tr>
@@ -233,23 +233,23 @@ export default function FinanceDashboard({
         <div className="lg:col-span-2">
           <Card title="Gider dağılımı" subtitle={`Toplam ${fmtCash(t.expenses, "EUR")}`}>
             {r.expenseCategories.length === 0 ? (
-              <p className="py-6 text-center text-sm text-slate-400">Bu dönemde gider girilmemiş.</p>
+              <p className="py-6 text-center text-sm text-adm-muted">Bu dönemde gider girilmemiş.</p>
             ) : (
               <ul className="space-y-3.5">
                 {r.expenseCategories.map((c) => (
                   <li key={c.name}>
                     <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="font-medium text-slate-700">{c.name}</span>
-                      <span className="tabular-nums font-semibold text-slate-900">{fmtCash(c.total, "EUR")}</span>
+                      <span className="font-medium text-adm-ink-2">{c.name}</span>
+                      <span className="tabular-nums font-semibold text-adm-ink">{fmtCash(c.total, "EUR")}</span>
                     </div>
                     <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-adm-line-2">
                         <div
                           className="h-full rounded-full"
                           style={{ width: `${Math.max(2, c.share * 100)}%`, backgroundColor: "#eb6834" }}
                         />
                       </div>
-                      <span className="w-20 text-end text-[11px] text-slate-400">
+                      <span className="w-20 text-end text-[11px] text-adm-muted">
                         %{Math.round(c.share * 100)} · {c.count} kayıt
                       </span>
                     </div>
@@ -258,13 +258,13 @@ export default function FinanceDashboard({
               </ul>
             )}
             {r.incomeCategories.length > 0 && (
-              <div className="mt-5 border-t border-slate-100 pt-4">
-                <p className="mb-2 text-xs font-semibold text-slate-500">Diğer gelirler</p>
+              <div className="mt-5 border-t border-adm-line-2 pt-4">
+                <p className="mb-2 text-xs font-semibold text-adm-muted">Diğer gelirler</p>
                 <ul className="space-y-1.5 text-sm">
                   {r.incomeCategories.map((c) => (
                     <li key={c.name} className="flex justify-between">
-                      <span className="text-slate-600">{c.name}</span>
-                      <span className="tabular-nums font-semibold text-slate-900">{fmtCash(c.total, "EUR")}</span>
+                      <span className="text-adm-ink-2">{c.name}</span>
+                      <span className="tabular-nums font-semibold text-adm-ink">{fmtCash(c.total, "EUR")}</span>
                     </li>
                   ))}
                 </ul>
@@ -284,7 +284,7 @@ export default function FinanceDashboard({
                   type="button"
                   onClick={() => setDialog("expense")}
                   disabled={tablesMissing}
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                  className="rounded-adm-sm px-2.5 py-1.5 text-xs font-semibold text-adm-ink-2 hover:bg-adm-line-2 disabled:opacity-40"
                 >
                   + Gider
                 </button>
@@ -292,7 +292,7 @@ export default function FinanceDashboard({
                   type="button"
                   onClick={() => setDialog("income")}
                   disabled={tablesMissing}
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                  className="rounded-adm-sm px-2.5 py-1.5 text-xs font-semibold text-adm-ink-2 hover:bg-adm-line-2 disabled:opacity-40"
                 >
                   + Gelir
                 </button>
@@ -300,25 +300,25 @@ export default function FinanceDashboard({
             }
           >
             {r.entries.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-slate-400">Bu dönemde kayıt yok.</p>
+              <p className="px-5 py-10 text-center text-sm text-adm-muted">Bu dönemde kayıt yok.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-adm-line-2">
                 {r.entries.map((e) => (
                   <li key={e.id} className="flex items-center gap-3 px-5 py-3">
                     <span
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                        e.kind === "income" ? "bg-sky-50 text-sky-700" : "bg-orange-50 text-orange-700"
+                        e.kind === "income" ? "bg-adm-green-soft text-adm-green" : "bg-adm-amber-soft text-adm-amber"
                       }`}
                       aria-label={e.kind === "income" ? "Gelir" : "Gider"}
                     >
                       {e.kind === "income" ? "+" : "−"}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-800">
+                      <p className="truncate text-sm font-medium text-adm-ink">
                         {e.category}
-                        {e.description && <span className="font-normal text-slate-500"> · {e.description}</span>}
+                        {e.description && <span className="font-normal text-adm-muted"> · {e.description}</span>}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-adm-muted">
                         {fmtDay(e.day)}
                         {e.currency !== "EUR" &&
                           ` · ${fmtCash(e.amount, e.currency)} · ${fmtQuote(e.currency, "EUR", 1 / e.eurPerUnit)}`}
@@ -326,7 +326,7 @@ export default function FinanceDashboard({
                     </div>
                     <span
                       className={`shrink-0 text-sm font-bold tabular-nums ${
-                        e.kind === "income" ? "text-slate-900" : "text-slate-900"
+                        e.kind === "income" ? "text-adm-ink" : "text-adm-ink"
                       }`}
                     >
                       {e.kind === "income" ? "+" : "−"}
@@ -337,7 +337,7 @@ export default function FinanceDashboard({
                       onClick={() => remove(e.id)}
                       disabled={deleting === e.id}
                       aria-label="Kaydı sil"
-                      className="shrink-0 rounded-lg p-1.5 text-slate-300 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+                      className="shrink-0 rounded-adm-sm p-1.5 text-adm-faint hover:bg-adm-rose-soft hover:text-adm-rose disabled:opacity-40"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -356,13 +356,13 @@ export default function FinanceDashboard({
         flush
       >
         {r.transfers.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-slate-400">Bu dönemde transfer yok.</p>
+          <p className="px-5 py-10 text-center text-sm text-adm-muted">Bu dönemde transfer yok.</p>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[11px] uppercase tracking-wider text-slate-400">
+                  <tr className="border-b border-adm-line-2 text-[11px] uppercase tracking-wider text-adm-muted">
                     <th className="px-5 py-2.5 text-start font-bold">Tarih</th>
                     <th className="px-3 py-2.5 text-start font-bold">Kod</th>
                     <th className="px-3 py-2.5 text-start font-bold">Bölge</th>
@@ -374,36 +374,36 @@ export default function FinanceDashboard({
                 </thead>
                 <tbody>
                   {transfers.map((x) => (
-                    <tr key={x.id} className={`border-b border-slate-50 last:border-0 ${x.missingFee ? "bg-amber-50/40" : ""}`}>
-                      <td className="whitespace-nowrap px-5 py-2.5 text-xs text-slate-500">
-                        {fmtDay(x.day)} <span className="text-slate-400">{x.time}</span>
+                    <tr key={x.id} className={`border-b border-adm-line-2 last:border-0 ${x.missingFee ? "bg-adm-amber-soft/40" : ""}`}>
+                      <td className="whitespace-nowrap px-5 py-2.5 text-xs text-adm-muted">
+                        {fmtDay(x.day)} <span className="text-adm-muted">{x.time}</span>
                       </td>
                       <td className="px-3 py-2.5">
                         <Link
                           href={`${adminBase}/reservations/${encodeURIComponent(x.code)}`}
-                          className="font-mono text-xs font-semibold text-slate-700 hover:text-blue-600"
+                          className="font-mono text-xs font-semibold text-adm-ink-2 hover:text-adm-brand-ink"
                         >
                           {x.code}
                         </Link>
                       </td>
-                      <td className="px-3 py-2.5 text-xs text-slate-600">
+                      <td className="px-3 py-2.5 text-xs text-adm-ink-2">
                         {x.region}
-                        <span className="ms-1.5 text-slate-400">
+                        <span className="ms-1.5 text-adm-muted">
                           {TRIP(x.tripType)}
                           {x.payment === "cash" && " · nakit"}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 text-xs text-slate-600">{x.drivers.join(", ") || "—"}</td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-end tabular-nums text-slate-800">
-                        {x.fareEur === null ? <span className="text-amber-700">kur yok</span> : fmtCash(x.fareEur, "EUR")}
+                      <td className="px-3 py-2.5 text-xs text-adm-ink-2">{x.drivers.join(", ") || "—"}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-end tabular-nums text-adm-ink">
+                        {x.fareEur === null ? <span className="text-adm-amber">kur yok</span> : fmtCash(x.fareEur, "EUR")}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-end tabular-nums text-slate-600">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-end tabular-nums text-adm-ink-2">
                         {fmtCash(x.driverCostEur, "EUR")}
-                        {x.missingFee && <div className="text-[10px] font-semibold text-amber-700">ücret eksik</div>}
+                        {x.missingFee && <div className="text-[10px] font-semibold text-adm-amber">ücret eksik</div>}
                       </td>
                       <td
                         className={`whitespace-nowrap px-5 py-2.5 text-end font-bold tabular-nums ${
-                          (x.profitEur ?? 0) < 0 ? "text-rose-600" : "text-slate-900"
+                          (x.profitEur ?? 0) < 0 ? "text-adm-rose" : "text-adm-ink"
                         }`}
                       >
                         {x.profitEur === null ? "—" : fmtCash(x.profitEur, "EUR")}
@@ -417,7 +417,7 @@ export default function FinanceDashboard({
               <button
                 type="button"
                 onClick={() => setAllTransfers((v) => !v)}
-                className="w-full border-t border-slate-100 py-3 text-xs font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                className="w-full border-t border-adm-line-2 py-3 text-xs font-semibold text-adm-muted hover:bg-adm-surface-2 hover:text-adm-ink"
               >
                 {allTransfers ? "Daha az göster" : `Tümünü göster (${r.transfers.length})`}
               </button>

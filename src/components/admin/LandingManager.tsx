@@ -99,7 +99,7 @@ const emptyForm: FormState = {
 };
 
 const inputClass =
-  "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none";
+  "w-full px-3 py-2.5 border border-adm-line-strong rounded-adm-sm text-sm focus:ring-2 focus:ring-adm-ink/[0.06] outline-none";
 
 /** How complete one language is, for the dot on its tab. */
 function localeStatus(form: FormState, l: Loc): "full" | "partial" | "empty" {
@@ -342,11 +342,11 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-adm-muted">
             Sayfa metni ve adresi bu ekranda. Meta başlık, açıklama ve diğer arama ayarları{" "}
             <Link
               href={`/${adminLocale}/admin/seo`}
-              className="text-blue-600 underline underline-offset-2 hover:text-blue-700"
+              className="text-adm-brand-ink underline underline-offset-2 hover:text-adm-brand-ink"
             >
               SEO Yönetimi
             </Link>{" "}
@@ -354,20 +354,20 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
           </p>
           <button
             onClick={startCreate}
-            className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
+            className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors"
           >
             <Plus size={15} /> Yeni landing sayfası
           </button>
         </div>
 
         {pages.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="rounded-adm border border-dashed border-adm-line-strong bg-adm-surface p-10 text-center">
+            <p className="text-sm text-adm-muted">
               Henüz landing sayfası yok. Yeni bir sayfa oluşturduğunuzda burada listelenir.
             </p>
           </div>
         ) : (
-          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-adm border border-adm-line bg-adm-surface overflow-hidden">
             {pages.map((p) => {
               const filled = LOCALES.filter(
                 (l) => String(p[`h1_${l}`] ?? "").trim() && String(p[`content_${l}`] ?? "").trim()
@@ -375,31 +375,31 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
               return (
                 <div
                   key={p.id}
-                  className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0"
+                  className="flex flex-wrap items-center gap-3 px-4 py-3 border-b border-adm-line-2 last:border-b-0"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-gray-900 truncate">{p.label}</span>
+                      <span className="font-medium text-sm text-adm-ink truncate">{p.label}</span>
                       <span
                         className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                           p.is_published
-                            ? "bg-green-50 text-green-700"
-                            : "bg-gray-100 text-gray-500"
+                            ? "bg-adm-green-soft text-adm-green"
+                            : "bg-adm-line-2 text-adm-muted"
                         }`}
                       >
                         {p.is_published ? "Yayında" : "Taslak"}
                       </span>
                       {p.noindex === true && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-adm-amber-soft text-adm-amber">
                           noindex
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[12px] text-gray-500">
+                    <div className="mt-0.5 flex items-center gap-2 text-[12px] text-adm-muted">
                       <code>/{p.slug}</code>
                       <span aria-hidden>·</span>
                       <span
-                        className={filled.length === LOCALES.length ? "" : "text-amber-600"}
+                        className={filled.length === LOCALES.length ? "" : "text-adm-amber"}
                         title="Kendi H1 ve içeriği olan diller. Eksik diller noindex yayınlanır ve site haritasına girmez."
                       >
                         {filled.length}/{LOCALES.length} dil
@@ -410,7 +410,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
                   <div className="flex items-center gap-1">
                     <Link
                       href={`/${adminLocale}/admin/seo`}
-                      className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-brand-ink hover:bg-adm-blue-soft transition-colors"
                       title="SEO ayarları (SEO Yönetimi ekranı)"
                     >
                       <Search size={15} />
@@ -420,7 +420,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
                         href={`/tr/${String(p.slug_tr ?? "").trim() || p.slug}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-brand-ink hover:bg-adm-blue-soft transition-colors"
                         title="Sayfayı aç"
                       >
                         <ExternalLink size={15} />
@@ -428,21 +428,21 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
                     )}
                     <button
                       onClick={() => handleToggle(p.id)}
-                      className="p-2 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                      className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-ink hover:bg-adm-line-2 transition-colors"
                       title={p.is_published ? "Yayından kaldır" : "Yayınla"}
                     >
                       {p.is_published ? <Eye size={15} /> : <EyeOff size={15} />}
                     </button>
                     <button
                       onClick={() => startEdit(p)}
-                      className="p-2 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+                      className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-brand-ink hover:bg-adm-brand-soft transition-colors"
                       title="Düzenle"
                     >
                       <Edit2 size={15} />
                     </button>
                     <button
                       onClick={() => handleDelete(p)}
-                      className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-rose hover:bg-adm-rose-soft transition-colors"
                       title="Sil"
                     >
                       <Trash2 size={15} />
@@ -465,13 +465,13 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[15px] font-semibold text-gray-900">
+        <h2 className="text-[15px] font-semibold text-adm-ink">
           {editingId ? "Landing sayfasını düzenle" : "Yeni landing sayfası"}
         </h2>
         <button
           type="button"
           onClick={resetForm}
-          className="p-2 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-adm-sm text-adm-muted hover:text-adm-ink hover:bg-adm-line-2 transition-colors"
           title="Kapat"
         >
           <X size={16} />
@@ -479,13 +479,13 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
       </div>
 
       {saveError && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+        <div className="flex items-start gap-2 rounded-adm-sm border border-[#f6c9d1] bg-adm-rose-soft px-3 py-2.5 text-sm text-adm-rose">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />
           <span>{saveError}</span>
         </div>
       )}
 
-      <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-[13px] text-blue-900">
+      <div className="flex items-start gap-2 rounded-adm-sm border border-adm-blue-soft bg-adm-blue-soft px-3 py-2.5 text-[13px] text-adm-blue">
         <Search size={15} className="mt-0.5 shrink-0" />
         <span>
           Bu ekran sayfanın <strong>metnini ve adresini</strong> tutar. Meta başlık, meta açıklama,
@@ -502,11 +502,11 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
       </div>
 
       {/* ---- Identity ---- */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+      <div className="rounded-adm border border-adm-line bg-adm-surface p-4 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Panel adı <span className="text-gray-400 font-normal">(sadece burada görünür)</span>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+              Panel adı <span className="text-adm-muted font-normal">(sadece burada görünür)</span>
             </label>
             <input
               id="landing-label"
@@ -527,21 +527,21 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Varsayılan adres <span className="text-gray-400 font-normal">(slug)</span>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+              Varsayılan adres <span className="text-adm-muted font-normal">(slug)</span>
             </label>
             <input
               id="landing-slug"
               value={form.slug}
               onChange={(e) => set("slug", slugifyLanding(e.target.value))}
-              className={`${inputClass} ${slugProblem ? "border-red-400" : ""}`}
+              className={`${inputClass} ${slugProblem ? "border-adm-rose" : ""}`}
               placeholder="antalya-kayak-transfer"
               required
             />
             {slugProblem ? (
-              <p className="mt-1 text-xs text-red-600">{slugProblem}</p>
+              <p className="mt-1 text-xs text-adm-rose">{slugProblem}</p>
             ) : (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-adm-muted">
                 Dil sekmesinde ayrı adres girmediğiniz her dil bu adresi kullanır.
               </p>
             )}
@@ -550,8 +550,8 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Rezervasyon bölgesi <span className="text-gray-400 font-normal">(opsiyonel)</span>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">
+              Rezervasyon bölgesi <span className="text-adm-muted font-normal">(opsiyonel)</span>
             </label>
             <select
               value={form.cta_region_slug}
@@ -565,14 +565,14 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-adm-muted">
               Seçilirse sayfanın altındaki butona bu bölgenin fiyatı ve rezervasyon bağlantısı
               gelir, ayrıca bölge sayfasına iç link verilir.
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Görsel alt metni</label>
+            <label className="block text-sm font-medium text-adm-ink-2 mb-1">Görsel alt metni</label>
             <input
               id="landing-image_alt"
               value={form.image_alt}
@@ -584,7 +584,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kapak görseli</label>
+          <label className="block text-sm font-medium text-adm-ink-2 mb-1">Kapak görseli</label>
           <div className="flex items-center gap-2">
             <input
               value={form.image_url}
@@ -592,7 +592,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
               className={inputClass}
               placeholder="/images/... veya https://..."
             />
-            <label className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-600 cursor-pointer hover:bg-gray-50">
+            <label className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-adm-sm border border-adm-line-strong text-sm text-adm-ink-2 cursor-pointer hover:bg-adm-surface-2">
               {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
               <input
                 ref={fileInputRef}
@@ -604,24 +604,24 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
               Yükle
             </label>
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-adm-muted">
             Sayfanın üstünde görünür. Paylaşım görseli (WhatsApp / Facebook) SEO Yönetimi
             ekranından ayarlanır.
           </p>
-          {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
+          {uploadError && <p className="mt-1 text-xs text-adm-rose">{uploadError}</p>}
           {form.image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={form.image_url}
               alt=""
-              className="mt-2 h-24 w-full object-cover rounded-lg border border-gray-200"
+              className="mt-2 h-24 w-full object-cover rounded-adm-sm border border-adm-line"
             />
           )}
         </div>
       </div>
 
       {/* ---- Language tabs ---- */}
-      <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-gray-100">
+      <div className="flex flex-wrap gap-1 p-1 rounded-adm bg-adm-line-2">
         {LOCALES.map((l) => {
           const status = localeStatus(form, l);
           const dot = { full: "#16a34a", partial: "#d97706", empty: "#cbd5e1" }[status];
@@ -631,8 +631,8 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
               key={l}
               type="button"
               onClick={() => setActiveLang(l)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${
-                on ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-adm-sm text-[13px] font-medium transition-colors ${
+                on ? "bg-adm-surface text-adm-ink shadow-sm" : "text-adm-muted hover:text-adm-ink"
               }`}
             >
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dot }} />
@@ -643,7 +643,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
       </div>
 
       {localeStatus(form, activeLang) !== "full" && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] text-amber-800">
+        <div className="flex items-start gap-2 rounded-adm-sm border border-adm-amber-line bg-adm-amber-soft px-3 py-2.5 text-[13px] text-adm-amber">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />
           <span>
             Bu dilde H1 ve içerik dolu değilse sayfa o dilde <strong>noindex</strong> yayınlanır,
@@ -654,37 +654,37 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
       )}
 
       {/* ---- Per-language copy ---- */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-4">
+      <div className="rounded-adm border border-adm-line bg-adm-surface p-4 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-adm-ink-2 mb-1">
             {LOCALE_LABELS[activeLang]} adresi{" "}
-            <span className="text-gray-400 font-normal">(opsiyonel)</span>
+            <span className="text-adm-muted font-normal">(opsiyonel)</span>
           </label>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm text-gray-400 shrink-0">/{activeLang}/</span>
+            <span className="text-sm text-adm-muted shrink-0">/{activeLang}/</span>
             <input
               id="landing-locale-slug"
               value={localised("slug")}
               onChange={(e) => set(`slug_${activeLang}`, slugifyLanding(e.target.value))}
-              className={`${inputClass} ${localeSlugProblem(activeLang) ? "border-red-400" : ""}`}
+              className={`${inputClass} ${localeSlugProblem(activeLang) ? "border-adm-rose" : ""}`}
               placeholder={form.slug || "antalya-kayak-transfer"}
             />
           </div>
           {localeSlugProblem(activeLang) ? (
-            <p className="mt-1 text-xs text-red-600">{localeSlugProblem(activeLang)}</p>
+            <p className="mt-1 text-xs text-adm-rose">{localeSlugProblem(activeLang)}</p>
           ) : (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-adm-muted">
               Bu dile özel adres. Boş bırakılırsa varsayılan adres kullanılır. Sayfa eski
               adreslerinde de açılmaya devam eder — 301 ile buraya yönlendirilir.
             </p>
           )}
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-adm-muted">
             Yayındaki adres: <code>/{activeLang}/{activeSlug}</code>
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-adm-ink-2 mb-1">
             Sayfa başlığı — H1 ({LOCALE_LABELS[activeLang]})
           </label>
           <input
@@ -697,7 +697,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-adm-ink-2 mb-1">
             Giriş paragrafı ({LOCALE_LABELS[activeLang]})
           </label>
           <textarea
@@ -708,17 +708,17 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
             className={`${inputClass} resize-y`}
             placeholder="Başlığın altındaki kısa açıklama."
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-adm-muted">
             SEO Yönetimi&apos;nde meta açıklama boş bırakılırsa arama sonucunda bu metin kullanılır.
           </p>
         </div>
 
         <div>
           <div className="flex items-end justify-between mb-1">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-adm-ink-2">
               İçerik — HTML ({LOCALE_LABELS[activeLang]})
             </label>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-adm-muted">
               {htmlWordCount(localised("content"))} kelime
             </span>
           </div>
@@ -730,7 +730,7 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
             className={`${inputClass} font-mono resize-y`}
             placeholder={"<h2>Alt başlık</h2>\n<p>Paragraf...</p>\n<ul><li>Madde</li></ul>"}
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-adm-muted">
             <code>&lt;h2&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;ul&gt;</code>,{" "}
             <code>&lt;table&gt;</code>, <code>&lt;img&gt;</code>, <code>&lt;a&gt;</code> ve YouTube
             gömme desteklenir. Yayınlanırken temizlenir; <code>&lt;h1&gt;</code> yazarsanız{" "}
@@ -739,24 +739,24 @@ export default function LandingManager({ initialPages }: { initialPages: Landing
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-adm-line-2">
         <button
           type="submit"
           disabled={loading || uploading || Boolean(slugProblem) || Boolean(firstLocaleSlugProblem)}
-          className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-adm-ink text-white text-sm font-medium rounded-adm-sm hover:bg-adm-ink-hover transition-colors disabled:opacity-50"
         >
           {loading ? "Kaydediliyor..." : editingId ? "Güncelle" : "Oluştur"}
         </button>
         <button
           type="button"
           onClick={resetForm}
-          className="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-adm-line-strong text-adm-ink-2 text-sm font-medium rounded-adm-sm hover:bg-adm-surface-2 transition-colors"
         >
           Vazgeç
         </button>
         <Link
           href={`/${adminLocale}/admin/seo`}
-          className="px-4 py-2 border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors inline-flex items-center gap-1.5"
+          className="px-4 py-2 border border-adm-line-strong text-adm-ink-2 text-sm font-medium rounded-adm-sm hover:bg-adm-surface-2 transition-colors inline-flex items-center gap-1.5"
         >
           <Search size={14} />
           SEO ayarlarına git

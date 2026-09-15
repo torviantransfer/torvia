@@ -153,21 +153,21 @@ export default function BulkFillDialog({
   };
 
   const input =
-    "w-full px-3 py-2 rounded-lg border border-slate-300 text-[13.5px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500";
+    "w-full px-3 py-2 rounded-adm-sm border border-adm-line-strong text-[13.5px] text-adm-ink placeholder:text-adm-muted focus:outline-none focus:ring-2 focus:ring-adm-ink/[0.06]/30 focus:border-[#c9c8c2]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-xl">
-        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-white z-10">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-adm-lg bg-adm-surface shadow-xl">
+        <div className="sticky top-0 flex items-center justify-between px-5 py-3.5 border-b border-adm-line bg-adm-surface z-10">
           <div>
-            <h2 className="text-[15px] font-semibold text-slate-900">Şablondan toplu doldur</h2>
-            <p className="text-[11.5px] text-slate-500 mt-0.5">
+            <h2 className="text-[15px] font-semibold text-adm-ink">Şablondan toplu doldur</h2>
+            <p className="text-[11.5px] text-adm-muted mt-0.5">
               Listede görünen {targets.length} sayfa için geçerli.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 cursor-pointer"
+            className="text-adm-muted hover:text-adm-ink-2 cursor-pointer"
             aria-label="Kapat"
           >
             <X size={18} />
@@ -176,13 +176,13 @@ export default function BulkFillDialog({
 
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-[12.5px] font-medium text-slate-700">Dil:</span>
-            <div className="flex gap-1 p-1 rounded-xl bg-slate-100">
+            <span className="text-[12.5px] font-medium text-adm-ink-2">Dil:</span>
+            <div className="flex gap-1 p-1 rounded-adm bg-adm-line-2">
               {LOCALES.map((l) => (
                 <button
                   key={l}
                   onClick={() => setLocale(l)}
-                  className="px-2.5 py-1 rounded-lg text-[12px] font-semibold uppercase transition-all cursor-pointer"
+                  className="px-2.5 py-1 rounded-adm-sm text-[12px] font-semibold uppercase transition-all cursor-pointer"
                   style={{
                     backgroundColor: locale === l ? "#0f172a" : "transparent",
                     color: locale === l ? "#fff" : "#64748b",
@@ -199,9 +199,9 @@ export default function BulkFillDialog({
             {TOKENS.map((t) => (
               <span
                 key={t.token}
-                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-[11.5px] text-slate-600"
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-adm-line-2 text-[11.5px] text-adm-ink-2"
               >
-                <code className="font-mono font-semibold text-slate-800">{t.token}</code>
+                <code className="font-mono font-semibold text-adm-ink">{t.token}</code>
                 {t.label}
               </span>
             ))}
@@ -232,7 +232,7 @@ export default function BulkFillDialog({
 
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+              <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
                 Odak kelime şablonu
               </label>
               <input
@@ -243,7 +243,7 @@ export default function BulkFillDialog({
               />
             </div>
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1.5">
+              <label className="block text-[12.5px] font-medium text-adm-ink-2 mb-1.5">
                 Yan kelime şablonu
               </label>
               <input
@@ -263,10 +263,10 @@ export default function BulkFillDialog({
               className="mt-0.5 w-4 h-4 accent-red-600 cursor-pointer"
             />
             <span>
-              <span className="block text-[13px] font-medium text-slate-800">
+              <span className="block text-[13px] font-medium text-adm-ink">
                 Dolu alanların üzerine yaz
               </span>
-              <span className="block text-[11.5px] text-slate-500 mt-0.5">
+              <span className="block text-[11.5px] text-adm-muted mt-0.5">
                 Kapalıyken sadece boş alanlar doldurulur — elle yazdığınız metinlere dokunulmaz.
                 Açarsanız sıralaması olan sayfaların metinleri de değişir.
               </span>
@@ -275,21 +275,21 @@ export default function BulkFillDialog({
 
           {/* Preview */}
           {willChange.length > 0 && (
-            <div className="rounded-xl border border-slate-200 overflow-hidden">
-              <p className="px-3 py-2 bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            <div className="rounded-adm border border-adm-line overflow-hidden">
+              <p className="px-3 py-2 bg-adm-surface-2 border-b border-adm-line text-[11px] font-semibold uppercase tracking-wider text-adm-muted">
                 Önizleme — ilk 3 sayfa
               </p>
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-adm-line-2">
                 {willChange.slice(0, 3).map(({ target, data }) => (
                   <li key={target.id} className="px-3 py-2.5">
-                    <p className="text-[12px] font-medium text-slate-800">{target.name}</p>
+                    <p className="text-[12px] font-medium text-adm-ink">{target.name}</p>
                     {typeof data[`meta_title_${locale}`] === "string" && (
-                      <p className="text-[12px] text-blue-700 mt-1 leading-snug">
+                      <p className="text-[12px] text-adm-brand-ink mt-1 leading-snug">
                         {data[`meta_title_${locale}`] as string}
                       </p>
                     )}
                     {typeof data[`meta_description_${locale}`] === "string" && (
-                      <p className="text-[11.5px] text-slate-600 mt-0.5 leading-snug">
+                      <p className="text-[11.5px] text-adm-ink-2 mt-0.5 leading-snug">
                         {data[`meta_description_${locale}`] as string}
                       </p>
                     )}
@@ -299,8 +299,8 @@ export default function BulkFillDialog({
             </div>
           )}
 
-          <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5 text-[12px] text-slate-600">
-            <b className="text-slate-900">{willChange.length} sayfa</b> güncellenecek
+          <div className="rounded-adm-sm bg-adm-surface-2 border border-adm-line px-3 py-2.5 text-[12px] text-adm-ink-2">
+            <b className="text-adm-ink">{willChange.length} sayfa</b> güncellenecek
             {skipped > 0 && (
               <>
                 , <b>{skipped} sayfa</b> atlanacak
@@ -311,19 +311,19 @@ export default function BulkFillDialog({
           </div>
 
           {done !== null && (
-            <p className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-[12.5px] text-green-800">
+            <p className="flex items-center gap-2 px-3 py-2 rounded-adm-sm bg-adm-green-soft border border-[#bfe3cb] text-[12.5px] text-adm-green">
               <Check size={14} /> {done} sayfa güncellendi.
             </p>
           )}
 
           {errors.length > 0 && (
-            <div className="px-3 py-2 rounded-lg bg-red-50 border border-red-200">
-              <p className="flex items-center gap-2 text-[12.5px] font-medium text-red-700">
+            <div className="px-3 py-2 rounded-adm-sm bg-adm-rose-soft border border-[#f6c9d1]">
+              <p className="flex items-center gap-2 text-[12.5px] font-medium text-adm-rose">
                 <AlertCircle size={14} /> {errors.length} sayfa güncellenemedi
               </p>
               <ul className="mt-1 space-y-0.5">
                 {errors.slice(0, 5).map((e) => (
-                  <li key={e} className="text-[11.5px] text-red-600">
+                  <li key={e} className="text-[11.5px] text-adm-rose">
                     {e}
                   </li>
                 ))}
@@ -332,22 +332,22 @@ export default function BulkFillDialog({
           )}
         </div>
 
-        <div className="sticky bottom-0 flex items-center justify-end gap-2 px-5 py-3.5 border-t border-slate-200 bg-white">
+        <div className="sticky bottom-0 flex items-center justify-end gap-2 px-5 py-3.5 border-t border-adm-line bg-adm-surface">
           {running && (
-            <span className="me-auto text-[12px] text-slate-500 tabular-nums">
+            <span className="me-auto text-[12px] text-adm-muted tabular-nums">
               {progress} / {willChange.length}
             </span>
           )}
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium text-slate-600 hover:bg-slate-100 cursor-pointer"
+            className="px-4 py-2 rounded-adm-sm text-[13px] font-medium text-adm-ink-2 hover:bg-adm-line-2 cursor-pointer"
           >
             {done !== null ? "Kapat" : "Vazgeç"}
           </button>
           <button
             onClick={apply}
             disabled={running || willChange.length === 0}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-adm-sm bg-adm-ink hover:bg-adm-ink-hover disabled:opacity-50 text-white text-[13px] font-semibold cursor-pointer"
           >
             {running ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
             {running ? "Uygulanıyor…" : `${willChange.length} sayfayı doldur`}
@@ -387,7 +387,7 @@ function TemplateField({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1.5">
-        <label className="text-[12.5px] font-medium text-slate-700">{label}</label>
+        <label className="text-[12.5px] font-medium text-adm-ink-2">{label}</label>
         {sample && (
           <span
             className="text-[11px] font-medium tabular-nums"
@@ -414,7 +414,7 @@ function TemplateField({
         />
       )}
       {over && (
-        <p className="mt-1 text-[11px] text-red-600">
+        <p className="mt-1 text-[11px] text-adm-rose">
           En uzun isimli sayfada {len} karaktere çıkıyor — Google kesecek. Şablonu kısaltın.
         </p>
       )}
