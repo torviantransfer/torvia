@@ -45,6 +45,10 @@ const DETAIL_SELECT = `*,
 const listQuery = (db: Db) => db.from("reservations").select(LIST_SELECT);
 type ListBuilder = ReturnType<typeof listQuery>;
 
+/** Every row a list query matches, a thousand at a time. */
+const readAll = (build: () => ListBuilder) =>
+  fetchAll((from, to) => build().order("id").range(from, to)).then((rows) => rows as unknown as Reservation[]);
+
 /** Matches nothing, for a filter that resolved to an empty set of ids. */
 const NO_MATCH = "00000000-0000-0000-0000-000000000000";
 
@@ -146,9 +150,6 @@ export async function loadReservationList(
     return b;
   };
 
-  const readAll = (build: () => ListBuilder) =>
-    fetchAll((from, to) => build().order("id").range(from, to)).then((rows) => rows as unknown as Reservation[]);
-
   const [upcoming, pending, cancel] = await Promise.all([
     readAll(() =>
       filtered([`pickup_datetime.gte."${midnight}",return_datetime.gte."${midnight}"`]).in("status", CAPACITY_STATUSES)
@@ -196,6 +197,27 @@ export async function loadReservationList(
     today,
     nextOffset: offset + limit < sorted.length ? offset + limit : null,
   };
+}
+
+/**
+ * Bookings with a leg on any day from `from` to `to` (inclusive), including
+ * unpaid ones — the Bugün screen lists those as payments to chase.
+ */
+export function loadLegsBetween(db: Db, from: string, to: string): Promise<Reservation[]> {
+  const start = `"${from}T00:00:00"`;
+  const end = `"${to}T23:59:59"`;
+  return readAll(() =>
+    listQuery(db)
+      .or(
+        `and(pickup_datetime.gte.${start},pickup_datetime.lte.${end}),and(return_datetime.gte.${start},return_datetime.lte.${end})`
+      )
+      .in("status", [...CAPACITY_STATUSES, "pending"])
+  );
+}
+
+/** Cancel requests still waiting for an answer, whatever their date. */
+export function loadCancelRequests(db: Db): Promise<Reservation[]> {
+  return readAll(() => listQuery(db).eq("status", "cancel_requested"));
 }
 
 /** How far either side of the transfer to look for a driver's other jobs. */

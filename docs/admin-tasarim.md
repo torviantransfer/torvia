@@ -193,6 +193,17 @@ Günün operasyon ekranı. Üstte “Bugün / Yarın / Bu hafta” seçici; büt
 
 Eski kontrol panelindeki grafikler (aylık gelir, durum dağılımı, popüler bölgeler, transfer türleri, ödeme hunisi) “Bugün” ekranından kaldırılır; Kasa ve Canlı Ziyaretçiler > Analitik altına taşınır. Eski “Gelir” kartı dolar ve euro tutarları birlikte topladığı için kullanılmaz.
 
+**Uygulamada:**
+- Gün seçimi adrese yazılır: `/admin`, `/admin?day=tomorrow`, `/admin?day=week`. Bu hafta bugün dahil yedi gündür; akış saat yerine günlere göre gruplanır.
+- Transfer sayısı bacak sayısıdır: gidiş-dönüşün o aralığa düşen her bacağı ayrı sayılır. Ödeme bekleyenler sayılmaz, “Dikkat gerektiriyor”da listelenir.
+- Ciro, alış günü aralığa düşen onaylı rezervasyonların euro karşılığıdır (Kasa'daki kural); önceki eşit uzunluktaki dönemle karşılaştırılır.
+- Nakit tahsilat, gidiş bacağında şoförün müşteriden alacağı tutarın euro karşılığıdır.
+- Dikkat gerektiriyor: şoförsüz bacaklar (panel içinde Şoför ata), yanıt bekleyen bütün iptal talepleri (Aç · Reddet · İptali onayla) ve aralıktaki bekleyen ödemeler (WhatsApp · Aç). Her türden ilk beşi gösterilir, fazlası için Rezervasyonlar'ın ilgili sekmesine bağlantı çıkar.
+- Şoför durumu atamalardan türetilir: yolda (yolcu alındı), işi var (sıradaki işi var), müsait. Satır şoförün carisini açar.
+- Bu ay: net kâr Kasa ile aynı hesaptır; son altı ay çubukları net kârdır. Şoförlere borç, şoför carilerindeki alacakların dolar toplamıdır. Reklam, adında reklam, Google ya da Meta geçen gider kategorilerinin toplamıdır.
+- Rötar satırı (A1) ve ödeme linki (A2) altyapıları gelince eklenir.
+- Eski grafikler Aşama 4'e kadar Canlı Ziyaretçiler sayfasının altında durur.
+
 ### 5.2 Rezervasyonlar (`/admin/reservations`)
 
 1. **Başlık:** “Rezervasyonlar” · sağda Dışa aktar, Yeni rezervasyon.
@@ -337,7 +348,7 @@ Taslakta görünen ama bugün arkasında çalışan bir işlem olmayan özellikl
 - [x] **Aşama 0 — Tasarım:** taslak (`admin-tasarim-taslak.html`) ve bu belge.
 - [x] **Aşama 1 — Temel:** renk ve ölçü değişkenleri · `ui/` bileşenleri (Bölüm 4) · yeni yan menü ve üst çubuk · komut paleti · telefon çekmecesi · giriş ekranı.
 - [x] **Aşama 2 — Rezervasyonlar:** sekmeler ve filtreler · gruplu liste · sağ panel · panel içinde şoför atama · toplu işlemler · detay sayfasının yeni düzeni · sayfalama.
-- [ ] **Aşama 3 — Bugün:** özet şeridi · dikkat gerektiriyor · günün akışı · şoför durumu · bu ay kutusu · eski grafiklerin taşınması.
+- [x] **Aşama 3 — Bugün:** özet şeridi · dikkat gerektiriyor · günün akışı · şoför durumu · bu ay kutusu · eski grafiklerin taşınması.
 - [ ] **Aşama 4 — Operasyon:** Takvim & Kapasite · Canlı Ziyaretçiler (Canlı / Analitik).
 - [ ] **Aşama 5 — Filo & Ekip:** Şoförler · Araçlar · Araç Tipleri · Şoför Ödemeleri uyarlaması.
 - [ ] **Aşama 6 — Finans:** Kasa uyarlaması · Fiyatlandırma tablosu · Kuponlar.
