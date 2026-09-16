@@ -511,7 +511,7 @@ export default async function RegionPageView({
       {highlights.length > 0 && (
         <section className="bg-[#FBFBFD] py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
           <div className="mx-auto max-w-7xl px-4 lg:px-6">
-            <SectionHead kicker={t("kickerRegion")} title={name} />
+            <SectionHead kicker={t("kickerHighlights")} title={t("headingHighlights", { name })} sub={t("subHighlights")} />
             <ul className="grid gap-5 md:grid-cols-3">
               {highlights.map((h) => (
                 <li key={h.title} className="overflow-hidden rounded-3xl bg-white" style={{ border: HAIRLINE }}>

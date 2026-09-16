@@ -602,7 +602,10 @@
     "inclPayment": "Plată cu cardul sau cash la șofer",
     "vehicleExtraNote": "Călătorești cu crose de golf, cărucior sau bagaj în plus? Lasă o notă la rezervare — dacă e nevoie trimitem un vehicul mai mare.",
     "ctaBookPrice": "Vezi prețul și rezervă",
-    "vehicleLabel": "Vehicul"
+    "vehicleLabel": "Vehicul",
+    "kickerHighlights": "Puncte de interes",
+    "headingHighlights": "Ce poți vizita în zonă",
+    "subHighlights": "Locurile în care merg cei mai mulți turiști — te ducem la oricare dintre ele, de la ușă la ușă."
   },
   "compare": {
     "heading": "De ce Torvian Transfer?",

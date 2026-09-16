@@ -89,25 +89,48 @@ metin kaplarında `min-w-0`, büyük harfli etiketlerde harf aralığı `0.14em`
 `0.08–0.10em`'e indirildi. Rakamlar `whitespace-nowrap` — "65 dk" ortadan
 bölünmez.
 
-## 5. Sıradaki iş — panelden düzenlenebilir alanlar
+## 5. Panelden düzenlenebilir alanlar
 
-Bugün bölgeye özgü olan tek serbest metin `regions.description_*`. Şablon otuz
-sayfada aynı olduğu için özgünlük buradan gelmeli. Bölgeler ekranına dil dil bir
-**"Sayfa içeriği"** sekmesi gelecek; alanların hepsi **opsiyonel** olacak, boşsa
-sayfa bugünkü hâliyle render olacak:
+**Bölgeler → satırdaki "Sayfa içeriği"** (`/admin/regions/[id]`). Migration
+`097_region_page_content.sql` gerekir; çalıştırılmadan editör uyarı gösterir ve
+kaydetmez, sayfa da eskisi gibi render olur.
 
-| Alan | Boşsa |
-|---|---|
-| Hero başlık (H1) | bugünkü otomatik başlık |
-| Hero alt başlık | bugünkü |
-| Hero görseli | koddaki `regionImages` |
-| Bölge hakkında — ek paragraflar | yalnız `description_*` |
-| Öne çıkanlar (3 kart: başlık, metin, görsel) | bölüm görünmez |
-| Oteller | koddaki `regionHotels` listesi |
-| Bölgeye özel SSS | yalnız genel on bir soru |
+| Alan | Nerede tutuluyor | Boşsa |
+|---|---|---|
+| Hero alt başlığı | `page_content.<dil>.subtitle` | bugünkü otomatik giriş cümlesi |
+| Ek paragraflar | `page_content.<dil>.about` (boş satırla ayrılır) | açıklama + genel kalıp paragraf |
+| Öne çıkanlar (3 kart) | görsel `page_content.highlight_images`, metin `page_content.<dil>.highlights` | bölüm görünmez |
+| Bölgeye özel SSS (en fazla 6) | `page_content.<dil>.faq` | yalnız genel on bir soru |
+| Oteller | `hotels` (dilden bağımsız) | liste görünmez |
+| Güzergah | `route_name` | rakam şeridinde gösterilmez |
 
-Opsiyonel olmaları önemli: otuz bölge birden doldurulmak zorunda kalmaz, canlı
-trafik ilk günden risk almaz, sıralaması olan bölgelere en son dokunulur.
+Zaten var olanlar tekrar yapılmadı: **H1** (`h1_*`) ve **hero görseli**
+(`image_url`) SEO Yönetimi'nden düzenlenir.
 
-`regionHotels` şu an `[region]/page.tsx` içinde gömülü bir sabittir; bu sekme
-gelince veritabanına taşınmalı.
+Kurallar:
+- Ek paragraf yazıldığında genel kalıp paragraf ("…Türk Rivierası'nın en popüler
+  tatil bölgelerinden biridir…") gösterilmez — otuz sayfada aynı olan cümle o.
+- Bölgeye özel sorular genel soruların **üstünde** görünür ve `FAQPage`
+  schema'sına eklenir (schema aynı listeden üretiliyor).
+- Öne çıkan kart, o dilde başlığı **ve** görseli yoksa çıkmaz.
+- `regionHotels` sabiti migration öncesi yedek olarak kodda duruyor; 097 dört
+  bölgenin listesini veritabanına taşıyor.
+
+## 6. Türkçe ekler
+
+Metinler eskiden `{name}'e` diye sabit ek taşıyordu: Belek için doğru, Side,
+Alanya, Kaş, Konyaaltı için yanlış. Artık ek `src/lib/trSuffix.ts` içinde ünlü
+uyumuyla hesaplanıyor ve `{name_e}`, `{name_deki}`, `{name_den}`, `{name_i}`
+olarak veriliyor. 36 bölgenin hepsi denendi.
+
+İyelikli bileşik adlar (Konyaaltı, Beldibi, Şehir Merkezi) `-n-` alır —
+"Konyaaltı'na". Yazımdan anlaşılamadığı için `POSSESSIVE` listesinde elle
+duruyorlar; bu türden yeni bir bölge eklenirse listeye yazılmalı.
+
+Belek'te bir-iki cümle de değişti: "Belek'deki" → "Belek'teki", "Belek'den" →
+"Belek'ten". Eskiler dilbilgisi hatasıydı (k'den sonra d → t).
+
+## 7. Açık kalan
+
+- **Belek süresi:** veritabanında 65 dk; havalimanı–Belek gerçekte ~45 dk.
+  Veri kararı, kodla ilgisi yok.

@@ -602,7 +602,10 @@
     "inclPayment": "Zahlung per Karte oder bar beim Fahrer",
     "vehicleExtraNote": "Sie reisen mit Golfbag, Kinderwagen oder zusätzlichem Gepäck? Hinterlassen Sie bei der Buchung einen Hinweis — bei Bedarf schicken wir ein größeres Fahrzeug.",
     "ctaBookPrice": "Preis ansehen und buchen",
-    "vehicleLabel": "Fahrzeug"
+    "vehicleLabel": "Fahrzeug",
+    "kickerHighlights": "Sehenswertes",
+    "headingHighlights": "Was es rund um {name} gibt",
+    "subHighlights": "Die beliebtesten Ziele in der Gegend — wir bringen Sie zu jedem davon, von Tür zu Tür."
   },
   "compare": {
     "heading": "Warum Torvian Transfer?",

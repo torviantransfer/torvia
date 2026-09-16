@@ -602,7 +602,10 @@
     "inclPayment": "Płatność kartą lub gotówką u kierowcy",
     "vehicleExtraNote": "Podróżujesz z torbą golfową, wózkiem albo dodatkowym bagażem? Zostaw uwagę przy rezerwacji — w razie potrzeby podstawimy większy pojazd.",
     "ctaBookPrice": "Sprawdź cenę i zarezerwuj",
-    "vehicleLabel": "Pojazd"
+    "vehicleLabel": "Pojazd",
+    "kickerHighlights": "Warto zobaczyć",
+    "headingHighlights": "Co warto zobaczyć w okolicy",
+    "subHighlights": "Miejsca, do których turyści jeżdżą najczęściej — zawieziemy Cię do każdego z nich."
   },
   "compare": {
     "heading": "Dlaczego Torvian Transfer?",

@@ -602,7 +602,10 @@
     "inclPayment": "Pay by card or cash to the driver",
     "vehicleExtraNote": "Travelling with golf clubs, a pushchair or extra luggage? Leave a note when you book and we will send a larger vehicle if one is needed.",
     "ctaBookPrice": "See the price and book",
-    "vehicleLabel": "Vehicle"
+    "vehicleLabel": "Vehicle",
+    "kickerHighlights": "Highlights",
+    "headingHighlights": "What's around {name}",
+    "subHighlights": "The places visitors head to most — we drive to every one of them, door to door."
   },
   "compare": {
     "heading": "Why Torvian Transfer?",

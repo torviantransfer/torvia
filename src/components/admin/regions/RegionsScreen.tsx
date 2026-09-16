@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { MapPin, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { FileText, MapPin, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import {
   Button,
   Chip,
   ConfirmDialog,
   DataGrid,
   EmptyState,
+  IconLink,
   PageHeader,
   RowActions,
   useToast,
@@ -31,6 +32,7 @@ export interface RegionRow {
 /** Bölgeler: docs/admin-tasarim.md, bölüm 5.12. */
 export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<RegionFormValues | null>(null);
@@ -82,6 +84,9 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
         <div className="min-w-0">
           <div className="truncate text-[13.5px] font-semibold">{r.name_en}</div>
           <div className="truncate text-xs text-adm-muted">{r.name_tr}</div>
+          <a href={`${pathname}/${r.id}`} className="mt-1 inline-block text-xs font-medium text-adm-brand-ink min-[1181px]:hidden">
+            Sayfa içeriği →
+          </a>
         </div>
       ),
     },
@@ -116,10 +121,11 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
     {
       key: "actions",
       header: "",
-      width: "96px",
+      width: "128px",
       wideOnly: true,
       cell: (r) => (
         <RowActions>
+          <IconLink size="sm" icon={FileText} label="Sayfa içeriği" href={`${pathname}/${r.id}`} />
           <button type="button" onClick={() => setEditing(toRegionForm(r))} aria-label="Düzenle" title="Düzenle" className="grid size-7 place-items-center rounded-adm-sm text-adm-ink-2 hover:bg-adm-line-2">
             <Pencil size={14} aria-hidden="true" />
           </button>
