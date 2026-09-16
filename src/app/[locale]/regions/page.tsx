@@ -140,14 +140,13 @@ export default async function RegionsPage({
             <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 text-center">
-            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">{t("destinations")}</p>
-            <h1 className="text-3xl lg:text-5xl font-bold mb-4 tracking-tight text-gray-900">{seoH1(seoRow, locale) ?? t("title")}</h1>
+            <p className="text-sm font-semibold text-[#007AFF] uppercase tracking-widest mb-4">{t("destinations")}</p>
+            <h1 className="text-balance hyphens-auto text-[24px] font-bold leading-[1.2] tracking-tight text-gray-900 sm:text-[28px] lg:text-[38px] lg:leading-[1.14] mb-4">{seoH1(seoRow, locale) ?? t("title")}</h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">{seoIntro(seoRow, locale) ?? t("subtitle")}</p>
             <div className="mt-8 flex justify-center">
               <Link
                 href="/booking"
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
-                style={{ backgroundColor: "#F97316", color: "#fff" }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#007AFF] px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-[#0062CC]"
               >
                 {locale === "tr" ? "Hemen Rezervasyon Yap" : locale === "de" ? "Jetzt Buchen" : locale === "ru" ? "Забронировать" : locale === "pl" ? "Zarezerwuj Teraz" : locale === "nl" ? "Nu Boeken" : locale === "ro" ? "Rezervă acum" : locale === "ar" ? "احجز الآن" : "Book Now"}
               </Link>
@@ -226,10 +225,10 @@ export default async function RegionsPage({
                     <div className="p-5">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                          <MapPin size={16} className="text-blue-600" strokeWidth={1.5} />
+                          <MapPin size={16} className="text-[#007AFF]" strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h2 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{name}</h2>
+                          <h2 className="font-bold text-gray-900 group-hover:text-[#007AFF] transition-colors">{name}</h2>
                           <p className="text-[11px] text-gray-500 font-medium">{t("fromAirport")}</p>
                         </div>
                       </div>
@@ -242,9 +241,9 @@ export default async function RegionsPage({
                         <span>{region.distance_km as number} {c("km")}</span>
                       </div>
                     </div>
-                    <div className="px-5 py-3 text-[13px] font-medium text-gray-500 flex items-center justify-between transition-colors group-hover:text-blue-600" style={{ backgroundColor: "#F9FAFB", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="px-5 py-3 text-[13px] font-medium text-gray-500 flex items-center justify-between transition-colors group-hover:text-[#007AFF]" style={{ backgroundColor: "#F9FAFB", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                       {t("bookTransfer")}
-                      <ArrowUpRight size={14} className="text-gray-500 group-hover:text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      <ArrowUpRight size={14} className="text-gray-500 group-hover:text-[#007AFF] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </div>
                   </Link>
                 );

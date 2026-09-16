@@ -263,7 +263,7 @@ export default async function AboutPage({
               ))}
             </div>
             <div className="mt-10 text-center">
-              <Link href="/booking" className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm text-white transition-colors hover:brightness-110" style={{ backgroundColor: "#FF9500" }}>
+              <Link href="/booking" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#007AFF] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0062CC]">
                 {nav("bookNow")}
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
