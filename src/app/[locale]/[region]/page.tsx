@@ -12,27 +12,14 @@ import {
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { notFound, redirect, permanentRedirect } from "next/navigation";
-import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import RegionStickyBar from "@/components/region/RegionStickyBar";
-import RegionCompareTable from "@/components/region/RegionCompareTable";
+import RegionPageView from "@/components/region/RegionPageView";
 import PriceTag from "@/components/PriceTag";
 import { Link } from "@/i18n/routing";
-import {
-  MapPin,
-  Clock,
-  ArrowRight,
-  Shield,
-  Star,
-  Users,
-  Plane,
-  CreditCard,
-  CheckCircle,
-  Zap,
-  Navigation,
-  CalendarCheck,
+import {
 } from "lucide-react";
 import LandingPageView from "@/components/landing/LandingPageView";
 import { getLandingPage, landingMetadata, landingCanonicalSlug } from "@/lib/landingPages";
@@ -547,7 +534,6 @@ export default async function RegionPage({
     redirect(`/${locale}/${normalizedRegionPath}`);
   }
   const t = await getTranslations({ locale, namespace: "regionDetail" });
-  const bt = await getTranslations({ locale, namespace: "booking" });
   const nt = await getTranslations({ locale, namespace: "nav" });
 
   const region = await findRegionByPath(supabase, normalizedRegionPath);
@@ -830,22 +816,33 @@ export default async function RegionPage({
                 ? `نوفّر النقل إلى جميع الفنادق في ${name}، ومنها ${hotelsForRegion.join("، ")}. يكفي كتابة اسم فندقك عند الحجز.`
                 : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
 
+  /*
+   * One list, two consumers: the accordion on the page and the FAQPage schema
+   * below. They used to be written out separately, which is how a rendered
+   * question and its marked-up twin drift apart.
+   */
+  const faqItems = [
+    { question: t("faqQ1", { name }), answer: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
+    { question: t("faqQ2", { name }), answer: t("faqA2") },
+    { question: t("faqQ3", { name }), answer: t("faqA3") },
+    { question: t("faqQ4"), answer: t("faqA4") },
+    { question: t("faqQ5", { name }), answer: t("faqA5", { name, price }) },
+    { question: t("faqQ6", { name }), answer: t("faqA6") },
+    { question: t("faqQ7", { name }), answer: t("faqA7") },
+    { question: t("faqQ8", { name }), answer: t("faqA8") },
+    { question: t("faqQ9", { name }), answer: t("faqA9", { name }) },
+    { question: t("faqQ10", { name }), answer: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
+    ...(hotelsForRegion.length > 0 ? [{ question: faqHotelsQ, answer: faqHotelsA }] : []),
+  ];
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      { "@type": "Question", name: t("faqQ1", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) } },
-      { "@type": "Question", name: t("faqQ2", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA2") } },
-      { "@type": "Question", name: t("faqQ3", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA3") } },
-      { "@type": "Question", name: t("faqQ4"), acceptedAnswer: { "@type": "Answer", text: t("faqA4") } },
-      { "@type": "Question", name: t("faqQ5", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA5", { name, price }) } },
-      { "@type": "Question", name: t("faqQ6", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA6") } },
-      { "@type": "Question", name: t("faqQ7", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA7") } },
-      { "@type": "Question", name: t("faqQ8", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA8") } },
-      { "@type": "Question", name: t("faqQ9", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA9", { name }) } },
-      { "@type": "Question", name: t("faqQ10", { name }), acceptedAnswer: { "@type": "Answer", text: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) } },
-      ...(hotelsForRegion.length > 0 ? [{ "@type": "Question", name: faqHotelsQ, acceptedAnswer: { "@type": "Answer", text: faqHotelsA } }] : []),
-    ],
+    mainEntity: faqItems.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
   };
 
   // An admin-set H1 wins; the locale templates below stay as the fallback.
@@ -920,512 +917,49 @@ export default async function RegionPage({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewProductSchema) }}
         />
       )}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "HowTo",
-        name: t("howToBookTitle"),
-        step: [
-          { "@type": "HowToStep", position: 1, name: t("howToBookStep1"), text: t("howToBookStep1Desc", { name }) },
-          { "@type": "HowToStep", position: 2, name: t("howToBookStep2"), text: t("howToBookStep2Desc") },
-          { "@type": "HowToStep", position: 3, name: t("howToBookStep3"), text: t("howToBookStep3Desc") },
-        ],
-      }) }} />
       <Header />
       <main className="flex-1">
-
-        {/* Hero */}
-        <section className="relative pb-16 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
-          <div className="absolute inset-0">
-            <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
-          </div>
-          <div className="relative max-w-7xl mx-auto px-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-              <Link href="/" className="hover:text-gray-900 transition-colors">{t("home")}</Link>
-              <span>/</span>
-              <Link href="/regions" className="hover:text-gray-900 transition-colors">{nt("regions")}</Link>
-              <span>/</span>
+        <RegionPageView
+          locale={locale}
+          breadcrumb={
+            <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-gray-500">
+              <Link href="/" className="transition-colors hover:text-gray-900">{t("home")}</Link>
+              <span aria-hidden="true">/</span>
+              <Link href="/regions" className="transition-colors hover:text-gray-900">{nt("regions")}</Link>
+              <span aria-hidden="true">/</span>
               <span className="text-gray-900">{name}</span>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
-              {/* Phones get a different running order than desktop: title →
-                  route facts → price → CTA, with the search-phrase list pushed
-                  to the end. On a narrow screen the phrase list was the first
-                  thing under the H1 and pushed price and booking below the
-                  fold. `flex flex-col` + `order-*` reorders visually while the
-                  DOM order stays exactly as it was, so crawlers and screen
-                  readers see the unchanged sequence. `lg:block` drops flex
-                  entirely on desktop, which makes every `order-*` inert there —
-                  the desktop layout is untouched. */}
-              <div className="flex flex-col lg:block">
-                <h1 className="order-1 text-3xl lg:text-5xl font-bold mb-4 lg:mb-5 tracking-tight text-gray-900">
-                  {heroTitle}
-                </h1>
-                <p className="order-2 text-base lg:text-lg text-gray-500 mb-6 lg:mb-8 leading-relaxed">
-                  {heroDescription}
-                </p>
-
-                <div className="order-7 mb-6 lg:mb-8">
-                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-400">
-                    {routeIntentLabel}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {routeKeywords.map((keyword) => (
-                      <span key={keyword} className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {hotelsForRegion.length > 0 && (
-                  <p className="order-8 text-sm text-gray-500 mb-6 lg:mb-8">
-                    {hotelsIntro} <span className="text-gray-700">{hotelsForRegion.join(", ")}</span>
-                  </p>
-                )}
-
-                <div className="order-3 flex flex-wrap gap-3 mb-6 lg:mb-8">
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
-                    <Clock size={16} className="text-blue-600" strokeWidth={1.5} />
-                    <span className="text-sm text-gray-900">~{region.duration_minutes ? formatDuration(region.duration_minutes, locale) : `${region.duration_minutes} ${t("min")}`}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
-                    <MapPin size={16} className="text-blue-600" strokeWidth={1.5} />
-                    <span className="text-sm text-gray-900">{Number(region.distance_km)} km</span>
-                  </div>
-                </div>
-
-                {/* Pricing Display */}
-                {pricing && (
-                  <div className="order-4 flex flex-wrap gap-4 mb-5">
-                    <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(0,122,255,0.05)", border: "1px solid rgba(0,122,255,0.12)" }}>
-                      <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
-                      <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.one_way_price} showLabel={false} /></div>
-                      <div className="text-xs text-gray-500">{t("oneWay")} · {t("perVehicle")}</div>
-                    </div>
-                    {pricing.round_trip_price && (
-                      <div className="rounded-xl px-5 py-4" style={{ backgroundColor: "rgba(249,115,22,0.05)", border: "1px solid rgba(249,115,22,0.15)" }}>
-                        {/* "From", not "Round trip" — the label under the
-                            figure already says round trip, so repeating it
-                            above read as a copy-paste slip. Both cards now
-                            carry the same "from" caption, which is also what
-                            the figure means: the cheapest vehicle's price. */}
-                        <div className="text-xs text-gray-400 mb-1">{t("fromPrice")}</div>
-                        <div className="text-2xl font-bold text-gray-900"><PriceTag amount={pricing.round_trip_price} showLabel={false} /></div>
-                        <div className="text-xs text-gray-500">{t("roundTrip")} · {t("perVehicle")}</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {/* Phone-only hero CTA. Desktop already reaches booking from
-                    the route-intent block right below the fold, but on a phone
-                    that block sits a full screen further down, so the price had
-                    no action next to it. `routeIntentPrimaryCta` and the href
-                    are the same label and target that block uses — no new
-                    string and no new link destination. */}
-                <Link
-                  href={`/booking?region=${slug}`}
-                  className="order-5 lg:hidden mb-5 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-[15px] font-semibold text-white shadow-md transition active:scale-[0.99]"
-                >
-                  {t("routeIntentPrimaryCta")}
-                  <ArrowRight size={16} aria-hidden="true" />
-                </Link>
-
-                {/* Trust strip */}
-                {/* mb only on phones: reordering moved the search-phrase block
-                    below this strip, and with no bottom margin the two ran
-                    together. Desktop keeps this as the last element, so it
-                    stays flush there. */}
-                <div className="order-6 mb-8 lg:mb-0 flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-                    <CheckCircle size={12} className="text-emerald-400" />
-                    {t("freeCancellation")}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-                    <Shield size={12} className="text-blue-600" />
-                    {t("securePayTitle")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Region Image */}
-              {regionImage && (
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <Image
-                    src={regionImage}
-                    alt={t("imageAlt", { name })}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Route intent block */}
-        <section className="py-6 lg:py-8">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/70 to-white p-6 lg:p-8">
-              <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6 items-center">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-3">
-                  {t("routeIntentTitle", { name })}
-                </h2>
-                <p className="text-sm leading-relaxed text-gray-600">
-                  {t("routeIntentDesc", { name })}
-                </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <Link href={`/booking?region=${slug}`} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
-                    {t("routeIntentPrimaryCta")}
-                  </Link>
-                  <Link href="/regions" className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
-                    {t("routeIntentSecondaryCta")}
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Why Choose + CTA */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">{t("whyChoose")}</h2>
-                <div className="space-y-3">
-                  {[
-                    { icon: Shield, title: t("fixedPriceTitle"), desc: t("fixedPriceDesc") },
-                    { icon: Users, title: t("proDriversTitle"), desc: t("proDriversDesc") },
-                    { icon: Plane, title: t("flightTrackTitle"), desc: t("flightTrackDesc") },
-                    { icon: CreditCard, title: t("securePayTitle"), desc: t("securePayDesc") },
-                  ].map(({ icon: Icon, title, desc }) => (
-                    <div key={title} className="flex items-start gap-4 p-5 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                        <Icon size={18} className="text-blue-600" strokeWidth={1.5} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-sm mb-1">{title}</h3>
-                        <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Book CTA Card */}
-              <div className="rounded-2xl p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4 tracking-tight">
-                  {t("bookYourTransfer", { name })}
-                </h2>
-                <p className="text-gray-500 mb-8 leading-relaxed">
-                  {t("bookDesc")}
-                </p>
-
-                <div className="space-y-4 mb-8">
-                  {[
-                    t("driveFromAirport", { duration: formatDuration(region.duration_minutes, locale) }),
-                    t("mercedesVito"),
-                    t("freeFlightMonitoring"),
-                    t("freeCancellation"),
-                  ].map((item) => (
-                    <div key={item} className="flex items-center gap-3">
-                      <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" strokeWidth={1.5} />
-                      <span className="text-sm text-gray-500">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Link
-                  href={`/booking?region=${slug}`}
-                  className="w-full py-4 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 hover:brightness-110 shadow-lg"
-                  style={{ backgroundColor: '#2563EB', boxShadow: '0 8px 25px rgba(37,99,235,0.25)' }}
-                >
-                  {bt("title")} <ArrowRight size={18} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Vehicle Features */}
-        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 tracking-tight">{t("vehicleHeading")}</h2>
-            <div className="grid sm:grid-cols-4 gap-4 max-w-2xl mx-auto">
-              {[
-                { label: t("specPassengers"), icon: Users },
-                { label: t("specWifi"), icon: Zap },
-                { label: t("specClimate"), icon: Shield },
-                { label: t("specLeather"), icon: Star },
-              ].map(({ label, icon: Icon }) => (
-                <div key={label} className="rounded-xl p-5 text-center" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <div className="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                    <Icon size={18} className="text-blue-600" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-xs font-medium text-gray-500">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* How to Book — 3 Steps */}
-        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-10 text-center tracking-tight">{t("howToBookTitle")}</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { num: "1", title: t("howToBookStep1"), desc: t("howToBookStep1Desc", { name }) },
-                { num: "2", title: t("howToBookStep2"), desc: t("howToBookStep2Desc") },
-                { num: "3", title: t("howToBookStep3"), desc: t("howToBookStep3Desc") },
-              ].map(({ num, title, desc }) => (
-                <div key={num} className="flex gap-4 p-6 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold text-blue-600" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                    {num}
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm mb-1.5">{title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 text-center">
-              <Link
-                href={`/booking?region=${slug}`}
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-bold rounded-xl transition-all hover:brightness-110"
-                style={{ backgroundColor: '#2563EB', color: '#fff' }}
-              >
-                {t("bookNow")} <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* About Region - SEO Content */}
-        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid lg:grid-cols-5 gap-10">
-              <div className="lg:col-span-3">
-                <h2 className="text-2xl font-bold text-gray-900 mb-5 tracking-tight">{t("aboutRegion", { name })}</h2>
-                {description ? (
-                  <div className="space-y-4">
-                    <p className="text-gray-600 leading-relaxed text-[15px]">
-                      {description}
-                    </p>
-                    <p className="text-gray-500 leading-relaxed">
-                      {t("aboutDescDefault", { name, duration: region.duration_minutes })}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 leading-relaxed">
-                    {t("aboutDescDefault", { name, duration: region.duration_minutes })}
-                  </p>
-                )}
-              </div>
-              <div className="lg:col-span-2">
-                <div className="rounded-2xl p-6" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <div className="space-y-4">
-                    {[
-                      { icon: Navigation, text: t("highlightDistance", { distance: region.distance_km }) },
-                      { icon: Clock, text: t("highlightDuration", { duration: region.duration_minutes }) },
-                      { icon: CalendarCheck, text: t("highlightAvailable") },
-                      { icon: Users, text: t("highlightMeetGreet") },
-                    ].map(({ icon: Icon, text }) => (
-                      <div key={text} className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                          <Icon size={14} className="text-blue-600" strokeWidth={1.5} />
-                        </div>
-                        <span className="text-sm text-gray-500">{text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Reviews */}
-        {reviews && reviews.length > 0 && (
-          <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center tracking-tight">{t("customerReviews")}</h2>
-              {/* The visible counterpart of the aggregateRating in the Product
-                  schema. Google cross-checks that a rating it is asked to show
-                  as a snippet is also visible on the page. */}
-              {ratings.value !== null && (
-                <div className="flex items-center justify-center gap-2 mb-8">
-                  <span className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, j) => (
-                      <Star
-                        key={j}
-                        size={15}
-                        className={j < Math.round(ratings.value!) ? "text-amber-400 fill-amber-400" : "text-gray-300"}
-                      />
-                    ))}
-                  </span>
-                  <span className="text-sm font-semibold text-gray-900">{ratings.value.toFixed(1)}</span>
-                  <span className="text-sm text-gray-500">({ratings.count})</span>
-                </div>
-              )}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {reviews.map((review, i) => {
-                  return (
-                    <div key={i} className="rounded-xl p-5" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(5)].map((_, j) => (
-                          <Star key={j} size={14} className={j < review.rating ? "text-amber-400 fill-amber-400" : "text-[#333]"} />
-                        ))}
-                      </div>
-                      {review.comment && (
-                        <p className="text-sm text-gray-500 mb-2">&ldquo;{review.comment}&rdquo;</p>
-                      )}
-                      <p className="text-xs text-gray-500">{authorName(review, t("guest"))}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* FAQ */}
-        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-          <div className="max-w-3xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center tracking-tight">{t("faqHeading", { name })}</h2>
-            <div className="space-y-3">
-              {[
-                { q: t("faqQ1", { name }), a: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
-                { q: t("faqQ2", { name }), a: t("faqA2") },
-                { q: t("faqQ3", { name }), a: t("faqA3") },
-                { q: t("faqQ4"), a: t("faqA4") },
-                { q: t("faqQ5", { name }), a: t("faqA5", { name, price }) },
-                { q: t("faqQ6", { name }), a: t("faqA6") },
-                { q: t("faqQ7", { name }), a: t("faqA7") },
-                { q: t("faqQ8", { name }), a: t("faqA8") },
-                { q: t("faqQ9", { name }), a: t("faqA9", { name }) },
-                { q: t("faqQ10", { name }), a: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
-                ...(hotelsForRegion.length > 0 ? [{ q: faqHotelsQ, a: faqHotelsA }] : []),
-              ].map(({ q, a }) => (
-                <details key={q} className="rounded-xl overflow-hidden group" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <summary className="px-5 py-4 cursor-pointer font-medium text-gray-900 text-sm flex items-center justify-between">
-                    {q}
-                    <span className="text-gray-500 group-open:rotate-180 transition-transform">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </span>
-                  </summary>
-                  <div className="px-5 pb-4 text-sm text-gray-500" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>{a}</div>
-                </details>
-              ))}
-            </div>
-
-          </div>
-        </section>
-
-        {/* Other Popular Destinations */}
-        <RegionCompareTable regionName={name} torvianPrice={price} />
-
-        {otherRegions && otherRegions.length > 0 && (
-          <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center tracking-tight">{t("otherDestinations")}</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {otherRegions.map((r) => {
-                  const rName = r[`name_${locale as Locale}`] || r.name_en;
-                  const rImage = regionImagePath(stripTransferSuffix(r.slug), r.image_url);
-                  return (
-                    <Link
-                      key={r.slug}
-                      href={`/${r.slug.endsWith("-transfer") ? r.slug : `${r.slug}-transfer`}`}
-                      className="group rounded-xl overflow-hidden transition-all hover:scale-[1.02]"
-                      style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
-                    >
-                      {rImage && (
-                        <div className="relative h-36 overflow-hidden">
-                          <Image
-                            src={rImage}
-                            alt={t("imageAlt", { name: rName })}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 384px"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold text-gray-900 text-sm mb-2 group-hover:text-blue-600 transition-colors">{rName} Transfer</h3>
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span className="flex items-center gap-1"><Clock size={12} /> ~{r.duration_minutes} {t("min")}</span>
-                          <span className="flex items-center gap-1"><MapPin size={12} /> {r.distance_km} km</span>
-                        </div>
-                        <div className="mt-3 flex items-center gap-1 text-xs font-medium text-blue-600 group-hover:gap-2 transition-all">
-                          {t("viewTransfer")} <ArrowRight size={12} />
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Back-link to the airport head-term hub, which links out to
-                  every region — this is the return edge of that hub. */}
-              <div className="mt-8 text-center">
-                <Link
-                  href="/antalya-airport-transfer"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:gap-2 transition-all"
-                >
-                  {t("airportHubLink")} <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Cross-link: Lara Beach dedicated page for the Kundu-Lara region */}
-        {slug === "kundu-lara" && (
-          <section className="py-8 bg-blue-50 border-y border-blue-100">
-            <div className="max-w-3xl mx-auto px-4 flex items-center justify-between gap-4 flex-wrap">
-              <p className="text-sm text-blue-800">
-                {locale === "tr" ? "Lara Beach otellerine özel transfer rehberimize bakın" :
-                 locale === "de" ? "Sehen Sie unsere spezielle Seite für Lara Beach Hotels" :
-                 locale === "pl" ? "Zobacz naszą dedykowaną stronę dla hoteli Lara Beach" :
-                 locale === "ru" ? "Смотрите нашу страницу для отелей пляжа Лара" :
-                 locale === "nl" ? "Bekijk onze speciale pagina voor Lara Beach hotels" :
-                 locale === "ro" ? "Vezi pagina noastră dedicată hotelurilor din Lara Beach" :
-                 locale === "ar" ? "اطّلع على صفحتنا المخصصة لفنادق شاطئ لارا" :
-                 "See our dedicated Lara Beach transfer page with hotel-specific info"}
-              </p>
-              <Link
-                href="/lara-beach-transfer"
-                className="text-sm font-semibold text-blue-700 hover:text-blue-900 whitespace-nowrap"
-              >
-                Lara Beach Transfer →
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {/* CTA */}
-        <section className="py-16" style={{ borderTop: "1px solid rgba(0,0,0,0.03)" }}>
-          <div className="max-w-2xl mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">{t("readyToBook", { name })}</h2>
-            <p className="text-gray-500 mb-8">{t("readyDesc")}</p>
-            <Link
-              href={`/booking?region=${slug}`}
-              className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-xl transition-all hover:brightness-110 shadow-lg"
-              style={{ backgroundColor: '#2563EB', boxShadow: '0 8px 25px rgba(37,99,235,0.25)' }}
-            >
-              {t("bookNow")} <ArrowRight size={18} />
-            </Link>
-          </div>
-        </section>
+            </nav>
+          }
+          name={name}
+          heading={heroTitle}
+          intro={heroDescription}
+          price={price ? <PriceTag amount={price} showLabel={false} /> : "—"}
+          distanceKm={region.distance_km ? Number(region.distance_km) : null}
+          durationMinutes={region.duration_minutes ? Number(region.duration_minutes) : null}
+          heroImage={regionImage ?? "/images/regions/belek-golf.jpg"}
+          heroImageAlt={t("imageAlt", { name })}
+          regionImage={regionImage}
+          regionImageAlt={t("imageAlt", { name })}
+          about={[description, t("aboutDescDefault", { name, duration: region.duration_minutes ?? 0 })].filter(Boolean)}
+          hotels={hotelsForRegion}
+          hotelsIntro={hotelsIntro}
+          reviews={reviews.map((r) => ({
+            author: authorName(r, t("guest")),
+            rating: Number(r.rating) || 5,
+            text: r.comment ?? "",
+            fromGoogle: r.source === "google",
+          }))}
+          ratingAverage={ratings.value !== null ? ratings.value.toFixed(1) : undefined}
+          ratingLine={ratings.value !== null ? `(${ratings.count})` : undefined}
+          faq={faqItems}
+          otherRegions={otherRegions.map((r) => ({
+            name: r[`name_${locale as Locale}`] || r.name_en,
+            href: `/${locale}/${normalizeRegionPath(r.slug)}`,
+          }))}
+          searchPhrases={routeKeywords}
+          searchPhrasesLabel={routeIntentLabel}
+          bookHref={`/${locale}/booking?region=${slug}`}
+        />
       </main>
       <Footer />
       <WhatsAppButton aboveStickyBar />
