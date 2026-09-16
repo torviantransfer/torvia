@@ -24,7 +24,7 @@ import { turkishNameForms } from "@/lib/trSuffix";
 import { aboutDefault, generalFaq, heroIntroDefault, hotelsIntroText } from "@/lib/regionDefaults";
 import PriceTag from "@/components/PriceTag";
 import { Link } from "@/i18n/routing";
-import {
+import {
 } from "lucide-react";
 import LandingPageView from "@/components/landing/LandingPageView";
 import { getLandingPage, landingMetadata, landingCanonicalSlug } from "@/lib/landingPages";
@@ -798,6 +798,7 @@ export default async function RegionPage({
       distanceKm: region.distance_km ?? null,
       price,
       hotels: hotelsForRegion,
+      overrides: panel.faqOverrides,
     }),
   ];
 

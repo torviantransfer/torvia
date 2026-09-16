@@ -7,6 +7,7 @@ import { AlertTriangle, ArrowLeft, ChevronDown, ExternalLink, Info, Loader2, Plu
 import { Button, Chip, ConfirmDialog, Field, IconButton, Input, Segmented, Textarea, cx, useToast } from "@/components/admin/ui";
 import { ImageField, LOCALES, LOCALE_LABELS, type Loc } from "@/components/admin/seo/fields";
 import {
+  GENERAL_FAQ_COUNT,
   REGION_FAQ_MAX,
   paragraphs,
   writePageContent,
@@ -444,7 +445,10 @@ export default function RegionEditor({ adminBase, columnsReady, defaults, fallba
                 </div>
               ))}
 
-              {/* The template questions, as the page shows them, so the panel is the whole page. */}
+              {/* The template questions. The same ten, region data filled in,
+                  on every region page is a duplicate-content risk once there
+                  are thirty of them — each is rewritable here; a slot left
+                  on its auto text costs nothing and stays consistent. */}
               <div className="rounded-adm border border-adm-line">
                 <button
                   type="button"
@@ -453,22 +457,52 @@ export default function RegionEditor({ adminBase, columnsReady, defaults, fallba
                   className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-start"
                 >
                   <span className="text-[12.5px] font-semibold text-adm-ink-2">
-                    Otomatik sorular · {def.faq.length}
+                    Genel sorular · {GENERAL_FAQ_COUNT}
                     <span className="block text-[11.5px] font-normal text-adm-muted">
-                      Tüm bölgelerde ortak. Mesafe, süre, fiyat ve otel listesiyle otomatik dolar; buradan değiştirilmez.
+                      Tüm bölgelerde ortak şablon — aynı 10 soru her bölgede tekrarlanır. İstediğinizi bu bölgeye özel yeniden yazabilirsiniz; boş bıraktığınız otomatik kalır.
                     </span>
                   </span>
                   <ChevronDown size={16} aria-hidden="true" className={cx("shrink-0 text-adm-muted transition-transform", autoFaqOpen && "rotate-180")} />
                 </button>
                 {autoFaqOpen && (
-                  <ol className="grid gap-3 border-t border-adm-line-2 px-3.5 py-3" dir={lang === "ar" ? "rtl" : "ltr"}>
-                    {def.faq.map((f, i) => (
-                      <li key={i} className="text-[12.5px]">
-                        <p className="font-semibold text-adm-ink-2">{f.question}</p>
-                        <p className="mt-0.5 text-adm-muted">{f.answer}</p>
-                      </li>
-                    ))}
-                  </ol>
+                  <div className="grid gap-4 border-t border-adm-line-2 px-3.5 py-3.5">
+                    {Array.from({ length: GENERAL_FAQ_COUNT }, (_, i) => {
+                      const auto = def.faq[i] ?? { question: "", answer: "" };
+                      const override = current.faqOverrides[i] ?? { question: "", answer: "" };
+                      return (
+                        <div key={i} className="grid gap-2.5 rounded-adm border border-adm-line bg-adm-surface-2 p-3">
+                          <AutoField
+                            id={`region-faq-q-${i}`}
+                            label={`${i + 1}. soru`}
+                            hint=""
+                            value={override.question}
+                            auto={auto.question}
+                            rows={1}
+                            dir={lang === "ar" ? "rtl" : "ltr"}
+                            onChange={(v) =>
+                              patch({
+                                faqOverrides: current.faqOverrides.map((o, j) => (j === i ? { ...o, question: v } : o)),
+                              })
+                            }
+                          />
+                          <AutoField
+                            id={`region-faq-a-${i}`}
+                            label="Cevap"
+                            hint=""
+                            value={override.answer}
+                            auto={auto.answer}
+                            rows={2}
+                            dir={lang === "ar" ? "rtl" : "ltr"}
+                            onChange={(v) =>
+                              patch({
+                                faqOverrides: current.faqOverrides.map((o, j) => (j === i ? { ...o, answer: v } : o)),
+                              })
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             </div>

@@ -6,13 +6,25 @@
  * Everything here returns empty values rather than throwing, and the page
  * treats empty as "use what was there before".
  *
- * Shape (see migration 097):
+ * Shape (see migration 097 — `faqOverrides` is new but needs no migration of
+ * its own, since the column is JSONB and an old row simply has none saved):
  *   { "highlight_images": [url, url, url],
- *     "<locale>": { subtitle, about, highlights: [{title, description}], faq: [{question, answer}] } }
+ *     "<locale>": { subtitle, about, highlights: [{title, description}],
+ *                    faq: [{question, answer}], faqOverrides: [{question, answer} x10] } }
  */
 
 export const HIGHLIGHT_SLOTS = 3;
 export const REGION_FAQ_MAX = 6;
+
+/**
+ * The eleven questions every region page carries by default (lib/regionDefaults
+ * → generalFaq) are a template: the same ten questions, region data filled in,
+ * on every one of thirty-plus pages. Real, if moderate, thin/duplicate-content
+ * risk — this is how many of the ten a page may rewrite. The eleventh, the
+ * hotel-list question, is not overridable: it already names this region's own
+ * hotels, so it is not templated to begin with.
+ */
+export const GENERAL_FAQ_COUNT = 10;
 
 export interface RegionHighlightText {
   title: string;
@@ -29,6 +41,8 @@ export interface RegionLocaleContent {
   about: string;
   highlights: RegionHighlightText[];
   faq: RegionFaqEntry[];
+  /** One slot per general question; an empty slot means "use the auto text". */
+  faqOverrides: RegionFaqEntry[];
 }
 
 export interface RegionPageContent {
@@ -49,6 +63,7 @@ export function emptyLocaleContent(): RegionLocaleContent {
     about: "",
     highlights: Array.from({ length: HIGHLIGHT_SLOTS }, () => ({ title: "", description: "" })),
     faq: [],
+    faqOverrides: Array.from({ length: GENERAL_FAQ_COUNT }, () => ({ question: "", answer: "" })),
   };
 }
 
@@ -79,6 +94,13 @@ export function readPageContent(raw: unknown, locales: readonly string[]): Regio
           return { question: text(r.question), answer: text(r.answer) };
         })
         .slice(0, REGION_FAQ_MAX),
+      faqOverrides: (() => {
+        const overrides = list(src.faqOverrides).map((f) => {
+          const r = record(f);
+          return { question: text(r.question), answer: text(r.answer) };
+        });
+        return Array.from({ length: GENERAL_FAQ_COUNT }, (_, i) => overrides[i] ?? { question: "", answer: "" });
+      })(),
     };
   }
 
@@ -111,6 +133,9 @@ export function writePageContent(content: RegionPageContent): Record<string, unk
       .filter((f) => f.question && f.answer);
     if (faq.length) entry.faq = faq;
 
+    const faqOverrides = c.faqOverrides.map((f) => ({ question: f.question.trim(), answer: f.answer.trim() }));
+    if (faqOverrides.some((f) => f.question || f.answer)) entry.faqOverrides = faqOverrides;
+
     if (Object.keys(entry).length) doc[loc] = entry;
   }
 
@@ -137,7 +162,7 @@ export function localeFill(c: RegionLocaleContent): "full" | "partial" | "empty"
     Boolean(c.subtitle.trim()),
     Boolean(c.about.trim()),
     c.highlights.some((h) => h.title.trim()),
-    c.faq.some((f) => f.question.trim()),
+    c.faq.some((f) => f.question.trim()) || c.faqOverrides.some((f) => f.question.trim() || f.answer.trim()),
   ];
   const n = parts.filter(Boolean).length;
   return n === 0 ? "empty" : n === parts.length ? "full" : "partial";

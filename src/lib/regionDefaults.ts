@@ -106,6 +106,13 @@ function hotelsFaq(name: string, locale: string, hotels: string[]): RegionFaqEnt
 /**
  * The questions every region page carries, filled with this region's
  * figures. Region-specific questions written in the panel go above these.
+ *
+ * The same ten questions, region data filled in, on every region page is a
+ * template — thin/duplicate-content risk once there are thirty of them.
+ * `overrides` lets the editor rewrite any of the ten per region; a slot left
+ * blank keeps the auto question and answer exactly as before. The eleventh,
+ * hotel-list question is never templated (it already names this region's own
+ * hotels) and so is never in `overrides`.
  */
 export function generalFaq(
   t: Translate,
@@ -116,23 +123,31 @@ export function generalFaq(
     distanceKm: number | string | null;
     price: number;
     hotels: string[];
+    /** Ten slots, matching faqQ1..faqQ10. A blank slot uses the auto text. */
+    overrides?: readonly RegionFaqEntry[];
   }
 ): RegionFaqEntry[] {
-  const { name, locale, durationMinutes, distanceKm, price, hotels } = opts;
+  const { name, locale, durationMinutes, distanceKm, price, hotels, overrides } = opts;
   const nameForms = turkishNameForms(name);
   const duration = durationMinutes ? formatDuration(durationMinutes, locale) : "—";
   const distance = distanceKm ?? "—";
+
+  const pick = (i: number, question: string, answer: string): RegionFaqEntry => {
+    const o = overrides?.[i];
+    return { question: o?.question.trim() || question, answer: o?.answer.trim() || answer };
+  };
+
   return [
-    { question: t("faqQ1", { name, ...nameForms }), answer: t("faqA1", { name, ...nameForms, duration, distance }) },
-    { question: t("faqQ2", { name, ...nameForms }), answer: t("faqA2") },
-    { question: t("faqQ3", { name }), answer: t("faqA3") },
-    { question: t("faqQ4"), answer: t("faqA4") },
-    { question: t("faqQ5", { name, ...nameForms }), answer: t("faqA5", { name, ...nameForms, price }) },
-    { question: t("faqQ6", { name, ...nameForms }), answer: t("faqA6") },
-    { question: t("faqQ7", { name }), answer: t("faqA7") },
-    { question: t("faqQ8", { name }), answer: t("faqA8") },
-    { question: t("faqQ9", { name, ...nameForms }), answer: t("faqA9", { name, ...nameForms }) },
-    { question: t("faqQ10", { name }), answer: t("faqA10", { name, distance, duration }) },
+    pick(0, t("faqQ1", { name, ...nameForms }), t("faqA1", { name, ...nameForms, duration, distance })),
+    pick(1, t("faqQ2", { name, ...nameForms }), t("faqA2")),
+    pick(2, t("faqQ3", { name }), t("faqA3")),
+    pick(3, t("faqQ4"), t("faqA4")),
+    pick(4, t("faqQ5", { name, ...nameForms }), t("faqA5", { name, ...nameForms, price })),
+    pick(5, t("faqQ6", { name, ...nameForms }), t("faqA6")),
+    pick(6, t("faqQ7", { name }), t("faqA7")),
+    pick(7, t("faqQ8", { name }), t("faqA8")),
+    pick(8, t("faqQ9", { name, ...nameForms }), t("faqA9", { name, ...nameForms })),
+    pick(9, t("faqQ10", { name }), t("faqA10", { name, distance, duration })),
     ...(hotels.length > 0 ? [hotelsFaq(name, locale, hotels)] : []),
   ];
 }
