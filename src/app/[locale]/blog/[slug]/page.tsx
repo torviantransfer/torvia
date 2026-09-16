@@ -19,6 +19,8 @@ import BlogStickyBar from "@/components/blog/BlogStickyBar";
 import BlogPostView from "@/components/blog/BlogPostView";
 import PriceTag from "@/components/PriceTag";
 import { outlineArticle } from "@/lib/articleOutline";
+import { isBlogCategory } from "@/lib/blogCategories";
+import { getTranslations } from "next-intl/server";
 import { landingHasLocale, localizedLandingSlug } from "@/lib/landingSlug";
 import { readHotels } from "@/lib/regionContent";
 
@@ -404,6 +406,11 @@ export default async function BlogPostPage({
 
   const BASE = "https://torviantransfer.com";
 
+  const authorName = ((post.author_name as string | null) ?? "").trim() || null;
+  const authorRole = ((post[`author_role_${loc}`] as string | null) ?? "").trim() || null;
+  const blogT = await getTranslations({ locale, namespace: "blog" });
+  const categoryLabel = isBlogCategory(post.category) ? blogT(`categories.${post.category}`) : null;
+
   const blogPostSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -418,11 +425,21 @@ export default async function BlogPostPage({
       : {}),
     datePublished: post.published_at,
     dateModified: post.updated_at || post.published_at,
-    author: {
-      "@type": "Organization",
-      name: "TORVIAN Transfer",
-      url: BASE,
-    },
+    // A named person when the editor sets one — Google reads the author of an
+    // article as a person; the company stays the publisher either way.
+    author: authorName
+      ? {
+          "@type": "Person",
+          name: authorName,
+          ...(authorRole ? { jobTitle: authorRole } : {}),
+          worksFor: { "@type": "Organization", name: "TORVIAN Transfer", url: BASE },
+        }
+      : {
+          "@type": "Organization",
+          name: "TORVIAN Transfer",
+          url: BASE,
+        },
+    ...(categoryLabel ? { articleSection: categoryLabel } : {}),
     publisher: {
       "@type": "Organization",
       name: "TORVIAN Transfer",
@@ -479,7 +496,10 @@ export default async function BlogPostPage({
           title={title}
           excerpt={ownExcerpt}
           coverImage={(post.image_url as string | null) ?? null}
-          coverAlt={((post.image_alt as string | null) ?? "").trim() || title}
+          // This language's alt text. The single `image_alt` column is the
+          // social-share image's alt (SEO Yönetimi) and was written in one
+          // language, so it is not a fallback here.
+          coverAlt={((post[`image_alt_${loc}`] as string | null) ?? "").trim() || title}
           publishedAt={(post.published_at as string | null) ?? null}
           updatedAt={(post.updated_at as string | null) ?? null}
           readingTime={readingTime}
@@ -509,6 +529,8 @@ export default async function BlogPostPage({
           })}
           landings={landings}
           hotels={regionHotels}
+          author={authorName ? { name: authorName, role: authorRole } : null}
+          category={categoryLabel}
           regions={(popularRegions ?? []).map((r) => ({
             name: (r[`name_${loc}`] as string | null) || (r.name_en as string),
             href: `/${normalizeRegionPath(r.slug as string)}`,

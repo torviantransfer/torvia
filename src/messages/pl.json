@@ -749,7 +749,13 @@
     "priceNote": "W jedną stronę · za pojazd",
     "airportTransfer": "Prywatny transfer z lotniska Antalya",
     "cardKicker": "Transfer prywatny",
-    "hotelsHeading": "Transfery do hoteli w regionie {name}"
+    "hotelsHeading": "Transfery do hoteli w regionie {name}",
+    "categories": {
+      "comparison": "Porównania",
+      "routes": "Trasy i odległości",
+      "prices": "Ceny transferów",
+      "guides": "Poradniki"
+    }
   },
   "terms": {
     "title": "Prawne",

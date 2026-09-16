@@ -749,7 +749,13 @@
     "priceNote": "Dus · pe vehicul",
     "airportTransfer": "Transfer privat de la Aeroportul Antalya",
     "cardKicker": "Transfer privat",
-    "hotelsHeading": "Transferuri la hotelurile din zona {name}"
+    "hotelsHeading": "Transferuri la hotelurile din zona {name}",
+    "categories": {
+      "comparison": "Comparații",
+      "routes": "Rute și distanțe",
+      "prices": "Prețuri transfer",
+      "guides": "Ghiduri de călătorie"
+    }
   },
   "terms": {
     "title": "Informații legale",

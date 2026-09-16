@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { GRADE_COLOR, GRADE_LABEL, type SeoScore, type CheckStatus } from "@/lib/seoScore";
 
@@ -72,10 +73,13 @@ export function ScoreBadge({ percent }: { percent: number }) {
 export default function SeoScorePanel({
   score,
   onFieldClick,
+  note,
 }: {
   score: SeoScore;
   /** Focuses the matching input when a check is clicked. */
   onFieldClick?: (field: string) => void;
+  /** Replaces the line under the score; the default points at the SEO screen's technical checks. */
+  note?: ReactNode;
 }) {
   const sorted = [...score.checks].sort((a, b) => RANK[a.status] - RANK[b.status] || b.weight - a.weight);
   const problems = score.checks.filter((c) => c.status !== "pass").length;
@@ -97,8 +101,12 @@ export default function SeoScorePanel({
               them would let a missing focus keyword — a planning field the
               site never emits — read like a defect in the page. */}
           <p className="text-[11px] text-adm-muted mt-0.5 leading-snug">
-            Yayındaki değerler üzerinden hesaplanır. Teknik hatalar üstteki
-            &quot;Teknik SEO kontrolleri&quot; bölümündedir.
+            {note ?? (
+              <>
+                Yayındaki değerler üzerinden hesaplanır. Teknik hatalar üstteki
+                &quot;Teknik SEO kontrolleri&quot; bölümündedir.
+              </>
+            )}
           </p>
         </div>
       </div>

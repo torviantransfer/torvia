@@ -749,7 +749,13 @@
     "priceNote": "Enkele reis · per voertuig",
     "airportTransfer": "Privétransfer vanaf luchthaven Antalya",
     "cardKicker": "Privétransfer",
-    "hotelsHeading": "Hoteltransfers in {name}"
+    "hotelsHeading": "Hoteltransfers in {name}",
+    "categories": {
+      "comparison": "Vergelijkingen",
+      "routes": "Routes en afstanden",
+      "prices": "Transferprijzen",
+      "guides": "Reistips"
+    }
   },
   "terms": {
     "title": "Juridisch",

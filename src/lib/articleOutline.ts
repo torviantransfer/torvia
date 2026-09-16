@@ -51,7 +51,7 @@ export const INLINE_CARD_MIN_WORDS = 900;
  * matched the Polish posts, which say "Najczęściej zadawane pytania" — so those
  * pages carried a visible FAQ and no FAQPage markup.
  */
-const FAQ_HEADING =
+export const FAQ_HEADING =
   /sık sorulan|frequently asked|\bfaq\b|häufig gestellt|häufige fragen|zadawane pytania|часто задаваемые|частые вопросы|veelgestelde vragen|întrebări frecvente|intrebari frecvente|الأسئلة الشائعة/i;
 
 const H2 = /<h2\b[^>]*>([\s\S]*?)<\/h2>/gi;

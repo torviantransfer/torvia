@@ -44,6 +44,10 @@ export interface BlogPostViewProps {
   landings: { name: string; href: string }[];
   /** Hotels in the post's region (Bölgeler → Sayfa içeriği). */
   hotels: string[];
+  /** A named person, set in the blog editor. Null shows no byline. */
+  author: { name: string; role: string | null } | null;
+  /** The category's label in this language. */
+  category: string | null;
 }
 
 /* The keyword landing pages that live in code, labelled with the footer
@@ -70,6 +74,8 @@ const PROSE = [
   "[&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:scroll-mt-28 [&_h3]:text-[18px] [&_h3]:font-semibold [&_h3]:leading-snug [&_h3]:text-gray-900",
   "[&_h4]:mb-2 [&_h4]:mt-6 [&_h4]:font-semibold [&_h4]:text-gray-900",
   "[&_p]:mb-5",
+  // The editor wraps list items and table cells in paragraphs.
+  "[&_li_p]:m-0 [&_td_p]:m-0 [&_th_p]:m-0",
   "[&_ul]:my-5 [&_ul]:grid [&_ul]:gap-2.5",
   "[&_ul>li]:relative [&_ul>li]:ps-5 [&_ul>li]:before:absolute [&_ul>li]:before:start-0 [&_ul>li]:before:top-[0.72em] [&_ul>li]:before:size-1.5 [&_ul>li]:before:rounded-full [&_ul>li]:before:bg-[#007AFF] [&_ul>li]:before:content-['']",
   "[&_ol]:my-5 [&_ol]:grid [&_ol]:list-decimal [&_ol]:gap-2.5 [&_ol]:ps-5 [&_ol>li]:marker:font-semibold [&_ol>li]:marker:text-[#007AFF]",
@@ -77,7 +83,7 @@ const PROSE = [
   "[&_a]:font-medium [&_a]:text-[#007AFF] [&_a]:underline [&_a]:decoration-[#007AFF]/30 [&_a]:underline-offset-[3px] hover:[&_a]:decoration-[#007AFF]",
   "[&_blockquote]:my-6 [&_blockquote]:border-s-[3px] [&_blockquote]:border-[#007AFF]/30 [&_blockquote]:ps-5 [&_blockquote]:text-gray-600",
   "[&_hr]:my-10 [&_hr]:border-gray-200",
-  "[&_img]:my-6 [&_img]:rounded-2xl",
+  "[&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-2xl",
   // A table cannot shrink to a phone. articleOutline wraps each one in a box
   // that scrolls sideways on its own, so the page never does; the table keeps
   // a floor width so three columns are not squeezed into unreadable strips.
@@ -104,6 +110,8 @@ export default async function BlogPostView({
   regions,
   landings,
   hotels,
+  author,
+  category,
 }: BlogPostViewProps) {
   const t = await getTranslations({ locale, namespace: "blog" });
   const nav = await getTranslations({ locale, namespace: "nav" });
@@ -195,21 +203,51 @@ export default async function BlogPostView({
           </nav>
 
           <div className="max-w-3xl">
-            {region && (
-              <Link
-                href={region.href}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-[#007AFF]/[0.08] px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-[#0062CC] transition-colors hover:bg-[#007AFF]/[0.14]"
-              >
-                <MapPin size={11} aria-hidden="true" />
-                {region.name}
-              </Link>
+            {(region || category) && (
+              <div className="mt-6 flex flex-wrap items-center gap-2">
+                {region && (
+                  <Link
+                    href={region.href}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#007AFF]/[0.08] px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-[#0062CC] transition-colors hover:bg-[#007AFF]/[0.14]"
+                  >
+                    <MapPin size={11} aria-hidden="true" />
+                    {region.name}
+                  </Link>
+                )}
+                {category && (
+                  <span className="inline-flex items-center rounded-full bg-black/[0.04] px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-gray-600">
+                    {category}
+                  </span>
+                )}
+              </div>
             )}
 
-            <h1 className="mt-4 text-balance break-words text-[28px] font-bold leading-[1.18] tracking-tight text-gray-900 sm:text-[36px] lg:text-[44px] lg:leading-[1.12]">
+            <h1 className={`${region || category ? "mt-4" : "mt-6"} text-balance break-words text-[28px] font-bold leading-[1.18] tracking-tight text-gray-900 sm:text-[36px] lg:text-[44px] lg:leading-[1.12]`}>
               {title}
             </h1>
 
             <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13.5px] text-gray-500">
+              {author && (
+                <>
+                  <span className="inline-flex items-center gap-2">
+                    <span
+                      aria-hidden="true"
+                      className="flex size-7 items-center justify-center rounded-full bg-[#007AFF]/[0.1] text-[11.5px] font-bold text-[#0062CC]"
+                    >
+                      {author.name
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((w) => w.charAt(0).toLocaleUpperCase(locale))
+                        .join("")}
+                    </span>
+                    <span>
+                      <span className="font-medium text-gray-900">{author.name}</span>
+                      {author.role && <span> · {author.role}</span>}
+                    </span>
+                  </span>
+                  <span aria-hidden="true" className="size-1 rounded-full bg-gray-300" />
+                </>
+              )}
               {shownDate && (
                 <span>
                   {updated ? `${t("updatedOn")} ` : ""}

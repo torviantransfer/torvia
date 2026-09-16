@@ -749,7 +749,13 @@
     "priceNote": "ذهاب فقط · لكل مركبة",
     "airportTransfer": "نقل خاص من مطار أنطاليا",
     "cardKicker": "نقل خاص",
-    "hotelsHeading": "النقل إلى فنادق منطقة {name}"
+    "hotelsHeading": "النقل إلى فنادق منطقة {name}",
+    "categories": {
+      "comparison": "مقارنات",
+      "routes": "المسارات والمسافات",
+      "prices": "أسعار النقل",
+      "guides": "نصائح السفر"
+    }
   },
   "terms": {
     "title": "الشؤون القانونية",

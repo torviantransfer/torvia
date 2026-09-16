@@ -749,7 +749,13 @@
     "priceNote": "Einfache Fahrt · pro Fahrzeug",
     "airportTransfer": "Privattransfer ab Flughafen Antalya",
     "cardKicker": "Privattransfer",
-    "hotelsHeading": "Hoteltransfers in {name}"
+    "hotelsHeading": "Hoteltransfers in {name}",
+    "categories": {
+      "comparison": "Vergleiche",
+      "routes": "Strecken & Entfernungen",
+      "prices": "Transferpreise",
+      "guides": "Reiseratgeber"
+    }
   },
   "terms": {
     "title": "Rechtliches",

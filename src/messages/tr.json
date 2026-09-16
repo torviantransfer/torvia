@@ -749,7 +749,13 @@
     "priceNote": "Tek yön · araç başına",
     "airportTransfer": "Antalya Havalimanı özel transfer",
     "cardKicker": "Özel transfer",
-    "hotelsHeading": "{name} bölgesindeki otellere transfer"
+    "hotelsHeading": "{name} bölgesindeki otellere transfer",
+    "categories": {
+      "comparison": "Karşılaştırmalar",
+      "routes": "Rotalar ve mesafeler",
+      "prices": "Transfer fiyatları",
+      "guides": "Seyahat rehberi"
+    }
   },
   "terms": {
     "title": "Yasal",
