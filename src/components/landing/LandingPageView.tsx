@@ -266,7 +266,11 @@ export default async function LandingPageView({ page, locale }: { page: LandingP
       <main>
         {/* ── Hero: heading, price, rating, form ───────────────────────── */}
         <section style={{ background: "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)" }}>
-          <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 lg:px-6 lg:pb-14 lg:pt-10">
+          {/* pt-20, not pt-6: the header is `fixed` and opaque white on every
+              page but the homepage (Header.tsx's `isHeroPage`), so nothing
+              reserves its 64px in normal flow — the breadcrumb and badge sat
+              under it on a phone until this cleared it. */}
+          <div className="mx-auto max-w-6xl px-4 pb-10 pt-20 lg:px-6 lg:pb-14 lg:pt-24">
             <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-gray-500">
               <Link href="/" className="transition-colors hover:text-gray-900">{nav("home")}</Link>
               <span aria-hidden="true">/</span>

@@ -8,7 +8,10 @@ import { AlertTriangle, ArrowLeft, ExternalLink, Info, Loader2, Upload } from "l
 
 import { landingSlugProblem, regionSlugForms, slugifyLanding } from "@/lib/landingSlug";
 import { outlineArticle, TOC_MIN_WORDS, INLINE_CARD_MIN_WORDS } from "@/lib/articleOutline";
+import { scoreSeo, parseKeywords } from "@/lib/seoScore";
 import { Button, Chip, ConfirmDialog, Field, IconButton, Input, Segmented, Textarea, cx, useToast } from "@/components/admin/ui";
+import SerpPreview from "./seo/SerpPreview";
+import SeoScorePanel, { ScoreBadge } from "./seo/SeoScorePanel";
 import type { LandingRow } from "./LandingManager";
 
 const RichEditor = dynamic(() => import("./blog/RichEditor"), {
@@ -38,6 +41,15 @@ export const LOCALE_LABELS: Record<Loc, string> = {
 const LOCALISED_FIELDS = ["slug", "h1", "intro", "content"] as const;
 type LocalisedField = (typeof LOCALISED_FIELDS)[number];
 
+/**
+ * Kept in this screen too, not only in SEO Yönetimi, for the same reason the
+ * blog editor keeps them: a focus keyword chosen after the fact, on a
+ * separate screen, does not shape the writing — seeing it and its score while
+ * the content is still open is what makes it useful. SEO Yönetimi can still
+ * edit the same columns for a technical pass across every page.
+ */
+const KEYWORD_FIELDS = ["focus_keyword", "keywords"] as const;
+
 interface Region {
   id: string;
   slug: string;
@@ -63,10 +75,9 @@ function toForm(page: LandingRow | null): Form {
     image_alt: (page?.image_alt as string | null) ?? "",
   };
   for (const l of LOCALES) for (const f of LOCALISED_FIELDS) form[`${f}_${l}`] = String(page?.[`${f}_${l}`] ?? "");
+  for (const l of LOCALES) for (const f of KEYWORD_FIELDS) form[`${f}_${l}`] = String(page?.[`${f}_${l}`] ?? "");
   return form;
 }
-
-const dateOnly = (iso: string | null | undefined) => (iso ? new Date(iso).toISOString().slice(0, 10) : "");
 
 /** How complete one language is, for the dot on its tab. */
 function localeStatus(form: Form, l: Loc): "full" | "partial" | "empty" {
@@ -96,20 +107,18 @@ export default function LandingEditor({
   const [form, setForm] = useState<Form>(() => toForm(page));
   const [saved, setSaved] = useState<Form>(() => toForm(page));
   const [published, setPublished] = useState<boolean>(page?.is_published ?? false);
-  const [publishedAt, setPublishedAt] = useState<string>(dateOnly((page?.published_at as string | null) ?? null));
   const [lang, setLang] = useState<Loc>(() => LOCALES.find((l) => String(page?.[`h1_${l}`] ?? "").trim()) ?? "tr");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [imageBroken, setImageBroken] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [checksOpen, setChecksOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const initialPublished = page?.is_published ?? false;
-  const initialDate = dateOnly((page?.published_at as string | null) ?? null);
   const initial = useMemo(() => toForm(page), [page]);
-  const dirty =
-    JSON.stringify(form) !== JSON.stringify(initial) || published !== initialPublished || publishedAt !== initialDate;
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial) || published !== initialPublished;
 
   useEffect(() => {
     if (!dirty) return;
@@ -140,10 +149,48 @@ export default function LandingEditor({
   const title = v("h1");
   const intro = v("intro");
   const content = v("content");
+  const focusKeyword = form[`focus_keyword_${lang}`] ?? "";
+  const keywords = form[`keywords_${lang}`] ?? "";
   const activeSlug = v("slug").trim() || form.slug || "sayfa-adresi";
 
   const outline = useMemo(() => outlineArticle(content), [content]);
   const readingMinutes = Math.max(1, Math.round(outline.wordCount / 200));
+
+  // Meta title/description are edited on SEO Yönetimi, not here — read
+  // straight off the row so the preview and the score reflect what actually
+  // ships, the same way the blog editor's do.
+  const metaTitle = String(page?.[`meta_title_${lang}`] ?? "").trim();
+  const metaDescription = String(page?.[`meta_description_${lang}`] ?? "").trim();
+  const serpTitle = metaTitle || title;
+  const serpDescription = metaDescription || intro;
+
+  const score = scoreSeo({
+    title: serpTitle,
+    description: serpDescription,
+    focusKeyword,
+    keywords,
+    slug: activeSlug,
+    content,
+    h1: title,
+    imageUrl: form.image_url,
+    ogImageUrl: form.image_url,
+    imageAlt: form.image_alt,
+  });
+
+  const focusControl = (field: string) => {
+    const targets: Record<string, string> = {
+      meta_title: "landing-h1",
+      meta_description: "landing-intro",
+      focus_keyword: "landing-focus",
+      keywords: "landing-keywords",
+      content: "landing-content",
+      slug: "landing-slug-locale",
+      image_alt: "landing-image-alt",
+    };
+    const el = document.getElementById(targets[field] ?? `landing-${field}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    (el as HTMLElement | null)?.focus?.();
+  };
 
   const uploadCover = async (file: File | undefined) => {
     if (!file) return;
@@ -195,9 +242,8 @@ export default function LandingEditor({
         is_published: published,
       };
       for (const l of LOCALES) for (const f of LOCALISED_FIELDS) data[`${f}_${l}`] = form[`${f}_${l}`].trim() || null;
-      if (publishedAt !== initialDate || !page) {
-        data.published_at = publishedAt ? `${publishedAt}T12:00:00.000Z` : new Date().toISOString();
-      }
+      for (const l of LOCALES) for (const f of KEYWORD_FIELDS) data[`${f}_${l}`] = form[`${f}_${l}`].trim() || null;
+      if (!page) data.published_at = new Date().toISOString();
 
       const res = await fetch("/api/admin/crud", {
         method: "POST",
@@ -371,20 +417,55 @@ export default function LandingEditor({
         {/* ── Sidebar ──────────────────────────────────────────────── */}
         <aside className="grid min-w-0 gap-4">
           <Panel title="Yayın">
+            <Segmented
+              label="Durum"
+              value={published ? "on" : "off"}
+              onChange={(x) => setPublished(x === "on")}
+              options={[
+                { value: "off", label: "Taslak" },
+                { value: "on", label: "Yayında" },
+              ]}
+              className="w-full [&>button]:flex-1 [&>button]:justify-center"
+            />
+          </Panel>
+
+          <Panel title="SEO" subtitle={LOCALE_LABELS[lang]} action={<ScoreBadge percent={score.percent} />}>
             <div className="grid gap-3.5">
-              <Segmented
-                label="Durum"
-                value={published ? "on" : "off"}
-                onChange={(x) => setPublished(x === "on")}
-                options={[
-                  { value: "off", label: "Taslak" },
-                  { value: "on", label: "Yayında" },
-                ]}
-                className="w-full [&>button]:flex-1 [&>button]:justify-center"
-              />
-              <Field label="Yayın tarihi" htmlFor="landing-published-at">
-                <Input id="landing-published-at" type="date" value={publishedAt} onChange={(e) => setPublishedAt(e.target.value)} />
+              <Field label="Odak anahtar kelime" htmlFor="landing-focus">
+                <Input id="landing-focus" value={focusKeyword} onChange={(e) => set(`focus_keyword_${lang}`, e.target.value)} placeholder="ör. antalya özel transfer" />
               </Field>
+              <Field label="Yan anahtar kelimeler" htmlFor="landing-keywords" hint="Virgülle ayırın">
+                <Input id="landing-keywords" value={keywords} onChange={(e) => set(`keywords_${lang}`, e.target.value)} placeholder="ör. antalya vip transfer, havalimanı transfer" />
+              </Field>
+
+              <SerpPreview
+                title={serpTitle}
+                description={serpDescription}
+                path={activeSlug}
+                locale={lang}
+                keywords={[focusKeyword, ...parseKeywords(keywords)].filter(Boolean)}
+                imageUrl={form.image_url || null}
+              />
+
+              <button
+                type="button"
+                onClick={() => setChecksOpen((o) => !o)}
+                aria-expanded={checksOpen}
+                className="flex items-center justify-between rounded-adm-sm px-1 py-1 text-[12.5px] font-semibold text-adm-ink-2 hover:text-adm-ink"
+              >
+                <span>
+                  {score.passed}/{score.total} kontrol geçti
+                  {score.total - score.passed > 0 && <span className="font-normal text-adm-muted"> · {score.total - score.passed} öneri</span>}
+                </span>
+                <span aria-hidden="true">{checksOpen ? "▲" : "▼"}</span>
+              </button>
+              {checksOpen && (
+                <SeoScorePanel
+                  score={score}
+                  onFieldClick={focusControl}
+                  note="Bu sayfanın içeriğine göre hesaplanır. Meta başlık ve robots ayarları SEO Yönetimi'nde."
+                />
+              )}
             </div>
           </Panel>
 
@@ -486,7 +567,6 @@ export default function LandingEditor({
             onClick={() => {
               setForm(saved);
               setPublished(initialPublished);
-              setPublishedAt(initialDate);
             }}
             className="h-8 rounded-adm-sm px-3 text-[13px] font-semibold text-white/80 hover:bg-white/10 hover:text-white"
           >
@@ -517,11 +597,23 @@ export default function LandingEditor({
   );
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({
+  title,
+  subtitle,
+  action,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-adm-lg border border-adm-line bg-adm-surface shadow-adm-sm">
       <header className="flex items-center gap-2 border-b border-adm-line-2 px-4 py-3">
         <h2 className="text-[13.5px] font-semibold text-adm-ink">{title}</h2>
+        {subtitle && <span className="text-[12px] text-adm-muted">{subtitle}</span>}
+        {action && <span className="ms-auto">{action}</span>}
       </header>
       <div className="p-4">{children}</div>
     </section>
