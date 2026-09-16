@@ -42,7 +42,7 @@ export interface BlogPostViewProps {
   regions: { name: string; href: string; durationMinutes: number | null }[];
   /** Admin-created landing pages published in this language. */
   landings: { name: string; href: string }[];
-  /** Hotels in the post's region (Bölgeler → Sayfa içeriği). */
+  /** Hotels in the post's region (Bölgeler → Oteller). */
   hotels: string[];
   /** A named person, set in the blog editor. Null shows no byline. */
   author: { name: string; role: string | null } | null;

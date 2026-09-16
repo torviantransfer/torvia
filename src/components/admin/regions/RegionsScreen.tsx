@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { FileText, MapPin, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Plus, Power, Trash2 } from "lucide-react";
 import {
   Button,
   Chip,
@@ -15,7 +15,7 @@ import {
   useToast,
   type GridColumn,
 } from "@/components/admin/ui";
-import RegionFormDialog, { emptyRegionForm, toRegionForm, type RegionFormValues } from "./RegionFormDialog";
+import RegionFormDialog from "./RegionFormDialog";
 
 export interface RegionRow {
   id: string;
@@ -35,7 +35,6 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
   const pathname = usePathname();
   const toast = useToast();
   const [creating, setCreating] = useState(false);
-  const [editing, setEditing] = useState<RegionFormValues | null>(null);
   const [deleting, setDeleting] = useState<RegionRow | null>(null);
   const [busy, setBusy] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -84,9 +83,6 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
         <div className="min-w-0">
           <div className="truncate text-[13.5px] font-semibold">{r.name_en}</div>
           <div className="truncate text-xs text-adm-muted">{r.name_tr}</div>
-          <a href={`${pathname}/${r.id}`} className="mt-1 inline-block text-xs font-medium text-adm-brand-ink min-[1181px]:hidden">
-            Sayfa içeriği →
-          </a>
         </div>
       ),
     },
@@ -125,10 +121,7 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
       wideOnly: true,
       cell: (r) => (
         <RowActions>
-          <IconLink size="sm" icon={FileText} label="Sayfa içeriği" href={`${pathname}/${r.id}`} />
-          <button type="button" onClick={() => setEditing(toRegionForm(r))} aria-label="Düzenle" title="Düzenle" className="grid size-7 place-items-center rounded-adm-sm text-adm-ink-2 hover:bg-adm-line-2">
-            <Pencil size={14} aria-hidden="true" />
-          </button>
+          <IconLink size="sm" icon={Pencil} label="Düzenle" href={`${pathname}/${r.id}`} />
           <button type="button" onClick={() => toggle(r, "is_active")} disabled={togglingId === `${r.id}:is_active`} aria-label={r.is_active ? "Pasife al" : "Aktifleştir"} title={r.is_active ? "Pasife al" : "Aktifleştir"} className="grid size-7 place-items-center rounded-adm-sm text-adm-ink-2 hover:bg-adm-line-2 disabled:opacity-40">
             <Power size={14} aria-hidden="true" className={r.is_active ? "text-adm-green" : "text-adm-faint"} />
           </button>
@@ -156,21 +149,15 @@ export default function RegionsScreen({ regions }: { regions: RegionRow[] }) {
         columns={columns}
         rows={sorted}
         rowKey={(r) => r.id}
+        onRowClick={(r) => router.push(`${pathname}/${r.id}`)}
         empty={<EmptyState compact icon={MapPin} title="Bölge yok" action={<Button onClick={() => setCreating(true)}>Bölge ekle</Button>} />}
       />
 
-      {(creating || editing) && (
+      {creating && (
         <RegionFormDialog
-          initial={editing ?? emptyRegionForm}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
-          onSaved={() => {
-            setCreating(false);
-            setEditing(null);
-            refresh();
-          }}
+          onClose={() => setCreating(false)}
+          // A new region opens straight in its editor, where the rest is filled in.
+          onCreated={(id) => router.push(`${pathname}/${id}`)}
         />
       )}
 

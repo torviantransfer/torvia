@@ -21,9 +21,10 @@ import RegionStickyBar from "@/components/region/RegionStickyBar";
 import RegionPageView from "@/components/region/RegionPageView";
 import { paragraphs, readHotels, readPageContent } from "@/lib/regionContent";
 import { turkishNameForms } from "@/lib/trSuffix";
+import { aboutDefault, generalFaq, heroIntroDefault, hotelsIntroText } from "@/lib/regionDefaults";
 import PriceTag from "@/components/PriceTag";
 import { Link } from "@/i18n/routing";
-import {
+import {
 } from "lucide-react";
 import LandingPageView from "@/components/landing/LandingPageView";
 import { getLandingPage, landingMetadata, landingCanonicalSlug } from "@/lib/landingPages";
@@ -46,22 +47,6 @@ function getTranslatedLocales(region: Record<string, unknown>): Locale[] {
     const mt = (region[`meta_title_${l}`] as string | null | undefined) ?? "";
     return desc.trim().length > 0 || mt.trim().length > 0;
   });
-}
-
-function formatDuration(minutes: number, locale: string): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (locale === "tr") return h > 0 ? `${h} saat${m > 0 ? ` ${m} dakika` : ""}` : `${m} dakika`;
-  if (locale === "de") return h > 0 ? `${h} Std.${m > 0 ? ` ${m} Min.` : ""}` : `${m} Min.`;
-  if (locale === "pl") return h > 0 ? `${h} godz.${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
-  if (locale === "ru") return h > 0 ? `${h} ч${m > 0 ? ` ${m} мин` : ""}` : `${m} мин`;
-  if (locale === "nl") return h > 0 ? `${h} uur${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
-  if (locale === "ro") return h > 0 ? `${h} ${h === 1 ? "oră" : "ore"}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
-  if (locale === "ar") {
-    const hours = h === 1 ? "ساعة" : h === 2 ? "ساعتان" : h <= 10 ? "ساعات" : "ساعة";
-    return h > 0 ? `${h} ${hours}${m > 0 ? ` ${m} دقيقة` : ""}` : `${m} دقيقة`;
-  }
-  return h > 0 ? `${h} hour${h !== 1 ? "s" : ""}${m > 0 ? ` ${m} min` : ""}` : `${m} min`;
 }
 
 function normalizeRegionPath(slug: string) {
@@ -666,7 +651,7 @@ export default async function RegionPage({
   const nameForms = turkishNameForms(name);
 
   /*
-   * Content written in the admin panel (Bölgeler → Sayfa içeriği). Every field
+   * Content written in the admin panel (Bölgeler → region editor). Every field
    * is optional; an empty one falls through to exactly what the page rendered
    * before the panel existed, so an untouched region is unchanged.
    */
@@ -797,51 +782,7 @@ export default async function RegionPage({
   // Panel wins once migration 097 has run; the map above is only the fallback
   // for a database that does not have the column yet.
   const hotelsForRegion = readHotels((region as Record<string, unknown>).hotels) ?? regionHotels[region.slug] ?? [];
-  const hotelsIntro = locale === "tr"
-    ? `${name} bölgesindeki tüm otellere hizmet veriyoruz, öne çıkanlar:`
-    : locale === "de"
-      ? `Wir bedienen alle Hotels in ${name}, darunter:`
-      : locale === "pl"
-        ? `Obsługujemy wszystkie hotele w ${name}, w tym:`
-        : locale === "ru"
-          ? `Мы обслуживаем все отели в ${name}, включая:`
-          : locale === "nl"
-            ? `Wij bedienen alle hotels in ${name}, waaronder:`
-            : locale === "ro"
-              ? `Deservim toate hotelurile din ${name}, printre care:`
-              : locale === "ar"
-                ? `نخدم جميع الفنادق في ${name}، ومنها:`
-                : `We serve every hotel in ${name}, including:`;
-  const faqHotelsQ = locale === "tr"
-    ? `${name} bölgesinde hangi otellere transfer sağlıyorsunuz?`
-    : locale === "de"
-      ? `Welche Hotels in ${name} bedienen Sie?`
-      : locale === "pl"
-        ? `Do jakich hoteli w ${name} zapewniacie transfer?`
-        : locale === "ru"
-          ? `В какие отели в ${name} вы осуществляете трансфер?`
-          : locale === "nl"
-            ? `Welke hotels in ${name} bedient u?`
-            : locale === "ro"
-              ? `Către ce hoteluri din ${name} faceți transfer?`
-              : locale === "ar"
-                ? `إلى أي فنادق في ${name} توفّرون النقل؟`
-                : `Which hotels in ${name} do you provide transfer to?`;
-  const faqHotelsA = locale === "tr"
-    ? `${name} bölgesindeki tüm otellere transfer sağlıyoruz; öne çıkanlar arasında ${hotelsForRegion.join(", ")} bulunur. Rezervasyon sırasında otel adınızı belirtmeniz yeterlidir.`
-    : locale === "de"
-      ? `Wir bedienen alle Hotels in ${name}, darunter ${hotelsForRegion.join(", ")}. Geben Sie bei der Buchung einfach Ihren Hotelnamen an.`
-      : locale === "pl"
-        ? `Zapewniamy transfer do wszystkich hoteli w ${name}, w tym do ${hotelsForRegion.join(", ")}. Wystarczy podać nazwę hotelu podczas rezerwacji.`
-        : locale === "ru"
-          ? `Мы осуществляем трансфер во все отели в ${name}, включая ${hotelsForRegion.join(", ")}. Просто укажите название отеля при бронировании.`
-          : locale === "nl"
-            ? `Wij verzorgen transfers naar alle hotels in ${name}, waaronder ${hotelsForRegion.join(", ")}. Vermeld gewoon uw hotelnaam tijdens het boeken.`
-            : locale === "ro"
-              ? `Facem transfer către toate hotelurile din ${name}, printre care ${hotelsForRegion.join(", ")}. Este suficient să scrii numele hotelului la rezervare.`
-              : locale === "ar"
-                ? `نوفّر النقل إلى جميع الفنادق في ${name}، ومنها ${hotelsForRegion.join("، ")}. يكفي كتابة اسم فندقك عند الحجز.`
-                : `We provide transfer to every hotel in ${name}, including ${hotelsForRegion.join(", ")}. Just enter your hotel name during booking.`;
+  const hotelsIntro = hotelsIntroText(name, locale);
 
   /*
    * One list, two consumers: the accordion on the page and the FAQPage schema
@@ -850,17 +791,14 @@ export default async function RegionPage({
    */
   const faqItems = [
     ...panel.faq.filter((f) => f.question.trim() && f.answer.trim()),
-    { question: t("faqQ1", { name, ...nameForms }), answer: t("faqA1", { name, ...nameForms, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
-    { question: t("faqQ2", { name, ...nameForms }), answer: t("faqA2") },
-    { question: t("faqQ3", { name }), answer: t("faqA3") },
-    { question: t("faqQ4"), answer: t("faqA4") },
-    { question: t("faqQ5", { name, ...nameForms }), answer: t("faqA5", { name, ...nameForms, price }) },
-    { question: t("faqQ6", { name, ...nameForms }), answer: t("faqA6") },
-    { question: t("faqQ7", { name }), answer: t("faqA7") },
-    { question: t("faqQ8", { name }), answer: t("faqA8") },
-    { question: t("faqQ9", { name, ...nameForms }), answer: t("faqA9", { name, ...nameForms }) },
-    { question: t("faqQ10", { name }), answer: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
-    ...(hotelsForRegion.length > 0 ? [{ question: faqHotelsQ, answer: faqHotelsA }] : []),
+    ...generalFaq(t, {
+      name,
+      locale,
+      durationMinutes: region.duration_minutes ?? null,
+      distanceKm: region.distance_km ?? null,
+      price,
+      hotels: hotelsForRegion,
+    }),
   ];
 
   const faqSchema = {
@@ -889,19 +827,7 @@ export default async function RegionPage({
               ? `Transfer privat către ${name} | Aeroportul Antalya → ${name}`
               : `Private Transfer to ${name} | Antalya Airport → ${name}`);
 
-  const heroDescription = locale === "tr"
-    ? `${name} için Antalya Havalimanı'ndan özel VIP transfer. Sabit fiyat, profesyonel şoför, uçuş takibi ve online rezervasyon.`
-    : locale === "de"
-      ? `Privater VIP-Transfer vom Flughafen Antalya nach ${name}. Festpreis, professioneller Fahrer, Flugverfolgung und Online-Buchung.`
-      : locale === "pl"
-        ? `Prywatny transfer VIP z lotniska Antalya do ${name}. Stała cena, profesjonalny kierowca, śledzenie lotu i szybka rezerwacja.`
-        : locale === "ru"
-          ? `Частный VIP-трансфер из аэропорта Анталии в ${name}. Фиксированная цена, профессиональный водитель, отслеживание рейса и онлайн-бронирование.`
-          : locale === "nl"
-            ? `Privé VIP-transfer vanaf de luchthaven Antalya naar ${name}. Vaste prijs, professionele chauffeur, vluchtmonitoring en online reservering.`
-            : locale === "ro"
-              ? `Transfer privat VIP de la Aeroportul Antalya la ${name}. Preț fix, șofer profesionist, urmărirea zborului și rezervare online.`
-              : `Private VIP transfer from Antalya Airport to ${name}. Fixed price, professional driver, flight tracking and online booking.`;
+  const heroDescription = heroIntroDefault(name, locale);
 
   const routeKeywords = locale === "tr"
     ? [`Antalya Havalimanı ${name} transfer`, `${name} özel transfer`, `${name} otel transferi`, `${name} çocuk koltuklu transfer`, `sabit fiyatlı ${name} transfer`, `${name} VIP transfer`, `gece varışı ${name} transfer`, `taksi yerine ${name} transfer`, `${name} transfer fiyatları`, `${name} transfer rezervasyon`]
@@ -973,7 +899,7 @@ export default async function RegionPage({
             // same on every region page, and the point of the panel is to stop that.
             (extraAbout.length > 0
               ? [description, ...extraAbout]
-              : [description, t("aboutDescDefault", { name, ...nameForms, duration: region.duration_minutes ?? 0 })]
+              : [description, aboutDefault(t, name, region.duration_minutes ?? null)]
             ).filter(Boolean)
           }
           routeName={routeName}

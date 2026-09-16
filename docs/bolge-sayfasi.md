@@ -91,9 +91,21 @@ bölünmez.
 
 ## 5. Panelden düzenlenebilir alanlar
 
-**Bölgeler → satırdaki "Sayfa içeriği"** (`/admin/regions/[id]`). Migration
-`097_region_page_content.sql` gerekir; çalıştırılmadan editör uyarı gösterir ve
-kaydetmez, sayfa da eskisi gibi render olur.
+**Bölgeler → satıra tıkla** (`/admin/regions/[id]`). Bir bölgenin her şeyi tek
+ekranda: solda dile göre sayfa içeriği (ad, hero alt başlığı, açıklama, devam
+paragrafları, öne çıkanlar, SSS), sağda dilden bağımsız ayarlar (aktif/popüler,
+sıra, km/dk, güzergah, slug, ana görsel, oteller). Eskiden ad/açıklama/km bir
+diyalogda, sayfa içeriği ayrı bir ekrandaydı. "Bölge ekle" yalnızca ad, slug,
+km ve dk sorar, bölgeyi pasif oluşturur ve editörü açar.
+
+Otomatik metinler (`src/lib/regionDefaults.ts`, sayfa da aynı fonksiyonları
+kullanır) alanların içinde görünür ve "Otomatik metin" etiketi taşır.
+Değiştirilmeyen otomatik metin kaydedilmez; sayfa şablonu izlemeye devam eder.
+Genel on bir soru, editörde salt okunur listede görünür.
+
+Migration `097_region_page_content.sql` çalıştırılmadan sayfa içeriği, oteller
+ve güzergah kaydedilmez (editör uyarır); ad, açıklama ve rota bilgileri yine
+kaydedilir.
 
 | Alan | Nerede tutuluyor | Boşsa |
 |---|---|---|
@@ -104,8 +116,8 @@ kaydetmez, sayfa da eskisi gibi render olur.
 | Oteller | `hotels` (dilden bağımsız) | liste görünmez |
 | Güzergah | `route_name` | rakam şeridinde gösterilmez |
 
-Zaten var olanlar tekrar yapılmadı: **H1** (`h1_*`) ve **hero görseli**
-(`image_url`) SEO Yönetimi'nden düzenlenir.
+**H1** (`h1_*`), meta başlık ve anahtar kelimeler SEO Yönetimi'nde kalır. Ana
+görsel (`image_url`) iki ekrandan da düzenlenebilir; aynı sütundur.
 
 Kurallar:
 - Ek paragraf yazıldığında genel kalıp paragraf ("…Türk Rivierası'nın en popüler
