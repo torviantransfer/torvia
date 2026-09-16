@@ -996,5 +996,23 @@
     "s6Text": "Wir setzen geeignete technische und organisatorische Maßnahmen um, um Ihre personenbezogenen Daten vor unbefugtem Zugriff, Änderung, Offenlegung oder Vernichtung zu schützen. Alle Zahlungsdaten werden über die PCI-DSS-konforme Stripe-Infrastruktur verarbeitet.",
     "s7Title": "7. Kontakt",
     "s7Text": "Bei Fragen zu Ihren personenbezogenen Daten oder zur Ausübung Ihrer Rechte wenden Sie sich bitte an torviantransfer@gmail.com oder rufen Sie 0242 606 07 63 an."
+  },
+  "landing": {
+    "formTitle": "Route wählen und sofort den Preis sehen",
+    "reviewsCount": "{count, plural, one {# Bewertung} other {# Bewertungen}}",
+    "pricesKicker": "Preise",
+    "pricesTitle": "Festpreise für Transfers ab Flughafen Antalya",
+    "pricesSub": "Die Preise gelten pro Fahrzeug, nicht pro Person. Maut, Kraftstoff und Abholung am Flughafen sind inklusive – Sie zahlen genau den Preis, den Sie bei der Buchung sehen.",
+    "colDestination": "Ziel",
+    "colDistance": "Entfernung",
+    "colDuration": "Fahrzeit",
+    "book": "Buchen",
+    "showAll": "Alle Ziele anzeigen ({count})",
+    "showLess": "Weniger anzeigen",
+    "stepsKicker": "So funktioniert's",
+    "includedKicker": "Fahrzeug und Leistungen",
+    "includedTitle": "Privates Fahrzeug, fester Preis, keine Überraschungen",
+    "relatedKicker": "Weitere Transferseiten",
+    "closingKicker": "Transfer ab Flughafen Antalya"
   }
 }

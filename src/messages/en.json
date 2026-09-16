@@ -996,5 +996,23 @@
     "s6Text": "We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. All payment data is processed through PCI-DSS compliant Stripe infrastructure.",
     "s7Title": "7. Contact",
     "s7Text": "For questions regarding your personal data or to exercise your rights, please contact us at torviantransfer@gmail.com or call 0242 606 07 63."
+  },
+  "landing": {
+    "formTitle": "Choose your route and see the price instantly",
+    "reviewsCount": "{count, plural, one {# review} other {# reviews}}",
+    "pricesKicker": "Prices",
+    "pricesTitle": "Fixed transfer prices from Antalya Airport",
+    "pricesSub": "Prices are per vehicle, not per person. Motorway, fuel and meet & greet at the airport are included — you pay the price you see when you book.",
+    "colDestination": "Destination",
+    "colDistance": "Distance",
+    "colDuration": "Time",
+    "book": "Book",
+    "showAll": "Show all destinations ({count})",
+    "showLess": "Show fewer",
+    "stepsKicker": "How it works",
+    "includedKicker": "Vehicle and what's included",
+    "includedTitle": "Private vehicle, fixed price, no surprises",
+    "relatedKicker": "More transfer pages",
+    "closingKicker": "Antalya Airport transfer"
   }
 }

@@ -996,5 +996,23 @@
     "s6Text": "Wij nemen passende technische en organisatorische maatregelen om uw persoonsgegevens te beschermen tegen ongeoorloofde toegang, wijziging, openbaarmaking of vernietiging. Alle betaalgegevens worden verwerkt via de PCI-DSS-conforme infrastructuur van Stripe.",
     "s7Title": "7. Contact",
     "s7Text": "Voor vragen over uw persoonsgegevens of om uw rechten uit te oefenen kunt u contact met ons opnemen via torviantransfer@gmail.com of bellen naar 0242 606 07 63."
+  },
+  "landing": {
+    "formTitle": "Kies uw route en zie direct de prijs",
+    "reviewsCount": "{count, plural, one {# beoordeling} other {# beoordelingen}}",
+    "pricesKicker": "Prijzen",
+    "pricesTitle": "Vaste transferprijzen vanaf luchthaven Antalya",
+    "pricesSub": "Prijzen gelden per voertuig, niet per persoon. Tol, brandstof en ontvangst op de luchthaven zijn inbegrepen – u betaalt de prijs die u bij het boeken ziet.",
+    "colDestination": "Bestemming",
+    "colDistance": "Afstand",
+    "colDuration": "Reistijd",
+    "book": "Boeken",
+    "showAll": "Alle bestemmingen tonen ({count})",
+    "showLess": "Minder tonen",
+    "stepsKicker": "Zo werkt het",
+    "includedKicker": "Voertuig en wat is inbegrepen",
+    "includedTitle": "Privévoertuig, vaste prijs, geen verrassingen",
+    "relatedKicker": "Meer transferpagina's",
+    "closingKicker": "Transfer vanaf luchthaven Antalya"
   }
 }

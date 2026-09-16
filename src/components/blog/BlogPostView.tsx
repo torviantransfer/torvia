@@ -68,7 +68,7 @@ const CTA =
  * blog editor produces, not a generic prose plugin, so nothing here styles
  * markup the posts do not contain.
  */
-const PROSE = [
+export const ARTICLE_PROSE = [
   "min-w-0 max-w-[70ch] text-[16.5px] leading-[1.8] text-gray-700",
   "[&_h2]:mb-4 [&_h2]:mt-12 [&_h2]:scroll-mt-28 [&_h2]:text-balance [&_h2]:text-[22px] [&_h2]:font-bold [&_h2]:leading-snug [&_h2]:tracking-tight [&_h2]:text-gray-900 lg:[&_h2]:text-[26px]",
   "[&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:scroll-mt-28 [&_h3]:text-[18px] [&_h3]:font-semibold [&_h3]:leading-snug [&_h3]:text-gray-900",
@@ -306,14 +306,14 @@ export default async function BlogPostView({
           )}
 
           <div
-            className={`${PROSE} ${excerpt ? "" : "[&>p:first-of-type]:text-[18px] [&>p:first-of-type]:leading-[1.7] [&>p:first-of-type]:text-gray-800"}`}
+            className={`${ARTICLE_PROSE} ${excerpt ? "" : "[&>p:first-of-type]:text-[18px] [&>p:first-of-type]:leading-[1.7] [&>p:first-of-type]:text-gray-800"}`}
             dangerouslySetInnerHTML={{ __html: before }}
           />
 
           {after && (
             <>
               {bookingCard}
-              <div className={PROSE} dangerouslySetInnerHTML={{ __html: after }} />
+              <div className={ARTICLE_PROSE} dangerouslySetInnerHTML={{ __html: after }} />
             </>
           )}
 

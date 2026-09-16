@@ -35,6 +35,48 @@ export function sanitizeArticleHtml(raw: string): string {
 }
 
 /**
+ * Drops inline `style` from a table and its cells.
+ *
+ * `style` stays on the allow-list (info boxes, highlight colours) because an
+ * editor genuinely needs it elsewhere. Tables are the one element where it
+ * backfires: content pasted in from a document editor arrives with per-cell
+ * `padding:14px`, `border-collapse:collapse`, and no header background at
+ * all -- inline styles beat the Tailwind rules `ARTICLE_PROSE` applies by
+ * specificity, so the table renders in whatever the source document looked
+ * like instead of the site's own table. Every landing page and blog post
+ * is going to carry at least one price table, so this has to hold for
+ * content nobody has written yet, not just what is in the database today.
+ */
+export function stripTableStyles(html: string): string {
+  return html.replace(
+    /<(table|thead|tbody|tfoot|tr|th|td|col|colgroup)\b([^>]*)>/gi,
+    (match, tag, attrs) => `<${tag}${attrs.replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, "")}>`
+  );
+}
+
+/**
+ * Drops a `<div>` that exists only to wrap one `<table>` in a scrollbox.
+ *
+ * `outlineArticle` already wraps every table in its own `.article-table` box
+ * — bordered, rounded, `overflow-x-auto` — so the page never scrolls, only
+ * the table does. Content copied in from elsewhere sometimes brings its own
+ * `<div style="overflow-x:auto"><table>…</table></div>` for the same reason,
+ * and nesting the site's box inside that leftover one is what made the
+ * rendered table look clipped: two `overflow-x-auto` boxes of the same width,
+ * the outer one plain and borderless, the inner one's rounded corner sitting
+ * right at the outer box's clipping edge.
+ *
+ * Only unwraps a div whose entire content, once trimmed, is a single table —
+ * a div that also carries a caption or a note stays untouched.
+ */
+export function unwrapTableWrappers(html: string): string {
+  return html.replace(
+    /<div\b[^>]*>\s*(<table\b[\s\S]*?<\/table>)\s*<\/div>/gi,
+    (match, table) => table
+  );
+}
+
+/**
  * Tailwind rules that style the sanitised HTML on a landing page.
  *
  * Held next to the sanitiser so the tags the allow-list permits and the tags

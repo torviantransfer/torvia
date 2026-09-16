@@ -996,5 +996,23 @@
     "s6Text": "Aplicăm măsuri tehnice și organizatorice adecvate pentru a proteja datele tale personale împotriva accesului neautorizat, modificării, divulgării sau distrugerii. Toate datele de plată sunt procesate prin infrastructura Stripe, conformă PCI-DSS.",
     "s7Title": "7. Contact",
     "s7Text": "Pentru întrebări privind datele tale personale sau pentru a-ți exercita drepturile, te rugăm să ne contactezi la torviantransfer@gmail.com sau să suni la 0242 606 07 63."
+  },
+  "landing": {
+    "formTitle": "Alege ruta și vezi prețul imediat",
+    "reviewsCount": "{count, plural, one {# recenzie} few {# recenzii} other {# de recenzii}}",
+    "pricesKicker": "Prețuri",
+    "pricesTitle": "Prețuri fixe de transfer de la Aeroportul Antalya",
+    "pricesSub": "Prețul este per vehicul, nu per persoană. Autostrada, combustibilul și întâmpinarea la aeroport sunt incluse – plătești exact prețul pe care îl vezi la rezervare.",
+    "colDestination": "Destinație",
+    "colDistance": "Distanță",
+    "colDuration": "Durată",
+    "book": "Rezervă",
+    "showAll": "Arată toate destinațiile ({count})",
+    "showLess": "Arată mai puțin",
+    "stepsKicker": "Cum funcționează",
+    "includedKicker": "Vehiculul și ce este inclus",
+    "includedTitle": "Vehicul privat, preț fix, fără surprize",
+    "relatedKicker": "Alte pagini de transfer",
+    "closingKicker": "Transfer de la Aeroportul Antalya"
   }
 }

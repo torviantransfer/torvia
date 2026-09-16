@@ -996,5 +996,23 @@
     "s6Text": "Kişisel verilerinizi yetkisiz erişime, değiştirmeye, ifşa etmeye veya imhaya karşı korumak için uygun teknik ve organizasyonel önlemler uyguluyoruz. Tüm ödeme verileri PCI-DSS uyumlu Stripe altyapısı üzerinden işlenmektedir.",
     "s7Title": "7. İletişim",
     "s7Text": "Kişisel verilerinizle ilgili sorularınız veya haklarınızı kullanmak için torviantransfer@gmail.com adresinden veya 0242 606 07 63 numarasından bize ulaşabilirsiniz."
+  },
+  "landing": {
+    "formTitle": "Güzergahınızı seçin, fiyatı hemen görün",
+    "reviewsCount": "{count, plural, one {# değerlendirme} other {# değerlendirme}}",
+    "pricesKicker": "Fiyatlar",
+    "pricesTitle": "Antalya Havalimanı'ndan sabit transfer fiyatları",
+    "pricesSub": "Fiyat kişi başı değil, araç başınadır. Otoyol, yakıt ve havalimanında karşılama dahildir; rezervasyonda gördüğünüz fiyatı ödersiniz.",
+    "colDestination": "Varış noktası",
+    "colDistance": "Mesafe",
+    "colDuration": "Süre",
+    "book": "Rezervasyon",
+    "showAll": "Tüm bölgeleri göster ({count})",
+    "showLess": "Daha az göster",
+    "stepsKicker": "Nasıl çalışır",
+    "includedKicker": "Araç ve fiyata dahil olanlar",
+    "includedTitle": "Özel araç, sabit fiyat, sürpriz yok",
+    "relatedKicker": "Diğer transfer sayfaları",
+    "closingKicker": "Antalya Havalimanı transferi"
   }
 }
