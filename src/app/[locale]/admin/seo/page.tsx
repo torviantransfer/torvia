@@ -33,9 +33,32 @@ export default async function AdminSeoPage({
     open: one(sp.open),
   };
 
+  // Four of the five landing pages that used to be hardcoded routes kept a
+  // page_type "landing" row here from before they were migrated into
+  // landing_pages, so each showed up twice — once from each table, under the
+  // same route. Dropped rather than deleted, so nothing is lost if the
+  // migration is ever undone.
+  //
+  // A literal list of exactly those four, not "any seo_pages row whose route
+  // matches a landing_pages slug": land-of-legends-transfer also has a row in
+  // both tables, but its hardcoded file was deliberately kept (it collides
+  // with an active region — see migration 099's note), so its seo_pages row
+  // is still the one `generateMetadata` actually reads and must stay visible.
+  const MIGRATED_LANDING_SLUGS = new Set([
+    "antalya-airport-transfer",
+    "vip-transfer-antalya",
+    "hotel-transfer-antalya",
+    "lara-beach-transfer",
+  ]);
+  const dedupedPages = (pages ?? []).filter((p) => {
+    const row = p as Record<string, unknown>;
+    if (row.page_type !== "landing") return true;
+    return !MIGRATED_LANDING_SLUGS.has(String(row.route ?? row.page_key ?? ""));
+  });
+
   return (
     <SeoScreen
-      initialPages={(pages ?? []) as Record<string, unknown>[]}
+      initialPages={dedupedPages as Record<string, unknown>[]}
       initialRegions={(regions ?? []) as Record<string, unknown>[]}
       initialPosts={(posts ?? []) as Record<string, unknown>[]}
       initialLandings={(landings ?? []) as Record<string, unknown>[]}
