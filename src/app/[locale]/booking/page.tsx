@@ -6,9 +6,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookingWizardClient from "@/components/booking/BookingWizardClient";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import RegionPriceGrid from "@/components/booking/RegionPriceGrid";
+import LandingPriceTable from "@/components/landing/LandingPriceTable";
 import SocialProofStrip from "@/components/booking/SocialProofStrip";
 import { loadBookingData } from "@/lib/bookingData";
+import { readBookingContent } from "@/lib/bookingContent";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import { getImageProps } from "next/image";
@@ -26,6 +27,11 @@ const SEO_FAQ_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /** The `guideNTitle` / `guideNBody` pairs rendered in the guide section. */
 const GUIDE_SECTIONS = [1, 2, 3, 4] as const;
+
+/** The `-transfer` form a region page is always served on. */
+function regionPath(slug: string) {
+  return `/${slug.endsWith("-transfer") ? slug : `${slug}-transfer`}`;
+}
 
 /**
  * Destinations linked from the guide, as slug -> label.
@@ -101,6 +107,7 @@ export default async function BookingPage({
   const sp = await searchParams;
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "booking" });
+  const lt = await getTranslations({ locale, namespace: "landing" });
 
   // The full wizard (step 1 = vehicle selection) has no date picker, so it
   // only renders once we actually have a date. A region without a date
@@ -121,6 +128,22 @@ export default async function BookingPage({
      with the landing pages so both quote the same bookable fares. */
   const supabase = createAdminClient();
   const { initialRegions, regionPrices, initialRates, reviews } = await loadBookingData(supabase, locale);
+
+  // Trust cards, guide, FAQ and the closing paragraph below are editable from
+  // Admin → Booking Sayfası İçeriği (settings row "booking_page_content",
+  // migration 105); an empty field falls back to the translation-file text
+  // used here, same "auto text with override" contract as region pages.
+  const { data: bookingContentRow } = await supabase
+    .from("settings")
+    .select("value")
+    .eq("key", "booking_page_content")
+    .maybeSingle();
+  const bc = readBookingContent(bookingContentRow?.value, [locale]).locales[locale];
+  const pick = (override: string, auto: string) => override.trim() || auto;
+  const faqItems = SEO_FAQ_NUMBERS.map((n) => ({
+    q: pick(bc.faq[n - 1]?.question ?? "", t(`seoFaq${n}Q`)),
+    a: pick(bc.faq[n - 1]?.answer ?? "", t(`seoFaq${n}A`)),
+  }));
 
   const intentKeywords: Record<string, { label: string; href: string }[]> = {
     tr: [
@@ -422,7 +445,23 @@ export default async function BookingPage({
                   is; on desktop it keeps its place after the headline and the
                   form, below where the photograph ends. */}
               <div className="order-4 lg:order-5 w-full max-w-5xl mx-auto mt-6 lg:mt-10">
-                <RegionPriceGrid regions={regionPrices} initialRates={initialRates} />
+                <div className="mb-5">
+                  <div className="text-[11.5px] font-bold uppercase leading-snug tracking-[0.1em] text-[#007AFF]">{lt("pricesKicker")}</div>
+                  <h2 className="mt-2 text-balance break-words text-[19px] font-extrabold leading-[1.2] tracking-tight text-gray-900 sm:text-[22px]">{lt("pricesTitle")}</h2>
+                  <p className="mt-2 max-w-[62ch] text-[13.5px] leading-relaxed text-gray-500">{lt("pricesSub")}</p>
+                </div>
+                <LandingPriceTable
+                  rows={regionPrices.map((r) => ({
+                    slug: r.slug,
+                    name: r.name,
+                    href: regionPath(r.slug),
+                    distanceKm: r.distanceKm,
+                    durationMin: r.durationMin,
+                    oneWay: r.oneWay,
+                    roundTrip: r.roundTrip,
+                  }))}
+                  initialRates={initialRates}
+                />
               </div>
             </div>
           </section>
@@ -476,10 +515,10 @@ export default async function BookingPage({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: SEO_FAQ_NUMBERS.map((n) => ({
+          mainEntity: faqItems.map(({ q, a }) => ({
             "@type": "Question",
-            name: t(`seoFaq${n}Q`),
-            acceptedAnswer: { "@type": "Answer", text: t(`seoFaq${n}A`) },
+            name: q,
+            acceptedAnswer: { "@type": "Answer", text: a },
           })),
         }) }} />
 
@@ -517,12 +556,12 @@ export default async function BookingPage({
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
               {[
-                { icon: <Plane size={20} />, title: t("seoFlightTracking"), desc: t("seoFlightTrackingDesc") },
-                { icon: <Shield size={20} />, title: t("seoInsured"), desc: t("seoInsuredDesc") },
-                { icon: <CreditCard size={20} />, title: t("seoSecurePayment"), desc: t("seoSecurePaymentDesc") },
-                { icon: <Clock size={20} />, title: t("seo247"), desc: t("seo247Desc") },
-                { icon: <MapPin size={20} />, title: t("seoDoorToDoor"), desc: t("seoDoorToDoorDesc") },
-                { icon: <Star size={20} />, title: t("seoNoHidden"), desc: t("seoNoHiddenDesc") },
+                { icon: <Plane size={20} />, title: pick(bc.trustCards[0]?.title ?? "", t("seoFlightTracking")), desc: pick(bc.trustCards[0]?.desc ?? "", t("seoFlightTrackingDesc")) },
+                { icon: <Shield size={20} />, title: pick(bc.trustCards[1]?.title ?? "", t("seoInsured")), desc: pick(bc.trustCards[1]?.desc ?? "", t("seoInsuredDesc")) },
+                { icon: <CreditCard size={20} />, title: pick(bc.trustCards[2]?.title ?? "", t("seoSecurePayment")), desc: pick(bc.trustCards[2]?.desc ?? "", t("seoSecurePaymentDesc")) },
+                { icon: <Clock size={20} />, title: pick(bc.trustCards[3]?.title ?? "", t("seo247")), desc: pick(bc.trustCards[3]?.desc ?? "", t("seo247Desc")) },
+                { icon: <MapPin size={20} />, title: pick(bc.trustCards[4]?.title ?? "", t("seoDoorToDoor")), desc: pick(bc.trustCards[4]?.desc ?? "", t("seoDoorToDoorDesc")) },
+                { icon: <Star size={20} />, title: pick(bc.trustCards[5]?.title ?? "", t("seoNoHidden")), desc: pick(bc.trustCards[5]?.desc ?? "", t("seoNoHiddenDesc")) },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -565,8 +604,12 @@ export default async function BookingPage({
               <div className="space-y-6">
                 {GUIDE_SECTIONS.map((n) => (
                   <article key={n}>
-                    <h4 className="text-[15px] font-semibold text-gray-900 mb-1.5">{t(`guide${n}Title`)}</h4>
-                    <p className="text-sm text-gray-500 leading-[1.85]">{t(`guide${n}Body`)}</p>
+                    <h4 className="text-[15px] font-semibold text-gray-900 mb-1.5">
+                      {pick(bc.guideSections[n - 1]?.title ?? "", t(`guide${n}Title`))}
+                    </h4>
+                    <p className="text-sm text-gray-500 leading-[1.85]">
+                      {pick(bc.guideSections[n - 1]?.body ?? "", t(`guide${n}Body`))}
+                    </p>
                   </article>
                 ))}
               </div>
@@ -596,9 +639,9 @@ export default async function BookingPage({
                 {t("seoFaqTitle")}
               </h3>
               <div className="space-y-3">
-                {SEO_FAQ_NUMBERS.map((n) => (
+                {faqItems.map(({ q, a }, i) => (
                   <details
-                    key={n}
+                    key={i}
                     className="group rounded-xl overflow-hidden"
                     style={{
                       backgroundColor: "#FFFFFF",
@@ -606,11 +649,11 @@ export default async function BookingPage({
                     }}
                   >
                     <summary className="px-5 py-4 text-sm font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between hover:text-blue-600 transition-colors">
-                      {t(`seoFaq${n}Q`)}
+                      {q}
                       <span className="text-gray-500 group-open:rotate-45 transition-transform text-lg">+</span>
                     </summary>
                     <div className="px-5 pb-4 text-sm text-gray-500 leading-relaxed">
-                      {t(`seoFaq${n}A`)}
+                      {a}
                     </div>
                   </details>
                 ))}
@@ -620,7 +663,7 @@ export default async function BookingPage({
             {/* SEO text block */}
             <div className="mt-14 max-w-3xl mx-auto">
               <p className="text-sm text-gray-500 leading-relaxed text-center">
-                {t("seoTextBlock")}
+                {pick(bc.closingText, t("seoTextBlock"))}
               </p>
             </div>
           </div>
