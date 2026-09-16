@@ -168,7 +168,15 @@ export default function ReviewFormDialog({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Kaynak" htmlFor="review-source">
+          <Field
+            label="Kaynak"
+            htmlFor="review-source"
+            hint={
+              form.source === "site"
+                ? "Arama sonuçlarındaki yıldıza sayılır."
+                : "Sayfada görünür, arama sonuçlarındaki yıldıza sayılmaz — Google başka platformdan alınan yorumun işaretlenmesine izin vermiyor."
+            }
+          >
             <Select id="review-source" value={form.source} onChange={(e) => set("source", e.target.value)}>
               {SOURCES.map((s) => (
                 <option key={s.value} value={s.value}>

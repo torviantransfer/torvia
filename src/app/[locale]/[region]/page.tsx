@@ -4,6 +4,8 @@ import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { regionImagePath, regionImageUrl } from "@/lib/regionImages";
 import {
   aggregate as aggregateReviews,
+  markupEligible,
+  MIN_REVIEWS_FOR_SCHEMA,
   authorName,
   forLocale,
   productSchema,
@@ -17,6 +19,8 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import RegionStickyBar from "@/components/region/RegionStickyBar";
 import RegionPageView from "@/components/region/RegionPageView";
+import { paragraphs, readHotels, readPageContent } from "@/lib/regionContent";
+import { turkishNameForms } from "@/lib/trSuffix";
 import PriceTag from "@/components/PriceTag";
 import { Link } from "@/i18n/routing";
 import {
@@ -258,7 +262,7 @@ function regionFallbackCopy(
     case "tr":
       return {
         title: `Antalya Havalimanı ${name} Özel Transfer | VIP${priceLabel}${dur}`.trim(),
-        description: `Antalya Havalimanı'ndan ${name}'ye özel VIP transfer.${info ? ` Süre: ${info}` : ""}${price ? ` Araç başına $${price}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
+        description: `Antalya Havalimanı'ndan ${turkishNameForms(name).name_e} özel VIP transfer.${info ? ` Süre: ${info}` : ""}${price ? ` Araç başına $${price}'den.` : ""} Sabit fiyat, Mercedes Vito, karşılama, uçuş takibi. Online rezervasyon.`,
       };
     case "de":
       return {
@@ -658,15 +662,36 @@ export default async function RegionPage({
   const description =
     region[`description_${locale as Locale}`] || region.description_en;
   const regionImage = regionImagePath(slug, region.image_url as string | null);
+  // Turkish endings for the name — Belek'e, Side'ye, Konyaaltı'na. See trSuffix.
+  const nameForms = turkishNameForms(name);
+
+  /*
+   * Content written in the admin panel (Bölgeler → Sayfa içeriği). Every field
+   * is optional; an empty one falls through to exactly what the page rendered
+   * before the panel existed, so an untouched region is unchanged.
+   */
+  const pageContent = readPageContent((region as Record<string, unknown>).page_content, [locale]);
+  const panel = pageContent.locales[locale];
+  const extraAbout = paragraphs(panel.about);
+  const routeName = typeof region.route_name === "string" && region.route_name.trim() ? region.route_name.trim() : null;
+  const highlights = panel.highlights
+    .map((h, i) => ({
+      title: h.title.trim(),
+      description: h.description.trim(),
+      image: pageContent.highlightImages[i]?.trim() ?? "",
+    }))
+    .filter((h) => h.title && h.image)
+    .map((h) => ({ ...h, imageAlt: `${h.title} — ${name}` }));
 
   // Schema.org structured data
-  const ratings = aggregateReviews(reviews);
+  // The figure shown on the page must be the one marked up, or the two disagree.
+  const ratings = aggregateReviews(markupEligible(reviews));
 
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "TaxiService",
     name: `TORVIAN ${name} Transfer`,
-    description: description || t("defaultDesc", { name }),
+    description: description || t("defaultDesc", { name, ...turkishNameForms(name) }),
     // Google picks the thumbnail for a rich result from the entity's `image`,
     // and this schema had none — the region pages ranked with no picture
     // beside them. Prefer the JPG sibling cut for social (ogImageOverrides)
@@ -735,7 +760,7 @@ export default async function RegionPage({
   // is emitted -- see src/lib/reviews.ts.
   const reviewProductSchema = productSchema({
     name: `Antalya Havalimani - ${name} Transfer`,
-    description: description || t("defaultDesc", { name }),
+    description: description || t("defaultDesc", { name, ...turkishNameForms(name) }),
     url: `${BASE_URL}/${locale}/${regionPath}`,
     image:
       regionImageUrl(
@@ -769,7 +794,9 @@ export default async function RegionPage({
     tekirova: ["Rixos Premium Tekirova"],
     okurcalar: ["Granada Luxury Okurcalar"],
   };
-  const hotelsForRegion = regionHotels[region.slug] ?? [];
+  // Panel wins once migration 097 has run; the map above is only the fallback
+  // for a database that does not have the column yet.
+  const hotelsForRegion = readHotels((region as Record<string, unknown>).hotels) ?? regionHotels[region.slug] ?? [];
   const hotelsIntro = locale === "tr"
     ? `${name} bölgesindeki tüm otellere hizmet veriyoruz, öne çıkanlar:`
     : locale === "de"
@@ -822,15 +849,16 @@ export default async function RegionPage({
    * question and its marked-up twin drift apart.
    */
   const faqItems = [
-    { question: t("faqQ1", { name }), answer: t("faqA1", { name, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
-    { question: t("faqQ2", { name }), answer: t("faqA2") },
+    ...panel.faq.filter((f) => f.question.trim() && f.answer.trim()),
+    { question: t("faqQ1", { name, ...nameForms }), answer: t("faqA1", { name, ...nameForms, duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—", distance: region.distance_km ?? "—" }) },
+    { question: t("faqQ2", { name, ...nameForms }), answer: t("faqA2") },
     { question: t("faqQ3", { name }), answer: t("faqA3") },
     { question: t("faqQ4"), answer: t("faqA4") },
-    { question: t("faqQ5", { name }), answer: t("faqA5", { name, price }) },
-    { question: t("faqQ6", { name }), answer: t("faqA6") },
+    { question: t("faqQ5", { name, ...nameForms }), answer: t("faqA5", { name, ...nameForms, price }) },
+    { question: t("faqQ6", { name, ...nameForms }), answer: t("faqA6") },
     { question: t("faqQ7", { name }), answer: t("faqA7") },
     { question: t("faqQ8", { name }), answer: t("faqA8") },
-    { question: t("faqQ9", { name }), answer: t("faqA9", { name }) },
+    { question: t("faqQ9", { name, ...nameForms }), answer: t("faqA9", { name, ...nameForms }) },
     { question: t("faqQ10", { name }), answer: t("faqA10", { name, distance: region.distance_km ?? "—", duration: region.duration_minutes ? formatDuration(region.duration_minutes, locale) : "—" }) },
     ...(hotelsForRegion.length > 0 ? [{ question: faqHotelsQ, answer: faqHotelsA }] : []),
   ];
@@ -932,15 +960,24 @@ export default async function RegionPage({
           }
           name={name}
           heading={heroTitle}
-          intro={heroDescription}
+          intro={panel.subtitle.trim() || heroDescription}
           price={price ? <PriceTag amount={price} showLabel={false} /> : "—"}
           distanceKm={region.distance_km ? Number(region.distance_km) : null}
           durationMinutes={region.duration_minutes ? Number(region.duration_minutes) : null}
           heroImage={regionImage ?? "/images/regions/belek-golf.jpg"}
-          heroImageAlt={t("imageAlt", { name })}
+          heroImageAlt={t("imageAlt", { name, ...nameForms })}
           regionImage={regionImage}
-          regionImageAlt={t("imageAlt", { name })}
-          about={[description, t("aboutDescDefault", { name, duration: region.duration_minutes ?? 0 })].filter(Boolean)}
+          regionImageAlt={t("imageAlt", { name, ...nameForms })}
+          about={
+            // Written paragraphs replace the generic one — that sentence is the
+            // same on every region page, and the point of the panel is to stop that.
+            (extraAbout.length > 0
+              ? [description, ...extraAbout]
+              : [description, t("aboutDescDefault", { name, ...nameForms, duration: region.duration_minutes ?? 0 })]
+            ).filter(Boolean)
+          }
+          routeName={routeName}
+          highlights={highlights}
           hotels={hotelsForRegion}
           hotelsIntro={hotelsIntro}
           reviews={reviews.map((r) => ({
@@ -949,8 +986,8 @@ export default async function RegionPage({
             text: r.comment ?? "",
             fromGoogle: r.source === "google",
           }))}
-          ratingAverage={ratings.value !== null ? ratings.value.toFixed(1) : undefined}
-          ratingLine={ratings.value !== null ? `(${ratings.count})` : undefined}
+          ratingAverage={ratings.value !== null && ratings.count >= MIN_REVIEWS_FOR_SCHEMA ? ratings.value.toFixed(1) : undefined}
+          ratingLine={ratings.value !== null && ratings.count >= MIN_REVIEWS_FOR_SCHEMA ? `(${ratings.count})` : undefined}
           faq={faqItems}
           otherRegions={otherRegions.map((r) => ({
             name: r[`name_${locale as Locale}`] || r.name_en,

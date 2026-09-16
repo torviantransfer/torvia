@@ -602,7 +602,10 @@
     "inclPayment": "Betalen met kaart of contant aan de chauffeur",
     "vehicleExtraNote": "Reist u met golftassen, een kinderwagen of extra bagage? Laat het weten bij het boeken — zo nodig sturen we een grotere wagen.",
     "ctaBookPrice": "Bekijk de prijs en boek",
-    "vehicleLabel": "Voertuig"
+    "vehicleLabel": "Voertuig",
+    "kickerHighlights": "Hoogtepunten",
+    "headingHighlights": "Wat er rond {name} te zien is",
+    "subHighlights": "De plekken waar bezoekers het vaakst naartoe gaan — we rijden u overal heen, van deur tot deur."
   },
   "compare": {
     "heading": "Waarom Torvian Transfer?",

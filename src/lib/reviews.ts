@@ -48,6 +48,28 @@ export interface ReviewAggregate {
  */
 export const MIN_REVIEWS_FOR_SCHEMA = 3;
 
+/**
+ * Sources whose reviews may be marked up as ours.
+ *
+ * Google's review-snippet rules allow a site to mark up only the reviews it
+ * collected itself. A review copied in from the Google Business Profile or
+ * TripAdvisor was collected by them, and marking it up here says the opposite
+ * — which is what a structured-data manual action is issued for, and that
+ * action takes rich results off every page, not only this one.
+ *
+ * `manual` is left out too: it is the admin form's catch-all, and a review
+ * typed in by hand from somewhere else is exactly the case to guard against.
+ * NULL predates the column (migration default is 'site').
+ *
+ * Every other review is still shown on the page. This only decides what is
+ * counted into the stars.
+ */
+const MARKUP_SOURCES = new Set(["site"]);
+
+export function markupEligible<T extends ReviewRow>(reviews: T[]): T[] {
+  return reviews.filter((r) => !r.source || MARKUP_SOURCES.has(r.source));
+}
+
 export function aggregate(reviews: ReviewRow[]): ReviewAggregate {
   const valid = reviews.filter((r) => typeof r.rating === "number" && r.rating >= 1 && r.rating <= 5);
   if (valid.length === 0) return { value: null, count: 0 };
@@ -82,10 +104,13 @@ export function ratingSchema(
   options: { maxReviews?: number } = {}
 ): Record<string, unknown> | null {
   const { maxReviews = 5 } = options;
-  const { value, count } = aggregate(reviews);
+  // Filtered here rather than at each call site, so a page added later cannot
+  // forget to.
+  const eligible = markupEligible(reviews);
+  const { value, count } = aggregate(eligible);
   if (value == null || count < MIN_REVIEWS_FOR_SCHEMA) return null;
 
-  const withText = reviews
+  const withText = eligible
     .filter((r) => (r.comment ?? "").trim().length > 0)
     .slice(0, maxReviews);
 
