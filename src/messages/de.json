@@ -739,7 +739,17 @@
     "ctaHeadingRegion": "Buchen Sie Ihren VIP-Transfer nach {name}",
     "ctaSubDefault": "Professionelle Fahrer, luxuriöse Fahrzeuge und Festpreisgarantie. Jetzt online buchen.",
     "ctaSubRegion": "Professioneller Fahrer, Luxusfahrzeug, Festpreis nach {name}. Jetzt online buchen.",
-    "ctaRegionDetails": "{name} Transfer — Preise & Details"
+    "ctaRegionDetails": "{name} Transfer — Preise & Details",
+    "summary": "Kurz gesagt",
+    "onThisPage": "In diesem Artikel",
+    "sectionsCount": "{count, plural, one {# Abschnitt} other {# Abschnitte}}",
+    "updatedOn": "Aktualisiert",
+    "faqHeading": "Häufige Fragen",
+    "priceFrom": "Preise ab",
+    "priceNote": "Einfache Fahrt · pro Fahrzeug",
+    "airportTransfer": "Privattransfer ab Flughafen Antalya",
+    "cardKicker": "Privattransfer",
+    "hotelsHeading": "Hoteltransfers in {name}"
   },
   "terms": {
     "title": "Rechtliches",

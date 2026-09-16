@@ -739,7 +739,17 @@
     "ctaHeadingRegion": "Boek uw VIP-transfer naar {name}",
     "ctaSubDefault": "Professionele chauffeurs, luxe voertuigen en een gegarandeerde vaste prijs. Boek nu online.",
     "ctaSubRegion": "Professionele chauffeur, luxe voertuig, vaste prijs naar {name}. Boek nu online.",
-    "ctaRegionDetails": "{name} transfer — prijzen en details"
+    "ctaRegionDetails": "{name} transfer — prijzen en details",
+    "summary": "Kort antwoord",
+    "onThisPage": "In dit artikel",
+    "sectionsCount": "{count, plural, one {# onderdeel} other {# onderdelen}}",
+    "updatedOn": "Bijgewerkt",
+    "faqHeading": "Veelgestelde vragen",
+    "priceFrom": "Prijzen vanaf",
+    "priceNote": "Enkele reis · per voertuig",
+    "airportTransfer": "Privétransfer vanaf luchthaven Antalya",
+    "cardKicker": "Privétransfer",
+    "hotelsHeading": "Hoteltransfers in {name}"
   },
   "terms": {
     "title": "Juridisch",

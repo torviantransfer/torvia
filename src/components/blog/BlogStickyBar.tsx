@@ -1,59 +1,74 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ArrowRight } from "lucide-react";
+import PriceTag from "@/components/PriceTag";
 
 interface BlogStickyBarProps {
   /** Region slug to deep-link the booking flow (from the post's primary region). */
   regionSlug?: string | null;
-  /** Lowest one-way price for that region, shown as a "from $X" hook. */
+  /** Lowest one-way price — the post's region, or the cheapest route. */
   price?: number | null;
 }
 
+/** How far the reader scrolls before the bar appears — roughly past the title. */
+const SHOW_AFTER_PX = 420;
+
 /**
- * Mobile sticky booking bar for blog posts. Blog articles pull large volumes of
- * informational traffic (e.g. the Uber post ~4,470 impressions/quarter) that
- * never scrolls to the mid-article CTA. This keeps a one-tap "Book" action in
- * view so that traffic can convert into reservations.
+ * Mobile booking bar for blog posts.
  *
- * The bar carries the booking action only. It used to also hold a WhatsApp
- * button, which duplicated the floating WhatsApp button the same page renders
- * a few pixels away. WhatsApp now lives solely in that floating button, which
- * is raised above this bar.
+ * Blog articles pull large volumes of informational traffic that never scrolls
+ * to the in-article card, so a one-tap booking action stays in reach. It is not
+ * there on arrival, though: someone who searched a question and landed on the
+ * answer should see the answer first, not a button over its opening lines.
  *
- * The bar is fixed, so it takes no space and used to cover the last rows of
- * the footer. The spacer reserves the same height at the end of the flow — it
- * renders after <Footer />, which is where the post page mounts this component.
+ * Same look as the region page's bar. The price goes through PriceTag — it used
+ * to print the number with a "$" while prices are in euro, and it ignored the
+ * currency switcher.
+ *
+ * The bar is fixed, so it takes no space; the spacer after the footer reserves
+ * its height so it never covers the last rows of the page.
  */
 export default function BlogStickyBar({ regionSlug, price }: BlogStickyBarProps) {
   const nav = useTranslations("nav");
   const bookingHref = regionSlug ? `/booking?region=${regionSlug}` : "/booking";
-  // price is the DB's one_way_price, stored in USD (see supabase/seed.sql) —
-  // labeling it with "€" without conversion misstated the price.
-  const fromLabel = price ? ` · $${Math.round(price)}` : "";
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const update = () => setShown(window.scrollY > SHOW_AFTER_PX);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 
   return (
     <>
+      <div aria-hidden className="sm:hidden" style={{ height: "calc(72px + env(safe-area-inset-bottom))" }} />
       <div
-        aria-hidden
-        className="sm:hidden"
-        style={{ height: "calc(72px + env(safe-area-inset-bottom))" }}
-      />
-      <div
-        className="fixed bottom-0 start-0 end-0 z-40 sm:hidden border-t border-black/10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85"
+        className={`fixed bottom-0 start-0 end-0 z-40 border-t border-black/10 bg-white/95 backdrop-blur transition-transform duration-300 supports-[backdrop-filter]:bg-white/85 motion-reduce:transition-none sm:hidden ${
+          shown ? "translate-y-0" : "translate-y-full"
+        }`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-hidden={!shown}
+        inert={!shown}
       >
         <div className="px-3 py-2.5">
-          {/* Orange matches the in-article CTA on the same page. The element
-              used to carry both `bg-blue-600` and an inline orange, where the
-              inline style silently won — the dead class is gone. */}
           <Link
             href={bookingHref}
-            className="w-full h-[52px] flex items-center justify-center gap-1.5 rounded-xl bg-orange-500 text-white font-semibold text-[15px] shadow-md active:scale-[0.99] transition"
+            className="flex h-[52px] w-full items-center justify-center gap-1.5 rounded-xl bg-[#007AFF] text-[15px] font-semibold text-white shadow-md transition active:scale-[0.99]"
           >
-            <span className="truncate">{nav("bookNow")}{fromLabel}</span>
-            <ArrowRight size={16} className="shrink-0" aria-hidden="true" />
+            <span className="truncate">
+              {nav("bookNow")}
+              {price ? (
+                <>
+                  {" · "}
+                  <PriceTag amount={price} showLabel={false} />
+                </>
+              ) : null}
+            </span>
+            <ArrowRight size={16} className="shrink-0 rtl:rotate-180" aria-hidden="true" />
           </Link>
         </div>
       </div>

@@ -739,7 +739,17 @@
     "ctaHeadingRegion": "{name} için VIP Transfer Rezervasyonu Yapın",
     "ctaSubDefault": "Profesyonel şoförler, lüks araçlar ve sabit fiyat garantisi. Hemen online rezervasyon yapın.",
     "ctaSubRegion": "Profesyonel şoför, lüks araç, {name} için sabit fiyat. Hemen online rezervasyon yapın.",
-    "ctaRegionDetails": "{name} transfer detayları ve fiyatları"
+    "ctaRegionDetails": "{name} transfer detayları ve fiyatları",
+    "summary": "Kısa cevap",
+    "onThisPage": "Bu yazıda",
+    "sectionsCount": "{count} başlık",
+    "updatedOn": "Güncellendi",
+    "faqHeading": "Sık sorulan sorular",
+    "priceFrom": "Başlangıç fiyatı",
+    "priceNote": "Tek yön · araç başına",
+    "airportTransfer": "Antalya Havalimanı özel transfer",
+    "cardKicker": "Özel transfer",
+    "hotelsHeading": "{name} bölgesindeki otellere transfer"
   },
   "terms": {
     "title": "Yasal",

@@ -739,7 +739,17 @@
     "ctaHeadingRegion": "احجز نقلك VIP إلى {name}",
     "ctaSubDefault": "سائقون محترفون ومركبات فاخرة وضمان سعر ثابت. احجز عبر الإنترنت الآن.",
     "ctaSubRegion": "سائق محترف ومركبة فاخرة وسعر ثابت إلى {name}. احجز عبر الإنترنت الآن.",
-    "ctaRegionDetails": "النقل إلى {name} — الأسعار والتفاصيل"
+    "ctaRegionDetails": "النقل إلى {name} — الأسعار والتفاصيل",
+    "summary": "باختصار",
+    "onThisPage": "في هذا المقال",
+    "sectionsCount": "{count, plural, zero {لا أقسام} one {قسم واحد} two {قسمان} few {# أقسام} many {# قسمًا} other {# قسم}}",
+    "updatedOn": "آخر تحديث",
+    "faqHeading": "الأسئلة الشائعة",
+    "priceFrom": "الأسعار تبدأ من",
+    "priceNote": "ذهاب فقط · لكل مركبة",
+    "airportTransfer": "نقل خاص من مطار أنطاليا",
+    "cardKicker": "نقل خاص",
+    "hotelsHeading": "النقل إلى فنادق منطقة {name}"
   },
   "terms": {
     "title": "الشؤون القانونية",

@@ -739,7 +739,17 @@
     "ctaHeadingRegion": "Rezervă transferul tău VIP către {name}",
     "ctaSubDefault": "Șoferi profesioniști, vehicule de lux și garanția prețului fix. Rezervă online acum.",
     "ctaSubRegion": "Șofer profesionist, vehicul de lux, preț fix către {name}. Rezervă online acum.",
-    "ctaRegionDetails": "Transfer {name} — prețuri și detalii"
+    "ctaRegionDetails": "Transfer {name} — prețuri și detalii",
+    "summary": "Pe scurt",
+    "onThisPage": "În acest articol",
+    "sectionsCount": "{count, plural, one {# secțiune} few {# secțiuni} other {# de secțiuni}}",
+    "updatedOn": "Actualizat",
+    "faqHeading": "Întrebări frecvente",
+    "priceFrom": "Prețuri de la",
+    "priceNote": "Dus · pe vehicul",
+    "airportTransfer": "Transfer privat de la Aeroportul Antalya",
+    "cardKicker": "Transfer privat",
+    "hotelsHeading": "Transferuri la hotelurile din zona {name}"
   },
   "terms": {
     "title": "Informații legale",

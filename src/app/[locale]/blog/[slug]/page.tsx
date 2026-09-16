@@ -1,5 +1,4 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
-import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import {
   seoAlternatesPerLocale,
@@ -12,14 +11,16 @@ import {
 } from "@/lib/seo";
 import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { notFound, permanentRedirect } from "next/navigation";
-import Image from "next/image";
 import { sanitizeArticleHtml } from "@/lib/richText";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import BlogStickyBar from "@/components/blog/BlogStickyBar";
-import { Link } from "@/i18n/routing";
-import { Calendar, ArrowLeft, ArrowRight, MapPin, Clock } from "lucide-react";
+import BlogPostView from "@/components/blog/BlogPostView";
+import PriceTag from "@/components/PriceTag";
+import { outlineArticle } from "@/lib/articleOutline";
+import { landingHasLocale, localizedLandingSlug } from "@/lib/landingSlug";
+import { readHotels } from "@/lib/regionContent";
 
 import type { Locale } from "@/i18n/config";
 const ALL_LOCALES: Locale[] = ["tr", "en", "de", "pl", "ru", "nl", "ro", "ar"];
@@ -242,7 +243,6 @@ export default async function BlogPostPage({
   const supabase = createAdminClient();
   const { locale, slug } = await params;
   const loc = locale as Locale;
-  const t = await getTranslations({ locale, namespace: "blog" });
 
   const post = await findPost(supabase, slug);
 
@@ -263,6 +263,12 @@ export default async function BlogPostPage({
   // pages started rendering typed HTML too. Two copies of a sanitiser drift,
   // and the half that drifts is the half that stops blocking something.
   const content = sanitizeArticleHtml(rawContent);
+  // Headings with ids, the FAQ, and the split point for the inline card.
+  const outline = outlineArticle(content);
+  // Only an excerpt written in this language. The metadata falls back to
+  // English and to the body; a "short answer" box in the wrong language, or
+  // repeating the first paragraph, would be worse than no box.
+  const ownExcerpt = ((post[`excerpt_${loc}`] as string | null) ?? "").trim() || null;
 
   // Calculate reading time
   const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
@@ -325,7 +331,7 @@ export default async function BlogPostPage({
   if (ctaRegionSlug) {
     const { data: regionRow } = await supabase
       .from("regions")
-      .select("id, slug, duration_minutes, distance_km, name_tr, name_en, name_de, name_pl, name_ru, name_nl, name_ro")
+      .select("*")
       .eq("slug", ctaRegionSlug)
       .maybeSingle();
     if (regionRow) {
@@ -344,6 +350,39 @@ export default async function BlogPostPage({
       if (priceRow) ctaOneWayPrice = Number(priceRow.one_way_price);
     }
   }
+
+  // A post with no region still gets a price: the cheapest route, which is
+  // what "airport transfer from" honestly means.
+  let fromPrice = ctaOneWayPrice;
+  if (fromPrice === null) {
+    const { data: cheapest } = await supabase
+      .from("pricing")
+      .select("one_way_price, vehicle_categories!inner(is_active)")
+      .eq("is_active", true)
+      .eq("vehicle_categories.is_active", true)
+      .order("one_way_price", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (cheapest?.one_way_price) fromPrice = Number(cheapest.one_way_price);
+  }
+
+  // Keyword landing pages created in the panel, linked only in a language
+  // they are actually written in — the others are noindex there, and a link
+  // to them would spend the article's authority on a page Google ignores.
+  const { data: landingRows } = await supabase
+    .from("landing_pages")
+    .select(`slug, slug_${loc}, h1_${loc}, content_${loc}, label`)
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true });
+  const landings = ((landingRows ?? []) as Record<string, unknown>[])
+    .filter((row) => landingHasLocale(row, loc))
+    .map((row) => ({
+      name: String(row[`h1_${loc}`] ?? row.label ?? "").trim(),
+      href: `/${localizedLandingSlug(row, loc)}`,
+    }))
+    .filter((l) => l.name);
+
+  const regionHotels = ctaRegion ? readHotels(ctaRegion.hotels) ?? [] : [];
 
   // Regions to cross-link at the foot of the article.
   //
@@ -369,8 +408,14 @@ export default async function BlogPostPage({
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: title,
-    description: content.replace(/<[^>]*>/g, "").slice(0, 160),
-    ...(post.image_url ? { image: post.image_url } : {}),
+    description:
+      ownExcerpt ??
+      content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200).replace(/\s+\S*$/, ""),
+    // Google resolves schema image URLs as absolute only; the column holds a
+    // site-relative path.
+    ...(post.image_url
+      ? { image: String(post.image_url).startsWith("/") ? `${BASE}${post.image_url}` : post.image_url }
+      : {}),
     datePublished: post.published_at,
     dateModified: post.updated_at || post.published_at,
     author: {
@@ -398,24 +443,8 @@ export default async function BlogPostPage({
     ],
   };
 
-  // FAQPage schema — extract Q&A pairs from the HTML content
-  const faqItems = (() => {
-    // Find FAQ heading in any language
-    const faqPattern = /sık sorulan|frequently asked|häufig gestellt|często zadawane|часто задаваемые|veelgestelde vragen/i;
-    const faqMatch = faqPattern.exec(content);
-    if (!faqMatch || faqMatch.index === undefined) return null;
-    // Grab everything after the FAQ section heading's closing tag
-    const afterFaq = content.slice(content.indexOf("</h2>", faqMatch.index) + 5);
-    const pairs: { question: string; answer: string }[] = [];
-    const re = /<h3[^>]*>([\s\S]*?)<\/h3>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/gi;
-    let m;
-    while ((m = re.exec(afterFaq)) !== null) {
-      const q = m[1].replace(/<[^>]*>/g, "").trim();
-      const a = m[2].replace(/<[^>]*>/g, "").trim();
-      if (q && a) pairs.push({ question: q, answer: a });
-    }
-    return pairs.length > 0 ? pairs : null;
-  })();
+  // FAQPage schema — from the same pairs the accordion renders (lib/articleOutline).
+  const faqItems = outline.faq.length > 0 ? outline.faq : null;
 
   const faqSchema = faqItems ? {
     "@context": "https://schema.org",
@@ -445,289 +474,51 @@ export default async function BlogPostPage({
       )}
       <Header />
       <main>
-        <section
-          className="relative pt-24 pb-9 lg:pt-28 lg:pb-12 overflow-hidden"
-          style={{
-            background:
-              "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)",
-          }}
-        >
-          <div className="absolute inset-0">
-            <div
-              className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
-              style={{ backgroundColor: "rgba(0,122,255,0.06)" }}
-            />
-          </div>
-          {/* The back link and the meta row were both `inline-flex`, i.e. two
-              inline-level boxes with nothing block-level between them. A
-              bottom margin on an inline box does not push the next one down,
-              so on every width they landed on the same line and the meta pill
-              sat on top of "Back to blog". The order is now back link, then a
-              block-level h1, then the meta row — and the meta row is a plain
-              `flex`, so it can never share a line with anything again. */}
-          <div className="relative max-w-3xl mx-auto px-4">
-            <Link
-              href="/blog"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-white/70 px-3 py-1.5 text-[13px] font-medium text-gray-600 backdrop-blur transition-colors hover:text-blue-600"
-              style={{ border: "1px solid rgba(0,0,0,0.08)" }}
-            >
-              <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
-              {t("backToBlog")}
-            </Link>
-
-            {/* Which route the article is about, where it has one. Doubles as
-                the contextual link to the page that takes the booking — the
-                same reasoning as the link under the article body. */}
-            {ctaRegionName && ctaRegionSlug && (
-              <Link
-                href={`/${normalizeRegionPath(ctaRegionSlug)}`}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-700 transition-colors hover:bg-blue-100"
-              >
-                <MapPin size={11} />
-                {ctaRegionName}
-              </Link>
-            )}
-
-            <h1 className="mt-4 text-[27px] leading-[1.22] sm:text-4xl lg:text-[42px] lg:leading-[1.15] font-bold tracking-tight text-gray-900 text-balance">
-              {title}
-            </h1>
-
-            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-gray-500">
-              {post.published_at && (
-                <span className="inline-flex items-center gap-1.5">
-                  <Calendar size={14} className="text-blue-500 shrink-0" />
-                  <time dateTime={new Date(post.published_at).toISOString()}>
-                    {new Date(post.published_at).toLocaleDateString(loc, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
-                </span>
-              )}
-              {post.published_at && (
-                <span aria-hidden className="h-1 w-1 rounded-full bg-gray-300" />
-              )}
-              <span className="inline-flex items-center gap-1.5">
-                <Clock size={14} className="text-blue-500 shrink-0" />
-                {t("readingTime", { minutes: readingTime })}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured image.
-            The negative `-mt-4` used to tuck this under the hero, which read
-            as a misalignment rather than an overlap. Posts without an image
-            get nothing here at all, and the hero's gradient already resolves
-            into the article, so no placeholder is needed. */}
-        {post.image_url && (
-          <section className="max-w-4xl mx-auto px-4">
-            <div
-              className="relative rounded-2xl overflow-hidden aspect-[16/9] sm:aspect-[2/1]"
-              style={{ border: "1px solid rgba(0,0,0,0.06)" }}
-            >
-              <Image
-                src={post.image_url}
-                alt={title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 896px) 100vw, 896px"
-                priority
-              />
-            </div>
-          </section>
-        )}
-
-        {/* Content */}
-        <section className="py-12 lg:py-16">
-          <div className="max-w-3xl mx-auto px-4">
-            <article
-              className="
-                blog-content
-                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mt-12 [&_h1]:mb-4 [&_h1]:tracking-tight
-                [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-gray-900 [&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:tracking-tight [&_h2]:border-s-2 [&_h2]:border-blue-500 [&_h2]:ps-4
-                [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mt-8 [&_h3]:mb-3
-                [&_h4]:text-base [&_h4]:font-semibold [&_h4]:text-gray-900 [&_h4]:mt-6 [&_h4]:mb-2
-                [&_p]:text-gray-600 [&_p]:leading-[1.85] [&_p]:mb-5
-                [&_ul]:my-4 [&_ul]:space-y-2 [&_li]:text-gray-600 [&_li]:leading-relaxed [&_li]:ps-5 [&_li]:relative [&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:start-0 [&_li]:before:top-[10px] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:rounded-full [&_li]:before:bg-blue-500
-                [&_ol]:my-4 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:ps-5 [&_ol_li]:marker:text-blue-600 [&_ol_li]:marker:font-semibold
-                [&_blockquote]:my-6 [&_blockquote]:ps-5 [&_blockquote]:border-s-2 [&_blockquote]:border-blue-500/40 [&_blockquote]:text-gray-500 [&_blockquote]:italic
-                [&_strong]:text-gray-900 [&_b]:text-gray-900
-                [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2
-                [&_hr]:my-10 [&_hr]:border-gray-200
-                [&_table]:w-full [&_table]:my-6 [&_table]:text-sm [&_th]:text-start [&_th]:text-gray-900 [&_th]:pb-3 [&_th]:border-b [&_th]:border-gray-200 [&_td]:text-gray-600 [&_td]:py-2.5 [&_td]:border-b [&_td]:border-gray-200
-                [&_img]:rounded-xl [&_img]:my-6
-              "
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
-          </div>
-        </section>
-
-        {/* Booking CTA — price pulled live from admin panel "Online Tek ($)" column */}
-        {(() => {
-          const fromWord = locale === "de" ? "ab" : locale === "pl" ? "od" : locale === "ru" ? "от" : locale === "tr" ? "itibaren" : locale === "nl" ? "vanaf" : locale === "ro" ? "de la" : locale === "ar" ? "ابتداءً من" : "from";
-          // one_way_price is stored in USD (see supabase/seed.sql) — labeling it
-          // with "€" without conversion overstated the EUR price by ~8% (and was
-          // wildly wrong for TRY). Server-rendered here, so show the true currency.
-          const priceLabel = ctaOneWayPrice ? ` · ${fromWord} $${Math.round(ctaOneWayPrice)}` : "";
-          const badgeLabel =
-            locale === "de" ? "Privater VIP-Transfer" :
-            locale === "pl" ? "Prywatny Transfer VIP" :
-            locale === "ru" ? "Частный VIP-Трансфер" :
-            locale === "tr" ? "Özel VIP Transfer" :
-            locale === "nl" ? "Privé VIP-transfer" :
-            locale === "ro" ? "Transfer privat VIP" :
-            locale === "ar" ? "نقل VIP خاص" :
-            "Private VIP Transfer";
-          const bookingHref = ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking";
-          const heading = ctaRegionName
-            ? t("ctaHeadingRegion", { name: ctaRegionName })
-            : t("ctaHeadingDefault");
-          const sub = ctaRegionName
-            ? t("ctaSubRegion", { name: ctaRegionName })
-            : t("ctaSubDefault");
-          const btnLabel = t("ctaButton");
-
-          // Secondary link to the region's own sales page. Blog posts outrank
-          // the region pages they cannibalise (Land of Legends: post at pos
-          // 8.4, sales page at 39.2), so this contextual link is what passes
-          // that authority to the page that actually takes bookings.
-          const detailsLabel = ctaRegionName
-            ? t("ctaRegionDetails", { name: ctaRegionName })
-            : null;
-          return (
-            <section className="py-12">
-              <div className="max-w-3xl mx-auto px-4">
-                <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.05) 0%, rgba(0,122,255,0.05) 100%)", border: "1px solid rgba(0,122,255,0.06)" }}>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-blue-600 mb-4" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                    <ArrowRight size={12} />
-                    {badgeLabel}{priceLabel}
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">{heading}</h3>
-                  <p className="text-gray-400 text-sm mb-6 max-w-md mx-auto">{sub}</p>
-                  <Link
-                    href={bookingHref}
-                    className="inline-flex items-center gap-2 px-7 py-3 text-sm font-semibold rounded-full transition-all hover:brightness-110 hover:scale-105"
-                    style={{ backgroundColor: "#F97316", color: "#fff" }}
-                  >
-                    {btnLabel}
-                    <ArrowRight size={14} />
-                  </Link>
-                  {ctaRegionSlug && detailsLabel && (
-                    <div className="mt-4">
-                      <Link
-                        href={`/${normalizeRegionPath(ctaRegionSlug)}`}
-                        className="inline-flex items-center gap-1.5 text-sm text-blue-600 underline underline-offset-2 hover:text-blue-700"
-                      >
-                        <MapPin size={13} />
-                        {detailsLabel}
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-          );
-        })()}
-
-        {/* Related posts */}
-        {related && related.length > 0 && (
-          <section className="py-14 border-t border-gray-200">
-            <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">
-                {t("relatedPosts")}
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {related.map((rp) => {
-                  // `related` is filtered to posts translated into this locale,
-                  // so the English fallbacks that used to sit here — and put an
-                  // English headline under a Dutch article — are gone.
-                  const rpTitle = (rp[`title_${loc}`] as string) ?? "";
-                  const rpContent = (rp[`content_${loc}`] as string) ?? "";
-                  const rpImage = (rp.image_url as string | null) ?? null;
-                  const rpExcerpt = rpContent.replace(/<[^>]*>/g, "").slice(0, 100);
-                  return (
-                    <Link
-                      key={String(rp.id)}
-                      href={`/blog/${localizedBlogSlug(rp, loc)}`}
-                      className="group rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.03)",
-                        border: "1px solid rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      <div className="relative aspect-[16/9] overflow-hidden">
-                        {rpImage ? (
-                          <Image
-                            src={rpImage}
-                            alt={rpTitle}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 50%, #1c1c1e 100%)" }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                              <ArrowRight size={20} className="text-blue-600" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-5">
-                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
-                          {rpTitle}
-                        </h3>
-                        {rpExcerpt && (
-                          <p className="text-sm text-gray-500 line-clamp-2 mb-3">{rpExcerpt}...</p>
-                        )}
-                        <span className="inline-flex items-center gap-1 text-blue-600 text-sm font-medium">
-                          {t("readMore")}
-                          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Popular Transfers Cross-Link */}
-        {popularRegions && popularRegions.length > 0 && (
-          <section className="py-16 border-t border-gray-200">
-            <div className="max-w-6xl mx-auto px-4">
-              <h2 className="text-2xl font-bold text-gray-900 mb-8">{t("popularTransfers")}</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {popularRegions.map((r) => {
-                  const rName = r[`name_${loc}`] || r.name_en;
-                  const regionPath = normalizeRegionPath(r.slug);
-                  return (
-                    <Link
-                      key={r.slug}
-                      href={`/${regionPath}`}
-                      className="group rounded-xl p-4 text-center transition-all hover:-translate-y-0.5"
-                      style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
-                    >
-                      <div className="w-9 h-9 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(0,122,255,0.08)" }}>
-                        <MapPin size={14} className="text-blue-600" strokeWidth={1.5} />
-                      </div>
-                      <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-1">{rName}</h3>
-                      <p className="text-[11px] text-gray-500 flex items-center justify-center gap-1">
-                        <Clock size={10} /> ~{r.duration_minutes} min
-                      </p>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
+        <BlogPostView
+          locale={locale}
+          title={title}
+          excerpt={ownExcerpt}
+          coverImage={(post.image_url as string | null) ?? null}
+          coverAlt={((post.image_alt as string | null) ?? "").trim() || title}
+          publishedAt={(post.published_at as string | null) ?? null}
+          updatedAt={(post.updated_at as string | null) ?? null}
+          readingTime={readingTime}
+          outline={outline}
+          region={
+            ctaRegionName && ctaRegionSlug
+              ? { name: ctaRegionName, href: `/${normalizeRegionPath(ctaRegionSlug)}` }
+              : null
+          }
+          price={fromPrice ? <PriceTag amount={fromPrice} showLabel={false} /> : null}
+          bookHref={ctaRegionSlug ? `/booking?region=${ctaRegionSlug}` : "/booking"}
+          related={(related ?? []).map((rp) => {
+            const rpExcerpt =
+              ((rp[`excerpt_${loc}`] as string | null) ?? "").trim() ||
+              String(rp[`content_${loc}`] ?? "")
+                .replace(/<[^>]*>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+                .slice(0, 140)
+                .replace(/\s+\S*$/, "…");
+            return {
+              title: String(rp[`title_${loc}`] ?? ""),
+              href: `/blog/${localizedBlogSlug(rp, loc)}`,
+              image: (rp.image_url as string | null) ?? null,
+              excerpt: rpExcerpt,
+            };
+          })}
+          landings={landings}
+          hotels={regionHotels}
+          regions={(popularRegions ?? []).map((r) => ({
+            name: (r[`name_${loc}`] as string | null) || (r.name_en as string),
+            href: `/${normalizeRegionPath(r.slug as string)}`,
+            durationMinutes: (r.duration_minutes as number | null) ?? null,
+          }))}
+        />
       </main>
       <Footer />
       <WhatsAppButton aboveStickyBar />
-      <BlogStickyBar regionSlug={ctaRegionSlug} price={ctaOneWayPrice} />
+      <BlogStickyBar regionSlug={ctaRegionSlug} price={fromPrice} />
     </>
   );
 }
