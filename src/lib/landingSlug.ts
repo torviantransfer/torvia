@@ -38,22 +38,28 @@ export const RESERVED_SLUGS: readonly string[] = [
   "about",
   "account",
   "admin",
-  "antalya-airport-transfer",
   "blog",
   "booking",
   "cancellation",
   "contact",
   "cookies",
   "faq",
-  "hotel-transfer-antalya",
   "kvkk",
+  // Still a hardcoded file, deliberately: it collides with an active,
+  // already-priced region of the same slug, and the panel refuses a landing
+  // page here rather than fighting that region for the URL.
   "land-of-legends-transfer",
-  "lara-beach-transfer",
   "privacy",
   "regions",
   "terms",
   "track",
-  "vip-transfer-antalya",
+  // antalya-airport-transfer, hotel-transfer-antalya, lara-beach-transfer and
+  // vip-transfer-antalya used to be hardcoded files here too, until they were
+  // migrated into landing_pages rows (migrations 100-103) and their files
+  // removed. Leaving their slugs on this list after that migration is what
+  // blocked saving those very rows from the panel — this list has to shrink
+  // exactly when a hardcoded route is retired, not just grow when one is added.
+  //
   // Routes outside the locale tree that the proxy matcher excludes. A page
   // here would be unreachable for a different reason, which is no better.
   "api",
