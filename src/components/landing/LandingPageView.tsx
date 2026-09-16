@@ -19,7 +19,7 @@ import { sanitizeArticleHtml, stripTableStyles, unwrapTableWrappers } from "@/li
 import { outlineArticle } from "@/lib/articleOutline";
 import { loadBookingData } from "@/lib/bookingData";
 import { aggregate, authorName, forLocale, markupEligible, MIN_REVIEWS_FOR_SCHEMA } from "@/lib/reviews";
-import { landingHasLocale, localizedLandingSlug } from "@/lib/landingSlug";
+import { allLandingSlugs, landingHasLocale, localizedLandingSlug, regionSlugForms } from "@/lib/landingSlug";
 import { landingCopy, landingLocales, absoluteUrl, stripHtml, type LandingPage } from "@/lib/landingPages";
 
 const BASE_URL = "https://torviantransfer.com";
@@ -36,15 +36,6 @@ function regionPath(slug: string) {
   return `/${slug.endsWith("-transfer") ? slug : `${slug}-transfer`}`;
 }
 
-/* The keyword pages that live in code, labelled with footer strings every
-   language already has. */
-const CODE_LANDINGS = [
-  { href: "/antalya-airport-transfer", key: "linkAirportTransfer" },
-  { href: "/vip-transfer-antalya", key: "linkVipTransfer" },
-  { href: "/hotel-transfer-antalya", key: "linkHotelTransfer" },
-  { href: "/lara-beach-transfer", key: "linkLaraBeach" },
-] as const;
-
 /**
  * An admin-created landing page — a page built for one search phrase.
  *
@@ -60,13 +51,12 @@ const CODE_LANDINGS = [
  */
 export default async function LandingPageView({ page, locale }: { page: LandingPage; locale: string }) {
   const copy = landingCopy(page, locale);
-  const [t, nav, rd, hw, cta, ft, bt] = await Promise.all([
+  const [t, nav, rd, hw, cta, bt] = await Promise.all([
     getTranslations({ locale, namespace: "landing" }),
     getTranslations({ locale, namespace: "nav" }),
     getTranslations({ locale, namespace: "regionDetail" }),
     getTranslations({ locale, namespace: "howItWorks" }),
     getTranslations({ locale, namespace: "cta" }),
-    getTranslations({ locale, namespace: "footer" }),
     getTranslations({ locale, namespace: "blog" }),
   ]);
 
@@ -124,14 +114,28 @@ export default async function LandingPageView({ page, locale }: { page: LandingP
   const showRating = rating.value !== null && rating.count >= MIN_REVIEWS_FOR_SCHEMA;
 
   // ── Other keyword pages in this language ──────────────────────────────
-  const otherLandings = (landingRows ?? [])
+  //
+  // Reads landing_pages directly rather than a hardcoded list: the four
+  // pages that used to be hardcoded routes (antalya-airport-transfer,
+  // vip-transfer-antalya, hotel-transfer-antalya, lara-beach-transfer) are
+  // rows here now too, so a fixed list next to this query showed every one
+  // of them twice, once under each name. Creating a new landing page in the
+  // panel is what adds one here — nothing in this file needs to change.
+  //
+  // A landing row can still exist at a slug an active region now occupies
+  // (land-of-legends-transfer, kept as a landing_pages row but shadowed by
+  // its region — see migration 099's note); linking to it here would point
+  // at a title this page never actually shows, so it is excluded the same
+  // way region collisions are refused at creation time.
+  const regionSlugSet = new Set(booking.initialRegions.flatMap((r) => regionSlugForms(r.slug)));
+  const serviceLinks = (landingRows ?? [])
     .filter((row) => row.id !== page.id && landingHasLocale(row, locale))
+    .filter((row) => !allLandingSlugs(row).some((s) => regionSlugSet.has(s)))
     .map((row) => ({
       name: String(row[`h1_${locale}`] ?? row.label ?? "").trim(),
       href: `/${localizedLandingSlug(row, locale)}`,
     }))
     .filter((l) => l.name);
-  const serviceLinks = [...CODE_LANDINGS.map((l) => ({ name: ft(l.key), href: l.href })), ...otherLandings];
   const popularRegions = booking.regionPrices.filter((r) => r.isPopular).slice(0, 8);
 
   const promises: { icon: LucideIcon; title: string; text: string }[] = [
