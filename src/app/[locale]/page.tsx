@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getSeoPage, applySeoPage } from "@/lib/seoPages";
 import {
   aggregate as aggregateReviews,
+  markupEligible,
   forLocale,
   productSchema,
   type ReviewRow,
@@ -142,13 +143,15 @@ export default async function HomePage({
   const { data: reviewData } = await supabase
     .from("reviews")
     .select(
-      "id, rating, comment, created_at, published_at, author_name, locale, customers(first_name)"
+      "id, rating, comment, created_at, published_at, author_name, locale, source, customers(first_name)"
     )
     .eq("is_approved", true)
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(50);
   const reviewList = forLocale((reviewData ?? []) as unknown as ReviewRow[], locale);
-  const ratings = aggregateReviews(reviewList);
+  // Only reviews we collected ourselves may back a marked-up rating — see
+  // markupEligible. The rest still show in the testimonials section.
+  const ratings = aggregateReviews(markupEligible(reviewList));
   const avgRating = ratings.count >= 5 ? ratings.value?.toFixed(1) ?? null : null;
   const reviewCount = ratings.count;
 

@@ -4,6 +4,8 @@ import { applyOverrides, ov } from "@/lib/seoOverrides";
 import { regionImagePath, regionImageUrl } from "@/lib/regionImages";
 import {
   aggregate as aggregateReviews,
+  markupEligible,
+  MIN_REVIEWS_FOR_SCHEMA,
   authorName,
   forLocale,
   productSchema,
@@ -660,7 +662,8 @@ export default async function RegionPage({
   const regionImage = regionImagePath(slug, region.image_url as string | null);
 
   // Schema.org structured data
-  const ratings = aggregateReviews(reviews);
+  // The figure shown on the page must be the one marked up, or the two disagree.
+  const ratings = aggregateReviews(markupEligible(reviews));
 
   const schemaData = {
     "@context": "https://schema.org",
@@ -949,8 +952,8 @@ export default async function RegionPage({
             text: r.comment ?? "",
             fromGoogle: r.source === "google",
           }))}
-          ratingAverage={ratings.value !== null ? ratings.value.toFixed(1) : undefined}
-          ratingLine={ratings.value !== null ? `(${ratings.count})` : undefined}
+          ratingAverage={ratings.value !== null && ratings.count >= MIN_REVIEWS_FOR_SCHEMA ? ratings.value.toFixed(1) : undefined}
+          ratingLine={ratings.value !== null && ratings.count >= MIN_REVIEWS_FOR_SCHEMA ? `(${ratings.count})` : undefined}
           faq={faqItems}
           otherRegions={otherRegions.map((r) => ({
             name: r[`name_${locale as Locale}`] || r.name_en,
