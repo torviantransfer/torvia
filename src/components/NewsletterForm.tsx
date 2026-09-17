@@ -44,25 +44,24 @@ export default function NewsletterForm() {
           placeholder={t("newsletterPlaceholder")}
           required
           disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-          className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 disabled:opacity-50 transition-colors"
+          className="h-11 flex-1 rounded-[12px] bg-white px-4 text-[15px] text-[#1d1d1f] outline-none ring-1 ring-black/[0.08] transition placeholder:text-[#a1a1a6] focus:ring-2 focus:ring-[#007AFF] disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={newsletterStatus === "loading" || newsletterStatus === "success"}
-          className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ backgroundColor: "#007AFF" }}
+          className="h-11 shrink-0 rounded-[12px] bg-[#007AFF] px-5 text-[15px] font-semibold text-white transition hover:bg-[#0062CC] active:scale-[0.98] disabled:opacity-50"
         >
           {newsletterStatus === "loading" ? "..." : t("newsletterButton")}
         </button>
       </form>
       {newsletterStatus === "success" && (
-        <p className="mt-3 text-emerald-500 text-sm">{t("newsletterSuccess")}</p>
+        <p className="mt-2.5 text-[13px] text-[#248A3D]">{t("newsletterSuccess")}</p>
       )}
       {newsletterStatus === "duplicate" && (
-        <p className="mt-3 text-yellow-500 text-sm">{t("newsletterDuplicate")}</p>
+        <p className="mt-2.5 text-[13px] text-[#8a6d00]">{t("newsletterDuplicate")}</p>
       )}
       {newsletterStatus === "error" && (
-        <p className="mt-3 text-red-500 text-sm">{t("newsletterError")}</p>
+        <p className="mt-2.5 text-[13px] text-[#D70015]">{t("newsletterError")}</p>
       )}
     </div>
   );

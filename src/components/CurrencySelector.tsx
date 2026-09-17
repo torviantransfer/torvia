@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
+import { menuSurface, menuSurfaceStyle, menuItem } from "@/components/navMenuStyles";
 import {
   currencies,
   currencySymbols,
@@ -58,22 +59,21 @@ export default function CurrencySelector({
         onClick={() => onOpenChange(!open)}
         aria-label={`Select currency, current: ${currency}`}
         aria-expanded={open}
-        className={`flex items-center gap-1 hover:opacity-100 transition-colors text-xs px-2 py-1.5 rounded-lg ${darkText ? "text-gray-600 hover:text-gray-900" : "text-white/90 hover:text-white"}`}
+        className={`flex h-8 items-center gap-1 rounded-full px-2.5 text-[13px] transition ${darkText ? "text-[#1d1d1f] hover:bg-black/[0.05]" : "text-white/90 hover:bg-white/15 hover:text-white"}`}
       >
         <span className="whitespace-nowrap font-medium">{currencySymbols[currency]} {currency}</span>
-        <ChevronDown size={10} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={11} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[120px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+        <div className={`absolute end-0 top-full z-50 mt-2 min-w-[150px] rounded-[14px] p-1 ${menuSurface}`} style={menuSurfaceStyle}>
           {currencies.map((c) => (
             <button
               key={c}
               onClick={() => handleSelect(c)}
-              className={`block w-full text-start px-3.5 py-2 text-xs transition-colors ${
-                c === currency ? "text-blue-600 font-medium" : "text-gray-500 hover:text-gray-900"
-              }`}
+              className={menuItem}
             >
-              {currencySymbols[c]} {c}
+              <span className="flex-1 text-start">{currencySymbols[c]} {c}</span>
+              {c === currency && <Check size={15} className="shrink-0 text-[#007AFF]" aria-hidden="true" />}
             </button>
           ))}
         </div>

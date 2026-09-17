@@ -9,10 +9,13 @@ import {
   Menu,
   X,
   ChevronDown,
+  ChevronRight,
+  Check,
   User,
   CalendarCheck,
   LogOut,
 } from "lucide-react";
+import { menuSurface, menuSurfaceStyle, menuItem } from "@/components/navMenuStyles";
 import Image from "next/image";
 import { localeNames, type Locale } from "@/i18n/config";
 import CurrencySelector from "./CurrencySelector";
@@ -61,7 +64,10 @@ export default function Header() {
   // On booking page, only when NO region is selected (hero is shown)
   const isHeroPage = pathname === "/" || (pathname === "/booking" && !searchParams.get("region"));
   // On non-hero pages, always show dark text (light bg). On hero pages, depends on scroll.
-  const showDarkNav = scrolled || !isHeroPage;
+  // `menuOpen` counts too: the mobile panel drops out of the bar as a light
+  // surface, so leaving the bar transparent over the hero left a see-through
+  // strip sitting on top of a solid white sheet, joined by nothing.
+  const showDarkNav = scrolled || !isHeroPage || menuOpen;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -165,10 +171,10 @@ export default function Header() {
       <nav
         className="transition-all duration-500"
         style={{
-          backgroundColor: showDarkNav ? "rgba(255,255,255,0.95)" : "transparent",
+          backgroundColor: showDarkNav ? "rgba(255,255,255,0.72)" : "transparent",
           backdropFilter: showDarkNav ? "saturate(180%) blur(20px)" : "none",
           WebkitBackdropFilter: showDarkNav ? "saturate(180%) blur(20px)" : "none",
-          borderBottom: showDarkNav ? "1px solid rgba(0,0,0,0.08)" : "none",
+          borderBottom: showDarkNav ? "1px solid rgba(0,0,0,0.06)" : "none",
         }}
       >
         {/* Tighter than px-6 on a phone, where the page below the header —
@@ -261,17 +267,17 @@ export default function Header() {
                   onClick={() => openOnly(langOpen ? null : "lang")}
                   aria-label="Select language"
                   aria-expanded={langOpen}
-                  className={`flex items-center gap-1.5 transition-colors text-xs px-2 py-1.5 rounded-lg ${showDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                  className={`flex h-8 items-center gap-1.5 rounded-full px-2.5 text-[13px] transition ${showDarkNav ? "text-[#1d1d1f] hover:bg-black/[0.05]" : "text-white/90 hover:bg-white/15 hover:text-white"}`}
                 >
                   {/* The flag of the language in force, not a globe: the globe
                       said "this is a language control" to someone already
                       looking at one, while the flag says which language. */}
                   <FlagIcon locale={locale} className="h-[13px] w-[18px]" />
                   <span className="font-medium">{locale.toUpperCase()}</span>
-                  <ChevronDown size={10} className={`transition-transform ${langOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown size={11} className={`transition-transform ${langOpen ? "rotate-180" : ""}`} />
                 </button>
                 {langOpen && (
-                  <div className="absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[150px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className={`absolute end-0 top-full z-50 mt-2 min-w-[180px] rounded-[14px] p-1 ${menuSurface}`} style={menuSurfaceStyle}>
                     {(Object.keys(localeNames) as Locale[]).map((loc) => {
                       const qs = searchParams.toString();
                       const hrefWithParams = qs ? `${pathname}?${qs}` : pathname;
@@ -280,15 +286,12 @@ export default function Header() {
                           key={loc}
                           href={hrefWithParams}
                           locale={loc}
-                          className={`flex items-center gap-2.5 px-3.5 py-2 text-xs transition-colors ${
-                            loc === locale
-                              ? "text-blue-600 font-medium"
-                              : "text-gray-500 hover:text-gray-900"
-                          }`}
+                          className={menuItem}
                           onClick={() => setLangOpen(false)}
                         >
                           <FlagIcon locale={loc} />
-                          {localeNames[loc]}
+                          <span className="flex-1">{localeNames[loc]}</span>
+                          {loc === locale && <Check size={15} className="shrink-0 text-[#007AFF]" aria-hidden="true" />}
                         </Link>
                       );
                     })}
@@ -319,16 +322,16 @@ export default function Header() {
                     <ChevronDown size={10} className={`hidden sm:inline transition-transform ${showDarkNav ? 'text-gray-500' : 'text-white/70'} ${userMenuOpen ? "rotate-180" : ""}`} />
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-1 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
-                      <div className="px-4 py-3 border-b border-gray-100">
+                    <div className={`absolute end-0 top-full z-50 mt-2 min-w-[220px] rounded-[14px] p-1 ${menuSurface}`} style={menuSurfaceStyle}>
+                      <div className="border-b border-black/[0.06] px-3 py-2.5">
                         {displayName && (
-                          <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
+                          <p className="truncate text-[14px] font-semibold text-[#1d1d1f]">{displayName}</p>
                         )}
-                        <p className="text-xs text-gray-400 truncate">{authUser.email}</p>
+                        <p className="truncate text-[12px] text-[#86868b]">{authUser.email}</p>
                       </div>
                       <Link
                         href="/account/reservations"
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                        className={menuItem}
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <CalendarCheck size={15} />
@@ -336,16 +339,16 @@ export default function Header() {
                       </Link>
                       <Link
                         href="/account/profile"
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                        className={menuItem}
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <User size={15} />
                         {t("profile")}
                       </Link>
-                      <div className="border-t border-gray-100 mt-1">
+                      <div className="mt-1 border-t border-black/[0.06] pt-1">
                         <button
                           onClick={handleSignOut}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50/50 transition-colors w-full"
+                          className={`${menuItem} text-[#D70015] hover:bg-[#FFF2F1]`}
                         >
                           <LogOut size={15} />
                           {t("signOut")}
@@ -357,7 +360,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className={`hidden sm:inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium transition-colors rounded-full ${showDarkNav ? 'text-gray-600 hover:text-gray-900 border border-gray-300 hover:border-gray-400' : 'text-white/90 hover:text-white border border-white/40 hover:border-white/70'}`}
+                  className={`hidden h-8 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition sm:inline-flex ${showDarkNav ? "text-[#1d1d1f] ring-1 ring-black/[0.12] hover:bg-black/[0.05]" : "text-white/90 ring-1 ring-white/40 hover:bg-white/15 hover:text-white"}`}
                 >
                   <User size={14} />
                   {t("login")}
@@ -370,26 +373,23 @@ export default function Header() {
                   onClick={() => openOnly(menuOpen ? null : "menu")}
                   aria-label={menuOpen ? "Close menu" : "Open menu"}
                   aria-expanded={menuOpen}
-                  className={`p-2 transition-colors rounded-lg ${showDarkNav ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                  className={`grid size-9 place-items-center rounded-full transition ${showDarkNav ? "text-[#1d1d1f] hover:bg-black/[0.05]" : "text-white/90 hover:bg-white/15 hover:text-white"}`}
                 >
                   {menuOpen ? <X size={22} /> : <Menu size={22} />}
                 </button>
 
                 {/* Desktop dropdown menu */}
                 {menuOpen && (
-                  <div className="hidden lg:block absolute end-0 top-full mt-2 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", border: "1px solid rgba(0,0,0,0.08)" }}>
+                  <div className={`absolute end-0 top-full z-50 mt-2 hidden min-w-[220px] rounded-[14px] p-1 lg:block ${menuSurface}`} style={menuSurfaceStyle}>
                     {secondaryNav.map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`block px-4 py-2.5 text-sm transition-colors ${
-                          pathname === item.href
-                            ? "text-blue-600 font-medium"
-                            : "text-gray-500 hover:text-gray-900"
-                        }`}
+                        className={`${menuItem} ${pathname === item.href ? "font-medium" : ""}`}
                         onClick={() => setMenuOpen(false)}
                       >
-                        {item.label}
+                        <span className="flex-1">{item.label}</span>
+                        {pathname === item.href && <Check size={15} className="shrink-0 text-[#007AFF]" aria-hidden="true" />}
                       </Link>
                     ))}
                   </div>
@@ -400,76 +400,100 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Mobile menu - full width panel */}
+      {/* Mobile menu.
+          A flat run of same-weight links down the page, with "Rezervasyon Yap"
+          reading exactly like "Blog" even though it is the action the whole
+          site exists for. Now a grouped list with separators and chevrons, the
+          way a phone presents a menu, and the booking link pulled out of it as
+          the one filled button. */}
       {menuOpen && (
-        <div ref={mobileMenuRef} className="lg:hidden" style={{ backgroundColor: "rgba(255,255,255,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
-          <div className="max-w-6xl mx-auto px-6 py-4 space-y-0.5">
-            {allNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block py-2.5 text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? "text-gray-900"
-                    : "text-gray-500 hover:text-gray-900"
-                }`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {authUser ? (
-              <>
-                <div className="border-t border-gray-100 mt-2 pt-2">
-                  <div className="flex items-center gap-3 py-2.5">
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shrink-0">
-                      {userInitial ? (
-                        <span className="text-white text-xs font-bold">{userInitial}</span>
-                      ) : (
-                        <User className="h-[17px] w-[17px] text-white" strokeWidth={2.5} aria-hidden="true" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      {displayName && (
-                        <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
-                      )}
-                      <p className="text-[11px] text-gray-400 truncate">{authUser.email}</p>
-                    </div>
-                  </div>
+        <div
+          ref={mobileMenuRef}
+          className="lg:hidden"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.72)",
+            backdropFilter: "saturate(180%) blur(20px)",
+            WebkitBackdropFilter: "saturate(180%) blur(20px)",
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+          }}
+        >
+          <div className="mx-auto max-w-6xl px-4 py-4">
+            <div className="divide-y divide-black/[0.06] overflow-hidden rounded-[16px] bg-white/70 ring-1 ring-black/[0.06]">
+              {allNav
+                .filter((item) => item.href !== "/booking")
+                .map((item) => (
                   <Link
-                    href="/account/reservations"
-                    className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                    key={item.href}
+                    href={item.href}
+                    className="flex h-12 items-center justify-between gap-3 px-4 text-[15px] text-[#1d1d1f] transition active:bg-black/[0.04]"
                     onClick={() => setMenuOpen(false)}
                   >
-                    <CalendarCheck size={16} />
+                    <span className={pathname === item.href ? "font-semibold" : "font-medium"}>{item.label}</span>
+                    <ChevronRight size={16} className="shrink-0 text-[#c7c7cc]" aria-hidden="true" />
+                  </Link>
+                ))}
+            </div>
+
+            {authUser ? (
+              <div className="mt-3 overflow-hidden rounded-[16px] bg-white/70 ring-1 ring-black/[0.06]">
+                <div className="flex items-center gap-3 border-b border-black/[0.06] px-4 py-3">
+                  <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[#007AFF]">
+                    {userInitial ? (
+                      <span className="text-[13px] font-semibold text-white">{userInitial}</span>
+                    ) : (
+                      <User className="h-[17px] w-[17px] text-white" strokeWidth={2.5} aria-hidden="true" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    {displayName && (
+                      <p className="truncate text-[14px] font-semibold text-[#1d1d1f]">{displayName}</p>
+                    )}
+                    <p className="truncate text-[12px] text-[#86868b]">{authUser.email}</p>
+                  </div>
+                </div>
+                <div className="divide-y divide-black/[0.06]">
+                  <Link
+                    href="/account/reservations"
+                    className="flex h-12 items-center gap-2.5 px-4 text-[15px] font-medium text-[#1d1d1f] transition active:bg-black/[0.04]"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <CalendarCheck size={17} className="shrink-0 text-[#86868b]" />
                     {t("myReservations")}
                   </Link>
                   <Link
                     href="/account/profile"
-                    className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                    className="flex h-12 items-center gap-2.5 px-4 text-[15px] font-medium text-[#1d1d1f] transition active:bg-black/[0.04]"
                     onClick={() => setMenuOpen(false)}
                   >
-                    <User size={16} />
+                    <User size={17} className="shrink-0 text-[#86868b]" />
                     {t("profile")}
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-500 hover:text-red-500 transition-colors w-full"
+                    className="flex h-12 w-full items-center gap-2.5 px-4 text-[15px] font-medium text-[#D70015] transition active:bg-[#FFF2F1]"
                   >
-                    <LogOut size={16} />
+                    <LogOut size={17} className="shrink-0" />
                     {t("signOut")}
                   </button>
                 </div>
-              </>
+              </div>
             ) : (
               <button
                 onClick={() => { setMenuOpen(false); setShowAuthModal(true); }}
-                className="flex items-center gap-2 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                className="mt-3 flex h-12 w-full items-center gap-2.5 rounded-[16px] bg-white/70 px-4 text-[15px] font-medium text-[#1d1d1f] ring-1 ring-black/[0.06] transition active:bg-black/[0.04]"
               >
-                <User size={16} />
+                <User size={17} className="shrink-0 text-[#86868b]" />
                 {t("login")}
               </button>
             )}
+
+            <Link
+              href="/booking"
+              onClick={() => setMenuOpen(false)}
+              className="mt-3 flex h-12 w-full items-center justify-center rounded-[14px] bg-[#007AFF] text-[16px] font-semibold text-white transition active:scale-[0.99]"
+            >
+              {t("bookNow")}
+            </Link>
           </div>
         </div>
       )}

@@ -13,7 +13,7 @@ import { readBookingContent } from "@/lib/bookingContent";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Link } from "@/i18n/routing";
 import { getImageProps } from "next/image";
-import { Shield, Clock, CreditCard, Plane, MapPin, Star } from "lucide-react";
+import { Shield, Clock, CreditCard, Plane, MapPin, Star, ChevronDown } from "lucide-react";
 import { localeDirection } from "@/i18n/config";
 
 /**
@@ -641,24 +641,25 @@ export default async function BookingPage({
 
             {/* SEO FAQ mini */}
             <div className="max-w-3xl mx-auto">
-              <h3 className="text-lg font-bold text-gray-900 mb-5 text-center">
+              <h3 className="mb-4 text-center text-[19px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">
                 {t("seoFaqTitle")}
               </h3>
-              <div className="space-y-3">
+              {/* One grouped card with hairline separators, the way a settings
+                  list is built — eight separately-outlined boxes gave each
+                  question its own frame and turned a list into a stack of
+                  cards. */}
+              <div className="divide-y divide-black/[0.06] overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.06]">
                 {faqItems.map(({ q, a }, i) => (
-                  <details
-                    key={i}
-                    className="group rounded-xl overflow-hidden"
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid rgba(0,0,0,0.06)",
-                    }}
-                  >
-                    <summary className="px-5 py-4 text-sm font-medium text-gray-900 cursor-pointer list-none flex items-center justify-between hover:text-blue-600 transition-colors">
+                  <details key={i} className="group">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-[15px] font-medium text-[#1d1d1f] transition active:bg-black/[0.03] sm:px-5">
                       {q}
-                      <span className="text-gray-500 group-open:rotate-45 transition-transform text-lg">+</span>
+                      <ChevronDown
+                        size={17}
+                        className="shrink-0 text-[#c7c7cc] transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                      />
                     </summary>
-                    <div className="px-5 pb-4 text-sm text-gray-500 leading-relaxed">
+                    <div className="px-4 pb-4 text-[14px] leading-relaxed text-[#6e6e73] sm:px-5">
                       {a}
                     </div>
                   </details>
@@ -667,8 +668,11 @@ export default async function BookingPage({
             </div>
 
             {/* SEO text block */}
-            <div className="mt-14 max-w-3xl mx-auto">
-              <p className="text-sm text-gray-500 leading-relaxed text-center">
+            {/* Left-aligned, not centred: centring a seven-line paragraph
+                gives every line a different starting edge, so the eye has to
+                hunt for the next one on a phone. */}
+            <div className="mx-auto mt-12 max-w-2xl">
+              <p className="text-[14px] leading-[1.65] text-[#6e6e73]">
                 {pick(bc.closingText, t("seoTextBlock"))}
               </p>
             </div>

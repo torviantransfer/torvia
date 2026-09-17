@@ -12,7 +12,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Loader2, Lock, CreditCard, MapPin } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 
 /**
  * Stripe carries its own translations for the card form and for the decline
@@ -96,27 +96,24 @@ const appearance: StripeElementsOptions["appearance"] = {
       fontWeight: "500",
       marginBottom: "6px",
     },
-    /* Tabs, not bordered boxes: a soft fill at rest, white with a blue ring
-       once chosen — the same pairing the payment-method rows on the previous
-       step use, so the card form reads as one more list in the same system
-       rather than a different product embedded in the page. */
-    ".Tab": {
+    /* Full-width rows, not tabs. With six methods enabled in the dashboard the
+       tab layout squeezed them into a horizontal strip and pushed the rest
+       behind a "more" dropdown, which is why the card fields looked crammed
+       inside a box. Each method is now its own row in the same soft-fill /
+       white-with-blue-ring pairing the previous step's option rows use. */
+    ".AccordionItem": {
       backgroundColor: "#F5F5F7",
       border: "none",
-      borderRadius: "12px",
+      borderRadius: "14px",
       boxShadow: "none",
-      padding: "12px",
+      padding: "14px 16px",
     },
-    ".Tab:hover": {
+    ".AccordionItem:hover": {
       backgroundColor: "#EBEBED",
     },
-    ".Tab--selected": {
+    ".AccordionItem--selected": {
       backgroundColor: "#FFFFFF",
       boxShadow: "0 0 0 2px #007AFF, 0 1px 2px rgba(0,0,0,0.05)",
-    },
-    ".TabLabel": {
-      fontWeight: "600",
-      fontSize: "13.5px",
     },
     ".Block": {
       backgroundColor: "#F5F5F7",
@@ -247,45 +244,49 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
 
   return (
     <div className="space-y-5">
-      {/* Order summary. Every label here was hardcoded English and every
-          amount a hardcoded "$", so a German visitor paying in euro was shown
-          "Total $40.00". */}
-      <div className={`rounded-xl border p-4 ${isDeposit ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
-        <div className="flex items-center gap-2 mb-3">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isDeposit ? "bg-amber-500/10" : "bg-blue-500/10"}`}>
-            <MapPin size={16} className={isDeposit ? "text-amber-600" : "text-blue-600"} />
+      {/* Order summary, in the passenger step's own card: same 22px radius and
+          hairline ring, same ink and grey, the route on a pin rail and the
+          trip facts as chips. It used to be an amber or grey bordered box with
+          its own type scale, so arriving at the last step looked like landing
+          on a different site than the one that took the details. */}
+      <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5">
+        <div className="flex gap-3">
+          <div className="flex flex-col items-center pt-1.5">
+            <span className="size-2 rounded-full bg-[#007AFF]" />
+            <span className="my-1 min-h-[16px] w-px flex-1 bg-black/[0.12]" />
+            <span className="size-2 rounded-full bg-[#34C759]" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-gray-900 text-sm font-semibold truncate">{routeLabel}</p>
-            <p className="text-gray-500 text-xs">
-              {tripType === "round_trip" ? t("roundTrip") : t("oneWay")} · {formattedDate} · {pickupTime}
-            </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold leading-snug text-[#1d1d1f]">{routeLabel}</p>
+            <p className="mt-1 text-[12.5px] text-[#86868b]">{formattedDate} · {pickupTime}</p>
           </div>
         </div>
 
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          <span className="rounded-full bg-[#F5F5F7] px-2.5 py-1 text-[12px] font-medium text-[#424245]">
+            {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
+          </span>
+        </div>
+
         {isDeposit && depositAmount != null && driverAmount != null ? (
-          <div className="pt-3 border-t border-amber-200 space-y-1.5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-amber-700 text-sm font-semibold">{t("totalPrice")}</span>
-              <span className="text-gray-700 text-sm font-bold">{money(totalPrice)}</span>
+          <div className="mt-4 divide-y divide-black/[0.06] overflow-hidden rounded-[14px] bg-[#F5F5F7]">
+            <div className="flex items-center justify-between px-3.5 py-2.5">
+              <span className="text-[13.5px] text-[#6e6e73]">{t("totalPrice")}</span>
+              <span className="text-[15px] font-semibold text-[#1d1d1f]">{money(totalPrice)}</span>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-gray-500 text-xs">{t("payToDriver")}</span>
-              <span className="text-gray-600 text-xs">{money(driverAmount)}</span>
+            <div className="flex items-center justify-between px-3.5 py-2.5">
+              <span className="text-[13.5px] text-[#6e6e73]">{t("payToDriver")}</span>
+              <span className="text-[14px] font-medium text-[#424245]">{money(driverAmount)}</span>
             </div>
-            <div className="flex items-center justify-between gap-3 pt-1 border-t border-amber-200">
-              <span className="text-amber-700 text-sm font-bold">{t("depositNow")}</span>
-              <div className="text-end">
-                <span className="block text-amber-700 text-xl font-bold">{money(depositAmount)}</span>
-              </div>
+            <div className="flex items-center justify-between px-3.5 py-2.5">
+              <span className="text-[13.5px] font-medium text-[#1d1d1f]">{t("depositNow")}</span>
+              <span className="text-[17px] font-semibold text-[#1d1d1f]">{money(depositAmount)}</span>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-200">
-            <span className="text-gray-500 text-sm">{t("totalPrice")}</span>
-            <div className="text-end">
-              <span className="block text-gray-900 text-xl font-bold">{money(totalPrice)}</span>
-            </div>
+          <div className="mt-4 flex items-end justify-between border-t border-black/[0.06] pt-3.5">
+            <p className="text-[13.5px] font-medium text-[#1d1d1f]">{t("totalPrice")}</p>
+            <p className="text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#1d1d1f]">{money(totalPrice)}</p>
           </div>
         )}
       </div>
@@ -305,10 +306,10 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
         <ExpressCheckoutElement
           options={{
             buttonHeight: 48,
-            // One button per row rather than the row Stripe's own layout
-            // packed them into — three brand-coloured buttons sharing a
-            // narrow row read as clutter, not as choice.
-            layout: { maxColumns: 1 },
+            // Two per row. With one column Apple Pay sat alone above Google
+            // Pay as a full-width black slab, reading as the primary action of
+            // the page rather than as one of two equal shortcuts.
+            layout: { maxColumns: 2, maxRows: 1 },
             // Link and Amazon Pay dropped: Link's own button sat beside
             // Apple/Google Pay promising the same one-tap speed while
             // asking the customer to create a Link account first, and
@@ -320,19 +321,20 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
           onReady={({ availablePaymentMethods }) => setWalletsShown(Boolean(availablePaymentMethods))}
           onConfirm={confirmPayment}
         />
-        {walletsShown && <div className="mt-5 h-px bg-gray-200" />}
+        {walletsShown && <div className="mt-5 h-px bg-black/[0.08]" />}
       </div>
 
       {/* Payment Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          {/* The Stripe mark that used to sit here is now part of the badge
-              under the form, so it is not claimed twice on one screen. */}
-          <div className="flex items-center gap-2 mb-4">
-            <CreditCard size={16} className="text-gray-500" />
-            <span className="text-gray-900 text-sm font-medium">{t("cardDetails")}</span>
-          </div>
-
+        <section>
+          {/* Section heading outside the card, exactly as "İletişim Bilgileri"
+              and "Yolculuk Detayları" are set on the passenger step — the
+              label used to be a bordered strip inside the box, which is what
+              made this screen look like a different form. */}
+          <h3 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-[#86868b]">
+            {t("cardDetails")}
+          </h3>
+          <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5">
           {/* Name, email and phone are not asked here: the passenger-info
               step already has them, and a booking is one connected form, not
               two forms that happen to ask the same three questions. `never`
@@ -342,26 +344,25 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
               wallet may still want to pay with. confirmPayment hands the
               three fields over instead, at confirmation
               (confirmParams.payment_method_data.billing_details above). */}
-          {/* Card leads every time; everything else — Bancontact, EPS, Klarna,
-              Amazon Pay, whatever the account has on — follows in whatever
-              order Stripe judges best for the visitor, and spills into the
-              "more" tab once the row runs out of width rather than crowding
-              it. This is a positioning decision, not a listing one: nothing
-              here is switched off, a card payer just never has to scan past
-              five icons to find the one tab that matters to them. */}
+          {/* Card leads and opens expanded; Bancontact, EPS, Klarna, Amazon Pay
+              and the rest sit under it as full-width rows a customer can open.
+              Nothing is switched off — this is positioning, not listing: a card
+              payer sees the card fields immediately instead of hunting for them
+              among six icons in a strip. */}
           <PaymentElement
             options={{
-              layout: "tabs",
+              layout: { type: "accordion", defaultCollapsed: false, spacedAccordionItems: true },
               paymentMethodOrder: ["card"],
               fields: { billingDetails: { name: "never", email: "never", phone: "never" } },
             }}
           />
-        </div>
+          </div>
+        </section>
 
         {error && (
-          <div className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="text-red-500">⚠</span>
-            {error}
+          <div className="flex items-start gap-2 rounded-[14px] bg-[#FFF2F1] px-4 py-3 text-[13.5px] text-[#D70015]">
+            <span aria-hidden className="leading-5">⚠</span>
+            <span className="leading-5">{error}</span>
           </div>
         )}
 
@@ -369,8 +370,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="w-full py-4 rounded-xl font-bold text-white text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.99]"
-          style={{ backgroundColor: "#007AFF" }}
+          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-[#007AFF] text-[16px] font-semibold text-white transition hover:bg-[#0062CC] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <>

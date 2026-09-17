@@ -99,23 +99,22 @@ export default async function SocialProofStrip({
   return (
     <section
       aria-label={t("heading")}
-      className="w-full rounded-2xl bg-white p-4 sm:p-5"
-      style={{ border: "1px solid rgba(0,0,0,0.07)" }}
+      className="w-full rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5"
     >
       {/* The score first, because it is the one thing that is read even by
           someone who is not going to read a review. */}
       {showScore && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span className="text-[26px] font-black leading-none text-[#111827] tabular-nums">
+          <span className="text-[30px] font-semibold leading-none tracking-[-0.02em] text-[#1d1d1f] tabular-nums">
             {value!.toFixed(1)}
           </span>
           <span className="flex flex-col gap-1">
             <Stars rating={value!} size={14} />
-            <span className="text-[11.5px] font-medium text-[#6B7280]">
+            <span className="text-[12px] font-medium text-[#86868b]">
               {count} {t("reviewsLabel")}
             </span>
           </span>
-          <span className="ms-auto hidden text-[12px] font-semibold text-[#111827] sm:block">
+          <span className="ms-auto hidden text-[12.5px] font-medium text-[#86868b] sm:block">
             {t("heading")}
           </span>
         </div>
@@ -130,8 +129,7 @@ export default async function SocialProofStrip({
             return (
               <figure
                 key={r.id ?? i}
-                className="flex h-full flex-col rounded-xl p-3"
-                style={{ backgroundColor: "rgba(0,0,0,0.022)", border: "1px solid rgba(0,0,0,0.05)" }}
+                className="flex h-full flex-col rounded-[14px] bg-[#F5F5F7] p-3.5"
               >
                 <div className="flex items-center gap-2.5">
                   <span
@@ -142,22 +140,22 @@ export default async function SocialProofStrip({
                     {initial}
                   </span>
                   <figcaption className="min-w-0 flex-1">
-                    <span className="block truncate text-[12.5px] font-bold leading-tight text-[#111827]">
+                    <span className="block truncate text-[13.5px] font-semibold leading-tight text-[#1d1d1f]">
                       {name}
                     </span>
                     {r.author_country && (
-                      <span className="block truncate text-[10.5px] leading-tight text-[#9CA3AF]">
+                      <span className="block truncate text-[11.5px] leading-tight text-[#86868b]">
                         {r.author_country}
                       </span>
                     )}
                   </figcaption>
                   <Stars rating={r.rating} />
                 </div>
-                <blockquote className="relative mt-2.5 ps-4 text-[12px] leading-snug text-[#4B5563]">
+                <blockquote className="relative mt-2.5 ps-4 text-[13px] leading-[1.5] text-[#424245]">
                   <Quote
                     size={11}
                     aria-hidden="true"
-                    className="absolute start-0 top-0.5 text-[#D1D5DB]"
+                    className="absolute start-0 top-0.5 text-[#c7c7cc]"
                   />
                   {/* Clamped rather than cut, so no sentence ends mid-word and
                       nothing a customer wrote is silently rewritten. */}

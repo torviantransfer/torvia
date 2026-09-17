@@ -159,7 +159,7 @@ function TimeWheel({
               ref.current?.scrollTo({ top: nearest(v) * WHEEL_ITEM, behavior: "smooth" });
             }}
             className={`flex h-10 w-full snap-center items-center justify-center text-[22px] tabular-nums transition-colors ${
-              active ? "font-semibold text-[#111827]" : "text-[#9CA3AF]"
+              active ? "font-semibold text-[#1d1d1f]" : "text-[#c7c7cc]"
             }`}
           >
             {String(v).padStart(2, "0")}
@@ -452,12 +452,12 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             field === "from" ? setFrom(l.value) : setTo(l.value);
             setOpen(null);
           }}
-          className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 text-start text-[15px] lg:text-sm hover:bg-[#EDF8F4] lg:hover:bg-blue-50 transition-colors ${
-            (field === "from" ? from : to) === l.value ? "text-[#0e8a61] lg:text-blue-600 font-semibold bg-[#EDF8F4]/60 lg:bg-blue-50/50" : "text-gray-700"
+          className={`w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 text-start text-[15px] lg:text-sm hover:bg-[#EAF4FF] lg:hover:bg-blue-50 transition-colors ${
+            (field === "from" ? from : to) === l.value ? "text-[#007AFF] lg:text-blue-600 font-semibold bg-[#EAF4FF]/60 lg:bg-blue-50/50" : "text-gray-700"
           }`}
         >
           {l.type === "airport" ? (
-            <Plane size={15} className="text-[#0e8a61] lg:text-blue-600 shrink-0" />
+            <Plane size={15} className="text-[#007AFF] lg:text-blue-600 shrink-0" />
           ) : (
             <MapPin size={15} className="text-gray-500 shrink-0" />
           )}
@@ -498,12 +498,15 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
    * together the way it always has. */
   const calendarGrid = (
     <>
-      <div className="bg-[#0e8a61] lg:bg-blue-600 text-white px-4 py-2.5 flex items-center justify-between">
-        <button type="button" aria-label="−1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronLeft size={16} /></button>
-        <span className="font-semibold text-sm capitalize">{mName} {calMonth.getFullYear()}</span>
-        <button type="button" aria-label="+1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="hover:bg-white/20 rounded-lg p-1"><ChevronRight size={16} /></button>
+      {/* A white title bar with blue chevrons, not a filled blue slab: a solid
+          block of colour across the top of the sheet competes with the one
+          filled control that matters, the confirm button at the bottom. */}
+      <div className="flex items-center justify-between px-3 py-2.5 lg:bg-blue-600 lg:text-white">
+        <button type="button" aria-label="−1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1))} className="rounded-full p-1.5 text-[#007AFF] transition active:bg-black/[0.05] lg:text-white lg:hover:bg-white/20"><ChevronLeft size={18} /></button>
+        <span className="text-[15px] font-semibold capitalize text-[#1d1d1f] lg:text-sm lg:text-white">{mName} {calMonth.getFullYear()}</span>
+        <button type="button" aria-label="+1" onClick={() => setCalMonth(new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1))} className="rounded-full p-1.5 text-[#007AFF] transition active:bg-black/[0.05] lg:text-white lg:hover:bg-white/20"><ChevronRight size={18} /></button>
       </div>
-      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-[#0e8a61] lg:text-blue-600 border-b border-gray-100 py-1.5 px-2">
+      <div className="grid grid-cols-7 border-b border-black/[0.06] px-2 py-1.5 text-center text-[11px] font-medium text-[#86868b] lg:text-[10px] lg:font-bold lg:text-blue-600">
         {wk.map((d) => <span key={d}>{d}</span>)}
       </div>
       <div className="grid grid-cols-7 text-center px-2 py-1.5 gap-y-0.5">
@@ -518,9 +521,9 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
                 // 40px on phones so every day clears the 44px-ish touch
                 // guidance; the pointer-device popover keeps its 32px grid.
                 "w-10 h-10 lg:w-8 lg:h-8 rounded-lg text-[13px] lg:text-xs mx-auto flex items-center justify-center transition-colors",
-                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-[#EDF8F4] lg:hover:bg-blue-50 cursor-pointer",
-                sel ? "bg-[#0e8a61] lg:bg-blue-600 text-white font-bold" : "",
-                isToday && !sel ? "ring-1 ring-[#0e8a61]/40 lg:ring-blue-300" : "",
+                !d.inMonth ? "text-gray-200" : past ? "text-gray-300 cursor-not-allowed" : "hover:bg-[#EAF4FF] lg:hover:bg-blue-50 cursor-pointer",
+                sel ? "bg-[#007AFF] lg:bg-blue-600 text-white font-bold" : "",
+                isToday && !sel ? "ring-1 ring-[#007AFF]/40 lg:ring-blue-300" : "",
                 d.inMonth && !past && !sel ? "text-gray-700 font-medium" : "",
               ].join(" ")}
             >{d.day}</button>
@@ -538,13 +541,13 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
   const timeWheels = (
     <div className="relative select-none">
       <div className="mb-1 flex text-center">
-        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("hour")}</span>
-        <span className="flex-1 text-[10px] font-bold uppercase tracking-wider text-[#0e8a61]">{t("minute")}</span>
+        <span className="flex-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[#86868b]">{t("hour")}</span>
+        <span className="flex-1 text-[11px] font-medium uppercase tracking-[0.06em] text-[#86868b]">{t("minute")}</span>
       </div>
       <div className="relative">
         {/* The selected row, painted behind the numbers. */}
         <div
-          className="pointer-events-none absolute inset-x-0 z-0 h-10 rounded-xl bg-[#EDF8F4] ring-1 ring-[#0e8a61]/25"
+          className="pointer-events-none absolute inset-x-0 z-0 h-10 rounded-[12px] bg-[#F5F5F7]"
           style={{ top: WHEEL_PAD }}
         />
         <div className="relative z-10 flex">
@@ -601,7 +604,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
       <button
         type="button"
         onClick={() => setOpen(null)}
-        className="w-full h-[48px] rounded-xl bg-[#0e8a61] text-white font-bold text-[15px] active:scale-[0.98] transition-transform"
+        className="h-[50px] w-full rounded-[14px] bg-[#007AFF] text-[16px] font-semibold text-white transition active:scale-[0.98]"
       >
         {t("dateConfirm")}
       </button>
@@ -684,8 +687,8 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
       modalShell(
         label,
         <>
-          <div className="bg-[#0e8a61] text-white px-4 py-2.5 text-center">
-            <span className="font-semibold text-sm">{label}</span>
+          <div className="border-b border-black/[0.06] px-4 py-3 text-center">
+            <span className="text-[15px] font-semibold text-[#1d1d1f]">{label}</span>
           </div>
           <div className="px-4 pt-3">{timeWheels}</div>
           {sheetConfirm}
@@ -701,7 +704,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
    * full-width row left it hanging off the edge of the card, with the two
    * counters squeezed into a narrow column. */
   const stepperBtn =
-    "w-11 h-11 sm:w-7 sm:h-7 rounded-lg border border-[#E5E7EB] sm:border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
+    "w-11 h-11 sm:w-7 sm:h-7 rounded-lg border border-[#E5E5EA] sm:border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 active:bg-gray-100 text-base sm:text-sm flex-shrink-0";
 
   const renderPassengers = () => (
     <div className="absolute top-full mt-1 start-0 end-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 lg:start-auto lg:w-[240px]">
@@ -826,7 +829,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
           two layouts share is the calendar and passenger popups, which take
           `lg:` overrides so each viewport gets its own accent out of the same
           elements. */}
-      <div className="lg:hidden rounded-[20px] border border-[#E5E7EB] bg-white p-3 shadow-[0_24px_56px_rgba(15,23,42,0.24),0_6px_16px_rgba(15,23,42,0.12)]">
+      <div className="lg:hidden rounded-[22px] bg-white p-3.5 ring-1 ring-black/[0.06] shadow-[0_18px_44px_rgba(0,0,0,0.16),0_2px_8px_rgba(0,0,0,0.06)]">
         {/* Route — pickup and dropoff share one relative box so the swap
             button can float on the seam between them. */}
         <div className="relative grid gap-2">
@@ -838,14 +841,12 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
               aria-haspopup="listbox"
               aria-expanded={open === "from"}
               aria-label={`${t("pickup")}: ${from ? getName(from) : t("pickupPlaceholder")}`}
-              className={`flex min-h-[52px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 ps-2.5 pe-14 text-start transition-colors ${open === "from" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[54px] w-full items-center gap-2.5 rounded-[14px] py-2 ps-3.5 pe-14 text-start transition ${open === "from" ? "bg-white ring-2 ring-[#007AFF]" : "bg-[#F5F5F7] active:bg-[#EBEBED]"}`}
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
-                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
-              </span>
+              <MapPin size={17} className="shrink-0 text-[#007AFF]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[12px] leading-none text-[#6B7280]">{t("pickup")}</span>
-                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${from ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block text-[12px] leading-none text-[#86868b]">{t("pickup")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${from ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                   {from ? getName(from) : t("pickupPlaceholder")}
                 </span>
               </span>
@@ -861,14 +862,12 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
               aria-haspopup="listbox"
               aria-expanded={open === "to"}
               aria-label={`${t("dropoff")}: ${to ? getName(to) : t("dropoffPlaceholder")}`}
-              className={`flex min-h-[52px] w-full items-center gap-2.5 rounded-2xl border bg-white py-2 ps-2.5 pe-14 text-start transition-colors ${open === "to" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] active:bg-gray-50"}`}
+              className={`flex min-h-[54px] w-full items-center gap-2.5 rounded-[14px] py-2 ps-3.5 pe-14 text-start transition ${open === "to" ? "bg-white ring-2 ring-[#007AFF]" : "bg-[#F5F5F7] active:bg-[#EBEBED]"}`}
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#EDF8F4]">
-                <MapPin size={18} className="text-[#0e8a61]" aria-hidden="true" />
-              </span>
+              <MapPin size={17} className="shrink-0 text-[#34C759]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[12px] leading-none text-[#6B7280]">{t("dropoff")}</span>
-                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${to ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block text-[12px] leading-none text-[#86868b]">{t("dropoff")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${to ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                   {to ? getName(to) : t("dropoffPlaceholder")}
                 </span>
               </span>
@@ -886,8 +885,8 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             aria-label={swapLabel}
             className="absolute end-1.5 top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center transition-transform active:scale-95"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#E5E7EB] bg-white shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
-              <ArrowUpDown size={18} className="text-[#0e8a61]" aria-hidden="true" />
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.06]">
+              <ArrowUpDown size={17} className="text-[#007AFF]" aria-hidden="true" />
             </span>
           </button>
         </div>
@@ -902,16 +901,16 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
               aria-haspopup="dialog"
               aria-expanded={open === "cal" && calFor === "dep"}
               aria-label={`${t("departureDate")}: ${depFmt ? depFmt.text : t("selectDateShort")}`}
-              className={`flex min-h-[48px] w-full items-center gap-2 rounded-2xl border px-2.5 text-start transition-colors ${dateError ? "border-red-400 bg-red-50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+              className={`flex min-h-[52px] w-full items-center gap-2 rounded-[14px] px-3 text-start transition ${dateError ? "bg-[#FFF2F1] ring-1 ring-[#FF3B30]/50" : "bg-[#F5F5F7] active:bg-[#EBEBED]"}`}
             >
-              <Calendar size={18} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#0e8a61]"} aria-hidden="true" />
+              <Calendar size={18} className={dateError ? "shrink-0 text-red-500" : "shrink-0 text-[#007AFF]"} aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("departureDate")}</span>
-                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block truncate text-[12px] leading-none text-[#86868b]">{t("departureDate")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${dateError ? "font-semibold text-red-500" : depFmt ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                   {depFmt ? depFmt.text : t("selectDateShort")}
                 </span>
               </span>
-              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+              <ChevronDown size={14} className="shrink-0 text-[#c7c7cc]" aria-hidden="true" />
             </button>
             {open === "cal" && calFor === "dep" && renderCalendar()}
           </div>
@@ -922,16 +921,16 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
               aria-haspopup="dialog"
               aria-expanded={open === "time" && calFor === "dep"}
               aria-label={`${t("hour")}: ${depFmt ? depFmt.time : t("selectTimeShort")}`}
-              className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-start transition-colors active:bg-gray-50"
+              className="flex min-h-[52px] w-full items-center gap-2 rounded-[14px] bg-[#F5F5F7] px-3 text-start transition active:bg-[#EBEBED]"
             >
-              <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              <Clock size={18} className="shrink-0 text-[#007AFF]" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
-                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                <span className="block truncate text-[12px] leading-none text-[#86868b]">{t("hour")}</span>
+                <span className={`mt-[3px] block truncate text-[15px] leading-tight ${depFmt ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                   {depFmt ? depFmt.time : t("selectTimeShort")}
                 </span>
               </span>
-              <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+              <ChevronDown size={14} className="shrink-0 text-[#c7c7cc]" aria-hidden="true" />
             </button>
             {open === "time" && calFor === "dep" && renderTimeSheet()}
           </div>
@@ -946,10 +945,10 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             dimmed: a switch that cannot be flipped reads as a fault and earns
             a support message, while its absence matches what is on offer. */}
         {roundTripAvailable && (
-        <div className={`mt-2 flex min-h-[44px] items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${hasRet ? "border-[#0e8a61]/30 bg-[#EDF8F4]/60" : "border-[#E5E7EB] bg-white"}`}>
+        <div className={`mt-2 flex min-h-[48px] items-center justify-between gap-3 rounded-[14px] px-3.5 transition ${hasRet ? "bg-[#EAF4FF]" : "bg-[#F5F5F7]"}`}>
           <span className="flex min-w-0 items-center gap-2.5">
-            <RefreshCw size={18} className={depDate ? "shrink-0 text-[#0e8a61]" : "shrink-0 text-[#9CA3AF]"} aria-hidden="true" />
-            <span className={`truncate text-[14px] ${depDate ? "text-[#4B5563]" : "text-[#9CA3AF]"}`}>
+            <RefreshCw size={18} className={depDate ? "shrink-0 text-[#007AFF]" : "shrink-0 text-[#c7c7cc]"} aria-hidden="true" />
+            <span className={`truncate text-[14px] ${depDate ? "text-[#6e6e73]" : "text-[#c7c7cc]"}`}>
               {t("addReturnTransfer")}
             </span>
           </span>
@@ -966,7 +965,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             }}
             className="-mr-1.5 flex h-11 shrink-0 items-center justify-end ps-3 pe-1.5 disabled:cursor-not-allowed"
           >
-            <span className={`relative block h-[22px] w-10 rounded-full transition-colors ${!depDate ? "bg-[#E5E7EB]" : hasRet ? "bg-[#0e8a61]" : "bg-[#D1D5DB]"}`}>
+            <span className={`relative block h-[22px] w-10 rounded-full transition-colors ${!depDate ? "bg-[#E5E5EA]" : hasRet ? "bg-[#34C759]" : "bg-[#E5E5EA]"}`}>
               <span className={`absolute top-[3px] h-4 w-4 rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all ${hasRet ? "start-[21px]" : "start-[3px]"}`} />
             </span>
           </button>
@@ -984,16 +983,16 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
                 aria-haspopup="dialog"
                 aria-expanded={open === "cal" && calFor === "ret"}
                 aria-label={`${t("returnDate")}: ${retFmt ? retFmt.text : t("selectDateShort")}`}
-                className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-start transition-colors active:bg-gray-50"
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-[14px] bg-[#F5F5F7] px-3 text-start transition active:bg-[#EBEBED]"
               >
-                <Calendar size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <Calendar size={18} className="shrink-0 text-[#007AFF]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("returnDate")}</span>
-                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  <span className="block truncate text-[12px] leading-none text-[#86868b]">{t("returnDate")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                     {retFmt ? retFmt.text : t("selectDateShort")}
                   </span>
                 </span>
-                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+                <ChevronDown size={14} className="shrink-0 text-[#c7c7cc]" aria-hidden="true" />
               </button>
               {open === "cal" && calFor === "ret" && renderCalendar()}
             </div>
@@ -1004,16 +1003,16 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
                 aria-haspopup="dialog"
                 aria-expanded={open === "time" && calFor === "ret"}
                 aria-label={`${t("returnTime")}: ${retFmt ? retFmt.time : t("selectTimeShort")}`}
-                className="flex min-h-[48px] w-full items-center gap-2 rounded-2xl border border-[#E5E7EB] bg-white px-2.5 text-start transition-colors active:bg-gray-50"
+                className="flex min-h-[52px] w-full items-center gap-2 rounded-[14px] bg-[#F5F5F7] px-3 text-start transition active:bg-[#EBEBED]"
               >
-                <Clock size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+                <Clock size={18} className="shrink-0 text-[#007AFF]" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[12px] leading-none text-[#6B7280]">{t("hour")}</span>
-                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#111827]" : "font-medium text-[#4B5563]"}`}>
+                  <span className="block truncate text-[12px] leading-none text-[#86868b]">{t("hour")}</span>
+                  <span className={`mt-[3px] block truncate text-[15px] leading-tight ${retFmt ? "font-semibold text-[#1d1d1f]" : "font-medium text-[#6e6e73]"}`}>
                     {retFmt ? retFmt.time : t("selectTimeShort")}
                   </span>
                 </span>
-                <ChevronDown size={14} className="shrink-0 text-[#9CA3AF]" aria-hidden="true" />
+                <ChevronDown size={14} className="shrink-0 text-[#c7c7cc]" aria-hidden="true" />
               </button>
               {open === "time" && calFor === "ret" && renderTimeSheet()}
             </div>
@@ -1030,13 +1029,13 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             aria-haspopup="dialog"
             aria-expanded={open === "pax"}
             aria-label={`${adults + kids} ${t("passengers")}`}
-            className={`mt-2 flex min-h-[44px] w-full items-center justify-between gap-3 rounded-2xl border px-3 transition-colors ${open === "pax" ? "border-[#0e8a61] bg-[#EDF8F4]/50" : "border-[#E5E7EB] bg-white active:bg-gray-50"}`}
+            className={`mt-2 flex min-h-[48px] w-full items-center justify-between gap-3 rounded-[14px] px-3.5 transition ${open === "pax" ? "bg-white ring-2 ring-[#007AFF]" : "bg-[#F5F5F7] active:bg-[#EBEBED]"}`}
           >
             <span className="flex min-w-0 items-center gap-2.5">
-              <User size={18} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
-              <span className="truncate text-[15px] font-semibold text-[#111827]">{adults + kids} {t("passengers")}</span>
+              <User size={18} className="shrink-0 text-[#007AFF]" aria-hidden="true" />
+              <span className="truncate text-[15px] font-semibold text-[#1d1d1f]">{adults + kids} {t("passengers")}</span>
             </span>
-            <ChevronDown size={16} className={`shrink-0 text-[#9CA3AF] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
+            <ChevronDown size={16} className={`shrink-0 text-[#c7c7cc] transition-transform ${open === "pax" ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
           {open === "pax" && renderPassengers()}
         </div>
@@ -1047,7 +1046,7 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
         <button
           type="button"
           onClick={submit}
-          className="mt-2.5 grid h-[52px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-xl bg-[#0e8a61] px-4 text-[15px] font-bold text-white shadow-[0_10px_20px_-6px_rgba(14,138,97,0.45)] transition-transform active:scale-[0.985]"
+          className="mt-3 grid h-[52px] w-full grid-cols-[1fr_auto] items-center gap-2 rounded-[14px] bg-[#007AFF] px-4 text-[16px] font-semibold text-white transition hover:bg-[#0062CC] active:scale-[0.985]"
         >
           <span className="truncate text-center">{t("seePriceAndBook")}</span>
           <ChevronRight size={20} className="shrink-0" aria-hidden="true" />
@@ -1062,9 +1061,9 @@ export default function BookingFormMini({ presetRegion, initialRegions }: Bookin
             { Icon: Headphones, label: t("trustSupport247") },
           ].map(({ Icon, label }, i) => (
             <Fragment key={label}>
-              {i > 0 && <li aria-hidden="true" className="h-4 w-px bg-[#E5E7EB]" />}
-              <li className="flex items-center justify-center gap-1.5 px-1 text-center text-[10.5px] font-medium leading-tight text-[#4B5563]">
-                <Icon size={13} className="shrink-0 text-[#0e8a61]" aria-hidden="true" />
+              {i > 0 && <li aria-hidden="true" className="h-3.5 w-px bg-black/[0.08]" />}
+              <li className="flex items-center justify-center gap-1.5 px-1 text-center text-[11px] font-medium leading-tight text-[#6e6e73]">
+                <Icon size={13} className="shrink-0 text-[#248A3D]" aria-hidden="true" />
                 <span>{label}</span>
               </li>
             </Fragment>

@@ -52,6 +52,7 @@ import { localePhoneCountries, type Locale } from "@/i18n/config";
 // The airport's label and the order of the two stops live in one place, so the
 // wizard, the voucher, the emails and the driver panel cannot disagree.
 import { airportLabel, normalizeDirection, type Direction } from "@/lib/transfer-route";
+import PaymentMethodsStrip from "@/components/PaymentMethodsStrip";
 
 interface VehicleOption {
   categoryId: string;
@@ -1197,25 +1198,31 @@ function BookingWizardInner(props: Props) {
         const v = selectedVehicle;
         const cashDepositFlow = paymentMethod === "cash" && v.cashDeposit != null;
         const headlinePrice = cashDepositFlow ? v.cashDeposit! : totalPrice;
-        /* The payment promise leads, as the headline of the card, because it is
-           the one being asked for at this button; the two policies follow as
-           chips beneath it rather than three equal lines of the same weight. */
+        /* Three promises, three lines, no chrome. These used to sit in a white
+           card with a ring, a filled icon disc and two pill chips, which gave
+           six words more visual weight than the pay button directly beneath
+           them. Reassurance should be readable at a glance and then get out of
+           the way — the button is what the eye should land on. */
+        const trustLines = (
+          <ul className="space-y-1.5">
+            {[
+              [Lock, t("trustSecure")] as const,
+              [CalendarCheck, t("trustCancel")] as const,
+              [BadgeCheck, t("trustNoHidden")] as const,
+            ].map(([Icon, label]) => (
+              <li key={label} className="flex items-center gap-2 text-[13px] leading-snug text-[#6e6e73]">
+                <Icon size={14} strokeWidth={2.25} className="shrink-0 text-[#248A3D]" />
+                <span>{label}</span>
+              </li>
+            ))}
+          </ul>
+        );
+
+        /* The sidebar sits in a column of cards, so there the same lines keep a
+           card around them; above the button they do not. */
         const trustCard = (
           <div className="rounded-[18px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#E8F7EE] text-[#248A3D]">
-                <Lock size={15} strokeWidth={2.25} />
-              </span>
-              <span className="text-[14px] font-semibold leading-snug text-[#1d1d1f]">{t("trustSecure")}</span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1.5 text-[12.5px] font-medium leading-none text-[#424245]">
-                <CalendarCheck size={14} className="shrink-0 text-[#248A3D]" />{t("trustCancel")}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1.5 text-[12.5px] font-medium leading-none text-[#424245]">
-                <BadgeCheck size={14} className="shrink-0 text-[#248A3D]" />{t("trustNoHidden")}
-              </span>
-            </div>
+            {trustLines}
           </div>
         );
 
@@ -1617,7 +1624,7 @@ function BookingWizardInner(props: Props) {
               {/* Reassurance directly above the button that asks for the card —
                   hesitation happens before the press. On desktop the sidebar
                   already carries it, so this is phones only. */}
-              <div className="lg:hidden">{trustCard}</div>
+              <div className="rounded-[14px] bg-[#F5F5F7] px-4 py-3.5 lg:hidden">{trustLines}</div>
 
               {/* Pay-at-vehicle still takes a card for the deposit, so the label
                   says so: an unannounced card form is where trust goes. */}
@@ -1639,6 +1646,14 @@ function BookingWizardInner(props: Props) {
                   </>
                 )}
               </button>
+
+              {/* Under the button, not inside the trust card: the logos answer
+                  "can I pay the way I pay" at the moment of the press, and
+                  boxing them in with the cancellation and fee promises made
+                  that card carry two unrelated jobs at once. */}
+              <div className="flex justify-center pt-1">
+                <PaymentMethodsStrip maxWidth={380} />
+              </div>
             </form>
           </div>
 
