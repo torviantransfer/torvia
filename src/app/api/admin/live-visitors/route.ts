@@ -54,6 +54,51 @@ function classifySource(source: string | null): string {
   return (source || "").trim().toLowerCase() || "direct";
 }
 
+const STAGE_RANK: Record<Stage, number> = {
+  browsing: 0,
+  vehicle: 1,
+  form: 2,
+  payment: 3,
+  purchased: 4,
+};
+
+/**
+ * One row per person rather than per browser tab.
+ *
+ * The session id lives in sessionStorage, which every tab gets its own copy
+ * of, so somebody comparing two routes in two tabs was three rows in this
+ * table and three people on the "kişi sitede" pill. The visitor id is in
+ * localStorage and is shared across the tabs of one browser, so it is what
+ * actually answers "how many people".
+ *
+ * Of a person's sessions we keep the one furthest down the funnel, not merely
+ * the most recent: a second tab opened on the home page must not hide the
+ * first one sitting on the payment step, which is the row worth seeing. Page
+ * views are summed, since they were all made by the same person.
+ */
+function oneRowPerVisitor<T extends { visitor_id: string | null; session_id: string; page_views: number; last_seen: string }>(
+  rows: T[],
+  stage: (row: T) => Stage
+): T[] {
+  const best = new Map<string, T>();
+  for (const row of rows) {
+    // A session with no visitor id cannot be merged with anything, so it
+    // stands on its own rather than being folded into a shared bucket.
+    const key = row.visitor_id || `session:${row.session_id}`;
+    const held = best.get(key);
+    if (!held) {
+      best.set(key, { ...row });
+      continue;
+    }
+    held.page_views += row.page_views;
+    const better =
+      STAGE_RANK[stage(row)] > STAGE_RANK[stage(held)] ||
+      (STAGE_RANK[stage(row)] === STAGE_RANK[stage(held)] && row.last_seen > held.last_seen);
+    if (better) best.set(key, { ...row, page_views: held.page_views });
+  }
+  return [...best.values()];
+}
+
 function countBy<T>(rows: T[], key: (row: T) => string) {
   const counts = new Map<string, number>();
   for (const row of rows) {
@@ -90,10 +135,9 @@ export async function GET() {
   }
 
   const now = Date.now();
-  const rows = ((data ?? []) as SessionRow[]).map((s) => ({
-    ...s,
-    ageMs: now - new Date(s.last_seen).getTime(),
-  }));
+  const rows = oneRowPerVisitor(((data ?? []) as SessionRow[]), stageOf)
+    .map((s) => ({ ...s, ageMs: now - new Date(s.last_seen).getTime() }))
+    .sort((a, b) => a.ageMs - b.ageMs);
 
   const activeNow = rows.filter((s) => s.ageMs < ACTIVE_NOW_MS);
   const live = rows.filter((s) => s.ageMs < LIVE_MS);

@@ -129,14 +129,19 @@ export default function AdminSidebar({
             onClick={onToggleCollapsed}
             aria-label={c ? "Menüyü genişlet" : "Menüyü daralt"}
             title={c ? "Menüyü genişlet" : "Menüyü daralt"}
-            className={cx(
-              "grid size-7 place-items-center rounded-adm-sm text-adm-muted hover:bg-adm-line-2 hover:text-adm-ink max-[900px]:hidden",
-              c
-                ? "absolute -end-3.5 top-4 border border-adm-line bg-adm-surface shadow-adm-sm"
-                : "ms-auto"
-            )}
+            /* One position and one appearance in both states. It used to sit
+               inline while the rail was open and jump to a bordered pill
+               hanging off the edge once collapsed — two different buttons as
+               far as the eye is concerned, and the swap landed instantly while
+               the rail was still animating its width. Parked on the edge,
+               centred against the logo row, it now just travels with the rail. */
+            className="absolute -end-3 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full border border-adm-line bg-adm-surface text-adm-muted shadow-adm-sm transition-colors hover:bg-adm-line-2 hover:text-adm-ink max-[900px]:hidden"
           >
-            <PanelLeft size={16} aria-hidden="true" className="rtl:-scale-x-100" />
+            <PanelLeft
+              size={15}
+              aria-hidden="true"
+              className={cx("transition-transform duration-200 rtl:-scale-x-100", c && "-scale-x-100 rtl:scale-x-100")}
+            />
           </button>
           <button
             type="button"

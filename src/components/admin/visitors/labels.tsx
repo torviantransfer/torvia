@@ -72,10 +72,18 @@ export function Country({ code, city }: { code: string | null; city?: string | n
 export const vehicleLabel = (slug: string | null) =>
   slug ? slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : null;
 
-/** Locale prefix off, long paths shortened. */
+/**
+ * The path as the visitor actually has it, only shortened.
+ *
+ * The locale used to be stripped here, which made every language collapse
+ * into the same line: `/en/booking` and `/de/booking` both read `/booking`,
+ * and the one thing worth knowing about a visitor on a site sold in eight
+ * languages — which version they are reading — was the one thing the screen
+ * threw away. It costs three characters to keep.
+ */
 export function shortPath(raw: string | null) {
-  const clean = (raw ?? "").replace(/^\/(en|tr|de|ru|nl|pl|ar|ro)(\/|$)/, "/");
-  return clean.length > 40 ? `${clean.slice(0, 39)}…` : clean || "/";
+  const clean = raw?.trim() || "/";
+  return clean.length > 44 ? `${clean.slice(0, 43)}…` : clean;
 }
 
 export function timeAgo(iso: string) {

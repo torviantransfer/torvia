@@ -38,14 +38,23 @@ export default function AdminTopbar({
     >
       <IconButton icon={Menu} label="Menüyü aç" onClick={onMenu} className="-ms-1.5 min-[901px]:hidden" />
 
+      {/* The screen prints its own title, so naming it here too put the same
+          words on the page twice. It is only worth repeating once that title
+          has scrolled away — which is exactly when the sticky bar stops being
+          decoration and becomes the only thing saying where you are. */}
       <nav aria-label="Konum" className="flex min-w-0 items-center gap-1.5 text-[13px] text-adm-muted">
+        <span className={cx("shrink-0 transition-colors", !scrolled && "font-semibold text-adm-ink")}>Admin</span>
         {crumb && (
-          <>
-            <span className="max-[760px]:hidden">Admin</span>
-            <ChevronRight size={14} aria-hidden="true" className="shrink-0 max-[760px]:hidden rtl:rotate-180" />
-          </>
+          <span
+            className={cx(
+              "flex min-w-0 items-center gap-1.5 transition-[opacity,transform] duration-200 ease-out",
+              scrolled ? "translate-y-0 opacity-100" : "-translate-y-0.5 opacity-0"
+            )}
+          >
+            <ChevronRight size={14} aria-hidden="true" className="shrink-0 rtl:rotate-180" />
+            <strong className="truncate font-semibold text-adm-ink">{crumb}</strong>
+          </span>
         )}
-        <strong className="truncate font-semibold text-adm-ink">{crumb ?? "Admin"}</strong>
       </nav>
 
       <div className="ms-auto flex items-center gap-2">

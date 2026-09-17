@@ -38,11 +38,16 @@ export async function GET() {
       .or(`pickup_datetime.gte."${midnight}",return_datetime.gte."${midnight}"`),
     db.from("reservations").select("id", { count: "exact", head: true }).eq("status", "cancel_requested"),
     db.from("reviews").select("id", { count: "exact", head: true }).eq("is_approved", false),
+    // Rows, not a count: the pill says "kişi sitede", and a person reading the
+    // site in two tabs owns two sessions here — sessionStorage gives each tab
+    // its own id. The visitor id is shared across a browser's tabs, so the
+    // people are counted by folding the rows onto it below.
     db
       .from("analytics_sessions")
-      .select("session_id", { count: "exact", head: true })
+      .select("session_id, visitor_id")
       .or("device.is.null,device.neq.bot")
-      .gte("last_seen", new Date(Date.now() - ACTIVE_NOW_MS).toISOString()),
+      .gte("last_seen", new Date(Date.now() - ACTIVE_NOW_MS).toISOString())
+      .limit(1000),
   ]);
 
   // A transfer waits for a driver while one of its legs still ahead of us has
@@ -65,7 +70,11 @@ export async function GET() {
     needsDriver,
     cancelRequests: cancels.count ?? 0,
     pendingReviews: reviews.count ?? 0,
-    liveNow: live.count ?? 0,
+    liveNow: new Set(
+      ((live.data ?? []) as { session_id: string; visitor_id: string | null }[]).map(
+        (s) => s.visitor_id || `session:${s.session_id}`
+      )
+    ).size,
   };
 
   return NextResponse.json(counts, { headers: { "Cache-Control": "no-store" } });
