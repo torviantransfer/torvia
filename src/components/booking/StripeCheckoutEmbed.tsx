@@ -51,49 +51,97 @@ interface Props {
   driverAmount?: number;
 }
 
+/**
+ * The same tokens as the rest of the wizard: #F5F5F7 fields with no border
+ * that go white on focus, #007AFF as the one accent, 12-14px radii. Stripe's
+ * "flat" theme starts from thin gray borders on a white field — the right
+ * base to start from, since night/stripe both carry stronger opinions this
+ * would have to fight — but its defaults still read as a generic web form
+ * dropped into a page that has otherwise moved to this system.
+ */
 const appearance: StripeElementsOptions["appearance"] = {
   theme: "flat",
   variables: {
     colorPrimary: "#007AFF",
-    colorBackground: "#FFFFFF",
+    colorBackground: "#F5F5F7",
     colorText: "#1d1d1f",
-    colorTextSecondary: "#6b7280",
-    colorDanger: "#ef4444",
+    colorTextSecondary: "#86868b",
+    colorDanger: "#D70015",
     fontFamily: "Inter, system-ui, sans-serif",
     borderRadius: "12px",
-    spacingUnit: "4px",
+    spacingUnit: "5px",
     fontSizeBase: "15px",
-    colorIcon: "#6b7280",
+    colorIcon: "#86868b",
+    fontWeightNormal: "500",
   },
   rules: {
     ".Input": {
-      backgroundColor: "#f9fafb",
-      border: "1px solid #e5e7eb",
+      backgroundColor: "#F5F5F7",
+      border: "none",
       boxShadow: "none",
-      padding: "12px 14px",
+      padding: "14px",
+      fontSize: "15px",
     },
     ".Input:focus": {
-      border: "1px solid #007AFF",
-      boxShadow: "0 0 0 1px #007AFF",
+      backgroundColor: "#FFFFFF",
+      boxShadow: "0 0 0 2px rgba(0,122,255,0.4)",
+    },
+    ".Input--invalid": {
+      backgroundColor: "#FFF2F1",
+      boxShadow: "0 0 0 1px rgba(255,59,48,0.5)",
     },
     ".Label": {
-      color: "#374151",
+      color: "#424245",
       fontSize: "13px",
       fontWeight: "500",
       marginBottom: "6px",
     },
+    /* Tabs, not bordered boxes: a soft fill at rest, white with a blue ring
+       once chosen — the same pairing the payment-method rows on the previous
+       step use, so the card form reads as one more list in the same system
+       rather than a different product embedded in the page. */
     ".Tab": {
-      backgroundColor: "#f9fafb",
-      border: "1px solid #e5e7eb",
-      color: "#1d1d1f",
-    },
-    ".Tab--selected": {
-      backgroundColor: "#eff6ff",
-      border: "1px solid #007AFF",
-      color: "#007AFF",
+      backgroundColor: "#F5F5F7",
+      border: "none",
+      borderRadius: "12px",
+      boxShadow: "none",
+      padding: "12px",
     },
     ".Tab:hover": {
-      backgroundColor: "#f3f4f6",
+      backgroundColor: "#EBEBED",
+    },
+    ".Tab--selected": {
+      backgroundColor: "#FFFFFF",
+      boxShadow: "0 0 0 2px #007AFF, 0 1px 2px rgba(0,0,0,0.05)",
+    },
+    ".TabLabel": {
+      fontWeight: "600",
+      fontSize: "13.5px",
+    },
+    ".Block": {
+      backgroundColor: "#F5F5F7",
+      borderRadius: "14px",
+      border: "none",
+      padding: "14px",
+    },
+    ".Dropdown": {
+      borderRadius: "14px",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    },
+    ".DropdownItem": {
+      padding: "12px 14px",
+      borderRadius: "10px",
+    },
+    ".DropdownItem--highlight": {
+      backgroundColor: "#F5F5F7",
+    },
+    ".CheckboxInput": {
+      borderRadius: "6px",
+      border: "1.5px solid #c7c7cc",
+    },
+    ".CheckboxInput--checked": {
+      backgroundColor: "#007AFF",
+      borderColor: "#007AFF",
     },
   },
 };
@@ -288,16 +336,24 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
           {/* Name, email and phone are not asked here: the passenger-info
               step already has them, and a booking is one connected form, not
               two forms that happen to ask the same three questions. `never`
-              means confirmPayment must hand them over instead — see
-              confirmParams.payment_method_data.billing_details above.
-              `wallets.link: "never"` additionally drops Link's own inline
-              "save my info for next time" prompt, which is the same three
-              fields again wearing a different label. */}
+              applies to every payment method shown here, Link included, so
+              its own "save my info" prompt has nothing left to ask either —
+              without losing Link itself, which a customer with a saved
+              wallet may still want to pay with. confirmPayment hands the
+              three fields over instead, at confirmation
+              (confirmParams.payment_method_data.billing_details above). */}
+          {/* Card leads every time; everything else — Bancontact, EPS, Klarna,
+              Amazon Pay, whatever the account has on — follows in whatever
+              order Stripe judges best for the visitor, and spills into the
+              "more" tab once the row runs out of width rather than crowding
+              it. This is a positioning decision, not a listing one: nothing
+              here is switched off, a card payer just never has to scan past
+              five icons to find the one tab that matters to them. */}
           <PaymentElement
             options={{
               layout: "tabs",
+              paymentMethodOrder: ["card"],
               fields: { billingDetails: { name: "never", email: "never", phone: "never" } },
-              wallets: { link: "never" },
             }}
           />
         </div>
