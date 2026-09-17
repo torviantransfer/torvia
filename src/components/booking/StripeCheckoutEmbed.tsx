@@ -33,13 +33,18 @@ interface Props {
   reservationCode: string;
   locale: string;
   totalPrice: number;
-  regionName: string;
+  /** Already the full localized route ("Antalya Havalimanı → Belek"), not just the destination — this file has no locale-aware label for the airport end of it. */
+  routeLabel: string;
   tripType: string;
   pickupDate: string;
   pickupTime: string;
   onSuccess: () => void;
   /** Needed to show the summary in the visitor's currency, not raw dollars. */
   exchangeRates: Record<string, number>;
+  /** Already on the reservation from the passenger step — see `billingDetails`. */
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   // Cash deposit fields
   isDeposit?: boolean;
   depositAmount?: number;
@@ -93,7 +98,7 @@ const appearance: StripeElementsOptions["appearance"] = {
   },
 };
 
-function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount }: Omit<Props, "clientSecret">) {
+function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount, customerName, customerEmail, customerPhone }: Omit<Props, "clientSecret">) {
   const stripe = useStripe();
   const elements = useElements();
   const t = useTranslations("booking");
@@ -135,6 +140,18 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/${locale}/booking/success?code=${reservationCode}`,
+        // The Payment Element is told below (`fields.billingDetails`) not to
+        // ask for these, since the passenger-info step already collected
+        // them — a name/email/phone field the customer just typed, asked
+        // again at the point of paying, reads as the form having lost what
+        // they entered rather than as one connected booking.
+        payment_method_data: {
+          billing_details: {
+            name: customerName || undefined,
+            email: customerEmail || undefined,
+            phone: customerPhone || undefined,
+          },
+        },
       },
       redirect: "if_required",
     });
@@ -191,7 +208,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             <MapPin size={16} className={isDeposit ? "text-amber-600" : "text-blue-600"} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-gray-900 text-sm font-semibold truncate">Antalya Airport → {regionName}</p>
+            <p className="text-gray-900 text-sm font-semibold truncate">{routeLabel}</p>
             <p className="text-gray-500 text-xs">
               {tripType === "round_trip" ? t("roundTrip") : t("oneWay")} · {formattedDate} · {pickupTime}
             </p>
@@ -238,7 +255,20 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
           field in front of the one-tap it exists to remove. */}
       <div>
         <ExpressCheckoutElement
-          options={{ buttonHeight: 48 }}
+          options={{
+            buttonHeight: 48,
+            // One button per row rather than the row Stripe's own layout
+            // packed them into — three brand-coloured buttons sharing a
+            // narrow row read as clutter, not as choice.
+            layout: { maxColumns: 1 },
+            // Link and Amazon Pay dropped: Link's own button sat beside
+            // Apple/Google Pay promising the same one-tap speed while
+            // asking the customer to create a Link account first, and
+            // Amazon Pay has no customer base among the guests this page
+            // actually sells to. Apple Pay and Google Pay are the two wallets
+            // worth the space.
+            paymentMethods: { link: "never", amazonPay: "never" },
+          }}
           onReady={({ availablePaymentMethods }) => setWalletsShown(Boolean(availablePaymentMethods))}
           onConfirm={confirmPayment}
         />
@@ -255,7 +285,21 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             <span className="text-gray-900 text-sm font-medium">{t("cardDetails")}</span>
           </div>
 
-          <PaymentElement options={{ layout: "tabs" }} />
+          {/* Name, email and phone are not asked here: the passenger-info
+              step already has them, and a booking is one connected form, not
+              two forms that happen to ask the same three questions. `never`
+              means confirmPayment must hand them over instead — see
+              confirmParams.payment_method_data.billing_details above.
+              `wallets.link: "never"` additionally drops Link's own inline
+              "save my info for next time" prompt, which is the same three
+              fields again wearing a different label. */}
+          <PaymentElement
+            options={{
+              layout: "tabs",
+              fields: { billingDetails: { name: "never", email: "never", phone: "never" } },
+              wallets: { link: "never" },
+            }}
+          />
         </div>
 
         {error && (
@@ -322,7 +366,7 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   );
 }
 
-export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, regionName, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount }: Props) {
+export default function StripeCheckoutEmbed({ clientSecret, reservationCode, locale, totalPrice, routeLabel, tripType, pickupDate, pickupTime, onSuccess, exchangeRates, isDeposit, depositAmount, driverAmount, customerName, customerEmail, customerPhone }: Props) {
   const options: StripeElementsOptions = {
     clientSecret,
     appearance,
@@ -337,7 +381,7 @@ export default function StripeCheckoutEmbed({ clientSecret, reservationCode, loc
         reservationCode={reservationCode}
         locale={locale}
         totalPrice={totalPrice}
-        regionName={regionName}
+        routeLabel={routeLabel}
         tripType={tripType}
         pickupDate={pickupDate}
         pickupTime={pickupTime}
@@ -346,6 +390,9 @@ export default function StripeCheckoutEmbed({ clientSecret, reservationCode, loc
         isDeposit={isDeposit}
         depositAmount={depositAmount}
         driverAmount={driverAmount}
+        customerName={customerName}
+        customerEmail={customerEmail}
+        customerPhone={customerPhone}
       />
     </Elements>
   );

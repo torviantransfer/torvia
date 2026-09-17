@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "Gekozen voertuig",
     "changeVehicle": "Wijzig",
     "continueStep": "Doorgaan",
-    "routeNeedsAirport": "Een van beide punten moet de luchthaven Antalya zijn."
+    "routeNeedsAirport": "Een van beide punten moet de luchthaven Antalya zijn.",
+    "tripUpdate": "Bijwerken",
+    "tripTime": "Tijd",
+    "errorInvalidPhone": "Voer een geldig telefoonnummer in",
+    "depositExplanation": "Door nu de aanbetaling te doen, legt u uw exacte datum en tijd definitief vast. Bij annulering krijgt u de volledige aanbetaling terug."
   },
   "trust": {
     "heading": "Waarom reizigers voor TORVIAN kiezen.",

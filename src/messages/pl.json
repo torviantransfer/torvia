@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "Wybrany pojazd",
     "changeVehicle": "Zmień",
     "continueStep": "Dalej",
-    "routeNeedsAirport": "Jednym z punktów trasy musi być lotnisko w Antalyi."
+    "routeNeedsAirport": "Jednym z punktów trasy musi być lotnisko w Antalyi.",
+    "tripUpdate": "Aktualizuj",
+    "tripTime": "Godzina",
+    "errorInvalidPhone": "Podaj prawidłowy numer telefonu",
+    "depositExplanation": "Wpłata zadatku rezerwuje dla Państwa dokładny termin i godzinę. W przypadku anulowania cały zadatek zostanie zwrócony."
   },
   "trust": {
     "heading": "Dlaczego podróżni wybierają TORVIAN.",

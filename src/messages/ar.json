@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "المركبة المختارة",
     "changeVehicle": "تغيير",
     "continueStep": "متابعة",
-    "routeNeedsAirport": "يجب أن تكون إحدى نقطتَي الرحلة مطار أنطاليا."
+    "routeNeedsAirport": "يجب أن تكون إحدى نقطتَي الرحلة مطار أنطاليا.",
+    "tripUpdate": "تحديث",
+    "tripTime": "الوقت",
+    "errorInvalidPhone": "أدخل رقم هاتف صالحًا",
+    "depositExplanation": "دفع العربون الآن يضمن حجز التاريخ والوقت المحددين لكم بشكل نهائي. في حال الإلغاء، يُرد لكم العربون بالكامل."
   },
   "trust": {
     "heading": "لماذا يختار المسافرون TORVIAN.",

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import PhoneInput, { isValidPhoneNumber, type Country } from "react-phone-number-input";
+import PhoneInput, { isPossiblePhoneNumber, isValidPhoneNumber, type Country } from "react-phone-number-input";
 import * as flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
 /* Imported outright, not through another dynamic().
@@ -14,14 +14,16 @@ import "react-phone-number-input/style.css";
    before anything appeared. Two waterfalls to draw the first thing on the page.
    Together they are one import. */
 import BookingFormMini, { type MiniRegion } from "./BookingFormMini";
+import TripEditor from "./TripEditor";
 
 const StripeCheckoutEmbed = dynamic(() => import("./StripeCheckoutEmbed"), { ssr: false });
 
 import {
-  Plane, MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
-  ArrowLeftRight, Baby, CreditCard, Check, Shield, Loader2, AlertCircle,
+  MapPin, Calendar, Users, Luggage, ArrowRight, ArrowLeft,
+  ArrowLeftRight, Baby, CreditCard, Check, Loader2, AlertCircle,
   Wind, Wifi, Droplets, Armchair, Plug, Tv, GlassWater, X,
-  CalendarCheck, Banknote, Sparkles, Clock, MessageCircle, Ban, ShieldCheck,
+  CalendarCheck, Banknote, Clock, MessageCircle, Ban, ShieldCheck, ChevronDown,
+  ChevronLeft, Minus, Plus, Lock, BadgeCheck,
 } from "lucide-react";
 import type { PriceCalculation } from "@/types";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -108,6 +110,7 @@ export default function BookingWizard(props: Props) {
 }
 function BookingWizardInner(props: Props) {
   const t = useTranslations("booking");
+  const tc = useTranslations("common");
   const locale = useLocale() as Locale;
   const { format: fmt, formatBilling, isConverted } = useCurrency();
 
@@ -129,6 +132,8 @@ function BookingWizardInner(props: Props) {
   const [children, setChildren] = useState(props.initialChildren ?? 0);
 
   const [step, setStep] = useState(1);
+  const [editingTrip, setEditingTrip] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -574,6 +579,10 @@ function BookingWizardInner(props: Props) {
     // missing @ or a bare domain — not to adjudicate RFC 5322.
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) errors.email = t("errorInvalidEmail");
     if (!phone.trim()) errors.phone = t("fieldRequired");
+    // "Possible", not "valid": length only. It stops the half-typed number
+    // that would leave the driver with no way to reach the customer, without
+    // rejecting a real number whose pattern the bundled metadata does not know.
+    else if (!isPossiblePhoneNumber(phone)) errors.phone = t("errorInvalidPhone");
     /* Flight number and hotel are asked for but no longer demanded. Both were
        required, and both are answers a customer comparing prices often does not
        have yet: the flight is booked after the transfer is priced, and the hotel
@@ -736,8 +745,7 @@ function BookingWizardInner(props: Props) {
       <div
         role="alert"
         aria-live="assertive"
-        className={`p-4 rounded-lg text-red-600 flex items-center gap-2 text-sm ${className}`}
-        style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+        className={`flex items-center gap-2.5 rounded-[14px] bg-[#FFF2F1] px-4 py-3 text-[14px] font-medium text-[#D70015] ring-1 ring-[#FF3B30]/25 ${className}`}
       >
         <AlertCircle size={16} className="flex-shrink-0" />
         <span>{error}</span>
@@ -756,19 +764,25 @@ function BookingWizardInner(props: Props) {
       return next;
     });
 
-  const fieldClass = (name: string) =>
-    `w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${
-      fieldErrors[name] ? "focus:ring-red-500" : "focus:ring-blue-500"
-    }`;
-
-  const fieldStyle = (name: string) => ({
-    backgroundColor: fieldErrors[name] ? "rgba(220,38,38,0.04)" : "rgba(0,0,0,0.03)",
-    border: fieldErrors[name] ? "1px solid #dc2626" : "1px solid rgba(0,0,0,0.08)",
-  });
+  /* One field style for the whole passenger step: every input, the phone
+     field and the textarea share height, fill, radius and focus ring.
+     `focus-within` rather than `focus` so the phone field — a wrapper round
+     its own input — lights up exactly like a plain input. */
+  const fieldBase =
+    "w-full rounded-[12px] px-3.5 text-[15px] text-[#1d1d1f] placeholder:text-[#a1a1a6] outline-none transition focus-within:bg-white focus-within:ring-2";
+  const fieldTone = (name: string) =>
+    fieldErrors[name]
+      ? "bg-[#FFF2F1] ring-1 ring-[#FF3B30]/50 focus-within:ring-[#FF3B30]/40"
+      : "bg-[#F5F5F7] focus-within:ring-[#007AFF]/40";
+  const fieldClass = (name: string) => `h-11 ${fieldBase} ${fieldTone(name)}`;
+  const labelClass = "mb-1 block text-[13px] font-medium text-[#424245]";
+  const groupCard = "rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5";
+  const stepperButton =
+    "grid size-9 place-items-center rounded-full bg-white text-[#007AFF] ring-1 ring-black/[0.08] transition active:scale-95 disabled:cursor-not-allowed disabled:text-[#c7c7cc]";
 
   const fieldMessage = (name: string) =>
     fieldErrors[name] ? (
-      <p role="alert" className="mt-1.5 flex items-start gap-1 text-[11.5px] font-medium text-red-600">
+      <p role="alert" className="mt-1.5 flex items-start gap-1.5 text-[12.5px] font-medium text-[#D70015]">
         <AlertCircle size={12} className="mt-px shrink-0" />
         {fieldErrors[name]}
       </p>
@@ -843,21 +857,24 @@ function BookingWizardInner(props: Props) {
         {/* Sized to its labels rather than capped at a fixed width: at
             max-w-md the three names were truncated to "Araç S…" / "Yolcu
             Bil…". Fixed-width connectors keep the spacing even. */}
+        {/* Same three tokens as everywhere else on this page now — #007AFF for
+            the current step, #34C759 for a done one — rather than the
+            gradient-and-emerald pairing this used to carry on its own. */}
         <div className="hidden sm:flex justify-center">
-          <div className="inline-flex items-center px-5 py-3 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
+          <div className="inline-flex items-center gap-1 rounded-full bg-[#F5F5F7] p-1.5">
             {[1, 2, 3].map((s) => (
               <Fragment key={s}>
-                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl transition-all"
-                  style={s === step ? { background: "linear-gradient(135deg, #007AFF, #0056CC)", boxShadow: "0 4px 15px rgba(0,122,255,0.3)" } : s < step ? { backgroundColor: "rgba(52,211,153,0.1)" } : {}}
-                >
-                  <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-xs font-bold transition-all ${s < step ? "bg-emerald-500/20 text-emerald-600 ring-1 ring-emerald-500/30" : s === step ? "bg-white/20 text-white" : "bg-gray-50 text-gray-500 ring-1 ring-gray-200"}`}>
+                <div className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 transition-colors ${s === step ? "bg-[#007AFF]" : ""}`}>
+                  <span className={`grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-bold ${
+                    s < step ? "bg-[#34C759] text-white" : s === step ? "bg-white/25 text-white" : "bg-white text-[#86868b] ring-1 ring-black/[0.06]"
+                  }`}>
                     {s < step ? <Check size={12} strokeWidth={3} /> : s}
-                  </div>
-                  <span className={`text-xs font-semibold whitespace-nowrap ${s < step ? "text-emerald-600" : s === step ? "text-white" : "text-gray-500"}`}>
+                  </span>
+                  <span className={`whitespace-nowrap text-[13px] font-semibold ${s === step ? "text-white" : s < step ? "text-[#1d1d1f]" : "text-[#86868b]"}`}>
                     {stepLabels[s - 1]}
                   </span>
                 </div>
-                {s < 3 && <div className={`h-px w-8 mx-2 flex-shrink-0 ${s < step ? "bg-emerald-500/40" : "bg-gray-200"}`} />}
+                {s < 3 && <div className={`mx-1 h-px w-4 shrink-0 ${s < step ? "bg-[#34C759]/50" : "bg-black/[0.08]"}`} />}
               </Fragment>
             ))}
           </div>
@@ -874,44 +891,80 @@ function BookingWizardInner(props: Props) {
           the vehicle choices below the fold on phones, and its live OSRM
           distance contradicted the figure shown here. */}
       {regionData && step === 1 && (
-        <div className="mx-auto mb-8 max-w-3xl rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.08)" }}>
-          <div className="flex gap-3 px-4 py-3.5" style={{ backgroundColor: "#FFFFFF" }}>
+        /* No overflow-hidden: the search form opened inside this card has
+           dropdowns that must be able to spill past its edge. The chip strip
+           rounds its own bottom corners instead, for as long as it is the last
+           thing in the card. */
+        <div className="mx-auto mb-8 max-w-3xl rounded-[18px] bg-white ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <div className="relative flex gap-3 px-4 py-3.5">
+            {/* Edit the trip in place. It used to be a lone "Back" button under
+                the whole page that threw away the search and started again; now
+                the search opens right here, already filled in with this trip. */}
+            <button
+              type="button"
+              onClick={() => setEditingTrip((v) => !v)}
+              aria-expanded={editingTrip}
+              className="absolute end-3 top-3 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-medium text-[#007AFF] transition-colors hover:bg-[#007AFF]/[0.08]"
+            >
+              {t("changeVehicle")}
+              <ChevronDown size={15} className={`transition-transform duration-200 ${editingTrip ? "rotate-180" : ""}`} />
+            </button>
             {/* Pin rail */}
             <div className="flex flex-col items-center pt-1.5 flex-shrink-0">
-              <span className="w-2 h-2 rounded-full bg-blue-600" />
+              <span className="w-2 h-2 rounded-full bg-[#007AFF]" />
               <span className="w-px flex-1 min-h-[18px] my-1 bg-gray-200" />
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="w-2 h-2 rounded-full bg-[#34C759]" />
             </div>
             {/* Read in travel order, so a guest being taken to the airport
                 sees their hotel first. The date and time belong to whichever
                 stop the journey actually starts from. */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+            <div className="flex-1 min-w-0 flex flex-col gap-2.5 pe-24">
               <div>
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
+                <p className="text-[15px] sm:text-base font-semibold text-[#1d1d1f] leading-tight truncate">
                   {startsAtAirport ? airportLabel(locale) : getRegionName(regionData)}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(pickupDate)} · {pickupTime}</p>
+                <p className="text-[12.5px] text-[#86868b] mt-0.5">{formatDate(pickupDate)} · {pickupTime}</p>
               </div>
               <div>
-                <p className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
+                <p className="text-[15px] sm:text-base font-semibold text-[#1d1d1f] leading-tight truncate">
                   {startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}
                 </p>
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-1.5 px-4 py-2.5" style={{ backgroundColor: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+          <div className={`flex flex-wrap gap-1.5 border-t border-black/[0.06] bg-[#FAFAFB] px-4 py-2.5 ${editingTrip ? "" : "rounded-b-[18px]"}`}>
             {tripType === "round_trip" && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full" style={{ border: "1px solid rgba(37,99,235,0.2)" }}>
-                <ArrowLeftRight size={11} />{t("roundTrip")}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#007AFF]/[0.08] px-2.5 py-1 text-[12px] font-medium text-[#0062CC]">
+                <ArrowLeftRight size={13} />{t("roundTrip")}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 bg-white px-2 py-1 rounded-full" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-              <MapPin size={11} className="text-blue-600" />{regionData.distance_km} km
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[12px] font-medium text-[#424245] ring-1 ring-black/[0.06]">
+              <Users size={13} className="text-[#86868b]" />{adults + children} {t("passengers")}
             </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 bg-white px-2 py-1 rounded-full" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-              <Clock size={11} className="text-blue-600" />~{regionData.duration_minutes} min
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[12px] font-medium text-[#424245] ring-1 ring-black/[0.06]">
+              <MapPin size={13} className="text-[#86868b]" />{regionData.distance_km} km
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[12px] font-medium text-[#424245] ring-1 ring-black/[0.06]">
+              <Clock size={13} className="text-[#86868b]" />~{regionData.duration_minutes} {tc("minutes")}
             </span>
           </div>
+          {editingTrip && (
+            <div className="rounded-b-[18px] border-t border-black/[0.06] p-4">
+              <TripEditor
+                regionSlug={regionSlug}
+                direction={direction}
+                date={pickupDate}
+                time={pickupTime}
+                roundTrip={tripType === "round_trip"}
+                returnDate={returnDate}
+                returnTime={returnTime}
+                adults={adults}
+                kids={children}
+                roundTripAvailable={props.initialRegions?.find((r) => r.slug === regionSlug)?.has_round_trip !== false}
+                onClose={() => setEditingTrip(false)}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -923,8 +976,8 @@ function BookingWizardInner(props: Props) {
           be scrolled into full view once a vehicle is chosen. */}
       {step === 1 && (
         <div className="mx-auto max-w-3xl pb-24">
-          <h2 className="text-[22px] font-bold leading-tight text-gray-900">{t("selectVehicle")}</h2>
-          <p className="mt-1 mb-5 text-[13px] text-gray-500">{t("vehicleStepSubtitle")}</p>
+          <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.025em] text-[#1d1d1f]">{t("selectVehicle")}</h2>
+          <p className="mt-1.5 mb-6 text-[15px] leading-snug text-[#6e6e73]">{t("vehicleStepSubtitle")}</p>
 
           {/* Date unavailability warning */}
           {!dateAvailable && (
@@ -995,172 +1048,140 @@ function BookingWizardInner(props: Props) {
               <p className="text-gray-500">{t("errorGeneric")}</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {vehicles.map((vehicle) => {
                 const { fits, reason } = vehicleFit(vehicle);
                 const chosen = selectedVehicle?.categoryId === vehicle.categoryId;
-
-                /* One button, rendered at two places and shown at one
-                   width each — see the two call sites for why the price and
-                   the button cannot share a rail on a phone. Sizing comes
-                   from the caller: the rail wants a fixed-height pill, the
-                   phone strip wants a tap target that can take two lines. */
-                const selectButton = (sizing: string) => (
-                  <button
-                    type="button"
-                    onClick={() => selectVehicle(vehicle)}
-                    disabled={checkingAvailability || !fits}
-                    title={reason ?? undefined}
-                    aria-pressed={chosen}
-                    className={`items-center justify-center gap-1.5 rounded-xl font-semibold transition-all ${sizing} ${
-                      !fits
-                        ? "cursor-not-allowed bg-gray-100 text-gray-400"
-                        : chosen
-                          ? "bg-[#0e8a61] text-white shadow-[0_6px_14px_-6px_rgba(14,138,97,0.7)]"
-                          : "border border-[#0e8a61] text-[#0e8a61] hover:bg-[#EDF8F4] disabled:opacity-50"
-                    }`}
-                  >
-                    {!fits ? <Ban size={13} /> : checkingAvailability ? <Loader2 size={13} className="animate-spin" /> : chosen ? <Check size={13} /> : null}
-                    {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
-                  </button>
-                );
+                const showCash = vehicle.cashPrice != null && settingsData.cashPaymentEnabled;
 
                 return (
                 /* A vehicle that cannot take the party stays on the page,
-                   faded and unselectable, carrying the reason. Hiding it
-                   instead would leave the customer wondering where the cheap
-                   option went; greying it out without a reason is worse still,
-                   because the obvious read is that the site is broken. */
-                <div
+                   faded and unselectable, carrying the reason. Hidden, the
+                   customer wonders where the cheaper option went; greyed out
+                   without a reason, the obvious read is a broken site.
+
+                   Stacked on a phone, side by side from `sm`: at 390px a row
+                   left the photograph 116px wide and squeezed name, specs,
+                   chips and price into what was left — the vehicle, the one
+                   thing being chosen between, was the smallest thing on the
+                   card. */
+                <article
                   key={vehicle.categoryId}
-                  className={`overflow-hidden rounded-2xl transition-all ${
+                  className={`overflow-hidden rounded-[22px] bg-white transition-shadow duration-200 sm:flex ${
                     !fits
-                      ? "opacity-60 saturate-50 border border-dashed border-black/[0.16] bg-white"
+                      ? "opacity-60 ring-1 ring-black/[0.08]"
                       : chosen
-                        ? "border border-[#0e8a61] bg-[#EDF8F4]/60 shadow-[0_6px_20px_-8px_rgba(14,138,97,0.45)]"
-                        : "border border-black/[0.08] bg-white hover:shadow-md"
+                        ? "ring-2 ring-[#007AFF] shadow-[0_14px_34px_-18px_rgba(0,122,255,0.5)]"
+                        : "ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_30px_-20px_rgba(0,0,0,0.22)]"
                   }`}
                 >
-                  {/* Photo, details, then price and choice — one row, read
-                      left to right. The features moved up into the details
-                      column and the grey strip they used to sit in is gone:
-                      it banded the card into two halves for information that
-                      belongs beside the name. */}
-                  <div className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
-                    {/* The whole vehicle, never cropped: `object-contain` in a
-                        16:9 box. No panel behind it — the shots are cut-outs
-                        on transparency, so the vehicle reads as floating
-                        rather than boxed. It is the largest thing on the card
-                        because it is what the customer is choosing between. */}
-                    <div className="relative aspect-[16/9] w-[116px] shrink-0 sm:w-[176px] md:w-[200px]">
+                  {/* The stage: a soft studio sweep the cut-out can sit on,
+                      with a shadow under the wheels so it stands rather than
+                      floats. `object-contain` — the whole vehicle, never
+                      cropped. */}
+                  <div className="relative flex aspect-[16/9] items-center justify-center bg-[radial-gradient(120%_95%_at_50%_0%,#FFFFFF_0%,#F5F5F7_55%,#EBEBEE_100%)] sm:aspect-auto sm:w-[270px] sm:shrink-0">
+                    <div className="relative h-[80%] w-[86%] sm:h-[140px] sm:w-[230px]">
                       <Image
                         src={vehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
                         alt={vehicle.name}
                         fill
-                        sizes="(min-width: 768px) 200px, (min-width: 640px) 176px, 116px"
-                        className={`object-contain ${fits ? "" : "grayscale"}`}
+                        sizes="(min-width: 640px) 230px, 86vw"
+                        className={`object-contain drop-shadow-[0_16px_14px_rgba(0,0,0,0.2)] ${fits ? "" : "grayscale"}`}
                       />
                     </div>
+                  </div>
 
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      {/* `text-balance` so a two-line name splits evenly —
-                          "Mercedes-Benz / Vito VIP" rather than leaving "VIP"
-                          alone on the second line. */}
-                      <h3 className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-balance text-gray-900 sm:text-[16px]">
-                        {vehicle.name}
-                      </h3>
+                  <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
+                    <h3 className="text-[19px] font-semibold leading-tight tracking-[-0.02em] text-balance text-[#1d1d1f]">
+                      {vehicle.name}
+                    </h3>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] text-gray-500">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Users size={13} className="shrink-0 text-gray-400" />
-                          1&ndash;{vehicle.max_passengers} {t("passengers")}
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Luggage size={13} className="shrink-0 text-gray-400" />
-                          {vehicle.max_luggage} {t("luggageCapacity")}
-                        </span>
-                      </div>
-
-                      {reason && (
-                        <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-800" style={{ border: "1px solid rgba(245,158,11,0.3)" }}>
-                          <Ban size={11} className="flex-shrink-0" />{reason}
-                        </span>
-                      )}
-
-                      {vehicle.calculation.roundTripDiscount > 0 && (
-                        <span className="inline-block w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700" style={{ border: "1px solid rgba(16,163,74,0.25)" }}>
-                          {t("roundTripDiscount")} &minus;{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
-                        </span>
-                      )}
-
-                      {/* Capped at three: a vehicle with eight features would
-                          turn the row into a paragraph and push the card past
-                          the height at which three of them can be compared. */}
-                      {(vehicle.features.length > 0 || (vehicle.cashPrice != null && settingsData.cashPaymentEnabled)) && (
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          {vehicle.features.slice(0, 3).map((f) => (
-                            <span
-                              key={f}
-                              className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg border border-black/[0.08] bg-white px-1.5 py-1 text-[10.5px] text-gray-600"
-                            >
-                              <span className="text-[#0e8a61]">{featureIcon[f] ?? <Check size={11} />}</span>
-                              {featureLabel[f] || f}
-                            </span>
-                          ))}
-
-                          {vehicle.cashPrice != null && settingsData.cashPaymentEnabled && (
-                            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-50 px-2 py-1 text-[10.5px] font-semibold text-amber-700" style={{ border: "1px solid rgba(245,158,11,0.28)" }}>
-                              <Banknote size={11} className="shrink-0" />
-                              {t("payAtVehicle")}: {fmt(vehicle.cashPrice, exchangeRates)}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-[#424245]">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users size={16} strokeWidth={1.75} className="shrink-0 text-[#86868b]" />
+                        1&ndash;{vehicle.max_passengers} {t("passengers")}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Luggage size={16} strokeWidth={1.75} className="shrink-0 text-[#86868b]" />
+                        {vehicle.max_luggage} {t("luggageCapacity")}
+                      </span>
                     </div>
 
-                    {/* The rail: the figure over the thing you press, at the
-                        right edge of the card. Only from `sm` up — its real
-                        width is set by the widest case, not the demo one. A
-                        TRY total runs to "12.500,00 ₺" and the German label
-                        to "Dieses Fahrzeug wählen", which together want
-                        ~175px; a 360px phone has ~310px for the whole row. */}
-                    <div className="hidden shrink-0 flex-col items-end justify-center gap-2.5 ps-1 sm:flex">
-                      <div className="text-end">
-                        <span className="block text-[22px] font-extrabold leading-none tracking-tight text-gray-900">
+                    {vehicle.features.length > 0 && (
+                      <ul className="mt-3.5 flex flex-wrap gap-1.5">
+                        {vehicle.features.map((f) => (
+                          <li
+                            key={f}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1 text-[12px] font-medium text-[#424245]"
+                          >
+                            <span className="text-[#007AFF]">{featureIcon[f] ?? <Check size={13} />}</span>
+                            {featureLabel[f] || f}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {(reason || vehicle.calculation.roundTripDiscount > 0) && (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {reason && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF4E5] px-2.5 py-1 text-[12px] font-medium text-[#B25E00]">
+                            <Ban size={13} className="shrink-0" />{reason}
+                          </span>
+                        )}
+                        {vehicle.calculation.roundTripDiscount > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-[#E8F7EE] px-2.5 py-1 text-[12px] font-medium text-[#1E7A43]">
+                            {t("roundTripDiscount")} &minus;{fmt(vehicle.calculation.roundTripDiscount, exchangeRates)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Price over the button on a phone, beside it from `sm`.
+                        A shared row on a phone fought the longest labels —
+                        "Dieses Fahrzeug wählen" next to "12.500,00 ₺" does not
+                        fit 350px — so the button gets the whole width and one
+                        height everywhere: 48px, the same as every primary
+                        action in this flow. */}
+                    <div aria-hidden="true" className="hidden sm:block sm:flex-1" />
+                    <div className="mt-5 flex flex-col gap-3.5 border-t border-black/[0.06] pt-4 sm:flex-row sm:items-end sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-[28px] font-semibold leading-none tracking-[-0.02em] text-[#1d1d1f]">
                           {fmt(vehicle.calculation.basePrice, exchangeRates)}
-                        </span>
-                        <span className="mt-1.5 block text-[11px] leading-none text-gray-500">
-                          {t("trustFixedPrice")}
-                        </span>
+                        </p>
+                        <p className="mt-1.5 text-[12.5px] leading-snug text-[#86868b]">
+                          {t("trustFixedPrice")} · {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
+                        </p>
+                        {showCash && (
+                          <p className="mt-0.5 text-[12.5px] leading-snug text-[#86868b]">
+                            {t("payAtVehicle")}: <span className="font-medium text-[#424245]">{fmt(vehicle.cashPrice!, exchangeRates)}</span>
+                          </p>
+                        )}
                       </div>
-                      {selectButton("flex h-9 whitespace-nowrap px-4 text-[12.5px]")}
+                      <button
+                        type="button"
+                        onClick={() => selectVehicle(vehicle)}
+                        disabled={checkingAvailability || !fits}
+                        title={reason ?? undefined}
+                        aria-pressed={chosen}
+                        className={`flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-[14px] px-6 text-[15px] font-semibold transition sm:w-auto sm:min-w-[190px] ${
+                          !fits
+                            ? "cursor-not-allowed bg-[#F5F5F7] text-[#86868b]"
+                            : "bg-[#007AFF] text-white hover:bg-[#0062CC] active:scale-[0.98] disabled:opacity-60"
+                        }`}
+                      >
+                        {!fits ? <Ban size={16} /> : checkingAvailability ? <Loader2 size={16} className="animate-spin" /> : chosen ? <Check size={16} strokeWidth={2.5} /> : null}
+                        {chosen ? t("vehicleSelected") : t("selectThisVehicle")}
+                      </button>
                     </div>
                   </div>
-
-                  {/* The phone's rail, unfolded into a strip of its own under
-                      the row. Same pairing, one line lower. A hairline rather
-                      than a fill, so the card still reads as one object. The
-                      button may take two lines in the longer languages, hence
-                      a minimum height rather than a fixed one. */}
-                  <div className="flex items-center justify-between gap-3 border-t border-black/[0.06] px-3 py-2.5 sm:hidden">
-                    <div className="min-w-0">
-                      <span className="block text-[21px] font-extrabold leading-none tracking-tight text-gray-900">
-                        {fmt(vehicle.calculation.basePrice, exchangeRates)}
-                      </span>
-                      <span className="mt-1 block text-[10.5px] leading-none text-gray-500">
-                        {t("trustFixedPrice")}
-                      </span>
-                    </div>
-                    {selectButton("flex min-h-[44px] max-w-[62%] flex-1 px-3 py-2 text-center text-[13px] leading-tight")}
-                  </div>
-                </div>
+                </article>
                 );
               })}
 
               {/* What every price already covers, said once under the list
-                  rather than repeated as a chip on all three cards. */}
-              <p className="flex items-center justify-center gap-2 rounded-xl bg-[#EDF8F4]/60 px-3 py-2.5 text-center text-[12px] text-gray-600">
-                <ShieldCheck size={15} className="shrink-0 text-[#0e8a61]" />
+                  rather than repeated as a chip on every card. */}
+              <p className="flex items-start gap-2.5 rounded-[14px] bg-[#F5F5F7] px-4 py-3 text-[13px] leading-snug text-[#424245] sm:items-center sm:justify-center sm:text-center">
+                <ShieldCheck size={16} className="shrink-0 text-[#34C759]" />
                 {t("allInclusiveNote")}
               </p>
             </div>
@@ -1169,691 +1190,479 @@ function BookingWizardInner(props: Props) {
       )}
 
       {/* STEP 2: Passenger Info + Extras
-           Form left, summary right on desktop. On a phone the form leads and the
-           summary follows it, with the price kept in view by a one-line strip
-           above the form. */}
-      {step === 2 && selectedVehicle && (
-        <div className="grid lg:grid-cols-3 gap-5 lg:gap-8">
-          {/* The form comes first on a phone. The summary card used to, and it
-              is tall enough that the first field was a screen and a half down —
-              the customer's first impression of the step was a price recap they
-              had already agreed to on step 1, not the thing they came to do. The
-              price still travels with them, as the compact strip below. */}
-          <div className="lg:col-span-2 order-1">
-            {/* Phone-only recap. One line, the two things a customer checks
-                before they start typing: what they are buying and what it
-                costs. The full card is still below, and on desktop it is
-                beside them the whole time, so this is hidden there. */}
-            <div
-              className="lg:hidden mb-3 flex items-center gap-3 rounded-xl px-4 py-3"
-              style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)" }}
-            >
-              <div className="relative w-12 h-9 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                <Image
-                  src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"}
-                  alt=""
-                  fill
-                  className="object-contain p-0.5"
-                  sizes="48px"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-bold text-gray-900 leading-tight truncate">
-                  {selectedVehicle.name}
-                </p>
-                <p className="text-[11px] text-gray-400 leading-tight mt-0.5 truncate">
-                  {formatDate(pickupDate)} · {pickupTime}
-                </p>
-              </div>
-              <div className="text-end flex-shrink-0">
-                {/* On a cash booking the figure that matters here is what the
-                    card is about to be charged, not the fare. */}
-                <p className="text-[10px] text-gray-400 leading-none mb-1">
-                  {paymentMethod === "cash" && selectedVehicle.cashDeposit != null
-                    ? t("depositNow")
-                    : t("totalPrice")}
-                </p>
-                <p className={`text-base font-black leading-none ${paymentMethod === "cash" ? "text-amber-600" : "text-blue-600"}`}>
-                  {fmt(
-                    paymentMethod === "cash" && selectedVehicle.cashDeposit != null
-                      ? selectedVehicle.cashDeposit
-                      : totalPrice,
-                    exchangeRates
-                  )}
-                </p>
-              </div>
+           Form left, summary right on desktop. On a phone the summary is a
+           collapsed row above the form: it used to be a full card under it,
+           reached only after the pay button, which is too late to be of use. */}
+      {step === 2 && selectedVehicle && (() => {
+        const v = selectedVehicle;
+        const cashDepositFlow = paymentMethod === "cash" && v.cashDeposit != null;
+        const headlinePrice = cashDepositFlow ? v.cashDeposit! : totalPrice;
+        /* The payment promise leads, as the headline of the card, because it is
+           the one being asked for at this button; the two policies follow as
+           chips beneath it rather than three equal lines of the same weight. */
+        const trustCard = (
+          <div className="rounded-[18px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-2.5">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#E8F7EE] text-[#248A3D]">
+                <Lock size={15} strokeWidth={2.25} />
+              </span>
+              <span className="text-[14px] font-semibold leading-snug text-[#1d1d1f]">{t("trustSecure")}</span>
             </div>
-            <div className="rounded-2xl p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-              {/* Grouped into contact / trip / extras. Everything used to run
-                  together as one flat list of eight unrelated fields, so there
-                  was nothing telling the customer how much was left or which
-                  answers belonged together.
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1.5 text-[12.5px] font-medium leading-none text-[#424245]">
+                <CalendarCheck size={14} className="shrink-0 text-[#248A3D]" />{t("trustCancel")}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1.5 text-[12.5px] font-medium leading-none text-[#424245]">
+                <BadgeCheck size={14} className="shrink-0 text-[#248A3D]" />{t("trustNoHidden")}
+              </span>
+            </div>
+          </div>
+        );
 
-                  There is no card title above these: the step indicator already
-                  reads "Passenger Info", and repeating it here put two
-                  Users-icon headings directly on top of each other. */}
-              <form
-                className="space-y-5"
-                noValidate
-                onFocusCapture={markFormStarted}
-                onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
-              >
-                <div className="flex items-center gap-2.5 pb-1">
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Users size={14} className="text-blue-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("contactSection")}</h3>
-                    <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{t("contactSectionDesc")}</p>
-                  </div>
+        /* The trip and its price, told once and used twice: inside the phone's
+           accordion and in the desktop sidebar. */
+        const summaryDetails = (
+          <div className="space-y-4">
+            {regionData && (
+              <div className="flex gap-3">
+                <div className="flex flex-col items-center pt-1.5">
+                  <span className="size-2 rounded-full bg-[#007AFF]" />
+                  <span className="my-1 min-h-[18px] w-px flex-1 bg-black/[0.12]" />
+                  <span className="size-2 rounded-full bg-[#34C759]" />
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="min-w-0 flex-1 space-y-2.5">
                   <div>
-                    <label htmlFor="booking-firstName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("firstName")} *</label>
-                    <input
-                      id="booking-firstName"
-                      type="text"
-                      autoComplete="given-name"
-                      value={firstName}
+                    <p className="truncate text-[15px] font-semibold leading-tight text-[#1d1d1f]">
+                      {startsAtAirport ? airportLabel(locale) : getRegionName(regionData)}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-[#86868b]">{formatDate(pickupDate)} · {pickupTime}</p>
+                  </div>
+                  <p className="truncate text-[15px] font-semibold leading-tight text-[#1d1d1f]">
+                    {startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-1.5">
+              {tripType === "round_trip" && returnDate && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#007AFF]/[0.08] px-2.5 py-1 text-[12px] font-medium text-[#0062CC]">
+                  <ArrowLeftRight size={13} />{formatDate(returnDate)} · {returnTime}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1 text-[12px] font-medium text-[#424245]">
+                <Users size={13} className="text-[#86868b]" />
+                {adults} {t("adult")}{children > 0 ? ` + ${children} ${t("child")}` : ""}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1 text-[12px] font-medium text-[#424245]">
+                <Luggage size={13} className="text-[#86868b]" />{luggage} {t("luggageCapacity")}
+              </span>
+              {regionData && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-2.5 py-1 text-[12px] font-medium text-[#424245]">
+                  <Clock size={13} className="text-[#86868b]" />{regionData.distance_km} km · ~{regionData.duration_minutes} {tc("minutes")}
+                </span>
+              )}
+            </div>
+
+            {/* Only broken down when there is something to break down; a single
+                row repeating the total read like a mistake. "2 × one way" only
+                appears when a discount comes off it — otherwise an unexplained
+                gap between a subtotal and the total reads as a hidden fee. */}
+            {(tripType === "round_trip" || v.calculation.roundTripDiscount > 0 || childSeat ||
+              (couponStatus?.applied && v.calculation.couponDiscount > 0)) && (
+              <div className="space-y-2 border-t border-black/[0.06] pt-3.5 text-[13.5px]">
+                {(() => {
+                  const twoSingles = tripType === "round_trip" && v.calculation.roundTripDiscount > 0;
+                  return (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#6e6e73]">{twoSingles ? `2 × ${t("oneWay")}` : tripType === "round_trip" ? t("roundTrip") : t("oneWay")}</span>
+                      <span className="font-medium text-[#1d1d1f]">{fmt(twoSingles ? v.oneWayPrice * 2 : v.calculation.basePrice, exchangeRates)}</span>
+                    </div>
+                  );
+                })()}
+                {v.calculation.roundTripDiscount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#6e6e73]">{t("roundTripDiscount")}</span>
+                    <span className="font-medium text-[#248A3D]">−{fmt(v.calculation.roundTripDiscount, exchangeRates)}</span>
+                  </div>
+                )}
+                {childSeat && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#6e6e73]">{t("childSeatFee")}</span>
+                    <span className="font-medium text-[#1d1d1f]">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
+                  </div>
+                )}
+                {couponStatus?.applied && v.calculation.couponDiscount > 0 && (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[#6e6e73]">{t("couponDiscount")}{couponApplied && <span className="text-[#a1a1a6]"> · {couponApplied}</span>}</span>
+                    <span className="whitespace-nowrap font-medium text-[#248A3D]">−{fmt(v.calculation.couponDiscount, exchangeRates)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {cashDepositFlow ? (
+              <div className="divide-y divide-black/[0.06] overflow-hidden rounded-[14px] bg-[#F5F5F7]">
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[13.5px] text-[#6e6e73]">{t("totalPrice")}</span>
+                  <span className="text-[15px] font-semibold text-[#1d1d1f]">{fmt(totalPrice, exchangeRates)}</span>
+                </div>
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[13.5px] font-medium text-[#1d1d1f]">{t("depositNow")}</span>
+                  <span className="text-[17px] font-semibold text-[#1d1d1f]">{fmt(v.cashDeposit!, exchangeRates)}</span>
+                </div>
+                <div className="flex items-center justify-between px-3.5 py-2.5">
+                  <span className="text-[13.5px] text-[#6e6e73]">{t("payToDriver")}</span>
+                  <span className="text-[14px] font-medium text-[#424245]">{fmt(v.cashDriverAmount ?? 0, exchangeRates)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-end justify-between border-t border-black/[0.06] pt-3.5">
+                <div>
+                  <p className="text-[13.5px] font-medium text-[#1d1d1f]">{t("totalPrice")}</p>
+                  <p className="text-[12px] text-[#86868b]">{tripType === "round_trip" ? t("roundTrip") : t("oneWay")}</p>
+                </div>
+                <p className="text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#1d1d1f]">{fmt(totalPrice, exchangeRates)}</p>
+              </div>
+            )}
+
+            {/* Said beside the figure the customer decides on, not first at the
+                card form: the amount charged is a conversion of this one. */}
+            {isConverted && (
+              <p className="text-[12px] text-[#86868b]">{t("chargedIn", { amount: formatBilling(headlinePrice) })}</p>
+            )}
+          </div>
+        );
+
+        return (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          {/* min-w-0: a grid item is as wide as its widest unbreakable content
+              by default, and the truncated vehicle name in the summary row
+              pushed every card on this step past the right edge of a phone. */}
+          <div className="order-1 min-w-0 lg:col-span-2">
+            {/* The one way back from this step. There used to be two: one
+                beside the pay button and another under the whole page. */}
+            <button
+              type="button"
+              onClick={goBack}
+              className="-ms-2 mb-3 inline-flex items-center gap-0.5 rounded-full px-2 py-1 text-[15px] font-medium text-[#007AFF] transition-colors hover:bg-[#007AFF]/[0.08]"
+            >
+              <ChevronLeft size={20} strokeWidth={2.25} className="rtl:rotate-180" />{stepLabels[0]}
+            </button>
+
+            {/* Phone summary: closed by default, since the customer came here
+                to fill the form and already agreed to this price one step ago;
+                one tap shows the whole trip and the breakdown. */}
+            <div className={`mb-5 lg:hidden ${groupCard} !p-0`}>
+              <button
+                type="button"
+                onClick={() => setSummaryOpen((o) => !o)}
+                aria-expanded={summaryOpen}
+                className="flex w-full items-center gap-3 px-4 py-3 text-start"
+              >
+                <span className="relative h-10 w-14 shrink-0 overflow-hidden rounded-[10px] bg-[#F5F5F7]">
+                  <Image src={v.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt="" fill sizes="56px" className="object-contain p-0.5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[15px] font-semibold leading-tight text-[#1d1d1f]">{v.name}</span>
+                  <span className="mt-0.5 block truncate text-[12.5px] text-[#86868b]">{formatDate(pickupDate)} · {pickupTime}</span>
+                </span>
+                <span className="shrink-0 text-end">
+                  <span className="block text-[11px] leading-none text-[#86868b]">{cashDepositFlow ? t("depositNow") : t("totalPrice")}</span>
+                  <span className="mt-1 block text-[17px] font-semibold leading-none text-[#1d1d1f]">{fmt(headlinePrice, exchangeRates)}</span>
+                </span>
+                <ChevronDown size={18} className={`shrink-0 text-[#86868b] transition-transform duration-200 ${summaryOpen ? "rotate-180" : ""}`} />
+              </button>
+              {summaryOpen && <div className="border-t border-black/[0.06] px-4 pb-4 pt-3.5">{summaryDetails}</div>}
+            </div>
+
+            <form
+              className="space-y-5"
+              noValidate
+              onFocusCapture={markFormStarted}
+              onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+            >
+              {/* ── Contact ── */}
+              <section>
+                <h3 className="px-1 text-[16px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">{t("contactSection")}</h3>
+                <p className="mb-2 px-1 text-[13px] text-[#86868b]">{t("contactSectionDesc")}</p>
+                <div className={`${groupCard} grid grid-cols-2 gap-x-3 gap-y-3.5`}>
+                  <div>
+                    <label htmlFor="booking-firstName" className={labelClass}>{t("firstName")}</label>
+                    <input id="booking-firstName" type="text" autoComplete="given-name" value={firstName}
                       onChange={(e) => { setFirstName(e.target.value); clearFieldError("firstName"); }}
-                      aria-invalid={!!fieldErrors.firstName}
-                      className={fieldClass("firstName")}
-                      style={fieldStyle("firstName")}
-                    />
+                      aria-invalid={!!fieldErrors.firstName} className={fieldClass("firstName")} />
                     {fieldMessage("firstName")}
                   </div>
                   <div>
-                    <label htmlFor="booking-lastName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("lastName")} *</label>
-                    <input
-                      id="booking-lastName"
-                      type="text"
-                      autoComplete="family-name"
-                      value={lastName}
+                    <label htmlFor="booking-lastName" className={labelClass}>{t("lastName")}</label>
+                    <input id="booking-lastName" type="text" autoComplete="family-name" value={lastName}
                       onChange={(e) => { setLastName(e.target.value); clearFieldError("lastName"); }}
-                      aria-invalid={!!fieldErrors.lastName}
-                      className={fieldClass("lastName")}
-                      style={fieldStyle("lastName")}
-                    />
+                      aria-invalid={!!fieldErrors.lastName} className={fieldClass("lastName")} />
                     {fieldMessage("lastName")}
                   </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="booking-email" className="block text-sm font-medium text-gray-600 mb-1.5">{t("email")} *</label>
-                    <input
-                      id="booking-email"
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      value={email}
+                  <div className="col-span-2 sm:col-span-1">
+                    <label htmlFor="booking-email" className={labelClass}>{t("email")}</label>
+                    <input id="booking-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email}
                       onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
-                      aria-invalid={!!fieldErrors.email}
-                      className={fieldClass("email")}
-                      style={fieldStyle("email")}
-                    />
+                      aria-invalid={!!fieldErrors.email} className={fieldClass("email")} />
                     {fieldMessage("email")}
                   </div>
-                  <div>
-                    <label htmlFor="booking-phone" className="block text-sm font-medium text-gray-600 mb-1.5">{t("phone")} *</label>
+                  <div className="col-span-2 sm:col-span-1">
+                    <label htmlFor="booking-phone" className={labelClass}>{t("phone")}</label>
                     {/* Opens on the visitor's own country, guessed from the
-                        language they are reading in. See localePhoneCountries.
-
-                        No placeholder either: it held our own Antalya landline,
-                        so the customer's phone field suggested they type a
-                        Turkish office number. The flag and the dialling code
-                        already say what belongs here. */}
+                        language they read in. No placeholder: it used to hold our
+                        own Antalya landline. */}
                     <PhoneInput international defaultCountry={phoneCountry} value={phone}
                       id="booking-phone"
                       autoComplete="tel"
                       onChange={(val) => { setPhone(val ?? ""); clearFieldError("phone"); }}
                       className={`phone-input-dark ${fieldClass("phone")}`}
-                      style={fieldStyle("phone")}
                       flagComponent={({ country, countryName }) => {
                         const Flag = flags[country as keyof typeof flags];
-                        return Flag ? <Flag title={countryName} style={{ width: 24, height: 16, borderRadius: 2, display: "block", flexShrink: 0 }} /> : <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>;
+                        return Flag ? <Flag title={countryName} style={{ width: 24, height: 16, borderRadius: 3, display: "block", flexShrink: 0 }} /> : <span style={{ fontSize: 12, color: "#86868b" }}>{country}</span>;
                       }}
                     />
                     {fieldMessage("phone")}
                   </div>
                 </div>
-                {/* ── Trip details ── */}
-                <div className="flex items-center gap-2.5 pt-3 pb-1" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Plane size={14} className="text-blue-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-gray-900 leading-tight">{t("tripSection")}</h3>
-                    <p className="text-[11px] text-gray-400 leading-tight mt-0.5">{t("tripSectionDesc")}</p>
-                  </div>
-                </div>
+              </section>
 
-                {/* Passenger + Luggage counters
-                     Buttons are 40px on mobile (Apple/Google recommended touch
-                     target) and taper to the previous 28px on desktop where
-                     hover replaces tap. Row switches from a cramped 3-col grid
-                     to a card-per-row layout below sm so labels never truncate. */}
-                <div id="booking-party">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Adults */}
-                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
-                      <span className="text-xs text-gray-500 font-medium">{t("adult")}</span>
-                      <div className="flex items-center gap-2">
-                        <button type="button" aria-label={`${t("adult")} -`} onClick={() => setAdults((v) => Math.max(1, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
-                        <span className="text-base font-bold text-gray-900 w-5 text-center">{adults}</span>
-                        <button type="button" aria-label={`${t("adult")} +`} disabled={seatsLeft <= 0} onClick={() => { if (seatsLeft > 0) { setAdults((v) => v + 1); clearFieldError("party"); } }} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
-                      </div>
+              {/* ── Trip ── */}
+              <section>
+                <h3 className="mb-2 px-1 text-[16px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">{t("tripSection")}</h3>
+                <div className={`${groupCard} space-y-3.5`}>
+                  <div id="booking-party">
+                    <div className="divide-y divide-black/[0.06] rounded-[14px] bg-[#F5F5F7]">
+                      {([
+                        { key: "adult", label: t("adult"), value: adults, dec: () => setAdults((n) => Math.max(1, n - 1)), inc: () => { if (seatsLeft > 0) { setAdults((n) => n + 1); clearFieldError("party"); } }, decDisabled: adults <= 1, incDisabled: seatsLeft <= 0 },
+                        { key: "child", label: t("child"), value: children, dec: () => setChildren((n) => Math.max(0, n - 1)), inc: () => { if (seatsLeft > 0) { setChildren((n) => Math.min(6, n + 1)); clearFieldError("party"); } }, decDisabled: children <= 0, incDisabled: seatsLeft <= 0 || children >= 6 },
+                        { key: "luggage", label: t("luggageCapacity"), value: luggage, dec: () => setLuggage((n) => Math.max(0, n - 1)), inc: () => setLuggage((n) => Math.min(v.max_luggage ?? 10, n + 1)), decDisabled: luggage <= 0, incDisabled: luggage >= (v.max_luggage ?? 10) },
+                      ]).map((row) => (
+                        <div key={row.key} className="flex items-center justify-between px-3.5 py-2">
+                          <span className="text-[15px] text-[#1d1d1f]">{row.label}</span>
+                          <div className="flex items-center gap-3">
+                            <button type="button" onClick={row.dec} disabled={row.decDisabled} aria-label={`${row.label} −`} className={stepperButton}><Minus size={16} strokeWidth={2.25} /></button>
+                            <span className="w-6 text-center text-[16px] font-semibold tabular-nums text-[#1d1d1f]">{row.value}</span>
+                            <button type="button" onClick={row.inc} disabled={row.incDisabled} aria-label={`${row.label} +`} className={stepperButton}><Plus size={16} strokeWidth={2.25} /></button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    {/* Children */}
-                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
-                      <span className="text-xs text-gray-500 font-medium">{t("child")}</span>
-                      <div className="flex items-center gap-2">
-                        <button type="button" aria-label={`${t("child")} -`} onClick={() => setChildren((v) => Math.max(0, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
-                        <span className="text-base font-bold text-gray-900 w-5 text-center">{children}</span>
-                        <button type="button" aria-label={`${t("child")} +`} disabled={seatsLeft <= 0 || children >= 6} onClick={() => { if (seatsLeft > 0) { setChildren((v) => Math.min(6, v + 1)); clearFieldError("party"); } }} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
-                      </div>
-                    </div>
-                    {/* Luggage */}
-                    <div className="flex sm:flex-col items-center justify-between sm:justify-center gap-2 sm:gap-1.5 px-4 sm:px-0 py-2 sm:py-0 rounded-xl sm:rounded-none" style={{ backgroundColor: "rgba(0,0,0,0.02)" }}>
-                      <span className="text-xs text-gray-500 font-medium">{t("luggageCapacity")}</span>
-                      <div className="flex items-center gap-2">
-                        <button type="button" aria-label={`${t("luggageCapacity")} -`} onClick={() => setLuggage((v) => Math.max(0, v - 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>−</button>
-                        <span className="text-base font-bold text-gray-900 w-5 text-center">{luggage}</span>
-                        <button type="button" aria-label={`${t("luggageCapacity")} +`} onClick={() => setLuggage((v) => Math.min(selectedVehicle?.max_luggage ?? 10, v + 1))} className="w-10 h-10 sm:w-7 sm:h-7 rounded-lg text-gray-600 font-bold flex items-center justify-center transition-colors hover:bg-blue-50 active:bg-blue-100 bg-white sm:bg-transparent" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>+</button>
-                      </div>
-                    </div>
-                  </div>
-                  {fieldMessage("party")}
-                  {/* Said before the customer runs into a dead "+", not after. */}
-                  {!fieldErrors.party && selectedVehicle && seatsLeft <= 0 && (
-                    <p className="mt-2 text-[11.5px] text-gray-400">
-                      {t("errorCapacityExceeded", { max: selectedVehicle.max_passengers })}
-                    </p>
-                  )}
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="booking-flightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("flightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                    <div className="relative">
-                      <Plane size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input
-                        id="booking-flightCode"
-                        type="text"
-                        autoCapitalize="characters"
-                        spellCheck={false}
-                        value={flightCode}
-                        onChange={(e) => { setFlightCode(e.target.value.toUpperCase()); clearFieldError("flightCode"); }}
-                        placeholder={t("flightCodePlaceholder")}
-                        aria-invalid={!!fieldErrors.flightCode}
-                        /* Written out rather than composed from `fieldClass`:
-                           the icon needs `ps-10`, and adding it alongside that
-                           helper's `px-4` leaves which padding wins up to the
-                           order of the generated stylesheet. */
-                        className={`w-full ps-10 pe-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.flightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
-                        style={fieldStyle("flightCode")}
-                      />
-                    </div>
-                    {fieldMessage("flightCode")}
-                    {/* Says outright that leaving it empty is allowed. An
-                        optional field a customer believes is required stops
-                        them just as dead as a required one. */}
-                    {!flightCode.trim() && (
-                      <p className="mt-1.5 text-[11.5px] text-gray-400">{t("canSendLater")}</p>
+                    {fieldMessage("party")}
+                    {/* Said before the customer runs into a dead "+", not after. */}
+                    {!fieldErrors.party && seatsLeft <= 0 && (
+                      <p className="mt-2 px-1 text-[12.5px] text-[#86868b]">{t("errorCapacityExceeded", { max: v.max_passengers })}</p>
                     )}
                   </div>
 
-                  {/* Only for a round trip. A one-way customer has no second
-                      flight, so there is nothing to ask. Where it does appear
-                      the customer usually has the number already, since a
-                      return leg is bought on the same ticket.
-
-                      Its worth is not the same as the arrival flight's. That
-                      one is the schedule the driver watches. This one checks a
-                      time the customer chose themselves: a 10:00 flight with a
-                      09:00 pickup two hours out is a missed flight anyone can
-                      see coming, once the number is on record. */}
-                  {tripType === "round_trip" && (
+                  {/* Said once for the fields below rather than as a tag and a
+                      hint on each: a customer who does not have a flight number
+                      yet must still see that they can carry on without one. */}
+                  <p className="border-t border-black/[0.06] px-0.5 pt-3.5 text-[12.5px] text-[#86868b]">{t("canSendLater")}</p>
+                  <div className="grid gap-3.5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="booking-returnFlightCode" className="block text-sm font-medium text-gray-600 mb-1.5">{t("returnFlightCode")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                      <div className="relative">
-                        <ArrowLeftRight size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          id="booking-returnFlightCode"
-                          type="text"
-                          autoCapitalize="characters"
-                          spellCheck={false}
-                          value={returnFlightCode}
-                          onChange={(e) => { setReturnFlightCode(e.target.value.toUpperCase()); clearFieldError("returnFlightCode"); }}
-                          placeholder={t("returnFlightCodePlaceholder")}
-                          aria-invalid={!!fieldErrors.returnFlightCode}
-                          className={`w-full ps-10 pe-3 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 outline-none focus:ring-2 ${fieldErrors.returnFlightCode ? "focus:ring-red-500" : "focus:ring-blue-500"}`}
-                          style={fieldStyle("returnFlightCode")}
-                        />
-                      </div>
-                      {fieldMessage("returnFlightCode")}
+                      <label htmlFor="booking-flightCode" className={labelClass}>{t("flightCode")}</label>
+                      <input id="booking-flightCode" type="text" autoCapitalize="characters" spellCheck={false} value={flightCode}
+                        onChange={(e) => { setFlightCode(e.target.value.toUpperCase()); clearFieldError("flightCode"); }}
+                        placeholder={t("flightCodePlaceholder")} aria-invalid={!!fieldErrors.flightCode} className={fieldClass("flightCode")} />
+                      {fieldMessage("flightCode")}
                     </div>
-                  )}
+
+                    {/* Round trip only; the return flight lets the office catch a
+                        pickup time that would miss it. */}
+                    {tripType === "round_trip" && (
+                      <div>
+                        <label htmlFor="booking-returnFlightCode" className={labelClass}>{t("returnFlightCode")}</label>
+                        <input id="booking-returnFlightCode" type="text" autoCapitalize="characters" spellCheck={false} value={returnFlightCode}
+                          onChange={(e) => { setReturnFlightCode(e.target.value.toUpperCase()); clearFieldError("returnFlightCode"); }}
+                          placeholder={t("returnFlightCodePlaceholder")} aria-invalid={!!fieldErrors.returnFlightCode} className={fieldClass("returnFlightCode")} />
+                        {fieldMessage("returnFlightCode")}
+                      </div>
+                    )}
+
+                    <div className={tripType === "round_trip" ? "sm:col-span-2" : ""}>
+                      <label htmlFor="booking-hotelName" className={labelClass}>{t("selectHotel")}</label>
+                      <input id="booking-hotelName" type="text" value={hotelName}
+                        onChange={(e) => { setHotelName(e.target.value); clearFieldError("hotelName"); }}
+                        placeholder={t("placeholderHotel")} aria-invalid={!!fieldErrors.hotelName} className={fieldClass("hotelName")} />
+                      {fieldMessage("hotelName")}
+                    </div>
+                  </div>
 
                   <div>
-                    <label htmlFor="booking-hotelName" className="block text-sm font-medium text-gray-600 mb-1.5">{t("selectHotel")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                    <input
-                      id="booking-hotelName"
-                      type="text"
-                      value={hotelName}
-                      onChange={(e) => { setHotelName(e.target.value); clearFieldError("hotelName"); }}
-                      placeholder={t("placeholderHotel")}
-                      aria-invalid={!!fieldErrors.hotelName}
-                      className={fieldClass("hotelName")}
-                      style={fieldStyle("hotelName")}
-                    />
-                    {fieldMessage("hotelName")}
-                    {!hotelName.trim() && (
-                      <p className="mt-1.5 text-[11.5px] text-gray-400">{t("canSendLater")}</p>
-                    )}
+                    <label htmlFor="booking-notes" className={labelClass}>{t("notes")}</label>
+                    <textarea id="booking-notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={t("notesPlaceholder")}
+                      className={`${fieldBase} ${fieldTone("notes")} resize-none py-3`} />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("notes")} <span className="text-gray-400 text-xs">({t("optional")})</span></label>
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder={t("notesPlaceholder")} className="w-full px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }} />
-                </div>
+              </section>
 
-                {/* ── Extras ── */}
-                <div className="pt-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <Sparkles size={14} className="text-blue-600" />
-                    </div>
-                    <h3 className="text-sm font-bold text-gray-900">{t("extras")}</h3>
-                  </div>
-                  <label className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors gap-3" style={{ backgroundColor: childSeat ? "rgba(0,122,255,0.04)" : "#FFFFFF", border: childSeat ? "1px solid rgba(0,122,255,0.2)" : "1px solid rgba(0,0,0,0.06)" }}>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Baby size={20} className="text-gray-700 flex-shrink-0" />
-                      <div className="min-w-0"><p className="font-medium text-gray-900 text-sm">{t("childSeat")}</p><p className="text-xs text-gray-500">{t("childSeatNeeded")}</p></div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {/* Was hardcoded as "+$10" — it stayed in dollars even
-                          when every other price on the page was in lira. */}
-                      <span className="text-sm font-semibold text-blue-600">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
-                      <input type="checkbox" checked={childSeat} onChange={(e) => setChildSeat(e.target.checked)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
-                    </div>
-                  </label>
-                </div>
-
-                {/* Coupon */}
-                {!showCoupon && !couponCode ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowCoupon(true)}
-                    className="text-[13px] font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
-                  >
-                    {t("haveCoupon")}
-                  </button>
-                ) : (
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">{t("couponCode")}</label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={couponCode}
-                      onChange={(e) => {
-                        setCouponCode(e.target.value.toUpperCase());
-                        // Editing invalidates the previous verdict; the price
-                        // reverts until the new code is checked server-side.
-                        setCouponApplied("");
-                        setCouponStatus(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && couponCode.trim()) {
-                          e.preventDefault();
-                          setCouponApplied(couponCode.trim().toUpperCase());
-                        }
-                      }}
-                      placeholder={t("placeholderCoupon")}
-                      className="flex-1 px-4 py-2.5 sm:py-3 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 outline-none"
-                      style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setCouponApplied(couponCode.trim().toUpperCase())}
-                      disabled={!couponCode.trim() || couponApplied === couponCode.trim().toUpperCase()}
-                      className="px-5 py-2.5 sm:py-3 text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 transition-all whitespace-nowrap"
-                      style={{ backgroundColor: "rgba(0,0,0,0.06)" }}
-                    >
-                      {t("applyCoupon")}
-                    </button>
-                  </div>
-                  {couponStatus && (
-                    <p
-                      className="mt-2 text-xs font-medium"
-                      style={{ color: couponStatus.applied ? "#16a34a" : "#dc2626" }}
-                      role="status"
-                    >
-                      {couponStatus.applied ? t("couponAppliedSuccess") : t("couponInvalid")}
-                    </p>
-                  )}
-                </div>
-                )}
-
-                {/* Payment Method Selector */}
-                {settingsData.cashPaymentEnabled && (
-                  <div className="pt-2 space-y-2">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("paymentMethod")}</p>
-
-                    {/* Toggle group */}
-                    <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("online")}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${
-                          paymentMethod === "online"
-                            ? "bg-blue-600 text-white"
-                            : "bg-white text-gray-500 hover:text-gray-800"
-                        }`}
-                      >
-                        <CreditCard size={14} />
-                        {t("payOnline")}
-                      </button>
-                      <div style={{ width: 1, backgroundColor: "rgba(0,0,0,0.1)" }} />
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("cash")}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold transition-all ${
-                          paymentMethod === "cash"
-                            ? "bg-amber-500 text-white"
-                            : "bg-white text-gray-500 hover:text-gray-800"
-                        }`}
-                      >
-                        <Banknote size={14} />
-                        {t("payAtVehicle")}
-                      </button>
-                    </div>
-
-                    {/* Description for selected method */}
-                    <p className="text-xs text-gray-400 px-0.5">
-                      {paymentMethod === "online" ? t("payOnlineDesc") : t("payAtVehicleDesc")}
-                    </p>
-
-                    {/* Online savings nudge when cash is selected */}
-                    {paymentMethod === "cash" && selectedVehicle?.cashPrice != null && (
-                      <p className="text-xs text-blue-600 px-0.5">
-                        <Sparkles size={11} className="inline me-1" />
-                        {t("payOnline")}: {fmt(selectedVehicle.calculation.basePrice, exchangeRates)}
-                        <span className="text-blue-400 ms-1">({fmt(selectedVehicle.cashPrice - selectedVehicle.calculation.basePrice, exchangeRates)} {t("savings")})</span>
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Whatever went wrong, said where the customer is about to
-                    press — not at the top of the page. No margin of its own:
-                    the form's space-y already sets the gap, and a margin
-                    utility here would fight it. */}
-                {errorBanner("")}
-
-                {/* The same three reassurances as the summary card, repeated
-                    here for phones only.
-                    On a phone the summary is `order-2`, which puts it below
-                    this form — so "secure payment, free cancellation, no
-                    hidden fees" arrived *after* the button that asks for the
-                    card. Hesitation happens before the press, not after it, so
-                    on the width where the card is out of sight the promises
-                    move next to the button instead. Hidden from `lg` up, where
-                    the card is already beside the form the whole time. */}
-                <div className="lg:hidden -mb-1 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-1.5 pt-1">
-                  {[
-                    { icon: Shield, text: t("trustSecure") },
-                    { icon: CalendarCheck, text: t("trustCancel") },
-                    { icon: Check, text: t("trustNoHidden") },
-                  ].map(({ icon: Icon, text }) => (
-                    <span key={text} className="inline-flex items-center gap-1.5 text-[11.5px] font-medium leading-snug text-gray-500">
-                      <Icon size={13} className="shrink-0 text-emerald-600" strokeWidth={2.2} />
-                      {text}
+              {/* ── Extras ── */}
+              <section>
+                <h3 className="mb-2.5 px-1 text-[16px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">{t("extras")}</h3>
+                <div className={`${groupCard} !p-0 divide-y divide-black/[0.06]`}>
+                  <label className="flex cursor-pointer items-center gap-3 px-4 py-3 sm:px-5">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-[#F5F5F7] text-[#424245]"><Baby size={18} /></span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] text-[#1d1d1f]">{t("childSeat")}</span>
+                      <span className="block text-[12.5px] text-[#86868b]">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
                     </span>
-                  ))}
-                </div>
+                    <input type="checkbox" checked={childSeat} onChange={(e) => setChildSeat(e.target.checked)} className="peer sr-only" />
+                    <span className="relative h-[31px] w-[51px] shrink-0 rounded-full bg-[#E9E9EB] transition-colors peer-checked:bg-[#34C759] peer-focus-visible:ring-2 peer-focus-visible:ring-[#007AFF]/40 after:absolute after:start-[2px] after:top-[2px] after:size-[27px] after:rounded-full after:bg-white after:shadow-[0_3px_8px_rgba(0,0,0,0.15),0_1px_1px_rgba(0,0,0,0.16)] after:transition-transform peer-checked:after:translate-x-[20px] rtl:peer-checked:after:-translate-x-[20px]" />
+                  </label>
 
-                {/* Navigation */}
-                <div className="flex flex-row gap-3 pt-4">
-                  <button type="button" onClick={goBack} className="px-4 py-3 font-medium rounded-xl text-gray-600 transition-colors flex items-center justify-center gap-1.5 text-sm whitespace-nowrap shrink-0" style={{ border: "1px solid rgba(0,0,0,0.1)" }}>
-                    <ArrowLeft size={15} />{t("back")}
-                  </button>
-                  {/* Pay-at-vehicle still takes a card for the deposit, so the
-                      button said "Confirm Booking" with a tick and then opened
-                      a card form. The deposit is spelled out in the summary
-                      beside it, so nothing was hidden — but an unannounced
-                      card form is where trust goes, and the label is what
-                      announces it. */}
-                  <button type="submit" disabled={submitting} className={`flex-1 py-3 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-60 shadow-lg ${paymentMethod === "cash" ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-600/20"}`}>
-                    {submitting
-                      ? (<><Loader2 size={17} className="animate-spin" />{t("processing")}</>)
-                      : paymentMethod === "cash"
-                        ? selectedVehicle.cashDeposit != null
-                          ? (<><CreditCard size={17} />{t("payDepositAndConfirm")}</>)
-                          : (<><Check size={17} />{t("confirmBooking")}</>)
-                        : (<><CreditCard size={17} />{t("pay")}</>)}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-          {/* Sidebar */}
-          <div className="lg:col-span-1 order-2">
-            <div className="sticky top-24 z-10">
-              <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.07)", boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
-                {/* Header.
-                    One line. It used to stack two headings — "Order Summary"
-                    above "Transfer Details" — which said nothing, twice, in the
-                    most prominent place on the card. Everything the customer
-                    needs is already below it, each fact exactly once. */}
-                <div className="px-5 py-3" style={{ background: "linear-gradient(135deg, #007AFF 0%, #0056CC 100%)" }}>
-                  <h3 className="text-[13px] font-bold text-white tracking-wide">{t("orderSummary")}</h3>
-                </div>
-
-                <div className="p-5 space-y-4">
-                  {/* Vehicle chip */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-16 h-11 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
-                      <Image src={selectedVehicle.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={selectedVehicle.name} fill className="object-contain p-1" sizes="64px" />
-                    </div>
-                    {/* The vehicle's name, and nothing else.
-                        Under it used to sit "6 Passengers · 6 Luggage" — the
-                        seats the Vito has — directly above a line reading
-                        "2 Adult + 4 Child", which is the booking. Two passenger
-                        counts on one card, one of them not about this customer.
-                        Capacity did its job on step 1, where it decided which
-                        vehicles could be picked at all; everything about the
-                        trip itself is stated once, in the block below. */}
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 leading-tight">{selectedVehicle.name}</p>
-                    </div>
-                  </div>
-
-                  {/* Route */}
-                  {regionData && (
-                    <div className="rounded-xl p-3 space-y-2" style={{ backgroundColor: "rgba(0,0,0,0.025)", border: "1px solid rgba(0,0,0,0.05)" }}>
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <div className="w-px h-4 bg-gray-200" />
-                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <div className="px-4 py-3 sm:px-5">
+                    {!showCoupon && !couponCode ? (
+                      <button type="button" onClick={() => setShowCoupon(true)} className="text-[15px] font-medium text-[#007AFF]">
+                        {t("haveCoupon")}
+                      </button>
+                    ) : (
+                      <div>
+                        <label htmlFor="booking-coupon" className={labelClass}>{t("couponCode")}</label>
+                        <div className="flex gap-2">
+                          <input
+                            id="booking-coupon"
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => {
+                              setCouponCode(e.target.value.toUpperCase());
+                              // Editing invalidates the previous verdict; the price
+                              // reverts until the new code is checked server-side.
+                              setCouponApplied("");
+                              setCouponStatus(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && couponCode.trim()) {
+                                e.preventDefault();
+                                setCouponApplied(couponCode.trim().toUpperCase());
+                              }
+                            }}
+                            placeholder={t("placeholderCoupon")}
+                            className={`${fieldClass("coupon")} min-w-0 flex-1`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setCouponApplied(couponCode.trim().toUpperCase())}
+                            disabled={!couponCode.trim() || couponApplied === couponCode.trim().toUpperCase()}
+                            className="h-11 shrink-0 rounded-[12px] bg-[#007AFF]/[0.1] px-4 text-[15px] font-semibold text-[#007AFF] transition disabled:opacity-40"
+                          >
+                            {t("applyCoupon")}
+                          </button>
                         </div>
-                        <div className="min-w-0 space-y-1.5">
-                          <p className="text-xs font-semibold text-gray-700 truncate">
-                            {startsAtAirport ? airportLabel(locale) : getRegionName(regionData)}
+                        {couponStatus && (
+                          <p role="status" className={`mt-2 text-[12.5px] font-medium ${couponStatus.applied ? "text-[#248A3D]" : "text-[#D70015]"}`}>
+                            {couponStatus.applied ? t("couponAppliedSuccess") : t("couponInvalid")}
                           </p>
-                          <p className="text-xs font-semibold text-gray-700 truncate">
-                            {startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                        <span className="text-[11px] text-gray-500">{formatDate(pickupDate)} · {pickupTime}</span>
-                        {tripType === "round_trip" && returnDate && (
-                          <span className="text-[11px] text-blue-500 font-medium">↔ {formatDate(returnDate)} · {returnTime}</span>
                         )}
-                        <span className="text-[11px] text-gray-500">{adults} {t("adult")}{children > 0 ? ` + ${children} ${t("child")}` : ""}</span>
-                        {/* Luggage moved down here, beside the passengers it
-                            belongs with, so the vehicle line above is not a
-                            second place where counts appear. */}
-                        <span className="text-[11px] text-gray-500">{luggage} {t("luggageCapacity")}</span>
-                        {/* Carried over from the route bar, which only shows on
-                            step 1 now that this card repeats the same trip. */}
-                        <span className="text-[11px] text-gray-500">{regionData.distance_km} km · ~{regionData.duration_minutes} min</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Price breakdown.
-                      Only rendered when there is something to break down. On a
-                      plain one-way with no coupon, no child seat and no
-                      discount, the single "One Way $40" row was identical to
-                      the "Total $40" box directly beneath it, so the card
-                      showed the same price twice and read like a mistake. The
-                      trip type moved into the total box instead, where it
-                      still says what the figure covers. */}
-                  {(tripType === "round_trip"
-                    || selectedVehicle.calculation.roundTripDiscount > 0
-                    || childSeat
-                    || (couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0)) && (
-                  <div className="space-y-1.5 pt-1" style={{ borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                    {/* "2 × one way" is only worth showing when a discount is
-                        coming off it. Where the return fare is not cheaper than
-                        two singles — three destinations are priced that way, one
-                        of them dearer — this row showed 2 × the single fare and
-                        the total box below showed the real, higher figure, with
-                        nothing accounting for the gap. An unexplained few
-                        dollars appearing between a subtotal and a total is read
-                        as a hidden fee, on the screen where the customer decides
-                        whether to trust us with a card. */}
-                    {(() => {
-                      const showsTwoSingles =
-                        tripType === "round_trip" &&
-                        selectedVehicle.calculation.roundTripDiscount > 0;
-                      return (
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-gray-400">
-                            {showsTwoSingles
-                              ? `2 × ${t("oneWay")}`
-                              : tripType === "round_trip"
-                                ? t("roundTrip")
-                                : t("oneWay")}
-                          </span>
-                          <span className="font-medium text-gray-700">
-                            {fmt(
-                              showsTwoSingles
-                                ? selectedVehicle.oneWayPrice * 2
-                                : selectedVehicle.calculation.basePrice,
-                              exchangeRates
-                            )}
-                          </span>
-                        </div>
-                      );
-                    })()}
-                    {selectedVehicle.calculation.roundTripDiscount > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-400">{t("roundTripDiscount")}</span>
-                        <span className="font-semibold text-emerald-500">-{fmt(selectedVehicle.calculation.roundTripDiscount, exchangeRates)}</span>
                       </div>
                     )}
-                    {childSeat && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-400">{t("childSeatFee")}</span>
-                        <span className="font-medium text-gray-700">+{fmt(settingsData.childSeatFee, exchangeRates)}</span>
-                      </div>
-                    )}
-                    {couponStatus?.applied && selectedVehicle.calculation.couponDiscount > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-400 truncate me-2">
-                          {t("couponDiscount")}
-                          {couponApplied && <span className="ms-1 text-gray-300">· {couponApplied}</span>}
-                        </span>
-                        <span className="font-semibold text-emerald-500 whitespace-nowrap">
-                          -{fmt(selectedVehicle.calculation.couponDiscount, exchangeRates)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  )}
-
-                  {/* Total / Deposit box */}
-                  {paymentMethod === "cash" && selectedVehicle.cashDeposit != null ? (
-                    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(245,158,11,0.25)" }}>
-                      {/* Cash total row */}
-                      <div className="flex justify-between items-center px-4 py-2.5 bg-amber-50">
-                        <span className="text-xs font-medium text-amber-700">{t("totalPrice")}</span>
-                        <div className="text-end">
-                          <span className="text-base font-black text-amber-700">{fmt(totalPrice, exchangeRates)}</span>
-                        </div>
-                      </div>
-                      {/* Divider */}
-                      <div style={{ height: 1, backgroundColor: "rgba(245,158,11,0.15)" }} />
-                      {/* Deposit row */}
-                      <div className="flex justify-between items-center px-4 py-2.5 bg-white">
-                        <div>
-                          <p className="text-xs font-semibold text-gray-800">{t("depositNow")}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">{t("payOnlineDesc")}</p>
-                        </div>
-                        <span className="text-lg font-black text-gray-900">{fmt(selectedVehicle.cashDeposit, exchangeRates)}</span>
-                      </div>
-                      {/* Driver row */}
-                      <div className="flex justify-between items-center px-4 py-2.5 bg-gray-50" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
-                        <p className="text-xs text-gray-500">{t("payToDriver")}</p>
-                        <span className="text-sm font-bold text-gray-600">{fmt(selectedVehicle.cashDriverAmount ?? 0, exchangeRates)}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl px-4 py-3.5" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.07) 0%, rgba(0,86,204,0.03) 100%)", border: "1px solid rgba(0,122,255,0.14)" }}>
-                      <div className="flex justify-between items-center gap-3">
-                        <div className="min-w-0">
-                          <span className="block text-xs font-semibold text-gray-700">{t("totalPrice")}</span>
-                          <span className="block text-[10px] text-gray-400 mt-0.5">
-                            {tripType === "round_trip" ? t("roundTrip") : t("oneWay")}
-                          </span>
-                        </div>
-                        <span className="text-xl font-black text-blue-600 whitespace-nowrap">{fmt(totalPrice, exchangeRates)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Said here as well as on the payment screen: this is the
-                      figure the customer decides on, and finding out only at
-                      the card form that the amount is a conversion is late. */}
-                  {isConverted && (
-                    <p className="text-center text-[10.5px] text-gray-400">
-                      {t("chargedIn", {
-                        amount: formatBilling(
-                          paymentMethod === "cash" && selectedVehicle.cashDeposit != null
-                            ? selectedVehicle.cashDeposit
-                            : totalPrice,
-                        ),
-                      })}
-                    </p>
-                  )}
-
-                  {/* Trust badges.
-                      These belong here, next to the figure the customer is
-                      about to pay — that is where the hesitation is. They used
-                      to be three loose grey lines that read as a footnote; the
-                      panel gives them enough weight to be reassurance without
-                      competing with the total. */}
-                  <div className="rounded-xl px-3.5 py-3 space-y-2" style={{ backgroundColor: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.18)" }}>
-                    {[
-                      { icon: Shield, text: t("trustSecure") },
-                      { icon: CalendarCheck, text: t("trustCancel") },
-                      { icon: Check, text: t("trustNoHidden") },
-                    ].map(({ icon: Icon, text }) => (
-                      <div key={text} className="flex items-start gap-2 text-[11px] font-medium text-gray-600 leading-snug">
-                        <Icon size={13} className="text-emerald-600 flex-shrink-0 mt-px" strokeWidth={2.2} />{text}
-                      </div>
-                    ))}
                   </div>
                 </div>
-              </div>
-            </div>
+              </section>
+
+              {/* ── Payment method ──
+                  Options stacked, each with its own line of explanation and
+                  price. Side by side they were two buttons sharing half a phone
+                  each, and "Betalen in het voertuig" does not fit half a phone. */}
+              {settingsData.cashPaymentEnabled && (
+                <section>
+                  <h3 className="mb-2.5 px-1 text-[16px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">{t("paymentMethod")}</h3>
+                  <div role="radiogroup" aria-label={t("paymentMethod")} className={`${groupCard} !p-0 divide-y divide-black/[0.06]`}>
+                    {([
+                      { key: "online" as const, icon: CreditCard, title: t("payOnline"), desc: t("payOnlineDesc"), price: v.calculation.basePrice },
+                      { key: "cash" as const, icon: Banknote, title: t("payAtVehicle"), desc: t("payAtVehicleDesc"), price: v.cashPrice },
+                    ]).map((o) => {
+                      const on = paymentMethod === o.key;
+                      const Icon = o.icon;
+                      return (
+                        <button
+                          key={o.key}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => setPaymentMethod(o.key)}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-start sm:px-5"
+                        >
+                          <span className={`grid size-9 shrink-0 place-items-center rounded-[10px] ${on ? "bg-[#007AFF]/[0.1] text-[#007AFF]" : "bg-[#F5F5F7] text-[#86868b]"}`}><Icon size={18} /></span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-[15px] font-medium text-[#1d1d1f]">{o.title}</span>
+                            <span className="block text-[12.5px] leading-snug text-[#86868b]">{o.desc}</span>
+                          </span>
+                          {o.price != null && <span className="shrink-0 text-[15px] font-semibold text-[#1d1d1f]">{fmt(o.price, exchangeRates)}</span>}
+                          <span className={`grid size-[22px] shrink-0 place-items-center rounded-full ${on ? "bg-[#007AFF] text-white" : "ring-[1.5px] ring-inset ring-[#c7c7cc]"}`}>
+                            {on && <Check size={14} strokeWidth={3} />}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* Why a deposit at all, said the moment cash is chosen —
+                      not buried in the FAQ. Without this the button below just
+                      says "Pay Deposit", which invites the question it never
+                      answers: what is this charge and do I get it back. */}
+                  {paymentMethod === "cash" && v.cashDeposit != null && (
+                    <div className="mt-3 flex items-start gap-3 rounded-[14px] bg-[#F0F7FF] p-3.5">
+                      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-[#007AFF]/[0.12] text-[#007AFF]">
+                        <ShieldCheck size={15} strokeWidth={2.25} />
+                      </span>
+                      <p className="text-[13px] leading-relaxed text-[#1d1d1f]">{t("depositExplanation")}</p>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {errorBanner("")}
+
+              {/* Reassurance directly above the button that asks for the card —
+                  hesitation happens before the press. On desktop the sidebar
+                  already carries it, so this is phones only. */}
+              <div className="lg:hidden">{trustCard}</div>
+
+              {/* Pay-at-vehicle still takes a card for the deposit, so the label
+                  says so: an unannounced card form is where trust goes. */}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-[#007AFF] px-5 text-[16px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(0,122,255,0.6)] transition hover:bg-[#0062CC] active:scale-[0.99] disabled:opacity-60"
+              >
+                {submitting ? (
+                  <><Loader2 size={18} className="animate-spin" />{t("processing")}</>
+                ) : (
+                  <>
+                    <Lock size={16} strokeWidth={2.25} />
+                    <span className="truncate">
+                      {paymentMethod === "cash" ? (v.cashDeposit != null ? t("payDepositAndConfirm") : t("confirmBooking")) : t("pay")}
+                    </span>
+                    <span className="opacity-60">·</span>
+                    <span>{fmt(headlinePrice, exchangeRates)}</span>
+                  </>
+                )}
+              </button>
+            </form>
           </div>
+
+          {/* Desktop sidebar: the same summary, beside the form the whole time. */}
+          <aside className="order-2 hidden lg:col-span-1 lg:block">
+            <div className="sticky top-24 space-y-3">
+              <div className={groupCard}>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="relative h-11 w-16 shrink-0 overflow-hidden rounded-[10px] bg-[#F5F5F7]">
+                    <Image src={v.image_url || "/images/vehicles/mercedes-vito-vip.png"} alt={v.name} fill sizes="64px" className="object-contain p-1" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-medium text-[#86868b]">{t("orderSummary")}</p>
+                    <p className="truncate text-[15px] font-semibold text-[#1d1d1f]">{v.name}</p>
+                  </div>
+                </div>
+                {summaryDetails}
+              </div>
+              {trustCard}
+            </div>
+          </aside>
         </div>
-      )}
+        );
+      })()}
       {/* STEP 3: Stripe Payment */}
       {/* The embed already lays its own summary and card form out as cards, so
           this wraps them in a heading only — the bordered container it used to
@@ -1868,11 +1677,19 @@ function BookingWizardInner(props: Props) {
             <StripeCheckoutEmbed
               exchangeRates={exchangeRates}
               clientSecret={clientSecret} reservationCode={reservationCode ?? ""} locale={locale}
-              totalPrice={reservationTotalPrice} regionName={regionData ? getRegionName(regionData) : regionSlug}
+              totalPrice={reservationTotalPrice}
+              routeLabel={
+                regionData
+                  ? `${startsAtAirport ? airportLabel(locale) : getRegionName(regionData)} → ${startsAtAirport ? getRegionName(regionData) : airportLabel(locale)}`
+                  : regionSlug
+              }
               tripType={tripType} pickupDate={pickupDate} pickupTime={pickupTime}
               isDeposit={paymentMethod === "cash"}
               depositAmount={reservationDepositAmount > 0 ? reservationDepositAmount : undefined}
               driverAmount={reservationDriverAmount > 0 ? reservationDriverAmount : undefined}
+              customerName={`${firstName} ${lastName}`.trim()}
+              customerEmail={email}
+              customerPhone={phone}
               onSuccess={() => {
                 // Wipe the persisted wizard state before we leave the page.
                 // Without this, coming back to /booking with the same trip
@@ -1886,8 +1703,10 @@ function BookingWizardInner(props: Props) {
         </div>
       )}
 
-      {/* Back to previous step / booking page */}
-      <div className="flex justify-center mt-10 mb-4">
+      {/* Back to previous step. Only on the payment step for now: step 1
+          has "Change" on the trip card, and step 2 has its own back button
+          beside the pay button — this one made two. */}
+      {step === 3 && <div className="flex justify-center mt-10 mb-4">
         <button
           type="button"
           onClick={() => {
@@ -1905,7 +1724,7 @@ function BookingWizardInner(props: Props) {
           <ArrowLeft size={16} />
           {t("back")}
         </button>
-      </div>
+      </div>}
     </div>
   );
 }

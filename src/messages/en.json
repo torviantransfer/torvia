@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "Selected Vehicle",
     "changeVehicle": "Change",
     "continueStep": "Continue",
-    "routeNeedsAirport": "One end of the journey has to be Antalya Airport."
+    "routeNeedsAirport": "One end of the journey has to be Antalya Airport.",
+    "tripUpdate": "Update",
+    "tripTime": "Time",
+    "errorInvalidPhone": "Enter a valid phone number",
+    "depositExplanation": "Paying the deposit now is what reserves your exact date and time. If you cancel, the full deposit is refunded to you."
   },
   "trust": {
     "heading": "Why travelers choose TORVIAN.",

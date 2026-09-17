@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "Seçilen Araç",
     "changeVehicle": "Değiştir",
     "continueStep": "Devam Et",
-    "routeNeedsAirport": "Yolculuğun bir ucu Antalya Havalimanı olmalı."
+    "routeNeedsAirport": "Yolculuğun bir ucu Antalya Havalimanı olmalı.",
+    "tripUpdate": "Güncelle",
+    "tripTime": "Saat",
+    "errorInvalidPhone": "Geçerli bir telefon numarası girin",
+    "depositExplanation": "Kaporayı şimdi ödemeniz, bu tarih ve saatte yeriniz kesin olarak size ayrılsın diyedir. Transferi iptal ederseniz kaporanızın tamamı size iade edilir."
   },
   "trust": {
     "heading": "Neden yolcular TORVIAN'yı tercih ediyor.",

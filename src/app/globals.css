@@ -265,7 +265,7 @@ select option {
   border: none !important;
   color: #1d1d1f !important;
   outline: none !important;
-  font-size: 0.875rem;
+  font-size: 15px;
   flex: 1;
   min-width: 0;
 }

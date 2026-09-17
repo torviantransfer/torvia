@@ -527,7 +527,13 @@ export default async function BookingPage({
           <section className="pt-20 sm:pt-24 pb-6">
             <div className="max-w-6xl mx-auto px-4">
               <h1 className="sr-only">{t("title")}</h1>
+              {/* Keyed on the trip. Editing it from the route card pushes new
+                  search params onto this same page, and without a new key React
+                  would keep the mounted wizard — its passenger counts and its
+                  vehicle list still belonging to the old search. */}
               <BookingWizardClient
+                key={[sp.from, sp.region, sp.trip, sp.date, sp.time, sp.returnDate, sp.returnTime, sp.adults, sp.children].join("|")}
+                initialRegions={initialRegions}
                 initialRegion={sp.region}
                 initialDirection={direction}
                 initialTrip={(sp.trip as "one_way" | "round_trip") ?? "one_way"}

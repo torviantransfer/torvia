@@ -238,7 +238,11 @@
     "selectedVehicleLabel": "Gewähltes Fahrzeug",
     "changeVehicle": "Ändern",
     "continueStep": "Weiter",
-    "routeNeedsAirport": "Ein Ende der Fahrt muss der Flughafen Antalya sein."
+    "routeNeedsAirport": "Ein Ende der Fahrt muss der Flughafen Antalya sein.",
+    "tripUpdate": "Aktualisieren",
+    "tripTime": "Uhrzeit",
+    "errorInvalidPhone": "Bitte geben Sie eine gültige Telefonnummer ein",
+    "depositExplanation": "Die Anzahlung sichert Ihnen den genauen Termin und die Uhrzeit. Bei einer Stornierung erhalten Sie die gesamte Anzahlung zurück."
   },
   "trust": {
     "heading": "Warum Reisende TORVIAN wählen.",
