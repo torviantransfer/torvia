@@ -50,17 +50,16 @@ export default async function ContactPage({
     email: "torviantransfer@gmail.com",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Kemerağzı Mah. Antalya Havalimanı Dış Hatlar Terminali",
+      streetAddress: "Yenigöl Mah. Lavanta Sk. No:22",
       addressLocality: "Muratpaşa",
       addressRegion: "Antalya",
-      postalCode: "07230",
+      postalCode: "07200",
       addressCountry: "TR",
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 36.8987,
-      longitude: 30.8005,
-    },
+    // No `geo` until the Yenigöl office has real coordinates. The ones here
+    // pointed at Antalya Airport, the old address — beside a Muratpaşa street
+    // address that told Google the business was in two places at once, which
+    // is worse than giving it no pin at all.
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
       dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
@@ -178,8 +177,8 @@ export default async function ContactPage({
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("locationLabel")}</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">Antalya Havalimanı Dış Hatlar</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Kemerağzı Mah., 07230 Muratpaşa / Antalya</p>
+                    <p className="font-semibold text-gray-900 text-sm mt-0.5">Muratpaşa, Antalya</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Yenigöl Mah. Lavanta Sk. No:22, 07200 Muratpaşa / Antalya</p>
                   </div>
                 </div>
 
@@ -242,17 +241,17 @@ export default async function ContactPage({
               <div>
                 <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-2">{t("langTag")}</p>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">{t("mapTitle")}</h2>
-                <p className="text-gray-500 text-sm mb-8">Antalya Havalimanı Dış Hatlar Terminali, Muratpaşa</p>
+                <p className="text-gray-500 text-sm mb-8">Yenigöl Mah. Lavanta Sk. No:22, 07200 Muratpaşa / Antalya</p>
                 <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3189.784!2d30.8005!3d36.8987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14c385a94efb0e15%3A0x7aae38d6b3e6fbe4!2sAntalya+Airport!5e0!3m2!1sen!2str!4v1700000000000"
+                    src="https://www.google.com/maps?q=Yenig%C3%B6l+Mah.+Lavanta+Sk.+No%3A22,+07200+Muratpa%C5%9Fa,+Antalya&output=embed"
                     width="100%"
                     height="320"
                     style={{ border: 0, display: "block" }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Antalya Airport - TORVIAN Transfer Location"
+                    title="TORVIAN Transfer - Muratpaşa, Antalya"
                   />
                 </div>
               </div>

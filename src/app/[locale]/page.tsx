@@ -191,17 +191,14 @@ export default async function HomePage({
     priceRange: "$$",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Kemerağzı Mah. Antalya Havalimanı Dış Hatlar Terminali",
+      streetAddress: "Yenigöl Mah. Lavanta Sk. No:22",
       addressLocality: "Muratpaşa",
       addressRegion: "Antalya",
-      postalCode: "07230",
+      postalCode: "07200",
       addressCountry: "TR",
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 36.8987,
-      longitude: 30.8005,
-    },
+    // No `geo` until the Yenigöl office has real coordinates — see the same
+    // note on the contact page. The previous pair was Antalya Airport.
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",

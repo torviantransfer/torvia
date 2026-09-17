@@ -181,7 +181,7 @@ export default async function Footer() {
               <li className="pt-1">
                 <div className="flex items-start gap-2 text-gray-500 text-sm">
                   <MapPin size={14} className="flex-shrink-0 mt-0.5" />
-                  <span>Kemerağzı Mah. Antalya Havalimanı Dış Hatlar, 07230 Muratpaşa/Antalya</span>
+                  <span>Yenigöl Mah. Lavanta Sk. No:22, 07200 Muratpaşa/Antalya</span>
                 </div>
               </li>
             </ul>
