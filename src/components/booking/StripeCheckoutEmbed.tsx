@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -101,15 +101,18 @@ const appearance: StripeElementsOptions["appearance"] = {
        behind a "more" dropdown, which is why the card fields looked crammed
        inside a box. Each method is now its own row in the same soft-fill /
        white-with-blue-ring pairing the previous step's option rows use. */
+    /* White with a hairline, not a grey fill: these rows are no longer inside
+       a card of their own, so they have to hold their own edge against
+       whatever the page behind them is. */
     ".AccordionItem": {
-      backgroundColor: "#F5F5F7",
+      backgroundColor: "#FFFFFF",
       border: "none",
-      borderRadius: "14px",
-      boxShadow: "none",
+      borderRadius: "16px",
+      boxShadow: "0 0 0 1px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
       padding: "14px 16px",
     },
     ".AccordionItem:hover": {
-      backgroundColor: "#EBEBED",
+      backgroundColor: "#FAFAFA",
     },
     ".AccordionItem--selected": {
       backgroundColor: "#FFFFFF",
@@ -152,6 +155,8 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
   const [error, setError] = useState<string | null>(null);
   /** Whether the wallet element found anything to draw on this device. */
   const [walletsShown, setWalletsShown] = useState(false);
+  const methodsRef = useRef<HTMLDivElement>(null);
+  const selectedMethod = useRef<string | null>(null);
 
   const money = (usd: number) => fmt(usd, exchangeRates);
   const formattedDate = (() => {
@@ -334,7 +339,10 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
           <h3 className="mb-2 px-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-[#86868b]">
             {t("cardDetails")}
           </h3>
-          <div className="rounded-[22px] bg-white p-4 ring-1 ring-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04)] sm:p-5">
+          {/* No card around this. Each accordion row is already a card with its
+              own ring, so wrapping the set in another one drew a card inside a
+              card and pushed the fields into a narrow channel. */}
+          <div ref={methodsRef}>
           {/* Name, email and phone are not asked here: the passenger-info
               step already has them, and a booking is one connected form, not
               two forms that happen to ask the same three questions. `never`
@@ -354,6 +362,25 @@ function CheckoutForm({ reservationCode, locale, totalPrice, routeLabel, tripTyp
               layout: { type: "accordion", defaultCollapsed: false, spacedAccordionItems: true },
               paymentMethodOrder: ["card"],
               fields: { billingDetails: { name: "never", email: "never", phone: "never" } },
+            }}
+            /* Picking a method further down the list collapses the tall card
+               form above it, so everything below jumped up by the height of
+               that form and the row just opened ended up off the top of the
+               screen. Collapsing it also makes the whole element short, so
+               bringing the element itself back into view puts the chosen row
+               back under the thumb. The element is cross-origin, so the row
+               cannot be addressed directly — the container is what there is.
+
+               Guarded on the method actually changing: `change` also fires on
+               every keystroke inside the card fields, and scrolling the page
+               while someone is typing their card number is worse than the
+               jump it is here to fix. */
+            onChange={(event) => {
+              if (event.value.type === selectedMethod.current) return;
+              selectedMethod.current = event.value.type;
+              window.requestAnimationFrame(() => {
+                methodsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              });
             }}
           />
           </div>
