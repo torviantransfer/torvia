@@ -7,6 +7,7 @@ import {
   LayoutTemplate,
   MapPin,
   NotebookText,
+  PhoneCall,
   Radio,
   SearchCheck,
   Settings,
@@ -57,6 +58,7 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [
       { path: "", label: "Bugün", icon: Sun },
       { path: "/reservations", label: "Rezervasyonlar", icon: Ticket, counter: "reservations" },
+      { path: "/booking-leads", label: "Yarım Kalan Formlar", icon: PhoneCall },
       { path: "/availability", label: "Takvim & Kapasite", icon: CalendarDays, also: ["/calendar"] },
       { path: "/live-visitors", label: "Canlı Ziyaretçiler", icon: Radio, counter: "live" },
     ],

@@ -18,14 +18,37 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "region is required" }, { status: 400 });
   }
 
-  // Fetch region
-  const { data: region, error: regionErr } = await supabase
-    .from("regions")
-    .select("*")
-    .eq("slug", regionSlug)
-    .eq("is_active", true)
-    .single();
+  /* Region, settings, rates and any coupon in one wave.
+     These four used to be awaited one after another, and only the pricing
+     rows actually need an answer first (they key off the region's id). Four
+     sequential round trips to the database is what the vehicle list waited
+     on — about a second and a half measured from Antalya — and that wait sits
+     at the exact step where a customer is deciding whether to carry on. Only
+     the region → pricing order is a real dependency, so the rest ride along
+     with it. */
+  const normalizedCoupon = couponCode?.trim().toUpperCase() || null;
 
+  const [regionRes, settingsRes, ratesRes, couponRes] = await Promise.all([
+    supabase.from("regions").select("*").eq("slug", regionSlug).eq("is_active", true).single(),
+    supabase
+      .from("settings")
+      .select("key, value")
+      .in("key", [
+        "child_seat_fee",
+        "welcome_sign_fee",
+        "cash_payment_enabled",
+        "night_tariff_enabled",
+        "night_tariff_start",
+        "night_tariff_end",
+        "night_tariff_percent",
+      ]),
+    supabase.from("exchange_rates").select("target_currency, rate").eq("base_currency", "EUR"),
+    normalizedCoupon
+      ? supabase.from("coupons").select("*").eq("code", normalizedCoupon).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const { data: region, error: regionErr } = regionRes;
   if (regionErr || !region) {
     return NextResponse.json({ error: "Region not found" }, { status: 404 });
   }
@@ -47,19 +70,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Pricing not found" }, { status: 404 });
   }
 
-  // Fetch settings
-  const { data: settings } = await supabase
-    .from("settings")
-    .select("key, value")
-    .in("key", [
-      "child_seat_fee",
-      "welcome_sign_fee",
-      "cash_payment_enabled",
-      "night_tariff_enabled",
-      "night_tariff_start",
-      "night_tariff_end",
-      "night_tariff_percent",
-    ]);
+  const { data: settings } = settingsRes;
 
   const settingsMap: Record<string, unknown> = {};
   for (const s of settings ?? []) {
@@ -76,30 +87,19 @@ export async function GET(request: NextRequest) {
   let couponDiscountFixed = 0;
   let couponId: string | null = null;
   let couponStatus: { applied: boolean; code: string; reason?: string } | null = null;
-  if (couponCode) {
-    const normalized = couponCode.trim().toUpperCase();
-    const { data: coupon } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", normalized)
-      .maybeSingle();
-
-    const result = evaluateCoupon(coupon as CouponRow | null);
+  if (normalizedCoupon) {
+    const result = evaluateCoupon(couponRes.data as CouponRow | null);
     if (result.valid) {
       couponId = result.id;
       couponDiscountPercent = result.discountPercent;
       couponDiscountFixed = result.discountFixed;
-      couponStatus = { applied: true, code: normalized };
+      couponStatus = { applied: true, code: normalizedCoupon };
     } else {
-      couponStatus = { applied: false, code: normalized, reason: result.reason };
+      couponStatus = { applied: false, code: normalizedCoupon, reason: result.reason };
     }
   }
 
-  // Fetch exchange rates
-  const { data: rates } = await supabase
-    .from("exchange_rates")
-    .select("target_currency, rate")
-    .eq("base_currency", "EUR");
+  const { data: rates } = ratesRes;
 
   const exchangeRates: Record<string, number> = { USD: 1 };
   for (const r of rates ?? []) {

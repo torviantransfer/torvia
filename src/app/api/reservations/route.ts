@@ -511,7 +511,21 @@ export async function POST(request: NextRequest) {
     const paymentIntent = await getStripe().paymentIntents.create({
       amount: Math.round(stripeAmount * 100),
       currency: "eur",
-      payment_method_types: ["card"],
+      /* Let Stripe decide what to offer instead of naming one method.
+         This was locked to "card", which meant the wallets were unreachable
+         even though the account has them switched on: an iPhone visitor had
+         to type a 16-digit number where a fingerprint would have done, and
+         that keypad is the highest-friction moment in the whole funnel. It
+         also hid the method each market actually pays with — BLIK in Poland,
+         Bancontact in Belgium, EPS in Austria, PayPal and Klarna in Germany.
+         Stripe now shows what the Dashboard has enabled and what the
+         customer's country, device and this EUR amount support.
+
+         Nothing else has to change for the redirect-based ones: the client
+         confirms with a `return_url` already, and the webhook completes the
+         booking on `payment_intent.succeeded`, which is what an iDEAL or
+         Klarna payment lands as once the customer comes back. */
+      automatic_payment_methods: { enabled: true },
       description: stripeDescription,
       receipt_email: email,
       metadata: {

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import PhoneInput, { type Country } from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber, type Country } from "react-phone-number-input";
 import * as flags from "country-flag-icons/react/3x2";
 import "react-phone-number-input/style.css";
 /* Imported outright, not through another dynamic().
@@ -133,6 +133,18 @@ function BookingWizardInner(props: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isSubmittingRef = useRef(false);
+  /**
+   * What the reservation we already hold was created from.
+   *
+   * Submitting always created a fresh reservation and a fresh PaymentIntent,
+   * so a customer who stepped back from the payment screen to re-read
+   * something and then pressed on again was booked twice — the first row left
+   * `pending` for good. Pending rows take no capacity, so nothing was blocked,
+   * but the panel showed one person as two and the office chased a booking
+   * that had already been paid for under another code. When nothing has
+   * changed we go back to the payment we already started instead.
+   */
+  const bookedSignatureRef = useRef<string | null>(null);
   /* Guards the one-shot `form_started` event. Selecting a vehicle now lands
      the customer on this form immediately, so "reached step 2" no longer says
      anything about intent — only the first keystroke does. The admin live view
@@ -323,6 +335,48 @@ function BookingWizardInner(props: Props) {
     clientSecret, reservationCode,
     reservationTotalPrice, reservationDepositAmount, reservationDriverAmount,
   ]);
+
+  // ---------------------------------------------------------------------------
+  // Abandoned-form capture
+  //
+  // A phone or email typed here and never submitted used to leave no trace —
+  // "Devam Et" is what creates a reservation row, so leaving before that point
+  // lost the lead entirely. As soon as either field becomes valid, it is sent
+  // to /api/booking-leads for the panel's "Yarım Kalan Formlar" list; debounced
+  // so it fires once typing settles, not on every keystroke, and re-sent only
+  // when the recorded fields actually change. Silent by design: a failure here
+  // must never surface to the customer or interrupt the booking.
+  // ---------------------------------------------------------------------------
+  const leadSentKeyRef = useRef<string>("");
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    const validPhone = phone && isValidPhoneNumber(phone) ? phone : null;
+    const validEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()) ? email.trim() : null;
+    if (!validPhone && !validEmail) return;
+
+    const key = JSON.stringify({ validPhone, validEmail, firstName, lastName, regionSlug, pickupDate, pickupTime, adults, children });
+    if (key === leadSentKeyRef.current) return;
+
+    const timer = setTimeout(() => {
+      leadSentKeyRef.current = key;
+      fetch("/api/booking-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: validPhone,
+          email: validEmail,
+          firstName,
+          lastName,
+          regionSlug,
+          pickupDate,
+          pickupTime,
+          partySize: adults + children,
+          locale,
+        }),
+      }).catch(() => {});
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [phone, email, firstName, lastName, regionSlug, pickupDate, pickupTime, adults, children, locale]);
 
   const getRegionName = (r: RegionData) => {
     const name = r[`name_${locale}`] || r.name_en;
@@ -537,24 +591,38 @@ function BookingWizardInner(props: Props) {
       return;
     }
     setFieldErrors({});
+
+    const body = {
+      regionSlug, categorySlug: selectedVehicle.slug, tripType, direction, pickupDate, pickupTime,
+      returnDate: tripType === "round_trip" ? returnDate : undefined,
+      returnTime: tripType === "round_trip" ? returnTime : undefined,
+      flightCode: flightCode.trim(),
+      returnFlightCode: tripType === "round_trip" ? returnFlightCode.trim() : undefined,
+      adults, children, luggage,
+      childSeat,
+      firstName, lastName, email, phone, hotelName: hotelName.trim(),
+      notes: notes || undefined, couponCode: couponStatus?.applied ? couponApplied : undefined, locale,
+      paymentMethod,
+    };
+
+    // Stepped back and pressed on again without changing anything: the
+    // reservation and its PaymentIntent are still the right ones, so return to
+    // them rather than booking the same trip a second time. See
+    // bookedSignatureRef.
+    const signature = JSON.stringify(body);
+    if (clientSecret && reservationCode && signature === bookedSignatureRef.current) {
+      setStep(3);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     isSubmittingRef.current = true;
     setSubmitting(true);
     try {
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          regionSlug, categorySlug: selectedVehicle.slug, tripType, direction, pickupDate, pickupTime,
-          returnDate: tripType === "round_trip" ? returnDate : undefined,
-          returnTime: tripType === "round_trip" ? returnTime : undefined,
-          flightCode: flightCode.trim(),
-          returnFlightCode: tripType === "round_trip" ? returnFlightCode.trim() : undefined,
-          adults, children, luggage,
-          childSeat,
-          firstName, lastName, email, phone, hotelName: hotelName.trim(),
-          notes: notes || undefined, couponCode: couponStatus?.applied ? couponApplied : undefined, locale,
-          paymentMethod,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -602,6 +670,7 @@ function BookingWizardInner(props: Props) {
         return;
       }
       if (data.clientSecret) {
+        bookedSignatureRef.current = signature;
         setClientSecret(data.clientSecret);
         setReservationCode(data.reservationCode);
         setReservationTotalPrice(data.reservation?.totalPrice ?? 0);
@@ -1521,6 +1590,28 @@ function BookingWizardInner(props: Props) {
                     the form's space-y already sets the gap, and a margin
                     utility here would fight it. */}
                 {errorBanner("")}
+
+                {/* The same three reassurances as the summary card, repeated
+                    here for phones only.
+                    On a phone the summary is `order-2`, which puts it below
+                    this form — so "secure payment, free cancellation, no
+                    hidden fees" arrived *after* the button that asks for the
+                    card. Hesitation happens before the press, not after it, so
+                    on the width where the card is out of sight the promises
+                    move next to the button instead. Hidden from `lg` up, where
+                    the card is already beside the form the whole time. */}
+                <div className="lg:hidden -mb-1 flex flex-wrap items-center justify-center gap-x-3.5 gap-y-1.5 pt-1">
+                  {[
+                    { icon: Shield, text: t("trustSecure") },
+                    { icon: CalendarCheck, text: t("trustCancel") },
+                    { icon: Check, text: t("trustNoHidden") },
+                  ].map(({ icon: Icon, text }) => (
+                    <span key={text} className="inline-flex items-center gap-1.5 text-[11.5px] font-medium leading-snug text-gray-500">
+                      <Icon size={13} className="shrink-0 text-emerald-600" strokeWidth={2.2} />
+                      {text}
+                    </span>
+                  ))}
+                </div>
 
                 {/* Navigation */}
                 <div className="flex flex-row gap-3 pt-4">

@@ -19,6 +19,7 @@ const ALLOWED_TABLES = [
   "blog_posts",
   "seo_pages",
   "landing_pages",
+  "booking_leads",
 ] as const;
 
 type AllowedTable = (typeof ALLOWED_TABLES)[number];

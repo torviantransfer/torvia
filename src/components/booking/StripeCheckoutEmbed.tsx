@@ -7,6 +7,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import {
   Elements,
+  ExpressCheckoutElement,
   PaymentElement,
   useStripe,
   useElements,
@@ -99,6 +100,8 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
   const { format: fmt, formatBilling, isConverted } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Whether the wallet element found anything to draw on this device. */
+  const [walletsShown, setWalletsShown] = useState(false);
 
   const money = (usd: number) => fmt(usd, exchangeRates);
   const formattedDate = (() => {
@@ -110,8 +113,19 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
     }
   })();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  /**
+   * Confirming is the same work whichever button started it.
+   *
+   * The card form and the wallet sheet hand back the same Elements instance
+   * against the same intent, so Apple Pay reuses this rather than carrying a
+   * second copy of the confirm, the `processing` guard and the fallback call
+   * to /api/reservations/confirm — three things that must not be allowed to
+   * drift apart depending on how the customer chose to pay.
+   *
+   * No `elements.submit()` here: that belongs to the deferred-intent flow,
+   * and these Elements are created with a clientSecret.
+   */
+  const confirmPayment = async () => {
     if (!stripe || !elements) return;
 
     setLoading(true);
@@ -161,6 +175,11 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
     setLoading(false);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await confirmPayment();
+  };
+
   return (
     <div className="space-y-5">
       {/* Order summary. Every label here was hardcoded English and every
@@ -204,6 +223,26 @@ function CheckoutForm({ reservationCode, locale, totalPrice, regionName, tripTyp
             </div>
           </div>
         )}
+      </div>
+
+      {/* Wallets, above the card form.
+          Apple Pay and Google Pay turn the highest-friction moment of the
+          booking — a 16-digit number typed on a phone at an airport — into a
+          fingerprint. The element renders nothing at all on a device with no
+          wallet available, so the divider below it is held back until
+          `onReady` says something was actually drawn; otherwise a lone rule
+          would float above the card form on every desktop without one.
+
+          No `emailRequired`: the address is already on the reservation from
+          the passenger step, and asking the wallet for it again would put a
+          field in front of the one-tap it exists to remove. */}
+      <div>
+        <ExpressCheckoutElement
+          options={{ buttonHeight: 48 }}
+          onReady={({ availablePaymentMethods }) => setWalletsShown(Boolean(availablePaymentMethods))}
+          onConfirm={confirmPayment}
+        />
+        {walletsShown && <div className="mt-5 h-px bg-gray-200" />}
       </div>
 
       {/* Payment Form */}
