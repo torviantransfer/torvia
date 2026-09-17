@@ -65,6 +65,12 @@ export default function Header() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
+    // Read the position we are actually at, not just the ones we scroll to
+    // later. A reload or a back-navigation restores the previous offset before
+    // this mounts, so on a hero page the bar kept its transparent state over
+    // white content — a white logo and white links on white, reading as an
+    // empty bar that only fixed itself once the visitor happened to scroll.
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);

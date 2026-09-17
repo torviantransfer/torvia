@@ -195,7 +195,11 @@ export default async function BlogPostView({
     <>
       {/* ── Header ───────────────────────────────────────────────────── */}
       <header style={{ background: "linear-gradient(180deg, #F5F5F7 0%, #FFFFFF 100%)" }}>
-        <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 lg:px-6 lg:pb-10 lg:pt-10">
+        {/* pt-20, not pt-6: the header is `fixed` and opaque on every page but
+            the homepage and /booking (Header.tsx's `isHeroPage`), so nothing
+            reserves its 64px in normal flow — the breadcrumb and the title sat
+            under it until this cleared it. */}
+        <div className="mx-auto max-w-6xl px-4 pb-8 pt-20 lg:px-6 lg:pb-10 lg:pt-24">
           <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-gray-500">
             <Link href="/" className="transition-colors hover:text-gray-900">{nav("home")}</Link>
             <span aria-hidden="true">/</span>

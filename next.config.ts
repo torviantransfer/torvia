@@ -7,6 +7,13 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
+    // WebP only, which is Next's default and is left alone deliberately.
+    // AVIF is the usual recommendation, but measured against this site's own
+    // photographs at w=640 q=75 it came out LARGER every time — 42→45KB on a
+    // region hero, 60→70KB on Alanya, 41→52KB on Kemer — because sharp's
+    // default AVIF effort is tuned for encode speed and these frames are
+    // detailed rather than smooth. Only the flat PNG vehicle render gained
+    // (15→12KB), which is not worth the slower encode on everything else.
     qualities: [75, 80],
     remotePatterns: [
       {

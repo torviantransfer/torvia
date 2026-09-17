@@ -494,3 +494,22 @@ input:focus, textarea:focus, select:focus {
   direction: ltr;
   unicode-bidi: isolate;
 }
+
+/* iOS Safari zooms into any form field whose text is under 16px and never
+ * zooms back out, so on a phone the first tap of the passenger-info form —
+ * the last screen before payment — jerked the page in and left it there.
+ * Every field the site has was below that floor (text-sm, 14px).
+ *
+ * Scoped to touch devices rather than to a width, because the behaviour
+ * belongs to the touch keyboard, not to the viewport: a narrow desktop window
+ * never zooms, and a wide tablet does. Pointer devices keep the size the
+ * design sets. `!important` because Tailwind's `text-sm` is a class and would
+ * otherwise win on specificity against any element selector here.
+ */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

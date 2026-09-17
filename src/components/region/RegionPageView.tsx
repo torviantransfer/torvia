@@ -222,7 +222,12 @@ export default async function RegionPageView({
         className="relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}
       >
-        <div className="relative mx-auto max-w-7xl px-4 lg:px-6">
+        {/* pt-16 reserves the fixed header's 64px, which nothing else does on
+            this page (Header.tsx's `isHeroPage` covers only the homepage and
+            /booking). Without it the desktop breadcrumb sat behind the bar and
+            the phone's photo — which is meant to sit flush against it — ran
+            under it and lost its top edge. */}
+        <div className="relative mx-auto max-w-7xl px-4 pt-16 lg:px-6">
           {/* Masaüstünde hero'nun tepesinde; telefonda fotoğraf başlık çubuğuna
               yapışık kalsın diye metnin başına iniyor. */}
           {breadcrumb && <div className="hidden pt-6 lg:block">{breadcrumb}</div>}
