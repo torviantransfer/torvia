@@ -337,7 +337,7 @@ export default async function LandOfLegendsPage({
       <main className="flex-1">
         {/* Hero */}
         <section className="relative pb-16 pt-24 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(0,122,255,0.04) 0%, rgba(255,149,0,0.03) 50%, #FFFFFF 100%)" }}>
-          <div className="relative max-w-7xl mx-auto px-4">
+          <div className="relative max-w-6xl mx-auto px-4">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
               <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
@@ -403,7 +403,7 @@ export default async function LandOfLegendsPage({
 
         {/* Features */}
         <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto px-4">
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">{c.whyTitle}</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {c.features.map((feature, i) => (

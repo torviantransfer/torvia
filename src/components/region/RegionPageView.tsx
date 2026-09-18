@@ -227,7 +227,7 @@ export default async function RegionPageView({
             /booking). Without it the desktop breadcrumb sat behind the bar and
             the phone's photo — which is meant to sit flush against it — ran
             under it and lost its top edge. */}
-        <div className="relative mx-auto max-w-7xl px-4 pt-16 lg:px-6">
+        <div className="relative mx-auto max-w-6xl px-4 pt-16 lg:px-6">
           {/* Masaüstünde hero'nun tepesinde; telefonda fotoğraf başlık çubuğuna
               yapışık kalsın diye metnin başına iniyor. */}
           {breadcrumb && <div className="hidden pt-6 lg:block">{breadcrumb}</div>}
@@ -272,7 +272,7 @@ export default async function RegionPageView({
 
       {/* ── Spec plate ─────────────────────────────────────────────────── */}
       <div className="bg-[#1D1D1F]">
-        <dl className="mx-auto flex max-w-7xl flex-wrap px-4 lg:px-6">
+        <dl className="mx-auto flex max-w-6xl flex-wrap px-4 lg:px-6">
           <PlateCell label={t("labelFixedPrice")} value={price} />
           <PlateCell
             label={t("labelDuration")}
@@ -296,12 +296,12 @@ export default async function RegionPageView({
 
       {/* Phones get the promises here instead, under the plate. */}
       <div className="lg:hidden" style={{ borderBottom: HAIRLINE }}>
-        <div className="mx-auto max-w-7xl px-4 py-5">{promiseCards}</div>
+        <div className="mx-auto max-w-6xl px-4 py-5">{promiseCards}</div>
       </div>
 
       {/* ── Price and vehicle ──────────────────────────────────────────── */}
       <section className="py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className="mx-auto max-w-6xl px-4 lg:px-6">
           <SectionHead kicker={t("kickerPrice")} title={t("headingPrice")} sub={t("subPrice")} />
 
           <div
@@ -391,7 +391,7 @@ export default async function RegionPageView({
 
       {/* ── Options ────────────────────────────────────────────────────── */}
       <section className="bg-[#FBFBFD] py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className="mx-auto max-w-6xl px-4 lg:px-6">
           <SectionHead kicker={t("kickerOptions")} title={t("headingOptions", { name })} sub={t("subOptions")} />
 
           <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-[1.1fr_1fr_1fr_1fr]">
@@ -454,7 +454,7 @@ export default async function RegionPageView({
 
       {/* ── About the region ───────────────────────────────────────────── */}
       <section className="py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className="mx-auto max-w-6xl px-4 lg:px-6">
           <SectionHead kicker={t("kickerRegion")} title={t("aboutRegion", { name })} />
 
           <dl className="flex flex-wrap gap-x-10 gap-y-1 pb-6" style={{ borderBottom: HAIRLINE }}>
@@ -515,7 +515,7 @@ export default async function RegionPageView({
       {/* ── Highlights — filled from the panel, per region ─────────────── */}
       {highlights.length > 0 && (
         <section className="bg-[#FBFBFD] py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-          <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="mx-auto max-w-6xl px-4 lg:px-6">
             <SectionHead kicker={t("kickerHighlights")} title={t("headingHighlights", { name })} sub={t("subHighlights")} />
             <ul className="grid gap-5 md:grid-cols-3">
               {highlights.map((h) => (
@@ -537,7 +537,7 @@ export default async function RegionPageView({
       {/* ── Reviews ────────────────────────────────────────────────────── */}
       {reviews.length > 0 && (
         <section className="bg-[#FBFBFD] py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-          <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="mx-auto max-w-6xl px-4 lg:px-6">
             <SectionHead kicker={t("kickerReviews")} title={t("customerReviews")} />
 
             {ratingAverage && (
@@ -575,7 +575,7 @@ export default async function RegionPageView({
 
       {/* ── FAQ ────────────────────────────────────────────────────────── */}
       <section className="py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+        <div className="mx-auto max-w-6xl px-4 lg:px-6">
           <SectionHead kicker={t("kickerFaq")} title={t("faqHeading", { name })} centered />
           <div className="mx-auto grid max-w-3xl gap-2.5">
             {faq.map((item, i) => (
@@ -604,7 +604,7 @@ export default async function RegionPageView({
       {/* ── Nearby regions, and the phrases this route answers ─────────── */}
       {(otherRegions.length > 0 || (searchPhrases && searchPhrases.length > 0)) && (
         <section className="bg-[#FBFBFD] py-12 lg:py-20" style={{ borderTop: HAIRLINE }}>
-          <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="mx-auto max-w-6xl px-4 lg:px-6">
             {otherRegions.length > 0 && (
               <>
                 <SectionHead kicker={t("kickerNearby")} title={t("otherDestinations")} />
@@ -655,7 +655,7 @@ export default async function RegionPageView({
 
       {/* ── Closing ────────────────────────────────────────────────────── */}
       <section className="bg-[#1D1D1F]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-12 lg:grid-cols-[1fr_auto] lg:px-6 lg:py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 lg:grid-cols-[1fr_auto] lg:px-6 lg:py-20">
           <div>
             <div className="text-[11.5px] font-bold uppercase tracking-[0.14em] text-[#0A84FF]">
               {t("airportTo", { name })}

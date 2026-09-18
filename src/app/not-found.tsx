@@ -22,11 +22,10 @@ export default function NotFound() {
           <p
             style={{
               fontSize: "6rem",
-              fontWeight: 800,
+              fontWeight: 600,
               margin: 0,
-              background: "linear-gradient(135deg, #007AFF, #5856D6)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "#d1d1d6",
+              letterSpacing: "-0.04em",
             }}
           >
             404

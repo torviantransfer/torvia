@@ -17,14 +17,14 @@ export default function VehicleShowcase() {
   const t = useTranslations("vehicle");
 
   const specs = [
-    { icon: Users, labelKey: "spec1", color: "#60A5FA" },
-    { icon: Luggage, labelKey: "spec2", color: "#A78BFA" },
-    { icon: Snowflake, labelKey: "spec3", color: "#22D3EE" },
-    { icon: Wifi, labelKey: "spec4", color: "#818CF8" },
-    { icon: Droplets, labelKey: "spec5", color: "#2DD4BF" },
-    { icon: Zap, labelKey: "spec6", color: "#FBBF24" },
-    { icon: Shield, labelKey: "spec7", color: "#34D399" },
-    { icon: Armchair, labelKey: "spec8", color: "#F97316" },
+    { icon: Users, labelKey: "spec1" },
+    { icon: Luggage, labelKey: "spec2" },
+    { icon: Snowflake, labelKey: "spec3" },
+    { icon: Wifi, labelKey: "spec4" },
+    { icon: Droplets, labelKey: "spec5" },
+    { icon: Zap, labelKey: "spec6" },
+    { icon: Shield, labelKey: "spec7" },
+    { icon: Armchair, labelKey: "spec8" },
   ];
 
   return (
@@ -56,9 +56,9 @@ export default function VehicleShowcase() {
 
             {/* Specs */}
             <div className="grid grid-cols-2 gap-3 mb-10">
-              {specs.map(({ icon: Icon, labelKey, color }) => (
+              {specs.map(({ icon: Icon, labelKey }) => (
                 <div key={labelKey} className="flex items-center gap-3 py-2">
-                  <Icon size={16} style={{ color }} strokeWidth={1.5} />
+                  <Icon size={16} className="shrink-0 text-[#007AFF]" strokeWidth={1.75} />
                   <span className="text-gray-600 text-sm">{t(labelKey)}</span>
                 </div>
               ))}

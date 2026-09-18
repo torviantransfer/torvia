@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ContactForm from "@/components/ContactForm";
 import { Link } from "@/i18n/routing";
-import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowRight, HelpCircle, Globe, Shield, Headphones } from "lucide-react";
+import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowRight, HelpCircle, Globe, Shield, Headphones, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 
@@ -88,21 +88,23 @@ export default async function ContactPage({
           </div>
         </section>
 
-        {/* Stats bar */}
-        <section className="border-b" style={{ backgroundColor: "#FFFFFF", borderColor: "rgba(0,0,0,0.06)" }}>
+        {/* Stats bar — one neutral fill for all four. They used to be tinted
+            blue, orange, green and blue, which gave four equal facts four
+            different weights. */}
+        <section className="border-b border-black/[0.06] bg-white">
           <div className="max-w-5xl mx-auto px-4 py-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {[
-                { icon: Headphones, labelKey: "stat1Label", subKey: "stat1Sub", color: "#007AFF", bg: "rgba(0,122,255,0.1)" },
-                { icon: Clock, labelKey: "stat2Label", subKey: "stat2Sub", color: "#FF9500", bg: "rgba(255,149,0,0.1)" },
-                { icon: Globe, labelKey: "stat3Label", subKey: "stat3Sub", color: "#34C759", bg: "rgba(52,199,89,0.1)" },
-                { icon: Shield, labelKey: "stat4Label", subKey: "stat4Sub", color: "#007AFF", bg: "rgba(0,122,255,0.1)" },
-              ].map(({ icon: Icon, labelKey, subKey, color, bg }) => (
-                <div key={labelKey} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: bg }}>
-                  <Icon size={18} style={{ color }} strokeWidth={1.5} />
+                { icon: Headphones, labelKey: "stat1Label", subKey: "stat1Sub" },
+                { icon: Clock, labelKey: "stat2Label", subKey: "stat2Sub" },
+                { icon: Globe, labelKey: "stat3Label", subKey: "stat3Sub" },
+                { icon: Shield, labelKey: "stat4Label", subKey: "stat4Sub" },
+              ].map(({ icon: Icon, labelKey, subKey }) => (
+                <div key={labelKey} className="flex items-center gap-3 rounded-[14px] bg-[#F5F5F7] p-3">
+                  <Icon size={18} className="shrink-0 text-[#007AFF]" strokeWidth={1.75} />
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-gray-900 truncate">{t(labelKey)}</p>
-                    <p className="text-[10px] text-gray-500 truncate">{t(subKey)}</p>
+                    <p className="truncate text-[13px] font-semibold text-[#1d1d1f]">{t(labelKey)}</p>
+                    <p className="truncate text-[11.5px] text-[#86868b]">{t(subKey)}</p>
                   </div>
                 </div>
               ))}
@@ -111,82 +113,81 @@ export default async function ContactPage({
         </section>
 
         {/* Main content: info + form */}
-        <section className="py-20" style={{ backgroundColor: "#f8fafc" }}>
+        <section className="py-16 sm:py-20" style={{ backgroundColor: "#F5F5F7" }}>
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid lg:grid-cols-5 gap-8">
 
-              {/* LEFT: Contact info cards */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="mb-6">
+              {/* LEFT: contact channels as one grouped list, the way a phone's
+                  settings screen lists them — a small solid tile with a white
+                  glyph per row, hairlines between, a chevron where the row
+                  does something. Four separately-outlined cards with pastel
+                  tiles read as four unrelated widgets. */}
+              <div className="lg:col-span-2">
+                <div className="mb-5">
                   <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">{t("tag")}</p>
                   <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{t("getInTouch")}</h2>
                 </div>
 
-                {/* WhatsApp */}
-                <a
-                  href="https://wa.me/902426060763"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-5 rounded-xl bg-white group transition-all hover:shadow-md"
-                  style={{ border: "1px solid #e2e8f0" }}
-                >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#dcfce7" }}>
-                    <MessageCircle size={22} className="text-emerald-600" strokeWidth={1.5} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">WhatsApp</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">{t("whatsapp")}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{t("whatsappDesc")}</p>
-                  </div>
-                  <ArrowRight size={16} className="text-gray-300 flex-shrink-0 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />
-                </a>
+                <div className="divide-y divide-black/[0.06] overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.06]">
+                  <a
+                    href="https://wa.me/902426060763"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3.5 px-4 py-3.5 transition active:bg-black/[0.03] hover:bg-black/[0.02]"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#34C759]">
+                      <MessageCircle size={18} className="text-white" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-[#1d1d1f]">{t("whatsapp")}</span>
+                      <span className="block text-[13px] text-[#86868b]">{t("whatsappDesc")}</span>
+                    </span>
+                    <ChevronRight size={17} className="shrink-0 text-[#c7c7cc] rtl:rotate-180" />
+                  </a>
 
-                {/* Email */}
-                <div className="flex items-center gap-4 p-5 rounded-xl bg-white" style={{ border: "1px solid #e2e8f0" }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#dbeafe" }}>
-                    <Mail size={22} className="text-blue-600" strokeWidth={1.5} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">E-posta</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">{t("emailLabel")}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{t("emailDesc")}</p>
-                  </div>
-                </div>
+                  <a
+                    href="tel:+902426060763"
+                    className="flex items-center gap-3.5 px-4 py-3.5 transition active:bg-black/[0.03] hover:bg-black/[0.02]"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#007AFF]">
+                      <Phone size={17} className="text-white" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-[#1d1d1f]">0242 606 07 63</span>
+                      <span className="block text-[13px] text-[#86868b]">{t("responseTime")}</span>
+                    </span>
+                    <ChevronRight size={17} className="shrink-0 text-[#c7c7cc] rtl:rotate-180" />
+                  </a>
 
-                {/* Phone */}
-                <a
-                  href="tel:+902426060763"
-                  className="flex items-center gap-4 p-5 rounded-xl bg-white group transition-all hover:shadow-md"
-                  style={{ border: "1px solid #e2e8f0" }}
-                >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#ede9fe" }}>
-                    <Phone size={22} className="text-violet-600" strokeWidth={1.5} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("phoneLabel")}</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">0242 606 07 63</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{t("responseTime")}</p>
-                  </div>
-                  <ArrowRight size={16} className="text-gray-300 flex-shrink-0 group-hover:text-violet-500 group-hover:translate-x-0.5 transition-all" />
-                </a>
+                  <a
+                    href="mailto:torviantransfer@gmail.com"
+                    className="flex items-center gap-3.5 px-4 py-3.5 transition active:bg-black/[0.03] hover:bg-black/[0.02]"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#5856D6]">
+                      <Mail size={17} className="text-white" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-[#1d1d1f]">{t("emailLabel")}</span>
+                      <span className="block truncate text-[13px] text-[#86868b]">torviantransfer@gmail.com</span>
+                    </span>
+                    <ChevronRight size={17} className="shrink-0 text-[#c7c7cc] rtl:rotate-180" />
+                  </a>
 
-                {/* Address */}
-                <div className="flex items-start gap-4 p-5 rounded-xl bg-white" style={{ border: "1px solid #e2e8f0" }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
-                    <MapPin size={22} className="text-slate-500" strokeWidth={1.5} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t("locationLabel")}</p>
-                    <p className="font-semibold text-gray-900 text-sm mt-0.5">Muratpaşa, Antalya</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Yenigöl Mah. Lavanta Sk. No:22, 07200 Muratpaşa / Antalya</p>
+                  <div className="flex items-start gap-3.5 px-4 py-3.5">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#FF3B30]">
+                      <MapPin size={17} className="text-white" strokeWidth={2} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-[#1d1d1f]">Muratpaşa, Antalya</span>
+                      <span className="block text-[13px] leading-snug text-[#86868b]">Yenigöl Mah. Lavanta Sk. No:22, 07200 Muratpaşa / Antalya</span>
+                    </span>
                   </div>
                 </div>
 
                 {/* FAQ link */}
                 <Link
                   href="/faq"
-                  className="flex items-center gap-3 px-5 py-4 rounded-xl bg-white group transition-all hover:shadow-md"
-                  style={{ border: "1px solid #e2e8f0" }}
+                  className="group mt-3 flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 ring-1 ring-black/[0.06] transition hover:bg-black/[0.02] active:bg-black/[0.03]"
                 >
                   <HelpCircle size={18} className="text-blue-500 flex-shrink-0" strokeWidth={1.5} />
                   <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 flex-1 transition-colors">{t("checkFaq")}</span>

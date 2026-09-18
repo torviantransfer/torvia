@@ -5,6 +5,7 @@ import Image from "next/image";
 
 export default function RegionsPreview() {
   const t = useTranslations("regions");
+  const tNav = useTranslations("nav");
 
   const popularRegions = [
     { slug: "belek", name: "Belek", descKey: "belekDesc", image: "/images/regions/belek-golf.jpg" },
@@ -55,11 +56,15 @@ export default function RegionsPreview() {
                 </p>
                 <Link
                   href={`/${region.slug}-transfer`}
-                  className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:brightness-110"
-                  style={{ backgroundColor: "#1B3A5C" }}
+                  /* Tinted, not filled. Six solid navy buttons in one grid were
+                     six equal calls to action and a third button colour on the
+                     site; a pale-blue tint keeps each one findable without the
+                     grid shouting. Centred and allowed to wrap as a block, so a
+                     long name like "Kundu-Lara" breaks onto two tidy lines. */
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[#EAF4FF] px-3 py-2.5 text-center text-[14px] font-semibold leading-snug text-[#007AFF] transition hover:bg-[#D6E9FF]"
                 >
-                  {t("bookRegionTransfer", { name: region.name })}
-                  <ArrowRight size={14} />
+                  <span>{t("bookRegionTransfer", { name: region.name })}</span>
+                  <ArrowRight size={14} className="shrink-0 rtl:rotate-180" />
                 </Link>
               </div>
             </div>
@@ -70,14 +75,14 @@ export default function RegionsPreview() {
         <div className="flex flex-wrap justify-center gap-3 mt-10">
           <Link
             href="/booking"
-            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+            className="inline-flex h-11 items-center gap-2 rounded-full bg-[#007AFF] px-6 text-[15px] font-semibold text-white transition hover:bg-[#0062CC]"
           >
-            Book now
+            {tNav("bookNow")}
             <ArrowRight size={14} />
           </Link>
           <Link
             href="/regions"
-            className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+            className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-6 text-[15px] font-semibold text-[#007AFF] ring-1 ring-black/[0.1] transition hover:bg-black/[0.03]"
           >
             {t("allRegions")}
             <ArrowRight size={14} />

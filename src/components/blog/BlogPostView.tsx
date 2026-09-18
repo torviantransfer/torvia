@@ -118,10 +118,12 @@ export default async function BlogPostView({
   const rd = await getTranslations({ locale, namespace: "regionDetail" });
   const ft = await getTranslations({ locale, namespace: "footer" });
 
+  // The four code-built landing pages also exist as SEO-managed rows, so the
+  // two lists overlap; keep the first of each href or every one is listed twice.
   const serviceLinks = [
     ...CODE_LANDINGS.map((l) => ({ name: ft(l.key), href: l.href })),
     ...landings,
-  ];
+  ].filter((l, i, all) => all.findIndex((x) => x.href === l.href) === i);
 
   const fmt = (iso: string) =>
     new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });

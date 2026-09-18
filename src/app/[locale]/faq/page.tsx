@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { Link } from "@/i18n/routing";
-import { ArrowRight, MessageCircle, HelpCircle, Search } from "lucide-react";
+import { ArrowRight, MessageCircle, HelpCircle, ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import { getSeoPage, applySeoPage, seoH1, seoIntro } from "@/lib/seoPages";
 
@@ -60,45 +60,39 @@ export default async function FAQPage({
         {/* Category header */}
         <section className="py-14 sm:py-20">
           <div className="max-w-3xl mx-auto px-4">
-            {/* Search-like visual hint */}
-            <div className="flex items-center gap-3 mb-8 px-4 py-3 rounded-xl" style={{ backgroundColor: "#F5F5F7", border: "1px solid rgba(0,0,0,0.06)" }}>
-              <Search size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-400">{t("subtitle")}</span>
+            {/* No search box here. There was a search-shaped panel — magnifier,
+                grey field — that searched nothing: it only repeated the
+                subtitle, and a visitor who tapped it to type got no keyboard.
+
+                The questions are one grouped list with hairlines, matching the
+                FAQ on the booking page, instead of separate outlined cards with
+                numbers coloured blue for 1–4 and orange for 5–8. */}
+            <div className="divide-y divide-black/[0.06] overflow-hidden rounded-[18px] bg-white ring-1 ring-black/[0.06]">
+              {faqKeys.map((i) => (
+                <details key={i} className="group">
+                  <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-4 text-[15px] font-medium text-[#1d1d1f] transition active:bg-black/[0.03] sm:px-5">
+                    <span className="flex-1">{t(`q${i}`)}</span>
+                    <ChevronDown size={17} className="shrink-0 text-[#c7c7cc] transition-transform group-open:rotate-180" aria-hidden="true" />
+                  </summary>
+                  <div className="px-4 pb-4 text-[14px] leading-relaxed text-[#6e6e73] sm:px-5">
+                    {t(`a${i}`)}
+                  </div>
+                </details>
+              ))}
             </div>
 
-            <div className="space-y-3">
-            {faqKeys.map((i) => (
-              <details key={i} className="rounded-2xl overflow-hidden group transition-all hover:shadow-md" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-                <summary className="px-5 sm:px-6 py-4 sm:py-5 cursor-pointer font-semibold text-gray-900 text-sm flex items-center gap-3 transition-colors">
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ backgroundColor: i <= 4 ? "#007AFF" : i <= 8 ? "#FF9500" : "#34C759" }}>{i}</span>
-                  <span className="flex-1">{t(`q${i}`)}</span>
-                  <span className="text-gray-400 group-open:rotate-180 transition-transform ms-4 flex-shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </span>
-                </summary>
-                <div className="px-5 sm:px-6 pb-5 text-sm text-gray-600 leading-relaxed pt-2 ms-10" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
-                  {t(`a${i}`)}
-                </div>
-              </details>
-            ))}
-
-            </div>
-            
-            {/* Still need help CTA */}
-            <div className="mt-10 rounded-2xl p-6 sm:p-8 text-center" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(52,211,153,0.1)" }}>
-                <MessageCircle size={22} className="text-emerald-400" strokeWidth={1.5} />
+            {/* Still need help */}
+            <div className="mt-8 rounded-[22px] bg-white p-6 text-center ring-1 ring-black/[0.06] sm:p-8">
+              <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-[#E8F7EE]">
+                <MessageCircle size={22} className="text-[#248A3D]" strokeWidth={1.75} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{t("stillNeedHelp")}</h3>
-              <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">{t("stillNeedHelpDesc")}</p>
+              <h3 className="mb-2 text-[19px] font-semibold text-[#1d1d1f]">{t("stillNeedHelp")}</h3>
+              <p className="mx-auto mb-6 max-w-md text-[14px] text-[#6e6e73]">{t("stillNeedHelpDesc")}</p>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all hover:brightness-110 text-sm"
-                style={{ backgroundColor: '#FF9500' }}
+                className="inline-flex h-11 items-center gap-2 rounded-[12px] bg-[#007AFF] px-6 text-[15px] font-semibold text-white transition hover:bg-[#0062CC] active:scale-[0.98]"
               >
-                {t("contactUs")} <ArrowRight size={16} />
+                {t("contactUs")} <ArrowRight size={16} className="rtl:rotate-180" />
               </Link>
             </div>
           </div>

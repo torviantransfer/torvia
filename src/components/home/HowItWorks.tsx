@@ -7,9 +7,9 @@ export default function HowItWorks() {
   const t = useTranslations("howItWorks");
 
   const steps = [
-    { number: "1", titleKey: "step1Title", descKey: "step1Desc", color: "#60A5FA" },
-    { number: "2", titleKey: "step2Title", descKey: "step2Desc", color: "#F97316" },
-    { number: "3", titleKey: "step3Title", descKey: "step3Desc", color: "#34D399" },
+    { number: "1", titleKey: "step1Title", descKey: "step1Desc", color: "#007AFF" },
+    { number: "2", titleKey: "step2Title", descKey: "step2Desc", color: "#007AFF" },
+    { number: "3", titleKey: "step3Title", descKey: "step3Desc", color: "#007AFF" },
   ];
 
   return (

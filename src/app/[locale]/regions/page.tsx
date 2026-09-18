@@ -139,7 +139,7 @@ export default async function RegionsPage({
           <div className="absolute inset-0">
             <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[100px]" style={{ backgroundColor: "rgba(0,122,255,0.06)" }} />
           </div>
-          <div className="relative max-w-7xl mx-auto px-4 text-center">
+          <div className="relative max-w-6xl mx-auto px-4 text-center">
             <p className="text-sm font-semibold text-[#007AFF] uppercase tracking-widest mb-4">{t("destinations")}</p>
             <h1 className="text-balance hyphens-auto text-[24px] font-bold leading-[1.2] tracking-tight text-gray-900 sm:text-[28px] lg:text-[38px] lg:leading-[1.14] mb-4">{seoH1(seoRow, locale) ?? t("title")}</h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">{seoIntro(seoRow, locale) ?? t("subtitle")}</p>
@@ -155,7 +155,7 @@ export default async function RegionsPage({
         </section>
 
         <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-6xl mx-auto px-4">
             {/* SEO Intro */}
             <p className="text-gray-500 text-base leading-relaxed text-center max-w-3xl mx-auto mb-10">
               {t("seoIntro")}

@@ -24,11 +24,10 @@ export default function GlobalError({
           <p
             style={{
               fontSize: "5rem",
-              fontWeight: 800,
+              fontWeight: 600,
               margin: 0,
-              background: "linear-gradient(135deg, #FF3B30, #FF9500)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              color: "#d1d1d6",
+              letterSpacing: "-0.04em",
             }}
           >
             Error

@@ -9,10 +9,10 @@ export default function TrustBadges() {
   const [active, setActive] = useState(0);
 
   const badges = [
-    { icon: Shield, titleKey: "licensedTitle", descKey: "licensedDesc", color: "#34C759", bg: "rgba(52,199,89,0.08)" },
-    { icon: Headset, titleKey: "conciergeTitle", descKey: "conciergeDesc", color: "#FF9500", bg: "rgba(255,149,0,0.08)" },
+    { icon: Shield, titleKey: "licensedTitle", descKey: "licensedDesc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
+    { icon: Headset, titleKey: "conciergeTitle", descKey: "conciergeDesc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
     { icon: Plane, titleKey: "flightTitle", descKey: "flightDesc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
-    { icon: Clock, titleKey: "punctualTitle", descKey: "punctualDesc", color: "#34C759", bg: "rgba(52,199,89,0.08)" },
+    { icon: Clock, titleKey: "punctualTitle", descKey: "punctualDesc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
   ];
 
   useEffect(() => {

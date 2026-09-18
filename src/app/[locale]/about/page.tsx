@@ -95,8 +95,8 @@ export default async function AboutPage({
             <div className="grid sm:grid-cols-3 gap-4 sm:gap-5 mt-14">
               {[
                 { icon: Shield, value: "15,000+", labelKey: "statTransfers", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
-                { icon: Star, value: "4.9", labelKey: "statRating", color: "#FF9500", bg: "rgba(255,149,0,0.08)" },
-                { icon: Users, value: "24/7", labelKey: "statSupport", color: "#34C759", bg: "rgba(52,199,89,0.08)" },
+                { icon: Star, value: "4.9", labelKey: "statRating", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
+                { icon: Users, value: "24/7", labelKey: "statSupport", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
               ].map(({ icon: Icon, value, labelKey, color, bg }) => (
                 <div key={labelKey} className="text-center p-6 sm:p-8 rounded-2xl" style={{ backgroundColor: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.06)" }}>
                   <div className="w-12 h-12 mx-auto mb-4 rounded-xl flex items-center justify-center" style={{ backgroundColor: bg }}>
@@ -113,10 +113,10 @@ export default async function AboutPage({
               <h2 className="text-2xl font-bold text-gray-900 mb-8 tracking-tight">{t("whyChoose")}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
-                  { icon: CheckCircle, titleKey: "feature1Title", descKey: "feature1Desc", color: "#34C759", bg: "rgba(52,199,89,0.08)" },
-                  { icon: Zap, titleKey: "feature2Title", descKey: "feature2Desc", color: "#FF9500", bg: "rgba(255,149,0,0.08)" },
+                  { icon: CheckCircle, titleKey: "feature1Title", descKey: "feature1Desc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
+                  { icon: Zap, titleKey: "feature2Title", descKey: "feature2Desc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
                   { icon: Globe, titleKey: "feature3Title", descKey: "feature3Desc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
-                  { icon: Shield, titleKey: "feature4Title", descKey: "feature4Desc", color: "#34C759", bg: "rgba(52,199,89,0.08)" },
+                  { icon: Shield, titleKey: "feature4Title", descKey: "feature4Desc", color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
                 ].map(({ icon: Icon, titleKey, descKey, color, bg }) => (
                   <div key={titleKey} className="flex items-start gap-4 p-5 rounded-2xl" style={{ backgroundColor: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: bg }}>
@@ -136,10 +136,10 @@ export default async function AboutPage({
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 text-center">
                 {[
                   { icon: CreditCard, label: t("trustStripePayments"), color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
-                  { icon: Shield, label: t("trustInsured"), color: "#34C759", bg: "rgba(52,199,89,0.08)" },
-                  { icon: Plane, label: t("trustFlightTracking"), color: "#FF9500", bg: "rgba(255,149,0,0.08)" },
+                  { icon: Shield, label: t("trustInsured"), color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
+                  { icon: Plane, label: t("trustFlightTracking"), color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
                   { icon: Clock, label: t("trustFreeCancellation"), color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
-                  { icon: Star, label: t("trustSince"), color: "#FF9500", bg: "rgba(255,149,0,0.08)" },
+                  { icon: Star, label: t("trustSince"), color: "#007AFF", bg: "rgba(0,122,255,0.08)" },
                 ].map(({ icon: Icon, label, color, bg }) => (
                   <div key={label} className="flex flex-col items-center gap-2">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: bg }}>
