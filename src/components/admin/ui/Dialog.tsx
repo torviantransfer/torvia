@@ -76,9 +76,20 @@ export function Dialog({
           </div>
           <IconButton icon={X} label="Kapat" size="sm" onClick={onClose} className="-me-1.5 -mt-0.5" />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+        {/* On a phone the sheet runs to the bottom edge, so whichever part is last
+            keeps clear of the home indicator. min-w-0 lets content narrower than
+            its longest word (a URL, a row of options) shrink instead of pushing
+            the sheet sideways. */}
+        <div
+          className={cx(
+            "min-h-0 min-w-0 flex-1 overflow-y-auto px-5 py-5",
+            !footer && "max-sm:pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+          )}
+        >
+          {children}
+        </div>
         {footer && (
-          <div className="flex flex-wrap justify-end gap-2 border-t border-adm-line-2 bg-adm-surface-2 px-5 py-3">
+          <div className="flex flex-wrap justify-end gap-2 border-t border-adm-line-2 bg-adm-surface-2 px-5 py-3 max-sm:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/routing";
 import { X } from "lucide-react";
 
 export default function CookieConsent() {
   const t = useTranslations("cookieConsent");
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -27,7 +28,9 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  // Not in the admin: it is a visitor notice, and on a phone it sat over the
+  // bottom sheets every admin dialog opens as.
+  if (!visible || pathname.startsWith("/admin")) return null;
 
   return (
     <div className="fixed bottom-0 start-0 end-0 z-50 p-4 animate-in slide-in-from-bottom duration-500">

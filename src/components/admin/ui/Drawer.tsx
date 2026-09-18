@@ -83,9 +83,18 @@ export function Drawer({
           {meta && <div className="text-[12.5px] text-adm-muted">{meta}</div>}
           {quick && <div className="mt-3.5 grid grid-cols-4 gap-2">{quick}</div>}
         </div>
-        <div className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto px-5 pb-6 pt-4">{children}</div>
+        {/* minmax(0,1fr), not an implicit column: a long unbroken e-mail, link or
+            address would otherwise size the column to itself and push the panel sideways. */}
+        <div
+          className={cx(
+            "grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4 overflow-y-auto px-5 pb-6 pt-4",
+            !footer && "max-[760px]:pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+          )}
+        >
+          {children}
+        </div>
         {footer && (
-          <div className="flex flex-wrap items-center gap-2 border-t border-adm-line-2 bg-adm-surface-2 px-5 py-3">
+          <div className="flex flex-wrap items-center gap-2 border-t border-adm-line-2 bg-adm-surface-2 px-5 py-3 max-[760px]:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}
           </div>
         )}

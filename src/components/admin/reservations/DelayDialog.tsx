@@ -124,7 +124,7 @@ export default function DelayDialog({
         </>
       }
     >
-      <div className="grid gap-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <Field label="Ne kadar rötar var?">
           <Segmented
             options={PRESETS.map((p) => ({ value: p, label: PRESET_LABEL[p] }))}

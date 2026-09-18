@@ -23,7 +23,9 @@ export function Segmented<V extends string>({
   className?: string;
 }) {
   return (
-    <div role="group" aria-label={label} className={cx("inline-flex rounded-adm bg-adm-seg p-[3px]", className)}>
+    // max-w-full + flex-wrap: where the options fit nothing changes; where they do not
+    // (six rötar presets on a phone) they wrap inside the pill instead of running off the screen.
+    <div role="group" aria-label={label} className={cx("inline-flex max-w-full flex-wrap rounded-adm bg-adm-seg p-[3px]", className)}>
       {options.map((o) => {
         const on = o.value === value;
         const cls = cx(

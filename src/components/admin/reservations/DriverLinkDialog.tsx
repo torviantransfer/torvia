@@ -26,7 +26,8 @@ export default function DriverLinkDialog({
 
   return (
     <Dialog open title="Şoför atandı" subtitle={`${driverName} için görev linki hazır.`} onClose={onClose} width="sm:max-w-md">
-      <div className="grid gap-2.5">
+      {/* minmax(0,1fr): an implicit column sizes itself to the unbreakable link and runs off the dialog's edge. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5">
         <div className="flex items-center gap-2 rounded-adm-sm border border-adm-line bg-adm-surface-2 py-1 pe-1 ps-3">
           <span className="min-w-0 flex-1 truncate font-mono text-xs text-adm-ink-2">{driverLink}</span>
           <IconButton

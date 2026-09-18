@@ -55,7 +55,7 @@ export function Popover({
             side === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5",
             align === "end" ? "end-0" : "start-0",
             width,
-            "max-[760px]:fixed max-[760px]:inset-x-3 max-[760px]:bottom-3 max-[760px]:top-auto max-[760px]:mb-0 max-[760px]:mt-0 max-[760px]:w-auto max-[760px]:shadow-adm-lg"
+            "max-[760px]:fixed max-[760px]:inset-x-3 max-[760px]:bottom-[max(0.75rem,env(safe-area-inset-bottom))] max-[760px]:top-auto max-[760px]:mb-0 max-[760px]:mt-0 max-[760px]:w-auto max-[760px]:shadow-adm-lg"
           )}
         >
           {children(close)}
