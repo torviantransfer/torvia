@@ -16,8 +16,11 @@ import { z } from "zod";
  */
 const schema = z
   .object({
-    regionId: z.string().uuid(),
-    categoryId: z.string().uuid(),
+    // `guid`, not `uuid`: zod 4's uuid() also checks the version nibble, and
+    // the seeded region and vehicle ids (a0000000-0000-0000-0000-000000000001)
+    // have none, so every manual booking for them failed as "Geçersiz form".
+    regionId: z.guid(),
+    categoryId: z.guid(),
     tripType: z.enum(["one_way", "round_trip"]).default("one_way"),
     direction: z.enum(["airport_to_region", "region_to_airport"]).default("airport_to_region"),
     pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

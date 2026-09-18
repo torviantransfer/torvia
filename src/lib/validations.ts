@@ -90,7 +90,7 @@ export const contactSchema = z.object({
 });
 
 export const assignDriverSchema = z.object({
-  reservationId: z.string().uuid(),
+  reservationId: z.guid(),
   // Accept common UUID-like strings used by the frontend (36 chars hex + dashes)
   // This is a pragmatic relaxation to allow non-standard seeded IDs; prefer
   // fixing the source data long-term.

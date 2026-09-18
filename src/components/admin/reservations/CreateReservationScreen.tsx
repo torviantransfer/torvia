@@ -192,7 +192,10 @@ export default function CreateReservationScreen({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        toast(data?.error ?? "Rezervasyon oluşturulamadı.", "error");
+        // Name the failing fields, so a rejected form says which box is wrong
+        // instead of a bare "Geçersiz form".
+        const fields = data?.details ? Object.keys(data.details).join(", ") : "";
+        toast(`${data?.error ?? "Rezervasyon oluşturulamadı."}${fields ? ` (${fields})` : ""}`, "error");
         return;
       }
       toast("Rezervasyon oluşturuldu.");
@@ -287,12 +290,16 @@ export default function CreateReservationScreen({
                 value={form.paymentMethod}
                 onChange={(v) => set("paymentMethod", v)}
                 options={[
-                  { value: "online", label: "Online" },
-                  { value: "cash", label: "Nakit" },
+                  { value: "online", label: "Tamamı online" },
+                  { value: "cash", label: "Kaporalı (kalanı araçta)" },
                 ]}
               />
               {form.paymentMethod === "cash" && !cashAvailable && vehicle && (
-                <p className="mt-1.5 text-xs text-adm-rose">Bu araç/bölge için nakit fiyat tanımlı değil.</p>
+                <p className="mt-1.5 text-xs text-adm-rose">
+                  {settings?.cashPaymentEnabled
+                    ? "Bu araç/bölge için kaporalı fiyat tanımlı değil."
+                    : "Kaporalı ödeme Ayarlar'dan kapalı."}
+                </p>
               )}
             </Field>
 
@@ -392,7 +399,7 @@ export default function CreateReservationScreen({
         {quote && (
           <div className="flex items-center justify-between rounded-adm border border-adm-line bg-adm-surface-2 px-4 py-3">
             <span className="text-[13px] text-adm-muted">
-              {form.paymentMethod === "cash" ? "Toplam · kapora online alınır" : "Toplam"}
+              {form.paymentMethod === "cash" ? "Toplam · kapora online, kalanı araçta" : "Toplam"}
             </span>
             <span className="text-lg font-bold tabular-nums">
               €{quote.total.toFixed(2)}
