@@ -28,9 +28,15 @@ import {
 import type { Cash } from "@/lib/rates";
 
 /**
- * A driver's statement as a file to hand over: Excel for working with, PDF
- * for sending. Both print the figures lib/driverStatement.ts worked out; none
- * are recomputed here.
+ * A driver's statement as a file to hand over — and it is handed over: these
+ * are what the office sends the driver. So they carry the driver's own account
+ * and nothing about the business behind it: no customer fare, no margin, no
+ * other driver's name or pay. Those stay on the admin screen, which reads the
+ * same Statement.
+ *
+ * Only payments and hand-made adjustments are listed as movements. The ledger
+ * also holds a generated row per job (the fee, and cash taken from a customer),
+ * and printing those under the jobs table printed every job twice.
  */
 
 const CURRENCY_NOTE =
@@ -46,16 +52,29 @@ const plates = (j: JobRow) =>
   [...new Set([j.outbound, j.ret].filter((c): c is LegCell => !!c?.mine && !!c.plate).map((c) => c.plate))].join(" / ") ||
   "—";
 
-const legText = (cell: LegCell | null) => {
-  if (!cell) return "—";
-  const fee = cell.fee === null ? "ücret yok" : fmtMoney(cell.fee, cell.currency);
-  return cell.mine ? fee : `${fee} (${cell.driverName})`;
+/** This driver's fee for a leg. A leg someone else drove shows as not theirs, without saying who or for how much. */
+const myLeg = (cell: LegCell | null) => {
+  if (!cell || !cell.mine) return "—";
+  return cell.fee === null ? "girilmedi" : fmtMoney(cell.fee, cell.currency);
 };
 
-const cashText = (j: JobRow) =>
-  j.cash ? `${fmtMoney(j.cash.value, j.cash.currency)}${j.cash.collectedByMe ? "" : " (diğer şoför)"}` : "—";
+/** Cash this driver took from the customer; cash another driver collected is not theirs to see. */
+const myCash = (j: JobRow) => (j.cash?.collectedByMe ? fmtMoney(j.cash.value, j.cash.currency) : "—");
 
 const movementRate = (m: MovementRow) => (m.original && m.rate !== null ? rateText(m.original.currency, m.rate) : "");
+
+const handMade = (s: Statement) => s.movements.filter((m) => m.manual);
+
+/* balanceStatus words it for the office ("Şoförün size borcu"); this file is read by
+   the driver, so the same balance is put to them directly. */
+const driverBalance = (balance: number) => {
+  const status = balanceStatus(balance);
+  const label = status.tone === "owe" ? "Alacağınız" : status.tone === "owed" ? "Borcunuz" : "Hesap kapalı";
+  return { ...status, label };
+};
+
+const describe = (m: MovementRow) =>
+  m.usd === null ? `${m.description} (kur yok — bakiyeye katılmadı)` : m.description;
 
 // ─── Excel ───
 
@@ -100,17 +119,11 @@ export async function statementXlsx(s: Statement): Promise<Buffer> {
   money("Dönemde düzeltme", s.periodTotals.adjustments, "USD");
   money("Dönem sonu bakiye", s.closing, "USD", true);
   sum.addRow([]);
-  const status = balanceStatus(s.current.balance);
+  const status = driverBalance(s.current.balance);
   money(`Bugün itibarıyla — ${status.label}`, Math.abs(s.current.balance), "USD", true);
   if (s.current.upcoming !== 0) money("İleri tarihli işlerden (bakiyeye henüz girmedi)", s.current.upcoming, "USD");
   sum.addRow([]);
   sum.addRow(["Transfer sayısı", s.jobTotals.count]);
-  money("Müşteriden alınan", s.jobTotals.fareEur, "EUR");
-  money("Şoförlere giden", s.jobTotals.feesEur, "EUR");
-  money("Bize kalan", s.jobTotals.marginEur, "EUR", true);
-  if (s.jobTotals.incomplete > 0) {
-    sum.addRow([`${s.jobTotals.incomplete} transferde şoför ücreti eksik; euro toplamlarına katılmadı.`]);
-  }
   sum.addRow([]);
   sum.addRow([CURRENCY_NOTE]);
 
@@ -120,22 +133,20 @@ export async function statementXlsx(s: Statement): Promise<Buffer> {
     { header: "Tarih", width: 17 },
     { header: "Rez. kodu", width: 14 },
     { header: "Tür", width: 12 },
-    { header: "Güzergah", width: 26 },
+    { header: "Güzergah", width: 30 },
     { header: "Uçuş", width: 22 },
-    { header: "Otel", width: 28 },
+    { header: "Otel", width: 30 },
     { header: "Plaka", width: 14 },
-    { header: "Ödeme", width: 9 },
-    { header: "Müşteriden", width: 13 },
     { header: "Gidiş ücreti", width: 13 },
-    { header: "Gidiş şoförü", width: 18 },
     { header: "Dönüş ücreti", width: 13 },
-    { header: "Dönüş şoförü", width: 18 },
-    { header: "Nakit tahsilat", width: 13 },
-    { header: "Bize kalan (€)", width: 14 },
-    { header: "Şoför bakiyesine ($)", width: 18 },
+    { header: "Tahsil edilen nakit", width: 16 },
+    { header: "Bakiyenize ($)", width: 15 },
   ];
   styleHeader(jobs.getRow(1));
   for (const j of s.jobs) {
+    const out = j.outbound?.mine ? j.outbound : null;
+    const ret = j.ret?.mine ? j.ret : null;
+    const cash = j.cash?.collectedByMe ? j.cash : null;
     const row = jobs.addRow([
       `${fmtDay(j.day)} ${j.time}`,
       j.code,
@@ -144,38 +155,22 @@ export async function statementXlsx(s: Statement): Promise<Buffer> {
       flights(j),
       j.hotel ?? "",
       plates(j),
-      j.payment === "cash" ? "Nakit" : "Online",
-      j.fare.value,
-      j.outbound?.fee ?? null,
-      j.outbound?.driverName ?? "",
-      j.ret?.fee ?? null,
-      j.ret?.driverName ?? "",
-      j.cash?.value ?? null,
-      j.marginEur,
+      out?.fee ?? null,
+      ret?.fee ?? null,
+      cash?.value ?? null,
       j.driverNetUsd,
     ]);
-    row.getCell(9).numFmt = FMT[j.fare.currency];
-    if (j.outbound) row.getCell(10).numFmt = FMT[j.outbound.currency];
-    if (j.ret) row.getCell(12).numFmt = FMT[j.ret.currency];
-    if (j.cash) row.getCell(14).numFmt = FMT[j.cash.currency];
-    row.getCell(15).numFmt = FMT.EUR;
-    row.getCell(16).numFmt = FMT.USD;
+    if (out) row.getCell(8).numFmt = FMT[out.currency];
+    if (ret) row.getCell(9).numFmt = FMT[ret.currency];
+    if (cash) row.getCell(10).numFmt = FMT[cash.currency];
+    row.getCell(11).numFmt = FMT.USD;
   }
-  const jobTotal = jobs.addRow([
-    `${s.jobTotals.count} transfer`,
-    "", "", "", "", "", "", "",
-    s.jobTotals.fareEur,
-    "", "", "", "", "",
-    s.jobTotals.marginEur,
-    s.jobTotals.driverNetUsd,
-  ]);
+  const jobTotal = jobs.addRow([`${s.jobTotals.count} transfer`, "", "", "", "", "", "", "", "", "", s.jobTotals.driverNetUsd]);
   jobTotal.font = { bold: true };
-  jobTotal.getCell(9).numFmt = FMT.EUR;
-  jobTotal.getCell(15).numFmt = FMT.EUR;
-  jobTotal.getCell(16).numFmt = FMT.USD;
+  jobTotal.getCell(11).numFmt = FMT.USD;
 
-  // ── Hareketler
-  const moves = wb.addWorksheet("Hareketler", { views: [{ state: "frozen", ySplit: 1 }] });
+  // ── Ödemeler ve düzeltmeler
+  const moves = wb.addWorksheet("Ödemeler", { views: [{ state: "frozen", ySplit: 1 }] });
   moves.columns = [
     { header: "Tarih", width: 17 },
     { header: "Tür", width: 11 },
@@ -184,32 +179,23 @@ export async function statementXlsx(s: Statement): Promise<Buffer> {
     { header: "Asıl tutar", width: 14 },
     { header: "Kur", width: 18 },
     { header: "Tutar ($)", width: 13 },
-    { header: "Bakiye ($)", width: 14 },
-    { header: "Kayıt", width: 10 },
   ];
   styleHeader(moves.getRow(1));
-  const opening = moves.addRow(["", "", "Devreden bakiye", "", null, "", null, s.opening, ""]);
-  opening.font = { italic: true };
-  opening.getCell(8).numFmt = FMT.USD;
-  for (const m of s.movements) {
+  const manual = handMade(s);
+  for (const m of manual) {
     const row = moves.addRow([
       `${fmtDay(m.day)} ${m.time}`,
       LEDGER_TYPE_LABEL[m.type],
-      m.usd === null ? `${m.description} (kur yok — bakiyeye katılmadı)` : m.description,
+      describe(m),
       m.code ?? "",
       m.original?.amount ?? null,
       movementRate(m),
       m.usd,
-      m.balance,
-      m.manual ? "Elle" : "Otomatik",
     ]);
     if (m.original) row.getCell(5).numFmt = FMT[m.original.currency];
     row.getCell(7).numFmt = FMT.USD;
-    row.getCell(8).numFmt = FMT.USD;
   }
-  const closing = moves.addRow(["", "", "Dönem sonu bakiye", "", null, "", null, s.closing, ""]);
-  closing.font = { bold: true };
-  closing.getCell(8).numFmt = FMT.USD;
+  if (manual.length === 0) moves.addRow(["", "", "Bu dönemde ödeme veya düzeltme yok."]);
 
   const out = await wb.xlsx.writeBuffer();
   return Buffer.from(out as ArrayBuffer);
@@ -227,7 +213,7 @@ export async function statementPdf(s: Statement): Promise<Buffer> {
     detail: `${rangeLabel(s.range)}${s.driver.phone ? `  ·  ${s.driver.phone}` : ""}`,
   });
 
-  const status = balanceStatus(s.current.balance);
+  const status = driverBalance(s.current.balance);
   const statusFill: Record<typeof status.tone, RGB> = {
     owe: [254, 243, 199],
     owed: [255, 228, 230],
@@ -250,44 +236,30 @@ export async function statementPdf(s: Statement): Promise<Buffer> {
     y
   );
 
-  doc.setFont("Inter", "normal");
-  doc.setFontSize(8);
-  doc.setTextColor(71, 85, 105);
-  const totals = [
-    `${s.jobTotals.count} transfer`,
-    `Müşteriden ${fmtMoney(s.jobTotals.fareEur, "EUR")}`,
-    `Şoförlere ${fmtMoney(s.jobTotals.feesEur, "EUR")}`,
-    `Bize kalan ${fmtMoney(s.jobTotals.marginEur, "EUR")}`,
-  ].join("   ·   ");
-  doc.text(
-    s.jobTotals.incomplete > 0 ? `${totals}   (${s.jobTotals.incomplete} transferde ücret eksik, toplama katılmadı)` : totals,
-    MARGIN,
-    y + 2
-  );
   if (s.current.upcoming !== 0) {
+    doc.setFont("Inter", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
     doc.text(`İleri tarihli işlerden: ${fmtMoney(s.current.upcoming, "USD")}`, pageW - MARGIN, y + 2, { align: "right" });
+    y += 6;
   }
-  y += 6;
 
   // ── Jobs
   y = sectionTitle(doc, "İşler", y);
   y = drawTable(
     doc,
     [
-      { title: "Tarih", width: 20 },
-      { title: "Kod", width: 19 },
-      { title: "Tür", width: 17 },
-      { title: "Güzergah", width: 28 },
-      { title: "Uçuş", width: 22 },
-      { title: "Otel", width: 29 },
-      { title: "Plaka", width: 17 },
-      { title: "Ödeme", width: 12 },
-      { title: "Müşteriden", width: 17, right: true },
-      { title: "Gidiş ücreti", width: 24, right: true },
-      { title: "Dönüş ücreti", width: 24, right: true },
-      { title: "Nakit", width: 16, right: true },
-      { title: "Bize kalan", width: 17, right: true },
-      { title: "Şoföre ($)", width: 15, right: true },
+      { title: "Tarih", width: 22 },
+      { title: "Kod", width: 20 },
+      { title: "Tür", width: 18 },
+      { title: "Güzergah", width: 40 },
+      { title: "Uçuş", width: 26 },
+      { title: "Otel", width: 44 },
+      { title: "Plaka", width: 20 },
+      { title: "Gidiş", width: 22, right: true },
+      { title: "Dönüş", width: 22, right: true },
+      { title: "Nakit", width: 20, right: true },
+      { title: "Bakiyenize ($)", width: 23, right: true },
     ],
     [
       ...s.jobs.map((j, i) => ({
@@ -300,65 +272,53 @@ export async function statementPdf(s: Statement): Promise<Buffer> {
           flights(j),
           j.hotel ?? "—",
           plates(j),
-          j.payment === "cash" ? "Nakit" : "Online",
-          fmtMoney(j.fare.value, j.fare.currency),
-          legText(j.outbound),
-          legText(j.ret),
-          cashText(j),
-          j.marginEur === null ? "eksik" : fmtMoney(j.marginEur, "EUR"),
+          myLeg(j.outbound),
+          j.tripType === "round_trip" ? myLeg(j.ret) : "—",
+          myCash(j),
           j.driverNetUsd === null ? "—" : fmtMoney(j.driverNetUsd, "USD"),
         ],
       })),
       {
         bold: true,
-        cells: [
-          `${s.jobTotals.count} transfer`,
-          "", "", "", "", "", "", "",
-          fmtMoney(s.jobTotals.fareEur, "EUR"),
-          "", "", "",
-          fmtMoney(s.jobTotals.marginEur, "EUR"),
-          fmtMoney(s.jobTotals.driverNetUsd, "USD"),
-        ],
+        cells: [`${s.jobTotals.count} transfer`, "", "", "", "", "", "", "", "", "", fmtMoney(s.jobTotals.driverNetUsd, "USD")],
       },
     ],
     y
   );
   y += 6;
 
-  // ── Movements
-  y = sectionTitle(doc, "Hareketler", y);
-  y = drawTable(
-    doc,
-    [
-      { title: "Tarih", width: 22 },
-      { title: "Tür", width: 18 },
-      { title: "Açıklama", width: 100 },
-      { title: "Kod", width: 20 },
-      { title: "Asıl tutar", width: 24, right: true },
-      { title: "Kur", width: 28, right: true },
-      { title: "Tutar ($)", width: 22, right: true },
-      { title: "Bakiye ($)", width: 25, right: true },
-      { title: "Kayıt", width: 18 },
-    ],
-    [
-      { cells: ["", "", "Devreden bakiye", "", "", "", "", fmtMoney(s.opening, "USD"), ""], shade: true },
-      ...s.movements.map((m) => ({
+  // ── Payments and adjustments
+  const manual = handMade(s);
+  y = sectionTitle(doc, "Ödemeler ve düzeltmeler", y);
+  if (manual.length === 0) {
+    y = drawNote(doc, "Bu dönemde ödeme veya düzeltme yok.", y - 5);
+  } else {
+    y = drawTable(
+      doc,
+      [
+        { title: "Tarih", width: 24 },
+        { title: "Tür", width: 22 },
+        { title: "Açıklama", width: 120 },
+        { title: "Kod", width: 22 },
+        { title: "Asıl tutar", width: 28, right: true },
+        { title: "Kur", width: 32, right: true },
+        { title: "Tutar ($)", width: 29, right: true },
+      ],
+      manual.map((m, i) => ({
+        shade: i % 2 === 1,
         cells: [
           `${fmtDay(m.day)} ${m.time}`,
           LEDGER_TYPE_LABEL[m.type],
-          m.usd === null ? `${m.description} (kur yok — bakiyeye katılmadı)` : m.description,
+          describe(m),
           m.code ?? "",
           m.original ? fmtMoney(m.original.amount, m.original.currency) : "",
           movementRate(m),
           m.usd === null ? "—" : fmtMoney(m.usd, "USD"),
-          fmtMoney(m.balance, "USD"),
-          m.manual ? "Elle" : "Otomatik",
         ],
       })),
-      { bold: true, cells: ["", "", "Dönem sonu bakiye", "", "", "", "", fmtMoney(s.closing, "USD"), ""] },
-    ],
-    y
-  );
+      y
+    );
+  }
 
   drawNote(doc, CURRENCY_NOTE, y);
   stampFooters(doc, `${s.driver.name} · ${rangeLabel(s.range)}`);
