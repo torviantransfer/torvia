@@ -88,8 +88,8 @@ export default async function DriverPanelPage({ params }: { params: Promise<{ to
     .slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="min-h-screen bg-[#F2F2F7]">
+      <div className="mx-auto max-w-xl px-4 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <DriverHome
           driverName={driver.full_name}
           phone={driver.phone}

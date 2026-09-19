@@ -55,15 +55,21 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const { data: r } = await supabase
-    .from("reservations")
-    .select("id, stripe_payment_intent_id")
-    .eq("id", reservationId)
-    .single();
+  // `*` rather than naming the balance columns, so this keeps working on a
+  // database where migration 107 has not been applied yet.
+  const { data: r } = await supabase.from("reservations").select("*").eq("id", reservationId).single();
 
   if (!r) return NextResponse.json({ error: "Rezervasyon bulunamadı." }, { status: 404 });
+
+  /* The balance of a cash booking paid by card later is a second charge
+     (lib/balancePayment). This screen refunds the deposit's; the balance is
+     named so no one assumes a full refund covered it. */
+  const balance = r.balance_paid_at
+    ? { amount: Number(r.balance_amount) || 0, paymentIntentId: r.balance_payment_intent_id as string | null }
+    : null;
+
   if (!r.stripe_payment_intent_id) {
-    return NextResponse.json({ refundable: false, reason: "no_payment" });
+    return NextResponse.json({ refundable: false, reason: "no_payment", balance });
   }
 
   try {
@@ -76,6 +82,7 @@ export async function GET(request: NextRequest) {
       captured: charge.captured / factor,
       refunded: charge.refunded / factor,
       remaining: (charge.captured - charge.refunded) / factor,
+      balance,
     });
   } catch (err) {
     console.error("refund read error:", err instanceof Error ? err.message : err);

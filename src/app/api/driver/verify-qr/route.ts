@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const { token, qrValue } = await request.json();
 
     if (!token || !qrValue) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "Eksik bilgi." }, { status: 400 });
     }
 
     // Find the driver assignment by link token
@@ -18,16 +18,16 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!assignment) {
-      return NextResponse.json({ error: "Assignment not found" }, { status: 404 });
+      return NextResponse.json({ error: "Görev bulunamadı." }, { status: 404 });
     }
 
     if (assignment.status === "completed") {
-      return NextResponse.json({ error: "This link has expired" }, { status: 403 });
+      return NextResponse.json({ error: "Bu transfer tamamlanmış." }, { status: 403 });
     }
 
     if (assignment.status !== "accepted" && assignment.status !== "picked_up") {
       return NextResponse.json(
-        { verified: false, error: "Transfer must be accepted before QR verification." },
+        { verified: false, error: "Önce transferi kabul edin." },
         { status: 409 }
       );
     }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (!reservation) {
       return NextResponse.json(
-        { verified: false, error: "Invalid QR code — no matching reservation found." },
+        { verified: false, error: "Geçersiz QR kod — rezervasyon bulunamadı." },
         { status: 400 }
       );
     }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Verify the QR belongs to this driver's assigned reservation
     if (reservation.id !== assignment.reservation_id) {
       return NextResponse.json(
-        { verified: false, error: "This QR code does not match your assigned transfer." },
+        { verified: false, error: "Bu QR kod size atanan transfere ait değil." },
         { status: 400 }
       );
     }
@@ -77,11 +77,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       verified: true,
-      message: `Verified! Reservation ${reservation.reservation_code} confirmed.`,
+      message: `Doğrulandı: ${reservation.reservation_code}. Yolculuk başlıyor.`,
       reservationCode: reservation.reservation_code,
     });
   } catch (err) {
     console.error("QR verification error:", err);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası. Tekrar deneyin." }, { status: 500 });
   }
 }

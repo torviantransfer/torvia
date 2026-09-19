@@ -12,6 +12,8 @@ interface Refundable {
   captured?: number;
   refunded?: number;
   remaining?: number;
+  /** The balance of a cash booking paid by card later: a separate charge this dialog does not refund. */
+  balance?: { amount: number; paymentIntentId: string | null } | null;
 }
 
 const REASON_TEXT: Record<string, string> = {
@@ -141,6 +143,16 @@ export default function RefundDialog({
             {info.reason
               ? REASON_TEXT[info.reason]
               : "Bu ödemenin tamamı zaten iade edilmiş."}
+          </p>
+        )}
+
+        {info?.balance && (
+          <p className="flex items-start gap-2 rounded-adm-sm border border-adm-amber-line bg-adm-amber-soft px-3 py-2.5 text-[12.5px] text-adm-amber">
+            <AlertCircle size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
+            <span>
+              Bu rezervasyonda kalan tutar ayrıca kartla ödendi (<b>{amountText(info.balance.amount, info.currency ?? "EUR")}</b>). Buradaki iade yalnız kaporayı kapsar; kalan tutarı Stripe panelinden
+              {info.balance.paymentIntentId ? <> <span className="font-mono">{info.balance.paymentIntentId}</span></> : null} ödemesini iade ederek geri verin.
+            </span>
           </p>
         )}
 

@@ -18,10 +18,7 @@ export default async function DriverPage({
        drivers(full_name, phone),
        vehicles(plate_number, brand, model),
        reservations(
-         reservation_code, trip_type, pickup_datetime, return_datetime,
-         flight_code, adults, children, luggage_count, child_seat,
-         welcome_sign, welcome_name, hotel_name, hotel_address, notes,
-         status, qr_code_token, locale,
+         *,
          customers(first_name, last_name, phone, email),
          regions(name_en, name_tr, distance_km, duration_minutes)
        )`
@@ -37,28 +34,20 @@ export default async function DriverPage({
   // the panel is no longer available.
   if (assignment.status === "completed") {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-              <span className="text-2xl">✓</span>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-950 mb-2">Transfer Tamamlandı</h1>
-            <p className="text-slate-500 text-sm mb-6">
-              Bu şoför linki tamamlanan transfer için artık kullanılamaz.
-            </p>
-            <div className="text-xs font-semibold tracking-[0.2em] text-slate-400">
-              TORVIAN
-            </div>
-          </div>
+      <div className="flex min-h-screen items-center justify-center bg-[#F2F2F7] px-4">
+        <div className="w-full max-w-sm rounded-[22px] bg-white p-8 text-center ring-1 ring-black/[0.04]">
+          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-full bg-[#34C759] text-2xl text-white">✓</div>
+          <h1 className="mb-1.5 text-[22px] font-semibold tracking-[-0.01em] text-[#1d1d1f]">Transfer tamamlandı</h1>
+          <p className="text-[15px] text-[#6e6e73]">Bu şoför linki tamamlanan transfer için artık kullanılamaz.</p>
+          <p className="mt-6 text-[12px] font-semibold tracking-[0.2em] text-[#c7c7cc]">TORVIAN</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-[#F2F2F7]">
+      <div className="mx-auto max-w-xl px-4 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))]">
         <DriverPanel
           assignment={JSON.parse(JSON.stringify(assignment))}
           token={token}

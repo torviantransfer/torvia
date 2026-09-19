@@ -93,6 +93,11 @@ export interface Reservation {
   refunded_amount?: number | null;
   refunded_currency?: string | null;
   refunded_at?: string | null;
+  // Present once 107_balance_payment has been applied: the balance of a cash
+  // booking paid by card afterwards (lib/balancePayment).
+  balance_payment_intent_id?: string | null;
+  balance_amount?: number | null;
+  balance_paid_at?: string | null;
   customers: {
     first_name: string;
     last_name: string;

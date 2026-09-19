@@ -93,19 +93,19 @@ export default function QRScanner({ token, onVerified }: Props) {
           setResult("idle");
           setMessage("");
         }}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-3 font-black text-white hover:bg-blue-800"
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#007AFF] px-4 text-[16px] font-semibold text-white transition active:scale-[0.99]"
       >
         <Camera size={18} />
-        Yolcu QR Kodunu Tara
+        Yolcunun QR kodunu okut
       </button>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 p-4">
-        <h3 className="flex items-center gap-2 font-black text-slate-950">
-          <Camera size={16} className="text-blue-700" />
+    <div className="overflow-hidden rounded-[14px] bg-[#F2F2F7]">
+      <div className="flex items-center justify-between px-4 py-3">
+        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-[#1d1d1f]">
+          <Camera size={16} className="text-[#007AFF]" />
           QR Tarayıcı
         </h3>
         <button
@@ -113,7 +113,7 @@ export default function QRScanner({ token, onVerified }: Props) {
             setOpen(false);
             setResult("idle");
           }}
-          className="text-slate-400 hover:text-slate-700"
+          className="text-[#8E8E93]"
         >
           <XCircle size={20} />
         </button>
@@ -122,7 +122,7 @@ export default function QRScanner({ token, onVerified }: Props) {
       {result === "idle" && (
         <>
           <div id="qr-reader" ref={scannerRef} className="w-full" />
-          <p className="p-3 text-center text-xs font-medium text-slate-500">
+          <p className="p-3 text-center text-[13px] text-[#6e6e73]">
             Kamerayı yolcunun QR koduna doğrultun.
           </p>
         </>
@@ -130,42 +130,42 @@ export default function QRScanner({ token, onVerified }: Props) {
 
       {result === "loading" && (
         <div className="flex flex-col items-center gap-3 py-12">
-          <Loader2 size={40} className="animate-spin text-blue-700" />
-          <p className="text-sm font-semibold text-slate-600">{message}</p>
+          <Loader2 size={36} className="animate-spin text-[#007AFF]" />
+          <p className="text-[15px] font-medium text-[#6e6e73]">{message}</p>
         </div>
       )}
 
       {result === "success" && (
         <div className="flex flex-col items-center gap-3 py-12">
-          <CheckCircle2 size={48} className="text-emerald-500" />
-          <p className="text-center text-sm font-black text-emerald-700">{message}</p>
+          <CheckCircle2 size={44} className="text-[#34C759]" />
+          <p className="text-center text-[15px] font-semibold text-[#248A3D]">{message}</p>
         </div>
       )}
 
       {result === "error" && (
         <div className="flex flex-col items-center gap-3 px-5 py-12">
-          <AlertTriangle size={48} className="text-red-500" />
+          <AlertTriangle size={44} className="text-[#FF3B30]" />
           {message === "camera_denied" ? (
             <>
-              <p className="text-center text-sm font-black text-red-700">
+              <p className="text-center text-[15px] font-semibold text-[#D70015]">
                 Kamera erişimine izin verilmedi.
               </p>
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-[13px] text-[#6e6e73]">
                 Tarayıcı ayarlarından kamera iznini açın, ardından sayfayı yenileyin.
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+                className="mt-2 h-10 rounded-[12px] bg-[#007AFF] px-5 text-[15px] font-semibold text-white"
               >
                 Sayfayı Yenile
               </button>
             </>
           ) : (
             <>
-              <p className="text-center text-sm font-black text-red-700">{message}</p>
+              <p className="text-center text-[15px] font-semibold text-[#D70015]">{message}</p>
               <button
                 onClick={() => setResult("idle")}
-                className="mt-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+                className="mt-2 h-10 rounded-[12px] bg-[#007AFF] px-5 text-[15px] font-semibold text-white"
               >
                 Tekrar Dene
               </button>

@@ -19,17 +19,22 @@ export default function PaymentLinkDialog({
   url,
   customerName,
   phone,
+  title = "Ödeme linki hazır",
+  message = "TORVIAN Transfer — ödeme linkiniz:",
   onClose,
 }: {
   url: string;
   customerName: string;
   phone?: string;
+  title?: string;
+  /** The line the WhatsApp message opens with; the link follows it. */
+  message?: string;
   onClose: () => void;
 }) {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const digits = (phone ?? "").replace(/[^0-9]/g, "");
-  const waMessage = encodeURIComponent(`TORVIAN Transfer — ödeme linkiniz:\n${url}`);
+  const waMessage = encodeURIComponent(`${message}\n${url}`);
 
   const copy = async () => {
     await navigator.clipboard.writeText(url);
@@ -39,7 +44,7 @@ export default function PaymentLinkDialog({
   };
 
   return (
-    <Dialog open title="Ödeme linki hazır" subtitle={`${customerName} için oluşturuldu.`} onClose={onClose} width="sm:max-w-md">
+    <Dialog open title={title} subtitle={`${customerName} için oluşturuldu.`} onClose={onClose} width="sm:max-w-md">
       <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5">
         <div className="rounded-adm-sm border border-adm-line bg-adm-surface-2 px-3 py-2.5">
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-adm-muted">Link</p>

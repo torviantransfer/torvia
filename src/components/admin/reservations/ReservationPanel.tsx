@@ -4,6 +4,8 @@ import { useState, type ReactNode } from "react";
 import {
   Building2,
   CalendarClock,
+  CreditCard,
+  CircleCheck,
   Download,
   FileText,
   Globe,
@@ -25,6 +27,7 @@ import {
 import { formatInstant } from "@/lib/datetime";
 import { convertSettlement, settlementOf, type Settlement } from "@/lib/currency";
 import { ASSIGNABLE_STATUSES } from "@/lib/reservation-status";
+import { balanceDue } from "@/lib/balance";
 import { legEndpoints } from "@/lib/transfer-route";
 import {
   Button,
@@ -110,9 +113,10 @@ export function useReservationPanel(
   const [assignLeg, setAssignLeg] = useState<Leg | null>(initialAssignLeg);
   const [editing, setEditing] = useState(false);
   const [confirm, setConfirm] = useState<null | "delete" | "approve">(null);
-  const [busy, setBusy] = useState<null | "telegram" | "delete" | "approve" | "reject" | "payment-link">(null);
+  const [busy, setBusy] = useState<null | "telegram" | "delete" | "approve" | "reject" | "payment-link" | "balance-link">(null);
   const [handover, setHandover] = useState<AssignResult | null>(null);
   const [paymentLink, setPaymentLink] = useState<string | null>(null);
+  const [balanceLink, setBalanceLink] = useState<string | null>(null);
   const [refunding, setRefunding] = useState(false);
 
   const code = r.reservation_code;
@@ -150,6 +154,29 @@ export function useReservationPanel(
       if (!res.ok) throw new Error(data?.error ?? "Ödeme linki oluşturulamadı.");
       setPaymentLink(data.url);
       onChanged();
+    } catch (e) {
+      toast(errorText(e), "error");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  /* The balance of a cash booking, by card: what the office reaches for when
+     the passenger asks over WhatsApp or the driver cannot take it from the
+     panel. Replaces opening a second booking and lowering the region's price
+     for a few minutes to charge the difference. */
+  const due = balanceDue(r);
+  const takeBalance = async () => {
+    setBusy("balance-link");
+    try {
+      const res = await fetch("/api/admin/balance-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservationId: r.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error ?? "Ödeme linki oluşturulamadı.");
+      setBalanceLink(data.url);
     } catch (e) {
       toast(errorText(e), "error");
     } finally {
@@ -315,7 +342,15 @@ export function useReservationPanel(
           <Fact
             label="Müşteri ödemesi"
             value={moneyText(r.total_price, currency)}
-            sub={r.status === "pending" ? "Ödeme bekliyor" : cash ? "Nakit · kapora online" : "Online"}
+            sub={
+              r.status === "pending"
+                ? "Ödeme bekliyor"
+                : cash
+                  ? "Nakit · kapora online"
+                  : r.balance_paid_at
+                    ? "Kapora + kalan kartla"
+                    : "Online"
+            }
             subTone={r.status === "pending" ? "rose" : undefined}
           />
           {cash && (
@@ -353,6 +388,24 @@ export function useReservationPanel(
             }
           />
         </div>
+        {due !== null && (
+          <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 rounded-adm-sm border border-adm-line bg-adm-surface-2 px-3 py-2.5">
+            <span className="text-[12.5px] text-adm-ink-2">
+              Müşteri kalanı kartla ödemek isterse: <b>{moneyText(due, currency)}</b>
+            </span>
+            <Button size="sm" icon={CreditCard} loading={busy === "balance-link"} onClick={takeBalance}>
+              Kalanı tahsil et
+            </Button>
+          </div>
+        )}
+        {r.balance_paid_at && (
+          <p className="mt-2.5 flex items-center gap-2 rounded-adm-sm border border-[#bfe3cb] bg-adm-green-soft px-3 py-2 text-[12.5px] text-adm-green">
+            <CircleCheck size={14} aria-hidden="true" />
+            <span>
+              Kalan <b>{moneyText(r.balance_amount ?? 0, currency)}</b> kartla ödendi · {fmtStamp(r.balance_paid_at)} — şoför nakit almaz
+            </span>
+          </p>
+        )}
         <PriceBreakdown r={r} currency={currency} />
       </DrawerSection>
 
@@ -477,6 +530,16 @@ export function useReservationPanel(
             toast("İade gönderildi.");
             onChanged();
           }}
+        />
+      )}
+      {balanceLink && (
+        <PaymentLinkDialog
+          url={balanceLink}
+          customerName={customerName(r)}
+          phone={phone}
+          title="Kalan tutar linki hazır"
+          message={`TORVIAN Transfer — ${code} kalan tutar (${moneyText(due ?? 0, currency)}) ödeme linkiniz:`}
+          onClose={() => setBalanceLink(null)}
         />
       )}
       {paymentLink && (

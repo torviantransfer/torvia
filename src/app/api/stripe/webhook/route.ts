@@ -7,6 +7,7 @@ import { notifyNewPayment, notifyNewCashBooking, notifyPaymentFailed, sendDriver
 import { capiPurchase } from "@/lib/capi";
 import { bookingParts } from "@/lib/datetime";
 import { logEvent } from "@/lib/eventLog";
+import { applyBalancePayment } from "@/lib/balancePayment";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -36,6 +37,17 @@ export async function POST(request: NextRequest) {
 
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
+
+    /* The balance of a cash booking, paid by card after the deposit. It must
+       not go through the booking path below: that would overwrite the
+       deposit's stripe_payment_intent_id (which refunds read), and send the
+       confirmation email, the Telegram booking alert and the Meta Purchase a
+       second time for a booking that already exists. */
+    if (paymentIntent.metadata?.kind === "balance") {
+      await applyBalancePayment(supabase, paymentIntent);
+      return NextResponse.json({ received: true });
+    }
+
     const reservationId = paymentIntent.metadata?.reservation_id;
     const reservationCode = paymentIntent.metadata?.reservation_code;
     const isDeposit = paymentIntent.metadata?.is_deposit === "true";
