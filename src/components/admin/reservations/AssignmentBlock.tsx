@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { Check, Copy, FileText, Mail, MessageCircle, Pencil, RefreshCw, TimerReset, UserMinus } from "lucide-react";
+import { Check, Copy, FileText, Mail, MessageCircle, MoreHorizontal, Pencil, RefreshCw, TimerReset, UserMinus } from "lucide-react";
 import { formatBookingDateTime } from "@/lib/datetime";
 // The passenger pays in euro, the driver is owed dollars — anything that puts
 // the two in one sum converts first, through the same helper as the ledger.
@@ -14,6 +14,7 @@ import {
   IconButton,
   IconLink,
   Input,
+  Menu,
   Select,
   buttonClass,
   cx,
@@ -215,11 +216,15 @@ export default function AssignmentBlock({
         <AssignmentStatusChip status={da.status} />
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-adm-muted">
-        {da.pickup_time && <span className="font-medium text-adm-amber">Otelden {da.pickup_time}</span>}
+      {da.pickup_time && <p className="mt-2 text-xs font-medium text-adm-amber">Otelden alış {da.pickup_time}</p>}
 
-        {editingFee ? (
-          <span className="inline-flex flex-wrap items-center gap-1.5">
+      {/* Money as three labelled figures. It used to be one run-on line —
+          "Şoföre €33 ✎ Kalan €25 Müşteriden €33 alacak · borç €0" — in three
+          colours, where "Kalan" (our margin) read like the unpaid balance. */}
+      {editingFee ? (
+        <div className="mt-2.5 rounded-adm-sm border border-adm-line-2 bg-adm-surface-2 p-2.5">
+          <p className="mb-1.5 text-[11px] font-semibold text-adm-muted">Şoför ücreti</p>
+          <div className="flex flex-wrap items-center gap-1.5">
             <Select
               inputSize="sm"
               aria-label="Şoför ücretinin para birimi"
@@ -248,7 +253,7 @@ export default function AssignmentBlock({
               }}
               placeholder="110"
               aria-label="Şoför ücreti"
-              className="w-20"
+              className="w-24"
             />
             <Button size="sm" variant="primary" loading={savingFee} onClick={saveFee}>
               Kaydet
@@ -256,55 +261,68 @@ export default function AssignmentBlock({
             <Button size="sm" variant="ghost" onClick={cancelFee}>
               Vazgeç
             </Button>
-          </span>
-        ) : da.driver_fee == null ? (
-          live && (
-            <button
-              type="button"
-              onClick={() => setEditingFee(true)}
-              className="rounded-md bg-adm-amber-soft px-2 py-0.5 text-[11.5px] font-semibold text-adm-amber ring-1 ring-inset ring-adm-amber-line hover:bg-[#fbe8b8]"
-            >
-              Ücret girilmedi · gir
-            </button>
-          )
-        ) : (
-          <span className="inline-flex items-center gap-1">
-            Şoföre <b className="font-semibold text-adm-ink">{moneyText(da.driver_fee, storedCurrency)}</b>
-            {live && (
+          </div>
+        </div>
+      ) : live ? (
+        <div
+          className={cx(
+            "mt-2.5 grid gap-px overflow-hidden rounded-adm-sm border border-adm-line-2 bg-adm-line-2",
+            cashFromPassenger > 0 ? "grid-cols-3" : "grid-cols-2"
+          )}
+        >
+          <MoneyCell label="Şoför ücreti">
+            {da.driver_fee == null ? (
               <button
                 type="button"
-                aria-label="Şoför ücretini düzenle"
-                title="Şoför ücretini düzenle"
                 onClick={() => setEditingFee(true)}
-                className="grid size-5 place-items-center rounded text-adm-faint hover:text-adm-ink"
+                className="text-[12.5px] font-semibold text-adm-amber underline decoration-dotted underline-offset-2"
               >
-                <Pencil size={11} aria-hidden="true" />
+                Girilmedi · gir
               </button>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                {moneyText(da.driver_fee, storedCurrency)}
+                <button
+                  type="button"
+                  aria-label="Şoför ücretini düzenle"
+                  title="Şoför ücretini düzenle"
+                  onClick={() => setEditingFee(true)}
+                  className="grid size-5 place-items-center rounded text-adm-faint hover:text-adm-ink"
+                >
+                  <Pencil size={11} aria-hidden="true" />
+                </button>
+              </span>
             )}
-          </span>
-        )}
+          </MoneyCell>
+          <MoneyCell label="Bize kalan" tone={profit === null ? undefined : profit < 0 ? "rose" : "green"}>
+            {da.driver_fee != null && profit !== null ? moneyText(profit, fareCurrency) : "—"}
+          </MoneyCell>
+          {cashFromPassenger > 0 && (
+            <MoneyCell
+              label="Araçta nakit"
+              tone="amber"
+              sub={
+                da.driver_fee != null && cashInFeeCurrency !== null
+                  ? `Şoföre net ${moneyText(Number(da.driver_fee) - cashInFeeCurrency, storedCurrency)}`
+                  : undefined
+              }
+            >
+              {moneyText(cashFromPassenger, fareCurrency)}
+            </MoneyCell>
+          )}
+        </div>
+      ) : (
+        da.driver_fee != null && (
+          <p className="mt-2 text-xs text-adm-muted">
+            Şoföre <b className="font-semibold text-adm-ink">{moneyText(da.driver_fee, storedCurrency)}</b>
+          </p>
+        )
+      )}
 
-        {live && da.driver_fee != null && profit !== null && (
-          <span>
-            Kalan{" "}
-            <b className={cx("font-semibold", profit < 0 ? "text-adm-rose" : "text-adm-green")}>
-              {moneyText(profit, fareCurrency)}
-            </b>
-          </span>
-        )}
+      {lastStamp && <p className="mt-1.5 text-[11.5px] text-adm-faint">{lastStamp}</p>}
 
-        {live && da.driver_fee != null && cashFromPassenger > 0 && cashInFeeCurrency !== null && (
-          <span className="text-adm-amber">
-            Müşteriden {moneyText(cashFromPassenger, fareCurrency)} alacak · borç{" "}
-            <b className="font-semibold">
-              {moneyText(Number(da.driver_fee) - cashInFeeCurrency, storedCurrency)}
-            </b>
-          </span>
-        )}
-
-        {lastStamp && <span className="text-adm-faint">{lastStamp}</span>}
-      </div>
-
+      {/* The two things done on every job stay as buttons; the document and the
+          link as icons; delay, replace and remove — occasional — in a menu. */}
       {live && da.link_token && (
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
           {wa && (
@@ -322,33 +340,33 @@ export default function AssignmentBlock({
           >
             {emailSent ? "Gönderildi" : "Müşteriye mail"}
           </Button>
-          <IconLink
-            size="sm"
-            icon={FileText}
-            label="Transfer belgesi"
-            href={`/api/driver-voucher?token=${da.link_token}`}
-            newTab
-          />
-          <IconButton size="sm" icon={copied ? Check : Copy} label="Şoför paneli linkini kopyala" onClick={copyLink} />
-          {phone && (
-            <Button size="sm" icon={TimerReset} onClick={() => setDelaying(true)}>
-              Rötar bildir
-            </Button>
-          )}
-          <span aria-hidden="true" className="mx-0.5 h-4 w-px bg-adm-line" />
-          <Button size="sm" variant="ghost" icon={RefreshCw} onClick={onReplace}>
-            Değiştir
-          </Button>
-          <Button
-            size="sm"
-            variant="danger-ghost"
-            icon={UserMinus}
-            onClick={() => setConfirmOpen(true)}
-            disabled={da.status === "picked_up"}
-            title={da.status === "picked_up" ? "Yolculuk başlamış bir atama kaldırılamaz." : undefined}
-          >
-            Kaldır
-          </Button>
+          <div className="ms-auto flex items-center gap-0.5">
+            <IconLink
+              size="sm"
+              icon={FileText}
+              label="Transfer belgesi"
+              href={`/api/driver-voucher?token=${da.link_token}`}
+              newTab
+            />
+            <IconButton size="sm" icon={copied ? Check : Copy} label="Şoför paneli linkini kopyala" onClick={copyLink} />
+            <Menu
+              align="end"
+              items={[
+                ...(phone ? [{ label: "Rötar bildir", icon: TimerReset, onSelect: () => setDelaying(true) }] : []),
+                { label: "Şoförü değiştir", icon: RefreshCw, onSelect: onReplace },
+                {
+                  label: da.status === "picked_up" ? "Kaldır (yolculuk başladı)" : "Atamayı kaldır",
+                  icon: UserMinus,
+                  danger: true,
+                  disabled: da.status === "picked_up",
+                  onSelect: () => setConfirmOpen(true),
+                },
+              ]}
+              trigger={({ open, toggle }) => (
+                <IconButton size="sm" icon={MoreHorizontal} label="Diğer işlemler" aria-expanded={open} onClick={toggle} />
+              )}
+            />
+          </div>
         </div>
       )}
 
@@ -375,6 +393,33 @@ export default function AssignmentBlock({
         onConfirm={unassign}
         onClose={() => setConfirmOpen(false)}
       />
+    </div>
+  );
+}
+
+function MoneyCell({
+  label,
+  tone,
+  sub,
+  children,
+}: {
+  label: string;
+  tone?: "green" | "rose" | "amber";
+  sub?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0 bg-adm-surface px-2.5 py-2">
+      <p className="truncate text-[11px] font-semibold text-adm-muted">{label}</p>
+      <p
+        className={cx(
+          "mt-0.5 truncate text-[13.5px] font-semibold tabular-nums",
+          tone === "green" ? "text-adm-green" : tone === "rose" ? "text-adm-rose" : tone === "amber" ? "text-adm-amber" : "text-adm-ink"
+        )}
+      >
+        {children}
+      </p>
+      {sub && <p className="truncate text-[11px] text-adm-muted">{sub}</p>}
     </div>
   );
 }
